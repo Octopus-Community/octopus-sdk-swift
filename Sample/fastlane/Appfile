@@ -1,0 +1,7 @@
+app_identifier("com.octopuscommunity.sdk.sample") # The bundle identifier of your app
+
+itc_team_id("127387167") # App Store Connect Team ID
+team_id("8W7579HZX7") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

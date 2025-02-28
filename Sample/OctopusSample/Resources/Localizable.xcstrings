@@ -1,0 +1,130 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "< 16" : {
+
+    },
+    ">= 16" : {
+
+    },
+    "App Login Flow" : {
+
+    },
+    "App managed fields:" : {
+
+    },
+    "App Version: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version de l’app: %@"
+          }
+        }
+      }
+    },
+    "Avatar 1" : {
+
+    },
+    "Avatar 2" : {
+
+    },
+    "Bio" : {
+
+    },
+    "Bio:" : {
+
+    },
+    "Client User Config:" : {
+
+    },
+    "Custom theme" : {
+
+    },
+    "Customize the theme of the Octopus UI" : {
+
+    },
+    "Edit user" : {
+
+    },
+    "Edit your profile" : {
+
+    },
+    "Email" : {
+
+    },
+    "Email:" : {
+
+    },
+    "Email: %@" : {
+
+    },
+    "If a field is selected, the corresponding info in the profile won't be editable in the SDK." : {
+
+    },
+    "Information about the age" : {
+
+    },
+    "Login" : {
+
+    },
+    "Logout" : {
+
+    },
+    "Modal" : {
+
+    },
+    "More" : {
+
+    },
+    "Nickname" : {
+
+    },
+    "Nickname:" : {
+
+    },
+    "None" : {
+
+    },
+    "Not checked" : {
+
+    },
+    "Octo Tab" : {
+
+    },
+    "Open Octopus" : {
+
+    },
+    "Open Octopus Home Screen as full screen modal" : {
+
+    },
+    "Picture" : {
+
+    },
+    "SDK Config:" : {
+
+    },
+    "SSO Connection" : {
+
+    },
+    "This is your app's content" : {
+
+    },
+    "This is your app's login flow" : {
+
+    },
+    "Use your login system to let your user interact with the community" : {
+
+    }
+  },
+  "version" : "1.0"
+}

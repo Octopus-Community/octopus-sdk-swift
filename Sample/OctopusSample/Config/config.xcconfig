@@ -1,0 +1,10 @@
+#include "secrets.xcconfig"
+
+// Version of the app
+APP_VERSION = 0.9
+// Default build number. Overridden by build system
+BUILD_NUMBER = 0
+
+
+CURRENT_PROJECT_VERSION = $BUILD_NUMBER
+MARKETING_VERSION = $APP_VERSION

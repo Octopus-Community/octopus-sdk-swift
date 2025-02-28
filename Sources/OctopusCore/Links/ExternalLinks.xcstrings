@@ -1,0 +1,91 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "url.communityGuidelines" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://www.octopuscommunity.com/app-community-guidelines"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://www.octopuscommunity.com/app-regles-de-la-communaute"
+          }
+        }
+      }
+    },
+    "url.faq" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "http://www.octopuscommunity.com/faq-app-en"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://www.octopuscommunity.com/faq-app-fr"
+          }
+        }
+      }
+    },
+    "url.privacyPolicy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://www.octopuscommunity.com/app-privacy-policy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://www.octopuscommunity.com/app-politique-confidentialite"
+          }
+        }
+      }
+    },
+    "url.reportIssue" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://octopuscommunity.notion.site/153d0ed811a980298bd7d9e55565994f?pvs=105"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://octopuscommunity.notion.site/153d0ed811a980298bd7d9e55565994f?pvs=105"
+          }
+        }
+      }
+    },
+    "url.termsOfUse" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://www.octopuscommunity.com/app-terms-of-use"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://www.octopuscommunity.com/app-cgu"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.octopuscommunity.sample</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.octopuscommunity.sample</string>
+			</array>
+		</dict>
+	</array>
+	<key>CLIENT_USER_TOKEN_SECRET</key>
+	<string>$(CLIENT_USER_TOKEN_SECRET)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSMinimumSystemVersion</key>
+	<string>12.0</string>
+	<key>OCTOPUS_API_KEY</key>
+	<string>$(OCTOPUS_API_KEY)</string>
+	<key>OCTOPUS_SSO_API_KEY</key>
+	<string>$(OCTOPUS_SSO_API_KEY)</string>
+	<key>OCTOPUS_REMOTE_BASE_URL</key>
+	<string>$(OCTOPUS_REMOTE_BASE_URL)</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+</dict>
+</plist>
