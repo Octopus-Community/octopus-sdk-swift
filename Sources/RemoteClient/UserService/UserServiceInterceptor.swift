@@ -52,4 +52,8 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
     func makeGetJwtFromClientSignedTokenInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, GrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
+
+    func makecreateUserInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_CreateUserRequest, GrpcModels.Com_Octopuscommunity_CreateUserResponse>] {
+        [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
 }

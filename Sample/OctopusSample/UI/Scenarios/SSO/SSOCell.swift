@@ -11,7 +11,7 @@ struct SSOCell: View {
 
     var body: some View {
         // Since this scenario is a bit complex, opens it in a new screen (`SSOView`)
-        NavigationLink(destination: SSOView(model: model)) {
+        NavigationLink(destination: SSOScenariosView(model: model)) {
             VStack(alignment: .leading) {
                 Text("SSO Connection")
                 Text("Use your login system to let your user interact with the community")

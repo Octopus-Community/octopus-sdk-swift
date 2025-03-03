@@ -182,6 +182,7 @@ class ProfileTests: XCTestCase {
         }.store(in: &storage)
 
         await fulfillment(of: [blockedListEmptyExpectation], timeout: 0.5)
+        try await delay()
 
         mockUserService.injectNextBlockUserResponse(Com_Octopuscommunity_BlockUserResponse())
 

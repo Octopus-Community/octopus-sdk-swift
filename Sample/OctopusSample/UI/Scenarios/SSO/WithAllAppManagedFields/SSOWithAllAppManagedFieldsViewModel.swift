@@ -13,12 +13,11 @@ import Octopus
 /// It also listens to `appUser` to pass it to the SDK and this is what you should do: as soon as your users changes,
 /// inform the SDK about it.
 @MainActor
-class SSOViewModel: ObservableObject {
+class SSOWithAllAppManagedFieldsViewModel: ObservableObject {
     @Published var openLogin = false
     @Published var openEditProfile = false
 
     @Published var appUser: AppUser?
-    @Published var appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField> = []
 
     @Published private var isDisplayed = false
 
@@ -30,7 +29,7 @@ class SSOViewModel: ObservableObject {
     init(model: SampleModel) {
         self.model = model
         self.tokenProvider = TokenProvider()
-        self.appUserStore = AppUserStore()
+        self.appUserStore = AppUserStore(prefix: "AllAppManagedFields")
 
         appUser = appUserStore.user
 
@@ -43,25 +42,6 @@ class SSOViewModel: ObservableObject {
             userUpdated(appUser: $1)
             appUserStore.set(user: $1)
         }.store(in: &storage)
-
-        $appManagedFields
-            .sink { [unowned self] appManagedFields in
-                guard isDisplayed else { return }
-                // For this scenario, we need the SDK to be on a different connection mode
-                model.setConnectionMode(.sso(
-                    .init(
-                        appManagedFields: appManagedFields,
-                        loginRequired: { [weak self] in
-                            guard let self else { return }
-                            openLogin = true
-                        }, modifyUser: { [weak self] _ in
-                            guard let self else { return }
-                            openEditProfile = true
-                        })
-                ))
-
-                userUpdated(appUser: appUser)
-            }.store(in: &storage)
     }
 
     func onAppear() {
@@ -69,7 +49,7 @@ class SSOViewModel: ObservableObject {
         model.setConnectionMode(
             .sso(
                 .init(
-                    appManagedFields: appManagedFields,
+                    appManagedFields: Set(ConnectionMode.SSOConfiguration.ProfileField.allCases),
                     loginRequired: { [weak self] in
                         guard let self else { return }
                         openLogin = true
@@ -103,17 +83,6 @@ class SSOViewModel: ObservableObject {
                 })
         } else {
             model.octopus.disconnectUser()
-        }
-    }
-}
-
-extension AppUser.AgeInfo {
-    var sdkValue: ClientUser.AgeInformation {
-        switch self {
-        case .lessThan16:
-            return .underaged
-        case .moreThan16:
-            return .legalAgeReached
         }
     }
 }

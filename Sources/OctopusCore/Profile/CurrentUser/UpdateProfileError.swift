@@ -22,6 +22,8 @@ public enum UpdateProfile {
         case fileSizeTooBig
         case badFileFormat
         case uploadIssue
+        case moderatedContent
+        case avatarInProcess
     }
     /// All errors that can be thrown during profile update
     public typealias Error = AuthenticatedInputActionError<ValidationErrors<Field, ErrorDetail>>
@@ -47,6 +49,8 @@ extension ValidationErrors where Field == UpdateProfile.Field, ErrorDetail == Up
             case .badFileFormat:                    .badFileFormat
             case .uploadIssue:                      .uploadIssue
             case .charLimitReached:                 .maxCharLimitReached
+            case .moderatedContent:                 .moderatedContent
+            case .avatarInProcess:                  .avatarInProcess
             case .none:                             .unknown
             }
             let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail)

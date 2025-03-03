@@ -16,8 +16,8 @@ struct SampleRootView: View {
 
     @ObservedObject var model = SampleModel()
 
-    @State private var openOctopusAsModal = false
-    @State private var selectedTab = Tab.more
+    @State private var openOctopusAsModal = true
+    @State private var selectedTab = Tab.modal
 
     var body: some View {
         TabView(selection: $selectedTab) {

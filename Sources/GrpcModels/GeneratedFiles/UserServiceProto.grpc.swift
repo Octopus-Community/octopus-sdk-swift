@@ -31,6 +31,11 @@ public protocol Com_Octopuscommunity_UserServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>
 
+  func createUser(
+    _ request: Com_Octopuscommunity_CreateUserRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>
+
   func updateProfile(
     _ request: Com_Octopuscommunity_UpdateProfileRequest,
     callOptions: CallOptions?
@@ -123,6 +128,24 @@ extension Com_Octopuscommunity_UserServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to createUser
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to createUser.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func createUser(
+    _ request: Com_Octopuscommunity_CreateUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.createUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makecreateUserInterceptors() ?? []
     )
   }
 
@@ -330,6 +353,11 @@ public protocol Com_Octopuscommunity_UserServiceAsyncClientProtocol: GRPCClient 
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>
 
+  func makeCreateUserCall(
+    _ request: Com_Octopuscommunity_CreateUserRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>
+
   func makeUpdateProfileCall(
     _ request: Com_Octopuscommunity_UpdateProfileRequest,
     callOptions: CallOptions?
@@ -409,6 +437,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? []
+    )
+  }
+
+  public func makeCreateUserCall(
+    _ request: Com_Octopuscommunity_CreateUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.createUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makecreateUserInterceptors() ?? []
     )
   }
 
@@ -535,6 +575,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
     )
   }
 
+  public func createUser(
+    _ request: Com_Octopuscommunity_CreateUserRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_CreateUserResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.createUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makecreateUserInterceptors() ?? []
+    )
+  }
+
   public func updateProfile(
     _ request: Com_Octopuscommunity_UpdateProfileRequest,
     callOptions: CallOptions? = nil
@@ -648,6 +700,9 @@ public protocol Com_Octopuscommunity_UserServiceClientInterceptorFactoryProtocol
   /// - Returns: Interceptors to use when invoking 'unbanUser'.
   func makeUnbanUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'createUser'.
+  func makecreateUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>]
+
   /// - Returns: Interceptors to use when invoking 'updateProfile'.
   func makeUpdateProfileInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>]
 
@@ -678,6 +733,7 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.deleteUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.banUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.unbanUser,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.createUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.updateProfile,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.getPublicProfile,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.getPrivateProfile,
@@ -704,6 +760,12 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
     public static let unbanUser = GRPCMethodDescriptor(
       name: "UnbanUser",
       path: "/com.octopuscommunity.UserService/UnbanUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let createUser = GRPCMethodDescriptor(
+      name: "createUser",
+      path: "/com.octopuscommunity.UserService/createUser",
       type: GRPCCallType.unary
     )
 
@@ -763,6 +825,8 @@ public protocol Com_Octopuscommunity_UserServiceProvider: CallHandlerProvider {
   ///For Admin user only
   func unbanUser(request: Com_Octopuscommunity_UnbanUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnbanUserResponse>
 
+  func createUser(request: Com_Octopuscommunity_CreateUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_CreateUserResponse>
+
   func updateProfile(request: Com_Octopuscommunity_UpdateProfileRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UpdateProfileResponse>
 
   func getPublicProfile(request: Com_Octopuscommunity_GetPublicProfileRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetPublicProfileResponse>
@@ -815,6 +879,15 @@ extension Com_Octopuscommunity_UserServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnbanUserResponse>(),
         interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? [],
         userFunction: self.unbanUser(request:context:)
+      )
+
+    case "createUser":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_CreateUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_CreateUserResponse>(),
+        interceptors: self.interceptors?.makecreateUserInterceptors() ?? [],
+        userFunction: self.createUser(request:context:)
       )
 
     case "UpdateProfile":
@@ -909,6 +982,11 @@ public protocol Com_Octopuscommunity_UserServiceAsyncProvider: CallHandlerProvid
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_UnbanUserResponse
 
+  func createUser(
+    request: Com_Octopuscommunity_CreateUserRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_CreateUserResponse
+
   func updateProfile(
     request: Com_Octopuscommunity_UpdateProfileRequest,
     context: GRPCAsyncServerCallContext
@@ -989,6 +1067,15 @@ extension Com_Octopuscommunity_UserServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnbanUserResponse>(),
         interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? [],
         wrapping: { try await self.unbanUser(request: $0, context: $1) }
+      )
+
+    case "createUser":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_CreateUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_CreateUserResponse>(),
+        interceptors: self.interceptors?.makecreateUserInterceptors() ?? [],
+        wrapping: { try await self.createUser(request: $0, context: $1) }
       )
 
     case "UpdateProfile":
@@ -1074,6 +1161,10 @@ public protocol Com_Octopuscommunity_UserServiceServerInterceptorFactoryProtocol
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUnbanUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>]
 
+  /// - Returns: Interceptors to use when handling 'createUser'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makecreateUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>]
+
   /// - Returns: Interceptors to use when handling 'updateProfile'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUpdateProfileInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>]
@@ -1111,6 +1202,7 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.deleteUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.banUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.unbanUser,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.createUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.updateProfile,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.getPublicProfile,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.getPrivateProfile,
@@ -1137,6 +1229,12 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
     public static let unbanUser = GRPCMethodDescriptor(
       name: "UnbanUser",
       path: "/com.octopuscommunity.UserService/UnbanUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let createUser = GRPCMethodDescriptor(
+      name: "createUser",
+      path: "/com.octopuscommunity.UserService/createUser",
       type: GRPCCallType.unary
     )
 

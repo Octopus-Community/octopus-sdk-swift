@@ -13,8 +13,11 @@ struct ScenariosView: View {
 
     var body: some View {
         List {
+            SheetCell(model: model)
             CustomThemeCell(model: model)
             SSOCell(model: model)
         }
+        .listStyle(.plain)
+        .navigationBarTitle(Text("Scenarios"), displayMode: .inline)
     }
 }

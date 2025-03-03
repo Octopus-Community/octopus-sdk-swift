@@ -10,10 +10,10 @@
     ">= 16" : {
 
     },
-    "App Login Flow" : {
+    "All App Managed Fields" : {
 
     },
-    "App managed fields:" : {
+    "App Login Flow" : {
 
     },
     "App Version: %@" : {
@@ -68,7 +68,13 @@
     "Email: %@" : {
 
     },
-    "If a field is selected, the corresponding info in the profile won't be editable in the SDK." : {
+    "In order to test this, you must set your API key to OCTOPUS_SSO_API_KEY in secrets.xcconfig." : {
+
+    },
+    "In order to test this, your community should be configured to have all app managed fields." : {
+
+    },
+    "In order to test this, your community should be configured to have no app managed fields." : {
 
     },
     "Information about the age" : {
@@ -92,6 +98,9 @@
     "Nickname:" : {
 
     },
+    "No App Managed Fields" : {
+
+    },
     "None" : {
 
     },
@@ -107,13 +116,22 @@
     "Open Octopus Home Screen as full screen modal" : {
 
     },
+    "Open on a sheet" : {
+
+    },
+    "Open the Octopus SDK in a non full screen sheet" : {
+
+    },
     "Picture" : {
 
     },
-    "SDK Config:" : {
+    "Scenarios" : {
 
     },
     "SSO Connection" : {
+
+    },
+    "SSO Scenarios" : {
 
     },
     "This is your app's content" : {
@@ -123,6 +141,9 @@
 
     },
     "Use your login system to let your user interact with the community" : {
+
+    },
+    "With all App Managed Fields" : {
 
     }
   },

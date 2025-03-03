@@ -10,15 +10,22 @@ import Foundation
 class AppUserStore {
     @Published var user: AppUser?
 
-    private let idKey = "app_user_id"
-    private let nicknameKey = "app_user_nickname"
-    private let bioKey = "app_user_bio"
-    private let pictureKey = "app_user_picture"
-    private let ageInfoKey = "app_user_ageInfo"
+    private let idKey: String
+    private let nicknameKey: String
+    private let bioKey: String
+    private let pictureKey: String
+    private let ageInfoKey: String
 
     private let userDefaults = UserDefaults.standard
 
-    init() {
+    init(prefix: String) {
+        idKey = "\(prefix)_app_user_id"
+        nicknameKey = "\(prefix)_app_user_nickname"
+        bioKey = "\(prefix)_app_user_bio"
+        pictureKey = "\(prefix)_app_user_picture"
+        ageInfoKey = "\(prefix)_app_user_ageInfo"
+
+
         // load the stored value
         guard let id = userDefaults.string(forKey: idKey) else { return }
         let nickname = userDefaults.string(forKey: nicknameKey)

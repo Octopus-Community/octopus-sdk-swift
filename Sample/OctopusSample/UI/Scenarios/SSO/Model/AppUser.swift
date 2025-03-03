@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import Octopus
 
 /// Struct representing your user.
 /// If you don't handle one field, it will be passed as nil to the SDK
@@ -24,4 +25,15 @@ struct AppUser {
     var picture: Data?
     /// Information about the age
     var ageInformation: AgeInfo?
+}
+
+extension AppUser.AgeInfo {
+    var sdkValue: ClientUser.AgeInformation {
+        switch self {
+        case .lessThan16:
+            return .underaged
+        case .moreThan16:
+            return .legalAgeReached
+        }
+    }
 }

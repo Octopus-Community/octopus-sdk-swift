@@ -50,16 +50,5 @@ public enum ConnectionMode {
             self.loginRequired = loginRequired
             self.modifyUser = modifyUser
         }
-
-        /// Constructor for a SSO Configuration with no app managed fields.
-        ///
-        /// - Parameters:
-        ///   - loginRequired: Block called when OctopusSDK needs a logged in user.
-        ///                    When this block is called, you should start your login process.
-        public init(loginRequired: @escaping () -> Void) {
-            self.appManagedFields = []
-            self.loginRequired = loginRequired
-            self.modifyUser = { _ in }
-        }
     }
 }

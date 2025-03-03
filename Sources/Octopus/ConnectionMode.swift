@@ -16,7 +16,7 @@ public enum ConnectionMode {
     /// Configuration of the SSO connection mode
     public struct SSOConfiguration {
         /// The field of a Profile
-        public enum ProfileField {
+        public enum ProfileField: CaseIterable {
             /// Username
             case nickname
             /// Biography
@@ -51,6 +51,17 @@ public enum ConnectionMode {
             self.appManagedFields = appManagedFields
             self.loginRequired = loginRequired
             self.modifyUser = modifyUser
+        }
+
+        /// Constructor for a SSO Configuration with no app managed fields.
+        ///
+        /// - Parameters:
+        ///   - loginRequired: Block called when OctopusSDK needs a logged in user.
+        ///                    When this block is called, you should start your login process.
+        public init(loginRequired: @escaping () -> Void) {
+            self.appManagedFields = []
+            self.loginRequired = loginRequired
+            self.modifyUser = { _ in }
         }
     }
 }

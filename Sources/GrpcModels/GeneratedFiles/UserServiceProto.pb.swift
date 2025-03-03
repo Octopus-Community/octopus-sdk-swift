@@ -186,6 +186,88 @@ public struct Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse: Sendable
   public init() {}
 }
 
+///Only accessible to BO user
+public struct Com_Octopuscommunity_CreateUserRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_CreateUserResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var result: Com_Octopuscommunity_CreateUserResponse.OneOf_Result? = nil
+
+  public var success: Com_Octopuscommunity_CreateUserResponse.Success {
+    get {
+      if case .success(let v)? = result {return v}
+      return Com_Octopuscommunity_CreateUserResponse.Success()
+    }
+    set {result = .success(newValue)}
+  }
+
+  public var fail: Com_Octopuscommunity_CreateUserResponse.Fail {
+    get {
+      if case .fail(let v)? = result {return v}
+      return Com_Octopuscommunity_CreateUserResponse.Fail()
+    }
+    set {result = .fail(newValue)}
+  }
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum OneOf_Result: Equatable, Sendable {
+    case success(Com_Octopuscommunity_CreateUserResponse.Success)
+    case fail(Com_Octopuscommunity_CreateUserResponse.Fail)
+
+  }
+
+  public struct Success: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var userID: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct Fail: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var errors: [Com_Octopuscommunity_CreateUserResponse.Error] = []
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct Error: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///TODO handle i18n. With error code ?
+    public var message: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public init() {}
+}
+
 public struct Com_Octopuscommunity_UpdateProfileRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -462,6 +544,22 @@ public struct Com_Octopuscommunity_UpdateProfileResponse: Sendable {
       set {details = .charLimitReached(newValue)}
     }
 
+    public var moderatedContent: Com_Octopuscommunity_UpdateProfileResponse.Error.ModeratedContent {
+      get {
+        if case .moderatedContent(let v)? = details {return v}
+        return Com_Octopuscommunity_UpdateProfileResponse.Error.ModeratedContent()
+      }
+      set {details = .moderatedContent(newValue)}
+    }
+
+    public var avatarInProcess: Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess {
+      get {
+        if case .avatarInProcess(let v)? = details {return v}
+        return Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess()
+      }
+      set {details = .avatarInProcess(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_Details: Equatable, Sendable {
@@ -473,23 +571,27 @@ public struct Com_Octopuscommunity_UpdateProfileResponse: Sendable {
       case badFileFormat(Com_Octopuscommunity_UpdateProfileResponse.Error.BadFileFormat)
       case uploadIssue(Com_Octopuscommunity_UpdateProfileResponse.Error.UploadIssue)
       case charLimitReached(Com_Octopuscommunity_UpdateProfileResponse.Error.CharLimitReached)
+      case moderatedContent(Com_Octopuscommunity_UpdateProfileResponse.Error.ModeratedContent)
+      case avatarInProcess(Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess)
 
     }
 
     public enum Field: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
+
+      ///ModeratedContent
       case unknown // = 0
 
       ///AlreadyTaken, BadFormat, BannedWordUsed
       case email // = 1
 
-      ///AlreadyTaken, BannedWordUsed, CharLimitReached, BadFormat
+      ///AlreadyTaken, BannedWordUsed, CharLimitReached, BadFormat, ModeratedContent
       case nickname // = 2
 
-      ///EmptyFile, FileSizeTooBig, BadFileFormat, UploadIssue
+      ///EmptyFile, FileSizeTooBig, BadFileFormat, UploadIssue, AvatarInProcess
       case profilePicture // = 3
 
-      ///BannedWordUsed, CharLimitReached
+      ///BannedWordUsed, CharLimitReached, ModeratedContent
       case bio // = 4
       case UNRECOGNIZED(Int)
 
@@ -603,6 +705,26 @@ public struct Com_Octopuscommunity_UpdateProfileResponse: Sendable {
     }
 
     public struct CharLimitReached: Sendable {
+      // SwiftProtobuf.Message conformance is added in an extension below. See the
+      // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+      // methods supported on all messages.
+
+      public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+      public init() {}
+    }
+
+    public struct ModeratedContent: Sendable {
+      // SwiftProtobuf.Message conformance is added in an extension below. See the
+      // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+      // methods supported on all messages.
+
+      public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+      public init() {}
+    }
+
+    public struct AvatarInProcess: Sendable {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
@@ -1305,6 +1427,191 @@ extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.Error: SwiftP
   }
 }
 
+extension Com_Octopuscommunity_CreateUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CreateUserRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateUserRequest, rhs: Com_Octopuscommunity_CreateUserRequest) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_CreateUserResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CreateUserResponse"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "success"),
+    2: .same(proto: "fail"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: Com_Octopuscommunity_CreateUserResponse.Success?
+        var hadOneofValue = false
+        if let current = self.result {
+          hadOneofValue = true
+          if case .success(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.result = .success(v)
+        }
+      }()
+      case 2: try {
+        var v: Com_Octopuscommunity_CreateUserResponse.Fail?
+        var hadOneofValue = false
+        if let current = self.result {
+          hadOneofValue = true
+          if case .fail(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.result = .fail(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.result {
+    case .success?: try {
+      guard case .success(let v)? = self.result else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .fail?: try {
+      guard case .fail(let v)? = self.result else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateUserResponse, rhs: Com_Octopuscommunity_CreateUserResponse) -> Bool {
+    if lhs.result != rhs.result {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_CreateUserResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateUserResponse.protoMessageName + ".Success"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "userId"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.userID.isEmpty {
+      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateUserResponse.Success, rhs: Com_Octopuscommunity_CreateUserResponse.Success) -> Bool {
+    if lhs.userID != rhs.userID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_CreateUserResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateUserResponse.protoMessageName + ".Fail"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "errors"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.errors) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.errors.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.errors, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateUserResponse.Fail, rhs: Com_Octopuscommunity_CreateUserResponse.Fail) -> Bool {
+    if lhs.errors != rhs.errors {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_CreateUserResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateUserResponse.protoMessageName + ".Error"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "message"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateUserResponse.Error, rhs: Com_Octopuscommunity_CreateUserResponse.Error) -> Bool {
+    if lhs.message != rhs.message {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Com_Octopuscommunity_UpdateProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateProfileRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1673,6 +1980,8 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Error: SwiftProtobuf.Messag
     106: .same(proto: "badFileFormat"),
     107: .same(proto: "uploadIssue"),
     108: .same(proto: "charLimitReached"),
+    109: .same(proto: "moderatedContent"),
+    110: .same(proto: "avatarInProcess"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1787,6 +2096,32 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Error: SwiftProtobuf.Messag
           self.details = .charLimitReached(v)
         }
       }()
+      case 109: try {
+        var v: Com_Octopuscommunity_UpdateProfileResponse.Error.ModeratedContent?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .moderatedContent(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .moderatedContent(v)
+        }
+      }()
+      case 110: try {
+        var v: Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .avatarInProcess(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .avatarInProcess(v)
+        }
+      }()
       default: break
       }
     }
@@ -1835,6 +2170,14 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Error: SwiftProtobuf.Messag
     case .charLimitReached?: try {
       guard case .charLimitReached(let v)? = self.details else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 108)
+    }()
+    case .moderatedContent?: try {
+      guard case .moderatedContent(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 109)
+    }()
+    case .avatarInProcess?: try {
+      guard case .avatarInProcess(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 110)
     }()
     case nil: break
     }
@@ -2020,6 +2363,44 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Error.CharLimitReached: Swi
   }
 
   public static func ==(lhs: Com_Octopuscommunity_UpdateProfileResponse.Error.CharLimitReached, rhs: Com_Octopuscommunity_UpdateProfileResponse.Error.CharLimitReached) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_UpdateProfileResponse.Error.ModeratedContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.Error.protoMessageName + ".ModeratedContent"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_UpdateProfileResponse.Error.ModeratedContent, rhs: Com_Octopuscommunity_UpdateProfileResponse.Error.ModeratedContent) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.Error.protoMessageName + ".AvatarInProcess"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess, rhs: Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

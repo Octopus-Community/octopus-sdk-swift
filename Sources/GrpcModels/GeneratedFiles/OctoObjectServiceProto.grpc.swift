@@ -303,7 +303,7 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
-  /// Unary call to ReportContent
+  ///Do nothing if moderation mod is off
   ///
   /// - Parameters:
   ///   - request: Request to send to ReportContent.
@@ -968,6 +968,7 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
 
   func moderatePost(request: Com_Octopuscommunity_ModeratePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ModeratePostResponse>
 
+  ///Do nothing if moderation mod is off
   func reportContent(request: Com_Octopuscommunity_ReportContentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ReportContentResponse>
 }
 
@@ -1175,6 +1176,7 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_ModeratePostResponse
 
+  ///Do nothing if moderation mod is off
   func reportContent(
     request: Com_Octopuscommunity_ReportContentRequest,
     context: GRPCAsyncServerCallContext
