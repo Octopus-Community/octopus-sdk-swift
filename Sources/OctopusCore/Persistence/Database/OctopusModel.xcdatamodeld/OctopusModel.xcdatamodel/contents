@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24C101" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="BlockedUser" representedClassName="BlockedUserEntity" syncable="YES">
+        <attribute name="profileId" optional="YES" attributeType="String"/>
+        <relationship name="blockedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PrivateProfile" inverseName="blocking" inverseEntity="PrivateProfile"/>
+    </entity>
+    <entity name="ClientUser" representedClassName="ClientUserEntity" syncable="YES">
+        <attribute name="clientUserId" attributeType="String"/>
+        <relationship name="profile" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="ClientUserProfile" inverseName="belongsTo" inverseEntity="ClientUserProfile"/>
+    </entity>
+    <entity name="ClientUserProfile" representedClassName="ClientUserProfileEntity" syncable="YES">
+        <attribute name="ageInformationValue" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="bio" optional="YES" attributeType="String"/>
+        <attribute name="nickname" optional="YES" attributeType="String"/>
+        <attribute name="picture" optional="YES" attributeType="Binary"/>
+        <relationship name="belongsTo" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="ClientUser" inverseName="profile" inverseEntity="ClientUser"/>
+    </entity>
+    <entity name="Comment" representedClassName="CommentEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="commentMedia" inverseEntity="Media"/>
+    </entity>
+    <entity name="FeedItemInfo" representedClassName="FeedItemInfoEntity" syncable="YES">
+        <attribute name="feedId" optional="YES" attributeType="String"/>
+        <attribute name="itemId" optional="YES" attributeType="String"/>
+        <attribute name="position" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="updateTimestamp" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="Media" representedClassName="MediaEntity" syncable="YES">
+        <attribute name="height" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="type" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="url" attributeType="URI"/>
+        <attribute name="width" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="commentMedia" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Comment" inverseName="mediasRelationship" inverseEntity="Comment"/>
+        <relationship name="postMedia" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="mediasRelationship" inverseEntity="Post"/>
+    </entity>
+    <entity name="OctoObject" representedClassName="OctoObjectEntity" isAbstract="YES" syncable="YES">
+        <attribute name="ascChildrenFeedId" optional="YES" attributeType="String"/>
+        <attribute name="authorAvatarUrl" optional="YES" attributeType="URI"/>
+        <attribute name="authorId" optional="YES" attributeType="String"/>
+        <attribute name="authorNickname" optional="YES" attributeType="String"/>
+        <attribute name="childCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="creationTimestamp" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="descChildrenFeedId" optional="YES" attributeType="String"/>
+        <attribute name="likeCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="parentId" optional="YES" attributeType="String"/>
+        <attribute name="statusReasonCodes" optional="YES" attributeType="String"/>
+        <attribute name="statusReasonMessages" optional="YES" attributeType="String"/>
+        <attribute name="statusValue" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="updateTimestamp" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="userLikeId" optional="YES" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+        <attribute name="viewCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <fetchIndex name="byParentId">
+            <fetchIndexElement property="parentId" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="Post" representedClassName="PostEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="headline" attributeType="String"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="postMedia" inverseEntity="Media"/>
+    </entity>
+    <entity name="PrivateProfile" representedClassName="PrivateProfileEntity" syncable="YES">
+        <attribute name="ascPostFeedId" attributeType="String"/>
+        <attribute name="bio" optional="YES" attributeType="String"/>
+        <attribute name="descPostFeedId" attributeType="String"/>
+        <attribute name="email" optional="YES" attributeType="String"/>
+        <attribute name="nickname" attributeType="String"/>
+        <attribute name="pictureUrl" optional="YES" attributeType="URI"/>
+        <attribute name="profileId" attributeType="String"/>
+        <attribute name="userId" attributeType="String"/>
+        <relationship name="blocking" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="BlockedUser" inverseName="blockedBy" inverseEntity="BlockedUser"/>
+        <fetchIndex name="byId">
+            <fetchIndexElement property="profileId" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="PublicProfile" representedClassName="PublicProfileEntity" syncable="YES">
+        <attribute name="ascPostFeedId" attributeType="String"/>
+        <attribute name="bio" optional="YES" attributeType="String"/>
+        <attribute name="descPostFeedId" attributeType="String"/>
+        <attribute name="nickname" optional="YES" attributeType="String"/>
+        <attribute name="pictureUrl" optional="YES" attributeType="URI"/>
+        <attribute name="profileId" attributeType="String"/>
+    </entity>
+    <entity name="RootFeed" representedClassName="RootFeedEntity" syncable="YES">
+        <attribute name="label" attributeType="String"/>
+        <attribute name="position" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="Topic" representedClassName="TopicEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="desc" attributeType="String"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="position" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+</model>

@@ -1,0 +1,2470 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "ActionSheet.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do you want to do?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Que voulez vous faire ?"
+          }
+        }
+      }
+    },
+    "Author.Deleted" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted User"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisateur supprimé"
+          }
+        }
+      }
+    },
+    "Block.Profile.Alert.Message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By blocking this user, you will no longer be able to see their messages or profile. Do you want to continue?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En bloquant cet utilisateur, vous ne pourrez plus voir ses messages ou son profil. Souhaitez-vous continuer ?"
+          }
+        }
+      }
+    },
+    "Block.Profile.Alert.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block this user"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquer cet utilisateur"
+          }
+        }
+      }
+    },
+    "Block.Profile.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Block"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bloquer"
+          }
+        }
+      }
+    },
+    "Block.Profile.Done.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This user is blocked."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet utilisateur est bloqué."
+          }
+        }
+      }
+    },
+    "Comment.Create.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Answer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répondre"
+          }
+        }
+      }
+    },
+    "Comment.Create.Text.Placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a comment"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un commentaire"
+          }
+        }
+      }
+    },
+    "Comment.Delete.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this comment"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer ce commentaire"
+          }
+        }
+      }
+    },
+    "Comment.Delete.Confirmation.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you really want to delete this comment. This action cannot be undone."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voulez-vous vraiment supprimer ce commentaire ? Cette action est irréversible."
+          }
+        }
+      }
+    },
+    "Comment.Delete.Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment deleted"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commentaire supprimé"
+          }
+        }
+      }
+    },
+    "Common.Cancel" : {
+      "comment" : "Cancel action",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler"
+          }
+        }
+      }
+    },
+    "Common.CancelModifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to leave this page? Content will be lost."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etes-vous sûr de vouloir quitter l'édition ? Le contenu sera perdu."
+          }
+        }
+      }
+    },
+    "Common.Close" : {
+      "comment" : "Close action",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer"
+          }
+        }
+      }
+    },
+    "Common.Continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
+          }
+        }
+      }
+    },
+    "Common.Delete" : {
+      "comment" : "Delete action",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer"
+          }
+        }
+      }
+    },
+    "Common.Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminé"
+          }
+        }
+      }
+    },
+    "Common.Edit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edition"
+          }
+        }
+      }
+    },
+    "Common.Error" : {
+      "comment" : "Generic error title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur"
+          }
+        }
+      }
+    },
+    "Common.No" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non"
+          }
+        }
+      }
+    },
+    "Common.Ok" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ok"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ok"
+          }
+        }
+      }
+    },
+    "Common.PoweredByOctopus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powered by Octopus Community"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powered by Octopus Community"
+          }
+        }
+      }
+    },
+    "Common.Retry" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        }
+      }
+    },
+    "Common.Save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sauvegarder"
+          }
+        }
+      }
+    },
+    "Common.Yes" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Description" : {
+      "comment" : "Subtitle of the connection screen. Param is the community name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share, connect, and get inspired: join a community that gets you."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partagez, discutez et inspirez-vous dans une communauté faite pour vous."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Email.Description" : {
+      "comment" : "Text displayed above the email entry field",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your email address is all it takes:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre adresse email suffit pour commencer :"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Email.Placeholder" : {
+      "comment" : "Email placeholder",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your email"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre email"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Send.Button" : {
+      "comment" : "Action that logs in the user",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valider"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Send.Error.NoNetwork" : {
+      "comment" : "Error displayed when there is no network (internet access not available)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No network connection. Please check your internet connection."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de connexion internet. Veuillez vérifier votre connexion."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Send.Error.UnknownError" : {
+      "comment" : "Unknown error during magic link process",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oups, something went wrong. Please enter your email again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oups, une erreur est survenue. Veuillez entrer votre adresse email à nouveau."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.ChangeEmail" : {
+      "comment" : "Button that lets the user send the magic link to another email address",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try with another email address"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayer avec une autre adresse"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.CheckSpams" : {
+      "comment" : "Displayed to be sure that user checks their spams",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You didn't receive the email? Check your spams."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous n'avez pas reçu l'e-mail ? Vérifiez vos spams."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.Error.Expired" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The login link has expired. Please request a new one."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le lien de connexion est expiré. Merci d’en demander un nouveau."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.Error.NoNetwork" : {
+      "comment" : "Error displayed when there is no network (internet access not available)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No network connection. Please check your internet connection."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de connexion internet. Veuillez vérifier votre connexion."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.Error.NotOpenedYet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link sent. Check your email to confirm it or click 'Try with another email address'."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lien envoyé. Consultez vos emails pour le confirmer ou cliquez sur 'essayez une autre adresse email'"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.Error.UnknownError" : {
+      "comment" : "Unknown error during magic link process",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oups, something went wrong. Please enter your email again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oups, une erreur est survenue. Veuillez entrer votre adresse email à nouveau."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.Explanation_email:%@" : {
+      "comment" : "Explanation of the magic link email check screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We’ve sent an email to %@ with a link on which you can click to connect."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nous avons envoyé un e-mail à %@ avec un lien sur lequel vous pouvez cliquer pour vous connecter. Assurez-vous de cliquer sur le lien en utilisant cet appareil."
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.Refresh.Button" : {
+      "comment" : "Button that lets the user refresh the magic link status (i.e. check again if the magic link has been clicked)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiser"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Sent.Title" : {
+      "comment" : "Magic link connection check screen title",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your email"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifiez vos emails"
+          }
+        }
+      }
+    },
+    "Connection.MagicLink.Title" : {
+      "comment" : "Title of the connection screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready to dive in?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prêt à vous connecter ?"
+          }
+        }
+      }
+    },
+    "Connection.SSO.Error.Unknown" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We are trying to retrieve your data. Please try again in a few moments."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nous tentons de récupérer vos données. Veillez reessayer dans quelques instants. "
+          }
+        }
+      }
+    },
+    "Error.NoNetwork" : {
+      "comment" : "Error displayed when there is no network (internet access not available)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No network connection. Please check your internet connection."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de connexion internet. Veuillez vérifier votre connexion."
+          }
+        }
+      }
+    },
+    "Error.TextTooLong_currentLength:%lld_maxLength:%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have exceeded the character limit (%1$lld/%2$lld)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous avez dépassé la limite de caractères (%1$lld/%2$lld)"
+          }
+        }
+      }
+    },
+    "Error.Unknown" : {
+      "comment" : "Generic unknown error",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oups, something went wrong. Please try again later."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oups, une erreur est survenue. Merci de réessayer ultérieurement."
+          }
+        }
+      }
+    },
+    "Feed.Filter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by group"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtrer par groupe"
+          }
+        }
+      }
+    },
+    "Moderation.Common.Done.Message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thank you, your report has been acknowledged and will be processed by our team."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merci, votre signalement a été pris en compte et sera traité par notre équipe."
+          }
+        }
+      }
+    },
+    "Moderation.Common.Done.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report sent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signalement envoyé"
+          }
+        }
+      }
+    },
+    "Moderation.Content.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report this content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler ce contenu"
+          }
+        }
+      }
+    },
+    "Moderation.Content.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We would like to know why you want to report this content."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nous aimerions savoir pourquoi vous souhaitez signaler ce contenu."
+          }
+        }
+      }
+    },
+    "Moderation.Content.MainText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler du contenu"
+          }
+        }
+      }
+    },
+    "Moderation.Content.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler du contenu"
+          }
+        }
+      }
+    },
+    "Moderation.Profile.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report this user"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler cet utilisateur"
+          }
+        }
+      }
+    },
+    "Moderation.Profile.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We would like to know why you want to report this user."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nous aimerions savoir pourquoi vous souhaitez signaler cet utilisateur."
+          }
+        }
+      }
+    },
+    "Moderation.Profile.MainText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report a user"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler cet utilisateur"
+          }
+        }
+      }
+    },
+    "Moderation.Profile.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report this user"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler un utilisateur"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.ChildExploitation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Child exploitation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exploitation d'enfants"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.HarassmentIntimidationOrThreats" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harassment, intimidation, or threats toward a user"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harcèlement, intimidation ou menaces envers un utilisateur"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.HateSpeechOrDiscriminatoryContent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hate speech or discriminatory content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discours haineux ou contenu discriminatoire"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.IllegalContent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Illegal content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenu illégal"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.ImpersonationOrIdentityTheft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impersonation or identity theft"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usurpation d'identité ou vol d'identité"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.MisinformationOrFakeNews" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misinformation or fake news"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désinformation ou fausses nouvelles"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.Other" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.PornographyOrSexuallyExplicitContent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pornography or sexually explicit content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pornographie ou contenu sexuellement explicite"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.PromotesSuicideSelfInjuryOrEatingDisorders" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Promotes suicide, self-injury, or eating disorders"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encourage le suicide, l'automutilation ou les troubles alimentaires"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.SharingPersonalOrPrivateInformation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sharing personal or private information"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partage d'informations personnelles ou privées"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.SpamPromotionalOrUnsolicitedAdvertisingContent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam, promotional, or unsolicited advertising content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam, contenu promotionnel ou publicité non sollicitée"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.Terrorism" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terrorism"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terrorisme"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.ViolentContentOrIncitingViolence" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violent content or content inciting violence"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenu violent ou incitant à la violence"
+          }
+        }
+      }
+    },
+    "Picture.Selection.Error_maxRatio:%@_minSize:%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected picture is not valid. Please chose an image with a maximum ratio of %1$@ and a resolution of at least %2$lld pixels."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La photo sélectionnée n’est pas conforme. Veuillez choisir une image avec un ratio maximum de %1$@ et une résolution d’au moins %2$lld pixels."
+          }
+        }
+      }
+    },
+    "Post.Create.Button" : {
+      "comment" : "Action displayed on the button in the create post screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Post"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poster"
+          }
+        }
+      }
+    },
+    "Post.Create.Headline.Placeholder" : {
+      "comment" : "Placeholder of the headline of a post",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a title"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez un titre"
+          }
+        }
+      }
+    },
+    "Post.Create.Incentive.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I write a post"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "J'écris un message"
+          }
+        }
+      }
+    },
+    "Post.Create.Incentive.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You haven't posted anything yet.\nShare your first ideas with the community"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous n'avez encore publié aucun message.\nPartagez vos premières idées avec la communauté !"
+          }
+        }
+      }
+    },
+    "Post.Create.Text.Placeholder" : {
+      "comment" : "Placeholder of the text of a post",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write your text here (optional)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rédigez votre message ici (optionnel)"
+          }
+        }
+      }
+    },
+    "Post.Create.Title" : {
+      "comment" : "Title of the screen that creates a new post",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Post"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle publication"
+          }
+        }
+      }
+    },
+    "Post.Create.Topic.Selection.Button" : {
+      "comment" : "Value used on the topic button when there is no topic selected",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a group"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir un groupe"
+          }
+        }
+      }
+    },
+    "Post.Create.Topic.Selection.Title" : {
+      "comment" : "Title of the topic selection screen",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a group for your post"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le groupe dans lequel publier votre message"
+          }
+        }
+      }
+    },
+    "Post.Delete.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this post"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer ce message"
+          }
+        }
+      }
+    },
+    "Post.Delete.Confirmation.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you really want to delete this post. This action cannot be undone."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voulez-vous vraiment supprimer ce message ? Cette action est irréversible."
+          }
+        }
+      }
+    },
+    "Post.Delete.Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Post deleted"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message supprimé"
+          }
+        }
+      }
+    },
+    "Post.Detail.NoComments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do you think?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qu’en pensez-vous ?"
+          }
+        }
+      }
+    },
+    "Post.Detail.NotAvailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Content unavailable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenu indisponible"
+          }
+        }
+      }
+    },
+    "Post.List.Empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start the conversation!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soyez le premier à publier !"
+          }
+        }
+      }
+    },
+    "Post.List.ModeratedPost.MainText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This content has been moderated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce contenu a été modéré"
+          }
+        }
+      }
+    },
+    "Post.List.ModeratedPost.Reason" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reason: "
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raison :"
+          }
+        }
+      }
+    },
+    "Post.List.OpenCreatePost" : {
+      "comment" : "Button that allows the user to open the view to create a post",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write a post..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle publication"
+          }
+        }
+      }
+    },
+    "Post.List.ReadMore" : {
+      "comment" : "Displayed after an ellipsized text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read More"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire plus"
+          }
+        }
+      }
+    },
+    "Post.Status.Moderated" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moderated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modéré"
+          }
+        }
+      }
+    },
+    "Profile.Create.BirthDate.Description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your birth date:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre date de naissance :"
+          }
+        }
+      }
+    },
+    "Profile.Create.BirthDate.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This information will remain private."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette information ne sera pas rendue publique."
+          }
+        }
+      }
+    },
+    "Profile.Create.BirthDate.Placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter your birth date"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrez votre date de naissance"
+          }
+        }
+      }
+    },
+    "Profile.Create.BirthDate.Underaged" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You must be at least 16 years old to create an account."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous devez avoir au moins 16 ans pour créer un compte."
+          }
+        }
+      }
+    },
+    "Profile.Create.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join the community"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejoindre la communauté"
+          }
+        }
+      }
+    },
+    "Profile.Create.ContactUs.Link" : {
+      "comment" : "Please put the linkable part between [] and keep the (https://) next to it, without any space.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any issue? [Contact us](https://)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un soucis ? [Contactez-nous](https://)."
+          }
+        }
+      }
+    },
+    "Profile.Create.ContactUs.NoLink" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any issue? Contact us."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un soucis ? Contactez-nous"
+          }
+        }
+      }
+    },
+    "Profile.Create.Error.Nickname_minLength:%lld_maxLength:%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The username must be between %1$lld and %2$lld characters long."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le pseudo doit contenir entre %1$lld et %2$lld caractères"
+          }
+        }
+      }
+    },
+    "Profile.Create.Error.TooYoung_minAge:%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You must be over %lld years old to join the community."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous devez avoir plus de %lld ans pour rejoindre la communauté."
+          }
+        }
+      }
+    },
+    "Profile.Create.Legal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By clicking on 'Join the community,' you agree to the Terms of Use, the Privacy Policy, and the Community Guidelines."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cliquant sur 'Rejoindre la communauté' vous acceptez les Conditions Générales d’Utilisation, la politique de confidentialité, et la Charte de la Communauté."
+          }
+        }
+      }
+    },
+    "Profile.Create.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By clicking on 'Join the community' you agree to the [Terms of Use](https://%1$@), the [Privacy Policy](https://%2$@), and the [Community Guidelines](https://%3$@)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cliquant sur 'Rejoindre la communauté', vous acceptez les [Conditions Générales d’Utilisation](https://%1$@), la [politique de confidentialité](https://%2$@), et la [Charte de la Communauté](https://%3$@)."
+          }
+        }
+      }
+    },
+    "Profile.Create.Nickname.Description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your username:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre pseudo :"
+          }
+        }
+      }
+    },
+    "Profile.Create.Nickname.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can change it later in your profile."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pourrez le modifier plus tard dans votre profil."
+          }
+        }
+      }
+    },
+    "Profile.Create.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to your community!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bienvenue dans votre communauté !"
+          }
+        }
+      }
+    },
+    "Profile.Detail.EmptyBio.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a biography to differentiate yourself!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une bio pour vous différencier !"
+          }
+        }
+      }
+    },
+    "Profile.Edit.Bio.Description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bio"
+          }
+        }
+      }
+    },
+    "Profile.Edit.Bio.Placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tell us a little about yourself..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parlez-nous un peu de vous..."
+          }
+        }
+      }
+    },
+    "Profile.Edit.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit profile"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le profil"
+          }
+        }
+      }
+    },
+    "Profile.Edit.Nickname.Description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Username"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pseudo"
+          }
+        }
+      }
+    },
+    "Profile.Edit.Nickname.Explanation" : {
+      "comment" : "Profile nickname explanation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is the name you will use to interact with the community."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il s'agit du nom sous lequel vous allez interagir avec la communauté"
+          }
+        }
+      }
+    },
+    "Profile.Edit.Picture.Change" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change picture"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplacer la photo"
+          }
+        }
+      }
+    },
+    "Profile.Edit.Picture.Delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete picture"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la photo"
+          }
+        }
+      }
+    },
+    "Profile.Nickname.Placeholder" : {
+      "comment" : "Nickname placeholder",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your username"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre pseudo"
+          }
+        }
+      }
+    },
+    "Profile.Tabs.Posts" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My posts"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes publications"
+          }
+        }
+      }
+    },
+    "Settings.About" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About the community"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A propos de la communauté"
+          }
+        }
+      }
+    },
+    "Settings.Community.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community Settings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paramètres de la communauté"
+          }
+        }
+      }
+    },
+    "Settings.CommunityGuidelines" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community Guidelines"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Règles de la Communauté"
+          }
+        }
+      }
+    },
+    "Settings.Help" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Help"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aide"
+          }
+        }
+      }
+    },
+    "Settings.Help.ContactUs.Explanation.Link_mailto:%@" : {
+      "comment" : "Please keep the linkable part between [] and keep the (https://) next to it, without any space.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can send us an email directly at [%@](https://)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez nous envoyer un mail directement à [%@](https://)"
+          }
+        }
+      }
+    },
+    "Settings.Help.ContactUs.Explanation.NoLink_email:%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can send us an email directly at %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez nous envoyer un mail directement à %@"
+          }
+        }
+      }
+    },
+    "Settings.Help.ContactUs.MainText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to contact us?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment nous contacter ?"
+          }
+        }
+      }
+    },
+    "Settings.Help.ContactUs.Questions.Link" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you have any doubts or questions, do not hesitate to refer to the [Community Content Policy](https://)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cas de doutes ou de questions, n’hésitez pas à vous référez à la [Politique de contenu de la communauté](https://)"
+          }
+        }
+      }
+    },
+    "Settings.Help.ContactUs.Questions.NoLink" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you have any doubts or questions, do not hesitate to refer to the Community Content Policy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cas de doutes ou de questions, n’hésitez pas à vous référez à la Politique de contenu de la communauté"
+          }
+        }
+      }
+    },
+    "Settings.Help.ContactUs.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact us"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nous contacter"
+          }
+        }
+      }
+    },
+    "Settings.Help.FAQ.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequently Asked Questions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questions les plus fréquentes"
+          }
+        }
+      }
+    },
+    "Settings.Help.ReportContent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flag inappropriate content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler un contenu problématique"
+          }
+        }
+      }
+    },
+    "Settings.Help.ReportProblem" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report a problem"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signaler un problème"
+          }
+        }
+      }
+    },
+    "Settings.LogOut.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log out from the Community"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se déconnecter de la communauté"
+          }
+        }
+      }
+    },
+    "Settings.LogOut.Done.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have been disconnected."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous avez été déconnecté.e avec succès."
+          }
+        }
+      }
+    },
+    "Settings.PrivacyPolicy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Policy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Politique de confidentialité"
+          }
+        }
+      }
+    },
+    "Settings.Profile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Community profile"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mon profil communautaire"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Confirmation.Delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm deletion"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmer la suppression"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Confirmation.Message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You will no longer be able to participate in the community. Your profile will be permanently deleted, and your posts will be anonymized. This action is irreversible. Do you wish to proceed?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous ne pourrez plus participer à la communauté. Votre profil sera définitivement supprimé et vos publications seront anonymisées. Cette action est irréversible. Souhaitez-vous continuer ?"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Confirmation.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Etes-vous sûr(e) ?"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Done.Message_contactEmail:%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your deletion request has been successfully processed. You no longer have access to your account. If you have any questions, please contact us at %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre demande de suppression a bien été prise en compte. Vous n'avez plus accès à votre compte. En cas de question, veuillez nous contacter à %@"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Done.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deletion confirmed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suppression confirmée"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Farewell" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We’re sorry to see you go. We’d like to understand why you want to delete your community account."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nous sommes désolés de vous voir partir. Nous aimerions savoir pourquoi vous souhaitez supprimer votre compte communautaire."
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.MainText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete my community account"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer mon compte communautaire"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.OpenScreen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete my account"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer mon profil"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Reason.CommunityQuality" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The community's content and moderation don’t feel right for me"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je ne suis pas satisfait(e) de la modération ou de la qualité de la communauté"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Reason.ConfidentialityWorrying" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I am concerned about the privacy of my data"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je m’inquiète pour la confidentialité de mes données"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Reason.MissingKeyFeatures" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essential features are missing"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il manque des fonctionnalités essentielles"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Reason.NoMoreInterested" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I'm no longer interested in using the community"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le contenu de la communauté ne m'intéresse plus"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Reason.Other" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Reason.ReducingSnTime" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I want to spend less time on social networks"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je veux réduire mon temps passé sur les réseaux sociaux"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Reason.TechnicalIssues" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I am experiencing technical issues"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je rencontre des problèmes techniques"
+          }
+        }
+      }
+    },
+    "Settings.Profile.DeleteAccount.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account Deletion"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suppression du compte"
+          }
+        }
+      }
+    },
+    "Settings.Profile.Email" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My email:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mon email :"
+          }
+        }
+      }
+    },
+    "Settings.Report.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Go to the content you want to report (post, comment, or user).\n2. Tap the three dots in the top right corner of the item.\n3. Select \"Report\".\n4. Choose a reason from the list.\n5. Add a comment if needed, then confirm."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Allez sur le contenu que vous souhaitez signaler (message, commentaire ou un utilisateur).\n2. Appuyez sur les 3 petits points en haut à droite de l'élément à signaler.\n3. Choisissez l’option “Signaler”\n4. Indiquez la raison du signalement en sélectionnant une option dans la liste proposée.\n5. Ajoutez un commentaire si nécessaire, puis validez."
+          }
+        }
+      }
+    },
+    "Settings.Report.MainText" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to report a content?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment signaler un contenu ?"
+          }
+        }
+      }
+    },
+    "Settings.TermsOfUse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms of Use"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions Générales d’Utilisation"
+          }
+        }
+      }
+    },
+    "UnsupportedOS.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To access the community features, please update your iPhone to iOS 14 or later. Updating ensures you get the latest features, security updates, and the best experience!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour accéder aux fonctionnalités communautaires, veuillez mettre à jour votre iPhone vers iOS 14 ou une version ultérieure. Cela vous garantit la meilleure expérience avec les dernières fonctionnalités et mises à jour de sécurité."
+          }
+        }
+      }
+    },
+    "UnsupportedOS.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Required to Join the Community"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour requise pour rejoindre la communauté"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "D5CAF914-FBA3-43D1-86A7-6E682B74FBC2",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:..",
+        "identifier" : "DependencyInjectionTests",
+        "name" : "DependencyInjectionTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..",
+        "identifier" : "OctopusTests",
+        "name" : "OctopusTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..",
+        "identifier" : "OctopusCoreTests",
+        "name" : "OctopusCoreTests"
+      }
+    }
+  ],
+  "version" : 1
+}

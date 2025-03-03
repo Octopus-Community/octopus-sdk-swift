@@ -1,0 +1,151 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "< 16" : {
+
+    },
+    ">= 16" : {
+
+    },
+    "All App Managed Fields" : {
+
+    },
+    "App Login Flow" : {
+
+    },
+    "App Version: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version de l’app: %@"
+          }
+        }
+      }
+    },
+    "Avatar 1" : {
+
+    },
+    "Avatar 2" : {
+
+    },
+    "Bio" : {
+
+    },
+    "Bio:" : {
+
+    },
+    "Client User Config:" : {
+
+    },
+    "Custom theme" : {
+
+    },
+    "Customize the theme of the Octopus UI" : {
+
+    },
+    "Edit user" : {
+
+    },
+    "Edit your profile" : {
+
+    },
+    "Email" : {
+
+    },
+    "Email:" : {
+
+    },
+    "Email: %@" : {
+
+    },
+    "In order to test this, you must set your API key to OCTOPUS_SSO_API_KEY in secrets.xcconfig." : {
+
+    },
+    "In order to test this, your community should be configured to have all app managed fields." : {
+
+    },
+    "In order to test this, your community should be configured to have no app managed fields." : {
+
+    },
+    "Information about the age" : {
+
+    },
+    "Login" : {
+
+    },
+    "Logout" : {
+
+    },
+    "Modal" : {
+
+    },
+    "More" : {
+
+    },
+    "Nickname" : {
+
+    },
+    "Nickname:" : {
+
+    },
+    "No App Managed Fields" : {
+
+    },
+    "None" : {
+
+    },
+    "Not checked" : {
+
+    },
+    "Octo Tab" : {
+
+    },
+    "Open Octopus" : {
+
+    },
+    "Open Octopus Home Screen as full screen modal" : {
+
+    },
+    "Open on a sheet" : {
+
+    },
+    "Open the Octopus SDK in a non full screen sheet" : {
+
+    },
+    "Picture" : {
+
+    },
+    "Scenarios" : {
+
+    },
+    "SSO Connection" : {
+
+    },
+    "SSO Scenarios" : {
+
+    },
+    "This is your app's content" : {
+
+    },
+    "This is your app's login flow" : {
+
+    },
+    "Use your login system to let your user interact with the community" : {
+
+    },
+    "With all App Managed Fields" : {
+
+    }
+  },
+  "version" : "1.0"
+}

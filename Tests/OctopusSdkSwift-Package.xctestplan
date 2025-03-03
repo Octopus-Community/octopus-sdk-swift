@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "94F173AF-9C2F-466B-A0E7-8EE8F663C374",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "OctopusTests",
+        "name" : "OctopusTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "OctopusCoreTests",
+        "name" : "OctopusCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "DependencyInjectionTests",
+        "name" : "DependencyInjectionTests"
+      }
+    }
+  ],
+  "version" : 1
+}
