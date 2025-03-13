@@ -5,6 +5,7 @@
 import Foundation
 import CoreData
 import Combine
+import os
 import DependencyInjection
 
 extension Injected {
@@ -70,8 +71,9 @@ class CoreDataStack: InjectableObject, @unchecked Sendable {
 
         persistentContainer.loadPersistentStores { persistentStoreDescription, error in
             if let error {
-                print("Persistent store couldn't be loaded: \(error)" +
-                      "try to reset it at: \(persistentStoreDescription.url?.path ?? "URL not found")")
+                if #available(iOS 14, *) {
+                    Logger.other.debug("Persistent store couldn't be loaded: \(error) try to reset it at: \(persistentStoreDescription.url?.path ?? "URL not found")")
+                }
                 do {
                     if let storeUrl = persistentStoreDescription.url,
                        FileManager.default.fileExists(atPath: storeUrl.path) {
@@ -79,13 +81,13 @@ class CoreDataStack: InjectableObject, @unchecked Sendable {
                     }
                     try self.reset()
                 } catch {
-                    print("failed to delete Persistent store: \(error)")
+                    if #available(iOS 14, *) { Logger.other.debug("failed to delete Persistent store: \(error)") }
                 }
 
                 if retry {
                     self.load(inRam: inRam, retry: false)
                 } else {
-                    print("failed to delete Persistent store: \(error)")
+                    if #available(iOS 14, *) { Logger.other.debug("failed to delete Persistent store: \(error)") }
                 }
             }
         }

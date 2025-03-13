@@ -5,12 +5,15 @@
 import Foundation
 import Testing
 import OctopusUI
+import Octopus
+import UIKit
 
 @Suite(.disabled("Disabled because we only need that they compile"))
+@MainActor
 class APITests {
     @Test func testHomeScreen() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
-        _ = OctopusHomeScreen(octopus: octopus)
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        _ = OctopusHomeScreen(octopus: octopusSdk)
     }
 
     @Test func testOctopusThemeApi() async throws {
@@ -19,12 +22,13 @@ class APITests {
         var theme = OctopusTheme()
         // check that it is customizable
         theme = OctopusTheme(
-            colors: .init(accent: .red, textOnAccent: .white),
+            colors: .init(primarySet: .init(main: .red, lowContrast: .blue, highContrast: .yellow),
+                          onPrimary: .white),
             fonts: .init(),
             assets: .init(logo: UIImage()))
 
         // check that it can be passed as environment
-        _ = OctopusHomeScreen(octopus: octopus)
+        _ = OctopusHomeScreen(octopus: octopusSdk)
             .environment(\.octopusTheme, theme)
     }
 }

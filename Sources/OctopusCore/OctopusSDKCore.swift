@@ -14,6 +14,7 @@ public class OctopusSDKCore: ObservableObject {
     public let commentsRepository: CommentsRepository
     public let topicsRepository: TopicsRepository
     public let moderationRepository: ModerationRepository
+    public let externalLinksRepository: ExternalLinksRepository
 
     public let validators: Validators
 
@@ -52,6 +53,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { CommentsRepository(injector: $0) }
         injector.register { TopicsRepository(injector: $0) }
         injector.register { ModerationRepository(injector: $0) }
+        injector.register { ExternalLinksRepository(injector: $0, apiKey: apiKey) }
 
         // Feed
         injector.register { CommentFeedsStore(injector: $0) }
@@ -106,6 +108,7 @@ public class OctopusSDKCore: ObservableObject {
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
         validators = injector.getInjected(identifiedBy: Injected.validators)
         moderationRepository = injector.getInjected(identifiedBy: Injected.moderationRepository)
+        externalLinksRepository = injector.getInjected(identifiedBy: Injected.externalLinksRepository)
     }
 
     deinit {

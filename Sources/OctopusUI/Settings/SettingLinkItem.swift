@@ -27,7 +27,7 @@ struct SettingItem: View {
         Text(text, bundle: .module)
             .font(theme.fonts.body2)
             .fontWeight(.medium)
-            .foregroundColor(theme.colors.gray600)
+            .foregroundColor(theme.colors.gray900)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
     }

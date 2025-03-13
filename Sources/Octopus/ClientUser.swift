@@ -35,6 +35,7 @@ public struct ClientUser: Sendable {
         ///   - nickname: Nickname of your user. Default value is nil.
         ///   - bio: Description of your user. Default value is nil.
         ///   - picture: Picture data of your user. Default value is nil.
+        ///              This Data will be transformed into an UIImage using `UIImage(data:)` so it must be compatible.
         ///   - ageInformation: Age information of your user. Nil if unknown. Default value is nil.
         public init(nickname: String? = nil,
                     bio: String? = nil,

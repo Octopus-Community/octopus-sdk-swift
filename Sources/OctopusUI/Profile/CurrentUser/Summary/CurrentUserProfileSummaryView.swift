@@ -197,9 +197,9 @@ private struct ProfileContentView<PostsView: View>: View {
                                     .frame(width: 71, height: 71)
                                     .overlay(
                                         Image(systemName: "plus")
-                                            .foregroundColor(theme.colors.textOnAccent)
+                                            .foregroundColor(theme.colors.onPrimary)
                                             .padding(4)
-                                            .background(theme.colors.accent)
+                                            .background(theme.colors.primary)
                                             .clipShape(Circle())
                                             .frame(width: 20, height: 20)
                                             .offset(x: 26, y: 26)
@@ -214,13 +214,13 @@ private struct ProfileContentView<PostsView: View>: View {
                             Text("Profile.Edit.Button", bundle: .module)
                                 .font(theme.fonts.body2)
                                 .fontWeight(.medium)
-                                .foregroundColor(theme.colors.gray600)
+                                .foregroundColor(theme.colors.gray900)
                                 .padding(.vertical, 10)
                                 .padding(.horizontal, 12)
                         }
                         .background(
                             Capsule()
-                                .stroke(theme.colors.gray200, lineWidth: 1)
+                                .stroke(theme.colors.gray300, lineWidth: 1)
                         )
                         .padding(1)
                     }
@@ -228,12 +228,22 @@ private struct ProfileContentView<PostsView: View>: View {
                     Text(profile.nickname)
                         .font(theme.fonts.title1)
                         .fontWeight(.semibold)
-                        .foregroundColor(theme.colors.gray600)
+                        .foregroundColor(theme.colors.gray900)
+                        .modify {
+                            if #available(iOS 15.0, *) {
+                                $0.textSelection(.enabled)
+                            } else { $0 }
+                        }
                     Spacer().frame(height: 10)
                     if let bio = profile.bio?.nilIfEmpty {
                         Text(bio.cleanedBio)
                             .font(theme.fonts.body2)
-                            .foregroundColor(theme.colors.gray400)
+                            .foregroundColor(theme.colors.gray900)
+                            .modify {
+                                if #available(iOS 15.0, *) {
+                                    $0.textSelection(.enabled)
+                                } else { $0 }
+                            }
                     } else {
                         Button(action: openEditionWithBioFocused) {
                             HStack {
@@ -251,14 +261,14 @@ private struct ProfileContentView<PostsView: View>: View {
                                     .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2]))
 
                             )
-                            .foregroundColor(theme.colors.gray400)
+                            .foregroundColor(theme.colors.gray900)
                         }
                     }
                     Spacer().frame(height: 20)
                     CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)
                 }
                 .padding(.horizontal, 20)
-                theme.colors.gray200.frame(height: 1)
+                theme.colors.gray300.frame(height: 1)
                 postsView
             }
         }

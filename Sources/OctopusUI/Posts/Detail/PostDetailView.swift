@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import os
 import Octopus
 
 struct PostDetailView: View {
@@ -169,7 +170,7 @@ struct PostDetailView: View {
                     .environment(\.dismissModal, $viewModel.openCreateProfile)
             }
             .navigationBarHidden(true)
-            .accentColor(theme.colors.accent)
+            .accentColor(theme.colors.primary)
         }
         .modify {
             $0.navigationBarBackButtonHidden(commentHasChanges)
@@ -361,15 +362,15 @@ private struct PostDetailContentView: View {
                                     post.author.name.textView
                                         .font(theme.fonts.caption1)
                                         .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.gray600)
+                                        .foregroundColor(theme.colors.gray900)
                                 }
                                 Circle()
                                     .frame(width: 2, height: 2)
-                                    .foregroundColor(theme.colors.gray600)
+                                    .foregroundColor(theme.colors.gray900)
                                 Text(post.relativeDate)
                                     .font(theme.fonts.caption1)
                                     .fontWeight(.semibold)
-                                    .foregroundColor(theme.colors.gray400)
+                                    .foregroundColor(theme.colors.gray500)
                             }
                         }
                         Spacer()
@@ -406,22 +407,12 @@ private struct PostDetailContentView: View {
 
                     Spacer().frame(height: 10)
 
-                    Text(post.headline)
-                        .font(theme.fonts.title2)
-                        .fontWeight(.semibold)
-                        .lineSpacing(8)
-                        .foregroundColor(theme.colors.gray600)
-
-                    Spacer().frame(height: 20)
-
-                    if let text = post.text, !text.isEmpty {
-                        RichText(text)
-                            .font(theme.fonts.body2)
-                            .lineSpacing(8)
-                            .foregroundColor(theme.colors.gray600)
-
-                        Spacer().frame(height: 10)
-                    }
+                    RichText(post.text)
+                        .font(theme.fonts.body2)
+                        .lineSpacing(4)
+                        .foregroundColor(theme.colors.gray900)
+                    
+                    Spacer().frame(height: 10)
                 }.padding(.horizontal, 20)
                 if let image = post.image {
                     AsyncCachedImage(
@@ -436,7 +427,7 @@ private struct PostDetailContentView: View {
                         content: { imageToDisplay in
                             imageToDisplay
                                 .resizable()
-                                .frame(width: width, height: image.size.height * width / image.size.width)
+                                .frame(idealWidth: width, idealHeight: image.size.height * width / image.size.width)
                         })
                 }
 
@@ -444,7 +435,7 @@ private struct PostDetailContentView: View {
 
                 AggregatedInfoView(aggregatedInfo: post.aggregatedInfo, userInteractions: post.userInteractions,
                                    minChildCount: comments?.count,
-                                   childrenTapped: { },
+                                   childrenTapped: { openCreateComment() },
                                    likeTapped: togglePostLike)
                     .padding(.horizontal, 20)
             }
@@ -549,7 +540,7 @@ private struct CommentsView: View {
                         .frame(width: 100)
                         .frame(maxWidth: .infinity)
                         .onAppear {
-                            print("Loader appeared, loading previous items...")
+                            if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
                             loadPreviousComments()
                         }
                 }
@@ -568,11 +559,16 @@ private struct CommentsView: View {
         }
         .padding(.top, 20)
         .frame(maxHeight: .infinity)
-        .background(Rectangle()
+        .background(RoundedRectangle(cornerRadius: 20)
+            .stroke(theme.colors.gray300, lineWidth: 1)
+            .padding(.horizontal, -1)
             .foregroundColor(Color(.systemBackground))
-            .cornerRadius(20, corners: [.topLeft, .topRight])
-            .shadow(color: theme.colors.gray200, radius: 6, x: 0, y: 2)
-            .mask(Rectangle().padding(.top, -20))
+            .overlay(
+                Rectangle()
+                    .padding(.top, 20)
+                    .padding(.bottom, -1)
+                    .foregroundColor(Color(.systemBackground))
+            )
         )
     }
 }

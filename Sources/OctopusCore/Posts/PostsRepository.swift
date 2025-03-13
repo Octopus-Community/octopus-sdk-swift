@@ -14,31 +14,6 @@ extension Injected {
 }
 
 public class PostsRepository: InjectableObject, @unchecked Sendable {
-    public enum PostError: Error {
-        public enum FormField: Sendable {
-            case headline
-            case text
-            case picture
-        }
-
-        public enum FormErrorDetail: Sendable {
-            case unknown
-            case missingParent
-            case missingHeadline
-            case bannedWordUsed([String])
-            case maxCharLimitReached
-            case emptyFile
-            case fileSizeTooBig
-            case badFileFormat
-            case uploadIssue
-        }
-
-        case formError(ValidationErrors<FormField, FormErrorDetail>)
-        case serverError(ServerError)
-        case otherError(Error?)
-        case noNetwork
-    }
-
     public static let injectedIdentifier = Injected.postsRepository
 
     private let remoteClient: RemoteClient
@@ -47,6 +22,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let networkMonitor: NetworkMonitor
     private let commentFeedsStore: CommentFeedsStore
     private let blockedUserIdsProvider: BlockedUserIdsProvider
+    private let validator: Validators.Post
 
     public var postSentPublisher: AnyPublisher<Void, Never> {
         _postSentPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher()
@@ -64,6 +40,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
+        validator = injector.getInjected(identifiedBy: Injected.validators).post
 
         commentFeedsStore = injector.getInjected(identifiedBy: Injected.commentFeedsStore)
     }
@@ -135,10 +112,9 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
 
     @discardableResult
     public func send(_ post: WritablePost) async throws(SendPost.Error) -> (Post, Data?) {
-        // TODO: add usage of post validator
-//        guard validator.validate(comment: comment) else {
-//            throw .serverCall(.other(InternalError.objectMalformed))
-//        }
+        guard validator.validate(post: post) else {
+            throw .serverCall(.other(InternalError.objectMalformed))
+        }
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
 
         do {

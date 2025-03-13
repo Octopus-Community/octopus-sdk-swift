@@ -37,7 +37,7 @@ public protocol UserService {
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeleteMyProfileResponse
 
-    func reportUser(profileId: String, reasons: [Com_Octopuscommunity_StatusReasonCode],
+    func reportUser(profileId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                     authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportUserResponse
 
@@ -141,7 +141,7 @@ class UserServiceClient: ServiceClient, UserService {
         }
     }
 
-    func reportUser(profileId: String, reasons: [Com_Octopuscommunity_StatusReasonCode],
+    func reportUser(profileId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                     authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportUserResponse {
         let request = Com_Octopuscommunity_ReportUserRequest.with {

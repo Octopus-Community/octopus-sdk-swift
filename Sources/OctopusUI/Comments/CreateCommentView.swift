@@ -84,7 +84,7 @@ private struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            theme.colors.gray200.frame(height: 1)
+            theme.colors.gray300.frame(height: 1)
             Spacer().frame(height: 8)
             HStack(alignment: .top) {
                 Button(action: userProfileTapped) {
@@ -98,11 +98,11 @@ private struct ContentView: View {
                                 .multilineTextAlignment(.leading)
                                 .lineLimit(picture != nil ? 4 : 5)
                                 .focused($textFocused)
-                                .foregroundColor(theme.colors.gray600)
+                                .foregroundColor(theme.colors.gray900)
                                 .placeholder(when: text.isEmpty) {
                                     Text("Comment.Create.Text.Placeholder", bundle: .module)
                                         .multilineTextAlignment(.leading)
-                                        .foregroundColor(theme.colors.gray400)
+                                        .foregroundColor(theme.colors.gray700)
                                 }
                                 .font(theme.fonts.body2)
                         } else {
@@ -111,11 +111,11 @@ private struct ContentView: View {
                                 .multilineTextAlignment(.leading)
                                 .lineLimit(picture != nil ? 4 : 5)
                                 .focused($textFocused)
-                                .foregroundColor(theme.colors.gray600)
+                                .foregroundColor(theme.colors.gray900)
                                 .placeholder(when: text.isEmpty) {
                                     Text("Comment.Create.Text.Placeholder", bundle: .module)
                                         .multilineTextAlignment(.leading)
-                                        .foregroundColor(theme.colors.gray400)
+                                        .foregroundColor(theme.colors.gray700)
                                 }
                                 .font(theme.fonts.body2)
                         }
@@ -151,7 +151,7 @@ private struct ContentView: View {
                     .padding(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(theme.colors.gray200, lineWidth: 1)
+                            .stroke(theme.colors.gray300, lineWidth: 1)
                             .onTapGesture {
                                 textFocused = true
                             }
@@ -190,6 +190,7 @@ private struct ContentView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 24, height: 24)
                         .padding(.vertical, 8)
+                        .foregroundColor(theme.colors.gray900)
                 }
                 Spacer()
                 Button(action: {
@@ -199,18 +200,18 @@ private struct ContentView: View {
                 }) {
                     HStack(spacing: 8) {
                         if isLoading {
-                            Compat.ProgressView(tint: theme.colors.textOnAccent)
+                            Compat.ProgressView(tint: theme.colors.onPrimary)
                         }
                         Text("Comment.Create.Button", bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
-                            .foregroundColor(theme.colors.textOnAccent)
+                            .foregroundColor(theme.colors.onPrimary)
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 6)
                     .background(
                         Capsule().foregroundColor(
-                            sendAvailable && !isLoading ? theme.colors.accent : theme.colors.disabled)
+                            sendAvailable && !isLoading ? theme.colors.primary : theme.colors.disabled)
                     )
                 }.disabled(!sendAvailable || isLoading)
                     .modify {

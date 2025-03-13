@@ -12,8 +12,13 @@ struct CustomThemeCell: View {
     @ObservedObject var model: SampleModel
 
     /// Create a custom theme
-    let appTheme = OctopusTheme(colors: .init(accent: .CustomTheme.Colors.accent),
-                                assets: .init(logo: UIImage(resource: .CustomTheme.appLogo)))
+    let appTheme = OctopusTheme(
+        colors: .init(
+            primarySet: OctopusTheme.Colors.ColorSet(
+                main: .Scenarios.CustomTheme.Colors.primary,
+                lowContrast: .Scenarios.CustomTheme.Colors.primaryLow,
+                highContrast: .Scenarios.CustomTheme.Colors.primaryHigh)),
+        assets: .init(logo: UIImage(resource: .Scenarios.CustomTheme.appLogo)))
 
     @State private var showModal = false
 

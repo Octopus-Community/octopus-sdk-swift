@@ -7,14 +7,14 @@ import Combine
 import Octopus
 import OctopusCore
 import UIKit
+import os
 
 @MainActor
 class PostDetailViewModel: ObservableObject {
 
     struct Post: Equatable {
         let uuid: String
-        let headline: String
-        let text: String?
+        let text: String
         let image: ImageMedia?
         let author: Author
         let relativeDate: String
@@ -171,25 +171,35 @@ class PostDetailViewModel: ObservableObject {
                 let onAppearAction: () -> Void
                 let onDisappearAction: () -> Void
                 if !hasMoreData && idx == commentsCount - 1 {
-                    print("Setting autorefresh actions on \(String(describing: comment.text))")
+                    if #available(iOS 14, *) {
+                        Logger.comments.trace("Setting autorefresh actions on \(String(describing: comment.text))")
+                    }
                     onAppearAction = { [weak self] in
-                        print("Will start autorefresh comments list due to latest comment being displayed")
+                        if #available(iOS 14, *) {
+                            Logger.comments.trace("Will start autorefresh comments list due to latest comment being displayed")
+                        }
                         self?.shouldFetchLatestComments.send(true)
                         self?.queueFetchAdditionalData(id: comment.uuid)
                         self?.visibleCommentIds.insert(comment.uuid)
                     }
                     onDisappearAction = { [weak self] in
-                        print("Will stop autorefresh comments list due to latest comment being displayed")
+                        if #available(iOS 14, *) {
+                            Logger.comments.trace("Will stop autorefresh comments list due to latest comment being displayed")
+                        }
                         self?.shouldFetchLatestComments.send(false)
                         self?.dequeueFetchAdditionalData(id: comment.uuid)
                         self?.visibleCommentIds.remove(comment.uuid)
                     }
                 } else if idx == max(commentsCount - 10, 0), hasMoreData {
-                    print("Setting refresh actions on \(String(describing: comment.text))")
+                    if #available(iOS 14, *) {
+                        Logger.comments.trace("Setting autorefresh actions on \(String(describing: comment.text))")
+                    }
                     onAppearAction = { [weak self] in
                         guard let self else { return }
                         if !hideLoadMoreCommentsLoader {
-                            print("Will refresh comments list due to trigger")
+                            if #available(iOS 14, *) {
+                                Logger.comments.trace("Will refresh comments list due to trigger")
+                            }
                             loadPreviousComments()
                         }
                         queueFetchAdditionalData(id: comment.uuid)
@@ -231,7 +241,7 @@ class PostDetailViewModel: ObservableObject {
             }
             if self.comments != newComments {
                 self.comments = newComments
-                print("Comments list updated done")
+                if #available(iOS 14, *) { Logger.comments.trace("Comments list updated done") }
             }
         }.store(in: &storage)
 
@@ -339,7 +349,7 @@ class PostDetailViewModel: ObservableObject {
         feed.$hasMoreData
             .removeDuplicates()
             .sink { [unowned self] in
-                print("Feed has more data: \($0)")
+                if #available(iOS 14, *) { Logger.comments.trace("Feed has more data: \($0)") }
                 hasMoreData = $0
             }.store(in: &feedStorage)
 
@@ -433,7 +443,7 @@ class PostDetailViewModel: ObservableObject {
 
     private func startAutoFetchLatestComments() {
         guard autoFetchLatestCommentsTask == nil else {
-            print("startAutoFetchLatestComments called multiple times")
+            if #available(iOS 14, *) { Logger.comments.trace("startAutoFetchLatestComments called multiple times") }
             return
         }
         guard let newestFirstCommentsFeed else { return }
@@ -461,7 +471,7 @@ class PostDetailViewModel: ObservableObject {
             do {
                 try await feed.fetchAll()
             } catch {
-                print("Error: \(error)")
+                if #available(iOS 14, *) { Logger.comments.debug("Error: \(error)") }
             }
             if scrollToBottom {
                 DispatchQueue.main.async {
@@ -477,7 +487,7 @@ class PostDetailViewModel: ObservableObject {
         autoFetchLatestCommentsCancellable = newestFirstCommentsFeed.$items
             .sink { [unowned self] in
                 guard let newestComments = $0 else { return }
-                let newCommentList = merge(oldestFirstCommentsFeedItems: modelComments ?? [],
+                let newCommentList = merge(oldestFirstCommentsFeedItems: feed?.items ?? [],
                                            newestFirstCommentsFeedItems: newestComments)
                 if newCommentList != modelComments ?? [] {
                     modelComments = newCommentList
@@ -625,7 +635,7 @@ class PostDetailViewModel: ObservableObject {
         do {
             try await feed.refresh(pageSize: 10)
         } catch {
-            print("Error while refreshing posts feed: \(error)")
+            if #available(iOS 14, *) { Logger.comments.debug("Error while refreshing posts feed: \(error)") }
             if isManual {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
@@ -659,7 +669,7 @@ class PostDetailViewModel: ObservableObject {
             do {
                 try await feed.loadPreviousItems(pageSize: 50)
             } catch {
-                print("Error while loading posts feed previous items: \(error)")
+                if #available(iOS 14, *) { Logger.comments.debug("Error while loading posts feed previous items: \(error)") }
                 if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
                    self.error = error.displayableMessage
                }
@@ -746,7 +756,6 @@ class PostDetailViewModel: ObservableObject {
 extension PostDetailViewModel.Post {
     init(from post: Post, thisUserProfileId: String?, topic: Topic, dateFormatter: RelativeDateTimeFormatter) {
         uuid = post.uuid
-        headline = post.headline
         text = post.text
         author = .init(profile: post.author)
         relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())

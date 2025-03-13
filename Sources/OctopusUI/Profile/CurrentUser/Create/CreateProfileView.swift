@@ -30,6 +30,8 @@ struct CreateProfileView: View {
                         ageInformation: viewModel.ageInformation,
                         nicknameError: viewModel.nicknameError, birthDateError: viewModel.birthDateError,
                         birthDateFormatter: viewModel.birthDateFormatter,
+                        termsOfUseUrl: viewModel.termsOfUse, privacyPolicyUrl: viewModel.privacyPolicy,
+                        communityGuidelinesUrl: viewModel.communityGuidelines, contactUsUrl: viewModel.contactUs,
                         createProfile: viewModel.createProfile)
             Button(action: {
                 dismissModal.wrappedValue = false
@@ -77,6 +79,10 @@ private struct ContentView: View {
     let nicknameError: DisplayableString?
     let birthDateError: DisplayableString?
     let birthDateFormatter: DateFormatter
+    let termsOfUseUrl: URL
+    let privacyPolicyUrl: URL
+    let communityGuidelinesUrl: URL
+    let contactUsUrl: URL
     let createProfile: () -> Void
 
     @State private var displayableBirthDate: Date?
@@ -101,7 +107,7 @@ private struct ContentView: View {
                     Text("Profile.Create.Title", bundle: .module)
                         .font(theme.fonts.title2)
                         .fontWeight(.semibold)
-                        .foregroundColor(theme.colors.gray600)
+                        .foregroundColor(theme.colors.gray900)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
                     Spacer().frame(height: 18)
@@ -109,7 +115,7 @@ private struct ContentView: View {
                     Text("Profile.Create.Nickname.Description", bundle: .module)
                         .font(theme.fonts.caption2)
                         .fontWeight(.bold)
-                        .foregroundColor(theme.colors.gray600)
+                        .foregroundColor(theme.colors.gray700)
                         .multilineTextAlignment(.leading)
 
                     Spacer().frame(height: 10)
@@ -118,6 +124,7 @@ private struct ContentView: View {
                         birthdateFocused = true
                     }
                     .font(theme.fonts.body2)
+                    .foregroundColor(theme.colors.gray900)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
                     .modify {
@@ -130,11 +137,11 @@ private struct ContentView: View {
                     .padding(.vertical, 14)
                     .padding(.horizontal, 8)
                     .focused($nicknameFocused)
-                    .background(canEditNickname ? Color.clear : theme.colors.gray200)
+                    .background(canEditNickname ? Color.clear : theme.colors.gray300)
                     .cornerRadius(16)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(nicknameFocused && canEditNickname ? theme.colors.gray600 : theme.colors.gray200,
+                            .stroke(nicknameFocused && canEditNickname ? theme.colors.gray900 : theme.colors.gray300,
                                     lineWidth: nicknameFocused && canEditNickname ? 2 : 1)
                     )
                     .disabled(!canEditNickname)
@@ -142,7 +149,7 @@ private struct ContentView: View {
                     Spacer().frame(height: 6)
                     Text("Profile.Create.Nickname.Explanation", bundle: .module)
                         .font(theme.fonts.caption2)
-                        .foregroundColor(theme.colors.gray500)
+                        .foregroundColor(theme.colors.gray700)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -171,7 +178,7 @@ private struct ContentView: View {
                         Text("Profile.Create.BirthDate.Description", bundle: .module)
                             .font(theme.fonts.caption2)
                             .fontWeight(.bold)
-                            .foregroundColor(theme.colors.gray600)
+                            .foregroundColor(theme.colors.gray900)
                             .multilineTextAlignment(.leading)
 
                         Spacer().frame(height: 10)
@@ -183,14 +190,15 @@ private struct ContentView: View {
                         .placeholder(when: displayableBirthDate == nil) {
                             Text("Profile.Create.BirthDate.Placeholder", bundle: .module)
                                 .multilineTextAlignment(.leading)
-                                .foregroundColor(theme.colors.gray200)
+                                .foregroundColor(theme.colors.gray500)
                         }
                         .font(theme.fonts.body2)
+                        .foregroundColor(theme.colors.gray900)
                         .padding(.vertical, 14)
                         .padding(.horizontal, 8)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(birthdateFocused ? theme.colors.gray600 : theme.colors.gray200,
+                                .stroke(birthdateFocused ? theme.colors.gray900 : theme.colors.gray300,
                                         lineWidth: birthdateFocused ? 2 : 1)
 
                         )
@@ -199,7 +207,7 @@ private struct ContentView: View {
                         Spacer().frame(height: 6)
                         Text("Profile.Create.BirthDate.Explanation", bundle: .module)
                             .font(theme.fonts.caption2)
-                            .foregroundColor(theme.colors.gray500)
+                            .foregroundColor(theme.colors.gray700)
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .fixedSize(horizontal: false, vertical: true)
@@ -223,24 +231,24 @@ private struct ContentView: View {
                         if let attrStr = try? AttributedString(markdown: string) {
                             Text(attrStr)
                                 .font(theme.fonts.caption1)
-                                .foregroundColor(theme.colors.gray400)
+                                .foregroundColor(theme.colors.gray700)
                                 .tint(theme.colors.link)
                                 .environment(\.openURL, OpenURLAction { url in
                                     if url.host == termsOfUseKey {
-                                        UIApplication.shared.open(ExternalLinks.termsOfUse)
+                                        UIApplication.shared.open(termsOfUseUrl)
                                     } else if url.host == privacyPolicyKey {
-                                        UIApplication.shared.open(ExternalLinks.privacyPolicy)
+                                        UIApplication.shared.open(privacyPolicyUrl)
                                     } else if url.host == communityGuidelinesKey {
-                                        UIApplication.shared.open(ExternalLinks.communityGuidelines)
+                                        UIApplication.shared.open(communityGuidelinesUrl)
                                     }
                                     return .handled
                                 })
                         }
                     } else {
-                        Compat.Link(destination: ExternalLinks.communityGuidelines) {
+                        Compat.Link(destination: communityGuidelinesUrl) {
                             Text("Profile.Create.Legal", bundle: .module)
                                 .font(theme.fonts.caption1)
-                                .foregroundColor(theme.colors.gray400)
+                                .foregroundColor(theme.colors.gray700)
                                 .multilineTextAlignment(.leading)
                         }
                     }
@@ -257,14 +265,14 @@ private struct ContentView: View {
             if !isLoading {
                 Button(action: createProfile) {
                     Text("Profile.Create.Button", bundle: .module)
-                        .foregroundColor(theme.colors.textOnAccent)
+                        .foregroundColor(theme.colors.onPrimary)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .fill(continueButtonAvailable ?
-                                      theme.colors.accent :
-                                        theme.colors.accent.opacity(0.3))
+                                      theme.colors.primary :
+                                        theme.colors.primary.opacity(0.3))
                         )
                 }
                 .disabled(!continueButtonAvailable)
@@ -277,23 +285,23 @@ private struct ContentView: View {
             if #available(iOS 15.0, *) {
                 Text("Profile.Create.ContactUs.Link", bundle: .module)
                     .font(theme.fonts.caption1)
-                    .foregroundColor(theme.colors.gray400)
+                    .foregroundColor(theme.colors.gray700)
                     .tint(theme.colors.link)
                     .environment(\.openURL, OpenURLAction { url in
-                        UIApplication.shared.open(ExternalLinks.reportIssue)
+                        UIApplication.shared.open(contactUsUrl)
                         return .handled
                     })
             } else {
-                Compat.Link(destination: ExternalLinks.reportIssue) {
+                Compat.Link(destination: contactUsUrl) {
                     Text("Profile.Create.ContactUs.NoLink", bundle: .module)
                         .font(theme.fonts.caption1)
-                        .foregroundColor(theme.colors.gray400)
+                        .foregroundColor(theme.colors.gray700)
                         .multilineTextAlignment(.leading)
                 }
             }
             if !(nicknameFocused || birthdateFocused) {
                 Spacer().frame(height: 6)
-                theme.colors.gray200.frame(height: 1)
+                theme.colors.gray300.frame(height: 1)
                 Spacer().frame(height: 10)
 
                 HStack {
@@ -303,7 +311,7 @@ private struct ContentView: View {
                         .frame(width: 17, height: 16)
                     Text("Common.PoweredByOctopus", bundle: .module)
                         .font(theme.fonts.caption2)
-                        .foregroundColor(theme.colors.gray400)
+                        .foregroundColor(theme.colors.gray700)
                 }.frame(maxWidth: .infinity)
             }
         }

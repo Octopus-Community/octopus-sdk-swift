@@ -33,16 +33,16 @@ struct RootFeedPicker: View {
                             .fontWeight(.medium)
                             .foregroundColor(
                                 selectedRootFeed == rootFeed ?
-                                    theme.colors.textOnAccent :
-                                    theme.colors.accent
+                                    theme.colors.onPrimary :
+                                    theme.colors.primary
                             )
                             .padding(10)
                             .background(
                                 Capsule()
                                     .foregroundColor(
                                         selectedRootFeed == rootFeed ?
-                                            theme.colors.accent :
-                                            theme.colors.accent.opacity(0.1)
+                                            theme.colors.primary :
+                                            theme.colors.primary.opacity(0.1)
                                     )
                             )
                             .padding(6)

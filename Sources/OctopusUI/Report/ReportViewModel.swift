@@ -21,13 +21,13 @@ class ReportViewModel: ObservableObject {
         self.context = context
     }
 
-    func moderate(reasons: [ModerationReason]) {
+    func report(reasons: [ReportReason]) {
         Task {
-            await moderate(reasons: reasons)
+            await report(reasons: reasons)
         }
     }
 
-    private func moderate(reasons: [ModerationReason]) async {
+    private func report(reasons: [ReportReason]) async {
         moderationInProgress = true
         do {
             switch context {

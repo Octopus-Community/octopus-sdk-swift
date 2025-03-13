@@ -10,37 +10,71 @@ import UIKit
 public struct OctopusTheme: Sendable {
     /// Colors of the theme
     public struct Colors: Sendable {
+        public struct ColorSet: Sendable {
+            /// Main color
+            public let main: Color
+            /// Main color with a lower contrast
+            public let lowContrast: Color
+            /// Main color with a higher contrast
+            public let highContrast: Color
+            
+            /// Constructor
+            /// - Parameters:
+            ///   - main: the main color
+            ///   - lowContrast: the low contrast variant of the main color
+            ///   - highContrast: the high contrast variant of the main color
+            public init(
+                main: Color,
+                lowContrast: Color,
+                highContrast: Color
+            ) {
+                self.main = main
+                self.lowContrast = lowContrast
+                self.highContrast = highContrast
+            }
+        }
         // Editable values
-        /// Accent color
-        public let accent: Color
-        /// Color of the text displayed over a view with accent color
-        public let textOnAccent: Color
+        /// Primary color
+        public let primary: Color
+        /// Primary color with a lower contrast
+        public let primaryLowContrast: Color
+        /// Primary color with a higher contrast
+        public let primaryHighContrast: Color
+        /// Color of the text displayed over a view with primary color
+        public let onPrimary: Color
 
         // Non editable values
+        public let gray100: Color = Color.Theme.gray300
         public let gray200: Color = Color.Theme.gray200
-        public let gray400: Color = Color.Theme.gray400
+        public let gray300: Color = Color.Theme.gray300
         public let gray500: Color = Color.Theme.gray500
-        public let gray600: Color = Color.Theme.gray600
+        public let gray700: Color = Color.Theme.gray700
+        public let gray800: Color = Color.Theme.gray800
+        public let gray900: Color = Color.Theme.gray900
 
         /// Color for disabled elements
-        public let disabled: Color = Color.Theme.gray400
+        public let disabled: Color = Color.Theme.gray500
         /// Color for elements that represents an error
         public let error: Color = Color.Theme.danger200
         /// Color of links
         public let link: Color = Color.Theme.link
-        /// Colors of the like button when the content is liked
+        /// Color of the like button when the content is liked
         public let like: Color = Color.Theme.danger200
+        /// Background color of the screens that are placed above others
+        public let hover: Color = Color.Theme.hover
 
         /// Constructor of colors
         /// - Parameters:
-        ///   - accent: the accent color. Nil if you want the default value to be used.
-        ///   - textOnAccent: the color of the text displayed over a view with accent color.
-        ///                   Nil if you want the default value to be used.
+        ///   - primarySet: the primary color set. Nil if you want the default value to be used.
+        ///   - onPrimary: the color of a content displayed over a view with the primary color.
+        ///                Nil if you want the default value to be used.
         public init(
-            accent: Color? = nil,
-            textOnAccent: Color? = nil) {
-                self.accent = accent ?? Color.Theme.accent
-                self.textOnAccent = textOnAccent ?? Color.Theme.gray100
+            primarySet: ColorSet? = nil,
+            onPrimary: Color? = nil) {
+                self.primary = primarySet?.main ?? Color.Theme.Primary.main
+                self.primaryLowContrast = primarySet?.lowContrast ?? Color.Theme.Primary.lowContrast
+                self.primaryHighContrast = primarySet?.highContrast ?? Color.Theme.Primary.highContrast
+                self.onPrimary = onPrimary ?? Color.Theme.gray100
             }
     }
 

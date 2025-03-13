@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import os
 import Octopus
 import Combine
 
@@ -65,8 +66,8 @@ public struct OctopusHomeScreen: View {
                     )
                     .onAppear {
                         if presentationMode.wrappedValue.isPresented && !isPresentedModally {
-                            print("⚠️ You are trying to push the OctopusHomeScreen from a screen that already has a " +
-                                  "navigation bar.")
+                            Logger.general.warning(
+                                "⚠️ You are trying to push the OctopusHomeScreen from a screen that already has a navigation bar.")
                         }
                     }
             } else {
@@ -86,7 +87,7 @@ public struct OctopusHomeScreen: View {
                     )
             }
         }
-        .accentColor(theme.colors.accent)
+        .accentColor(theme.colors.primary)
     }
 }
 

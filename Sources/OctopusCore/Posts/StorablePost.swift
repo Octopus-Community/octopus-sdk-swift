@@ -8,8 +8,7 @@ import SwiftProtobuf
 
 struct StorablePost: Equatable {
     let uuid: String
-    let headline: String
-    let text: String?
+    let text: String
     let medias: [Media]
     let author: MinimalProfile?
     let creationDate: Date
@@ -27,7 +26,6 @@ struct StorablePost: Equatable {
 extension StorablePost {
     init(from entity: PostEntity) {
         uuid = entity.uuid
-        headline = entity.headline
         text = entity.text
         medias = entity.medias.compactMap { Media(from: $0) }
         author = MinimalProfile(from: entity)
@@ -49,8 +47,7 @@ extension StorablePost {
         }
         uuid = octoPost.id
         let post = octoPost.content.post
-        headline = post.headline
-        text = post.hasText ? post.text.nilIfEmpty : nil
+        text = post.text
         if post.hasMedia {
             var mutableMedias = [Media]()
             if post.media.hasVideo, let videoMedia = Media(from: post.media.video, kind: .video) {
@@ -90,7 +87,6 @@ extension StorablePost {
 
     init(from post: Post) {
         uuid = post.uuid
-        headline = post.headline
         text = post.text
         medias = post.medias
         author = post.author

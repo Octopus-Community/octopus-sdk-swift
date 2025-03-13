@@ -25,7 +25,7 @@ public class ModerationRepository: InjectableObject, @unchecked Sendable {
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
     }
 
-    public func reportContent(contentId: String, reasons: [ModerationReason]) async throws(AuthenticatedActionError) {
+    public func reportContent(contentId: String, reasons: [ReportReason]) async throws(AuthenticatedActionError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             _ = try await remoteClient.octoService.reportContent(
@@ -43,7 +43,7 @@ public class ModerationRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    public func reportUser(profileId: String, reasons: [ModerationReason]) async throws(AuthenticatedActionError) {
+    public func reportUser(profileId: String, reasons: [ReportReason]) async throws(AuthenticatedActionError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             _ = try await remoteClient.userService.reportUser(

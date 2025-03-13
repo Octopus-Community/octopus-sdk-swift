@@ -32,7 +32,7 @@ struct ConnectionRouter: ViewModifier {
                         .environment(\.dismissModal, $viewModel.openCreateProfile)
                 }
                 .navigationBarHidden(true)
-                .accentColor(theme.colors.accent)
+                .accentColor(theme.colors.primary)
             }
             .alert(
                 "Common.Error",

@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import GrpcModels
 import SwiftProtobuf
 import DependencyInjection
@@ -95,19 +96,19 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
         guard networkMonitor.connectionAvailable else {
             throw .noNetwork
         }
-        print("Get initial feed with page size \(pageSize).")
+        if #available(iOS 14, *) { Logger.feed.trace("Get initial feed with page size \(pageSize)") }
         do {
             let response = try await remoteClient.feedService.initializeFeed(
                 feedId: feedId, pageSize: 100,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
-            print("Initialize feed done. Got \(response.items.count) results")
+            if #available(iOS 14, *) { Logger.feed.trace("Initialize feed done. Got \(response.items.count) results") }
             let nextPageCursor = try await saveFeedItemInfosResponse(response, feedId: feedId, replaceInDb: true)
 
             let feedItemInfos = try await feedsDatabase.feedItemInfos(feedId: feedId, pageSize: pageSize, lastPageIdx: 0)
             let feedItemInfoIds = feedItemInfos.map { $0.itemId }
             let missingFeedItems = try await feedItemsDatabase.getMissingFeedItems(infos: feedItemInfos)
             if !missingFeedItems.isEmpty {
-                print("Missing \(missingFeedItems.count) feedItems, fetching them")
+                if #available(iOS 14, *) { Logger.feed.trace("Missing \(missingFeedItems.count) feedItems, fetching them") }
                 let batchResponse = try await remoteClient.octoService.getBatch(
                     ids: missingFeedItems,
                     options: getOptions,
@@ -134,7 +135,7 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
                 hasMoreItems = true
             }
 
-            print("Got \(feedItemInfoIds.count) feedItems from DB")
+            if #available(iOS 14, *) { Logger.feed.trace("Got \(feedItemInfoIds.count) feedItems from DB") }
             return Result(hasMoreItems: hasMoreItems, currentPageCursor: nil, nextPageCursor: nextPageCursor,
                           itemsPublisher: feedItemsPublisher)
         } catch {
@@ -154,25 +155,29 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
         do {
             var newNextPageCursor = nextPageCursor
             let lastPageIdx = currentIds.count
-            print("Get feed with cursor \(nextPageCursor ?? "nil") from \(lastPageIdx) to \(lastPageIdx + pageSize)")
+            if #available(iOS 14, *) {
+                Logger.feed.trace("Get feed with cursor \(nextPageCursor ?? "nil") from \(lastPageIdx) to \(lastPageIdx + pageSize)")
+            }
             var feedItemInfos = try await feedsDatabase.feedItemInfos(feedId: feedId, pageSize: pageSize, lastPageIdx: lastPageIdx)
             if feedItemInfos.count < pageSize, let nextPageCursor { // TODO: add a while to get all missing pages
-                print("Not enough feed itemInfos \(feedItemInfos.count) for page, fetching next page")
+                if #available(iOS 14, *) {
+                    Logger.feed.trace("Not enough feed itemInfos \(feedItemInfos.count) for page, fetching next page")
+                }
                 let response: Com_Octopuscommunity_GetFeedPageResponse
                 response = try await remoteClient.feedService.getNextFeedPage(
                     pageCursor: nextPageCursor, pageSize: 100,
                     authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
-                print("Get next feed page done. Got \(response.items.count) results")
+                if #available(iOS 14, *) { Logger.feed.trace("Get next feed page done. Got \(response.items.count) results") }
 
                 newNextPageCursor = try await saveFeedItemInfosResponse(response, feedId: feedId, replaceInDb: false)
                 feedItemInfos = try await feedsDatabase.feedItemInfos(feedId: feedId, pageSize: pageSize, lastPageIdx: lastPageIdx)
-                print("Got \(feedItemInfos.count) feedItemsInfos from DB")
+                if #available(iOS 14, *) { Logger.feed.trace("Got \(feedItemInfos.count) feedItemsInfos from DB") }
             }
 
             let feedItemInfoIds = feedItemInfos.map { $0.itemId }
             let missingFeedItems = try await feedItemsDatabase.getMissingFeedItems(infos: feedItemInfos)
             if !missingFeedItems.isEmpty {
-                print("Missing \(missingFeedItems.count) feedItems, fetching them")
+                if #available(iOS 14, *) { Logger.feed.trace("Missing \(missingFeedItems.count) feedItems, fetching them") }
                 let batchResponse = try await remoteClient.octoService.getBatch(
                     ids: missingFeedItems,
                     options: getOptions,
@@ -199,7 +204,7 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
                 hasMoreItems = true
             }
 
-            print("Got \(feedItemInfoIds.count) feedItems from DB")
+            if #available(iOS 14, *) { Logger.feed.trace("Got \(feedItemInfoIds.count) feedItems from DB") }
             return Result(hasMoreItems: hasMoreItems, currentPageCursor: nextPageCursor,
                           nextPageCursor: newNextPageCursor, itemsPublisher: feedItemsPublisher)
         } catch {

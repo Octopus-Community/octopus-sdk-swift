@@ -28,7 +28,7 @@ struct DateTextField: View {
                                     doneAction()
                                 }) {
                                     Text("Common.Done", bundle: .module)
-                                        .foregroundColor(theme.colors.accent)
+                                        .foregroundColor(theme.colors.primary)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                             } else {

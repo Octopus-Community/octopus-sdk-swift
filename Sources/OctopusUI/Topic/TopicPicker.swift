@@ -31,16 +31,16 @@ struct TopicPicker: View {
                             .fontWeight(.medium)
                             .foregroundColor(
                                 selectedTopic == topic ?
-                                    theme.colors.textOnAccent :
-                                    theme.colors.accent
+                                    theme.colors.onPrimary :
+                                    theme.colors.primary
                             )
                             .padding(10)
                             .background(
                                 Capsule()
                                     .foregroundColor(
                                         selectedTopic == topic ?
-                                            theme.colors.accent :
-                                            theme.colors.accent.opacity(0.1)
+                                            theme.colors.primary :
+                                            theme.colors.primaryLowContrast
                                     )
                             )
                             .padding(6)

@@ -34,7 +34,7 @@ struct ReportView: View {
         ContentView(
             isAboutContent: viewModel.context.isContent,
             moderationInProgress: viewModel.moderationInProgress,
-            report: viewModel.moderate(reasons:))
+            report: viewModel.report(reasons:))
         .navigationBarTitle(
             Text(viewModel.context.isContent ? "Moderation.Content.Title" : "Moderation.Profile.Title",
                  bundle: .module),
@@ -82,36 +82,18 @@ private struct ContentView: View {
 
     let isAboutContent: Bool
     let moderationInProgress: Bool
-    let report: ([ModerationReason]) -> Void
+    let report: ([ReportReason]) -> Void
 
-    @State private var selectedReasons: [ModerationReason] = []
+    @State private var selectedReasons: [ReportReason] = []
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
                 Spacer().frame(height: 20)
-                theme.colors.gray200.frame(height: 1)
+                theme.colors.gray300.frame(height: 1)
                 Spacer().frame(height: 20)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        HStack(alignment: .top, spacing: 12) {
-                            Image(.Settings.warning)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 20, height: 20)
-                                .foregroundColor(theme.colors.error)
-
-                            Text(isAboutContent ? "Moderation.Content.MainText" : "Moderation.Profile.MainText",
-                                 bundle: .module)
-                                .font(theme.fonts.body2)
-                                .fontWeight(.medium)
-                                .foregroundColor(theme.colors.error)
-                                .multilineTextAlignment(.leading)
-                            Spacer()
-                        }
-
-                        Spacer().frame(height: 20)
-
                         Text(isAboutContent ? "Moderation.Content.Explanation" : "Moderation.Profile.Explanation",
                              bundle: .module)
                         .font(theme.fonts.body2)
@@ -122,14 +104,14 @@ private struct ContentView: View {
                         Spacer().frame(height: 30)
 
                         VStack(spacing: 16) {
-                            ForEach(ModerationReason.allCases, id: \.self) {
+                            ForEach(ReportReason.allCases, id: \.self) {
                                 ReasonCell(reason: $0, selectedReasons: $selectedReasons)
                             }
                         }
                         .padding()
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(theme.colors.gray200, lineWidth: 1)
+                                .stroke(theme.colors.gray300, lineWidth: 1)
                         )
 
                         Spacer(minLength: 30)
@@ -138,14 +120,14 @@ private struct ContentView: View {
                 }
                 Button(action: { report(selectedReasons) }) {
                     Text("Common.Continue", bundle: .module)
-                        .foregroundColor(theme.colors.textOnAccent)
+                        .foregroundColor(theme.colors.onPrimary)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .fill(!selectedReasons.isEmpty ?
-                                      theme.colors.accent :
-                                        theme.colors.accent.opacity(0.3))
+                                      theme.colors.primary :
+                                        theme.colors.primary.opacity(0.3))
                         )
                 }
                 .padding(.horizontal, 20)
@@ -173,8 +155,8 @@ private struct ContentView: View {
 private struct ReasonCell: View {
     @Environment(\.octopusTheme) private var theme
 
-    let reason: ModerationReason
-    @Binding var selectedReasons: [ModerationReason]
+    let reason: ReportReason
+    @Binding var selectedReasons: [ReportReason]
 
     @State private var isOn: Bool = false
 
@@ -193,7 +175,7 @@ private struct ReasonCell: View {
                     .multilineTextAlignment(.leading)
                 Spacer()
             }
-            .foregroundColor(theme.colors.gray600)
+            .foregroundColor(theme.colors.gray900)
         }
     }
 }

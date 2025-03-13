@@ -58,11 +58,11 @@ struct SettingsListView: View {
                                isActive: $openProfile) {
                     EmptyView()
                 }.hidden()
-                NavigationLink(destination: SettingsAboutView(),
+                NavigationLink(destination: SettingsAboutView(octopus: viewModel.octopus),
                                isActive: $openAbout) {
                     EmptyView()
                 }.hidden()
-                NavigationLink(destination: SettingsHelpView(),
+                NavigationLink(destination: SettingsHelpView(octopus: viewModel.octopus),
                                isActive: $openHelp) {
                     EmptyView()
                 }.hidden()
@@ -105,19 +105,19 @@ private struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 20)
-            theme.colors.gray200
+            theme.colors.gray300
                 .frame(height: 1)
             Spacer().frame(height: 20)
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     if octopusOwnedProfile {
                         SettingItemView(imageResource: .Settings.account, titleKey: "Settings.Profile",
-                                        color: theme.colors.gray600, action: openProfile)
+                                        color: theme.colors.gray900, action: openProfile)
                     }
                     SettingItemView(imageResource: .Settings.info, titleKey: "Settings.About",
-                                    color: theme.colors.gray600, action: openAbout)
+                                    color: theme.colors.gray900, action: openAbout)
                     SettingItemView(imageResource: .Settings.help, titleKey: "Settings.Help",
-                                    color: theme.colors.gray600, action: openHelp)
+                                    color: theme.colors.gray900, action: openHelp)
                     if octopusOwnedProfile {
                         SettingItemView(imageResource: .Settings.logout, titleKey: "Settings.LogOut.Button",
                                         color: theme.colors.error, isLoading: logoutInProgress, action: logout)

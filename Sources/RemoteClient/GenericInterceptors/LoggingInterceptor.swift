@@ -8,6 +8,7 @@ import SwiftProtobuf
 import NIOCore
 import NIOPosix
 import NIOHPACK
+import os
 
 class LoggingInterceptor<Request, Response>: ClientInterceptor<Request, Response>, @unchecked Sendable {
     let verbose: Bool = false
@@ -20,20 +21,21 @@ class LoggingInterceptor<Request, Response>: ClientInterceptor<Request, Response
             context.receive(part)
             return
         }
-        switch part {
-        case .metadata(let metadata):
-            print("\n📥 Response Metadata:")
-            print(metadata)
+        if #available(iOS 14, *) {
+            switch part {
+            case .metadata(let metadata):
+                Logger.received.trace("\n📥 Response Metadata: \(metadata)")
 
-        case .message(let message):
-            print("\n📥 Response Message:")
-            print("Type: \(type(of: message))")
-            print("Content: \(message)")
+            case .message(let message):
+                Logger.received.trace("\n📥 Response Message:")
+                Logger.received.trace("Type: \(type(of: message))")
+                Logger.received.trace("Content: \("\(message)")")
 
-        case .end(let status, let trailers):
-            print("\n🏁 Response End")
-            print("Status: \(status)")
-            print("Trailers: \(trailers)")
+            case .end(let status, let trailers):
+                Logger.received.trace("\n🏁 Response End")
+                Logger.received.trace("Status: \(status)")
+                Logger.received.trace("Trailers: \(trailers)")
+            }
         }
 
         context.receive(part)
@@ -48,18 +50,19 @@ class LoggingInterceptor<Request, Response>: ClientInterceptor<Request, Response
             context.send(part, promise: promise)
             return
         }
-        switch part {
-        case .metadata(let metadata):
-            print("🚀 Request Metadata:")
-            print(metadata)
+        if #available(iOS 14, *) {
+            switch part {
+            case .metadata(let metadata):
+                Logger.sent.trace("🚀 Request Metadata: \(metadata)")
 
-        case .message(let message, _):
-            print("\n📤 Request Message:")
-            print("Type: \(type(of: message))")
-            print("Content: \(message)")
+            case .message(let message, _):
+                Logger.sent.trace("\n📤 Request Message:")
+                Logger.sent.trace("Type: \(type(of: message))")
+                Logger.sent.trace("Content: \("\(message)")")
 
-        case .end:
-            print("\n🏁 Request End")
+            case .end:
+                Logger.sent.trace("\n🏁 Request End")
+            }
         }
 
         context.send(part, promise: promise)

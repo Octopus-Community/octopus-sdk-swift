@@ -6,6 +6,7 @@ import Foundation
 import SwiftUI
 import Combine
 import UIKit
+import os
 
 private final class Loader: ObservableObject, @unchecked Sendable {
     static let verbose: Bool = false
@@ -30,24 +31,37 @@ private final class Loader: ObservableObject, @unchecked Sendable {
         cache.getFile(url: url) { [weak self] cachedImage in
             guard let self else { return }
             guard let cachedImage else {
-                if Self.verbose { print("getting image \(url.imageIdentifier) from server") }
+                if #available(iOS 14, *) {
+                    if Self.verbose {
+                        Logger.images.trace("getting image \(self.url.imageIdentifier) from server")
+                    }
+                }
                 fetchImageFromRemote()
                 return
             }
-            if Self.verbose { print("setting image \(url.imageIdentifier) from cache") }
+            if #available(iOS 14, *) {
+                if Self.verbose { Logger.images.trace("setting image \(self.url.imageIdentifier) from cache") }
+            }
+
             self.image = cachedImage
         }
     }
 
     private func fetchImageFromRemote() {
-        if Self.verbose { print("Downloading \(url.imageIdentifier) at: \(url) at \(Date())") }
+        if #available(iOS 14, *) {
+            if Self.verbose { Logger.images.trace("Downloading \(self.url.imageIdentifier) at: \(self.url) at \(Date())") }
+        }
         session.dataTaskPublisher(for: url)
             .map { result -> URLSession.DataTaskPublisher.Output? in result}
             .replaceError(with: nil)
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] result in
                 guard let result, let image = UIImage(data: result.data) else { return }
-                if Self.verbose { print("Image \(url.imageIdentifier) received at \(Date()), storing it in cache") }
+                if #available(iOS 14, *) {
+                    if Self.verbose {
+                        Logger.images.trace("Image \(self.url.imageIdentifier) received at \(Date()), storing it in cache")
+                    }
+                }
                 try? cache.store(ImageAndData(imageData: result.data, image: image), url: url)
                 self.image = image
             }

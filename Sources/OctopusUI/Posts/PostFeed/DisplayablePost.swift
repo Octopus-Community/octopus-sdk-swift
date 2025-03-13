@@ -13,8 +13,7 @@ struct DisplayablePost: Equatable {
     }
 
     struct PostContent: Equatable {
-        let headline: String
-        let text: String?
+        let text: String
         let image: ImageMedia?
         let textIsEllipsized: Bool
         let aggregatedInfo: AggregatedInfo
@@ -22,8 +21,7 @@ struct DisplayablePost: Equatable {
         let liveMeasures: AnyPublisher<LiveMeasures, Never>
 
         static func == (lhs: DisplayablePost.PostContent, rhs: DisplayablePost.PostContent) -> Bool {
-            return lhs.headline == rhs.headline &&
-            lhs.text == rhs.text &&
+            return lhs.text == rhs.text &&
             lhs.image == rhs.image &&
             lhs.textIsEllipsized == rhs.textIsEllipsized &&
             lhs.aggregatedInfo == rhs.aggregatedInfo &&
@@ -51,11 +49,17 @@ extension DisplayablePost {
 
         case .published, .other:
             canBeOpened = true
+
+            // Display max 200 chars and 4 new lines.
+            let displayableText = String(post.text.prefix(200))
+                .split(separator: "\n")
+                .prefix(4)
+                .joined(separator: "\n")
+
             content = .published(PostContent(
-                headline: post.headline,
-                text: post.text.map { String($0.prefix(200)) },
+                text: displayableText,
                 image: ImageMedia(from: post.medias.first(where: { $0.kind == .image })),
-                textIsEllipsized: (post.text?.count ?? 0) > 200,
+                textIsEllipsized: post.text != displayableText,
 //                aggregatedInfo: post.aggregatedInfo,
 //                userInteractions: post.userInteractions,
                 aggregatedInfo: .empty,

@@ -7,7 +7,6 @@ import GrpcModels
 
 public enum SendPost {
     public enum Field: Sendable {
-        case headline
         case text
         case picture
     }
@@ -15,7 +14,7 @@ public enum SendPost {
     public enum ErrorDetail: Sendable {
         case unknown
         case missingParent
-        case missingHeadline
+        case missingText
         case bannedWordUsed([String])
         case maxCharLimitReached
         case emptyFile
@@ -32,7 +31,6 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
          var dictionary = [DisplayKind: [ValidationErrors.Error]]()
          for error in failure.errors {
              let display: ValidationErrors.DisplayKind = switch error.field {
-             case .contentHeadline:          .linkedToField(.headline)
              case .contentText:              .linkedToField(.text)
              case .contentFile:              .linkedToField(.picture)
              case .contentParent:            .alert // not used for the moment
@@ -40,7 +38,7 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
              }
              let detail: ErrorDetail = switch error.details {
              case .missingParent:                   .missingParent
-             case .missingHeadline:                 .missingHeadline
+             case .missingText:                     .missingText
              case let .bannedWordUsed(bannedWords): .bannedWordUsed(bannedWords.words)
              case .maxCharLimitReached:             .maxCharLimitReached
              case .emptyFile:                       .emptyFile

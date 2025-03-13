@@ -96,7 +96,7 @@ struct ProfileSummaryView: View {
                     .environment(\.dismissModal, $viewModel.openCreateProfile)
             }
             .navigationBarHidden(true)
-            .accentColor(theme.colors.accent)
+            .accentColor(theme.colors.primary)
         }
         .navigationBarItems(
             trailing:
@@ -258,18 +258,29 @@ private struct ProfileContentView<PostsView: View>: View {
                     Text(profile.nickname ?? "")
                         .font(theme.fonts.title1)
                         .fontWeight(.semibold)
-                        .foregroundColor(theme.colors.gray600)
+                        .foregroundColor(theme.colors.gray900)
+                        .modify {
+                            if #available(iOS 15.0, *) {
+                                $0.textSelection(.enabled)
+                            } else { $0 }
+                        }
+
                     Spacer().frame(height: 10)
                     if let bio = profile.bio?.nilIfEmpty {
                         Text(bio)
                             .font(theme.fonts.body2)
-                            .foregroundColor(theme.colors.gray400)
+                            .foregroundColor(theme.colors.gray500)
+                            .modify {
+                                if #available(iOS 15.0, *) {
+                                    $0.textSelection(.enabled)
+                                } else { $0 }
+                            }
                     }
                     Spacer().frame(height: 20)
                     CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)
                 }
                 .padding(.horizontal, 20)
-                theme.colors.gray200.frame(height: 1)
+                theme.colors.gray300.frame(height: 1)
                 postsView
             }
         }

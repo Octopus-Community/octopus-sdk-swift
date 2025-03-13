@@ -6,8 +6,7 @@ import Foundation
 
 public struct Post: Equatable, Sendable {
     public let uuid: String
-    public let headline: String
-    public let text: String?
+    public let text: String
     public let medias: [Media]
     public let author: MinimalProfile?
     public let creationDate: Date
@@ -37,7 +36,6 @@ public struct Post: Equatable, Sendable {
 extension Post {
     init(storablePost: StorablePost, commentFeedsStore: CommentFeedsStore) {
         uuid = storablePost.uuid
-        headline = storablePost.headline
         text = storablePost.text
         medias = storablePost.medias
         author = storablePost.author

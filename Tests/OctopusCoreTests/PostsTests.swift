@@ -27,6 +27,7 @@ class PostsTests: XCTestCase {
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { CommentFeedsStore(injector: $0) }
+        injector.register { _ in Validators(appManagedFields: []) }
         injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
 
         postsRepository = PostsRepository(injector: injector)
@@ -47,12 +48,12 @@ class PostsTests: XCTestCase {
             }.store(in: &storage)
 
         injectPutPost(StorablePost(
-            uuid: "newPost", headline: "My Post", text: nil, medias: [],
+            uuid: "newPost", text: "My Post", medias: [],
             author: .init(uuid: "me", nickname: "Me", avatarUrl: nil), creationDate: Date(), updateDate: Date(),
             status: .published, statusReasons: [],
             parentId: "topicId",
             descCommentFeedId: nil, ascCommentFeedId: nil, aggregatedInfo: nil, userLikeId: nil))
-        let post = WritablePost(topicId: "topicId", headline: "My Post", text: "My Comment", imageData: nil)
+        let post = WritablePost(topicId: "topicId", text: "My Post", imageData: nil)
         try await postsRepository.send(post)
 
         await fulfillment(of: [sendExpectation], timeout: 0.5)
@@ -70,7 +71,7 @@ class PostsTests: XCTestCase {
             }.store(in: &storage)
 
         injectGetPost(
-            .init(uuid: "1", headline: "First Post", text: "Desc", medias: [],
+            .init(uuid: "1", text: "First Post", medias: [],
                   author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
@@ -84,7 +85,7 @@ class PostsTests: XCTestCase {
     func testGetPostIsFilteredOutIfAuthorIsBlocked() async throws {
         // precondition: a post with an author is in the db
         try await postsDatabase.upsert(posts: [
-            .init(uuid: "1", headline: "First Post", text: "Desc", medias: [],
+            .init(uuid: "1", text: "First Post", medias: [],
                   author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
@@ -122,7 +123,7 @@ class PostsTests: XCTestCase {
 
     func testDeletePost() async throws {
         try await postsDatabase.upsert(posts: [
-            .init(uuid: "1", headline: "First Post", text: "Desc", medias: [],
+            .init(uuid: "1", text: "First Post", medias: [],
                   author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
@@ -197,10 +198,7 @@ class PostsTests: XCTestCase {
             }
             $0.content = .with {
                 $0.post = .with {
-                    $0.headline = item.headline
-                    if let text = item.text {
-                        $0.text = text
-                    }
+                    $0.text = item.text
                     $0.media = .with {
                         $0.images = [
                             .with {

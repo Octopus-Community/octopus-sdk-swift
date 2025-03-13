@@ -65,9 +65,9 @@ struct AppEditUserView: View {
             if displayAge {
                 Text("Information about the age")
                 Picker("", selection: $ageInformation) {
-                    Text("Not checked").tag(nil as ClientUser.AgeInformation?)
-                    Text(">= 16").tag(ClientUser.AgeInformation.legalAgeReached)
-                    Text("< 16").tag(ClientUser.AgeInformation.underaged)
+                    Text("Not checked").tag(nil as AppUser.AgeInfo?)
+                    Text(">= 16").tag(AppUser.AgeInfo.moreThan16)
+                    Text("< 16").tag(AppUser.AgeInfo.lessThan16)
                 }
                 .pickerStyle(.segmented)
             }

@@ -7,8 +7,7 @@ import CoreData
 
 @objc(PostEntity)
 class PostEntity: OctoObjectEntity {
-    @NSManaged public var headline: String
-    @NSManaged public var text: String?
+    @NSManaged public var text: String
     @NSManaged public var mediasRelationship: NSOrderedSet
 
     var medias: [MediaEntity] {

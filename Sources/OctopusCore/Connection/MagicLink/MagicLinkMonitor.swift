@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import DependencyInjection
 import RemoteClient
 import GRPC
@@ -54,7 +55,9 @@ class MagicLinkMonitorDefault: MagicLinkMonitor, InjectableObject, @unchecked Se
         .sink { [unowned self] connectionAvailable, magicLinkData in
             guard connectionAvailable else { return }
             if let magicLinkData {
-                print("Connection and magic link waiting for confirmation, subscribing to stream.")
+                if #available(iOS 14, *) {
+                    Logger.connection.trace("Connection and magic link waiting for confirmation, subscribing to stream.")
+                }
                 let stream = remoteClient.magicLinkStreamService.subscribe(magicLinkId: magicLinkData.magicLinkId,
                                                                                 email: magicLinkData.email)
                 magicLinkSubscription?.cancel()
@@ -65,16 +68,16 @@ class MagicLinkMonitorDefault: MagicLinkMonitor, InjectableObject, @unchecked Se
                         if let grpcError = error as? GRPC.GRPCStatus, grpcError.code == .cancelled {
                             // nothing to do, it is normal
                         } else {
-                            print("Error during magic link subsription: \(error)")
+                            if #available(iOS 14, *) { Logger.connection.debug("Error during magic link subsription: \(error)") }
                             // TODO: shouldn't we start it again?
                         }
                     }
                     // TODO: shouldn't we start it again?
-                    print("Subscription suspended because stream ended.")
+                    if #available(iOS 14, *) { Logger.connection.trace("Subscription suspended because stream ended.") }
                     magicLinkSubscription?.cancel()
                 }
             } else {
-                print("Stream suspended because no magic link data.")
+                if #available(iOS 14, *) { Logger.connection.trace("Stream suspended because no magic link data.") }
                 magicLinkSubscription?.cancel()
             }
         }.store(in: &storage)
@@ -102,7 +105,7 @@ class MagicLinkMonitorDefault: MagicLinkMonitor, InjectableObject, @unchecked Se
                                                                                       email: magicLinkData.email)
                         magicLinkAuthenticationResponse = response
                     } catch {
-                        print("Error during magic link automatic result fetching: \(error)")
+                        if #available(iOS 14, *) { Logger.connection.debug("Error during magic link automatic result fetching: \(error)") }
                     }
                 }
             }.store(in: &storage)
@@ -115,7 +118,6 @@ class MagicLinkMonitorDefault: MagicLinkMonitor, InjectableObject, @unchecked Se
     private func listenForMagicLinkConfirmationUpdates(
         stream: any AsyncSequenceOf<Com_Octopuscommunity_IsAuthenticatedResponse>) async throws {
             for try await response in stream {
-                print("Response streamed: \(response)")
                 magicLinkAuthenticationResponse = (response as! Com_Octopuscommunity_IsAuthenticatedResponse)
             }
     }

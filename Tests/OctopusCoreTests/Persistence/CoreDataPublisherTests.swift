@@ -34,7 +34,7 @@ class CoreDataPublisherTests {
 
         let postEntity = PostEntity(context: context)
         postEntity.uuid = "PostID"
-        postEntity.headline = "Headline"
+        postEntity.text = "Text"
         postEntity.authorId = "AuthorId"
         postEntity.authorNickname = "Author"
         postEntity.creationTimestamp = 0

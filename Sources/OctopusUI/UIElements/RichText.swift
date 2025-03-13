@@ -19,6 +19,7 @@ struct RichText: View {
                 markdown: text,
                 options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text))
                 .tint(theme.colors.link)
+                .textSelection(.enabled)
         } else {
             Text(text)
         }

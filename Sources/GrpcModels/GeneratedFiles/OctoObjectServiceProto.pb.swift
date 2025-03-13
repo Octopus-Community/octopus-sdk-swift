@@ -184,12 +184,12 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
 
     public var details: Com_Octopuscommunity_UpdatePostResponse.Error.OneOf_Details? = nil
 
-    public var missingHeadline: Com_Octopuscommunity_ErrorDetails.MissingHeadline {
+    public var missingText: Com_Octopuscommunity_ErrorDetails.MissingText {
       get {
-        if case .missingHeadline(let v)? = details {return v}
-        return Com_Octopuscommunity_ErrorDetails.MissingHeadline()
+        if case .missingText(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.MissingText()
       }
-      set {details = .missingHeadline(newValue)}
+      set {details = .missingText(newValue)}
     }
 
     public var bannedWordUsed: Com_Octopuscommunity_ErrorDetails.BannedWordUsed {
@@ -243,7 +243,7 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_Details: Equatable, Sendable {
-      case missingHeadline(Com_Octopuscommunity_ErrorDetails.MissingHeadline)
+      case missingText(Com_Octopuscommunity_ErrorDetails.MissingText)
       case bannedWordUsed(Com_Octopuscommunity_ErrorDetails.BannedWordUsed)
       case maxCharLimitReached(Com_Octopuscommunity_ErrorDetails.MaxCharLimitReached)
       case emptyFile(Com_Octopuscommunity_ErrorDetails.EmptyFile)
@@ -257,13 +257,10 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
       public typealias RawValue = Int
       case unknown // = 0
 
-      ///MissingHeadline, BannedWordUsed, MaxCharLimitReached
-      case contentHeadline // = 2
+      ///MissingText, BannedWordUsed, MaxCharLimitReached
+      case contentText // = 2
 
-      ///BannedWordUsed, MaxCharLimitReached
-      case contentText // = 3
-
-      ///EmptyFile, FileSizeTooBig, BadFileFormat, UploadIssue
+      /// field 3 was "CONTENT_TEXT = 3;", now removed
       case contentFile // = 4
       case UNRECOGNIZED(Int)
 
@@ -274,8 +271,7 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
       public init?(rawValue: Int) {
         switch rawValue {
         case 0: self = .unknown
-        case 2: self = .contentHeadline
-        case 3: self = .contentText
+        case 2: self = .contentText
         case 4: self = .contentFile
         default: self = .UNRECOGNIZED(rawValue)
         }
@@ -284,8 +280,7 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
       public var rawValue: Int {
         switch self {
         case .unknown: return 0
-        case .contentHeadline: return 2
-        case .contentText: return 3
+        case .contentText: return 2
         case .contentFile: return 4
         case .UNRECOGNIZED(let i): return i
         }
@@ -294,7 +289,6 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
       // The compiler won't synthesize support with the UNRECOGNIZED case.
       public static let allCases: [Com_Octopuscommunity_UpdatePostResponse.Error.Field] = [
         .unknown,
-        .contentHeadline,
         .contentText,
         .contentFile,
       ]
@@ -874,12 +868,12 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
       set {details = .missingParent(newValue)}
     }
 
-    public var missingHeadline: Com_Octopuscommunity_ErrorDetails.MissingHeadline {
+    public var missingText: Com_Octopuscommunity_ErrorDetails.MissingText {
       get {
-        if case .missingHeadline(let v)? = details {return v}
-        return Com_Octopuscommunity_ErrorDetails.MissingHeadline()
+        if case .missingText(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.MissingText()
       }
-      set {details = .missingHeadline(newValue)}
+      set {details = .missingText(newValue)}
     }
 
     public var bannedWordUsed: Com_Octopuscommunity_ErrorDetails.BannedWordUsed {
@@ -934,7 +928,7 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
 
     public enum OneOf_Details: Equatable, Sendable {
       case missingParent(Com_Octopuscommunity_ErrorDetails.MissingParent)
-      case missingHeadline(Com_Octopuscommunity_ErrorDetails.MissingHeadline)
+      case missingText(Com_Octopuscommunity_ErrorDetails.MissingText)
       case bannedWordUsed(Com_Octopuscommunity_ErrorDetails.BannedWordUsed)
       case maxCharLimitReached(Com_Octopuscommunity_ErrorDetails.MaxCharLimitReached)
       case emptyFile(Com_Octopuscommunity_ErrorDetails.EmptyFile)
@@ -951,13 +945,10 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
       ///MissingParent
       case contentParent // = 1
 
-      ///MissingHeadline, BannedWordUsed, MaxCharLimitReached
-      case contentHeadline // = 2
+      ///MissingText, BannedWordUsed, MaxCharLimitReached
+      case contentText // = 2
 
-      ///BannedWordUsed, MaxCharLimitReached
-      case contentText // = 3
-
-      ///EmptyFile, FileSizeTooBig, BadFileFormat, UploadIssue
+      /// field 3 was "CONTENT_TEXT = 3;", now removed
       case contentFile // = 4
       case UNRECOGNIZED(Int)
 
@@ -969,8 +960,7 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
         switch rawValue {
         case 0: self = .unknown
         case 1: self = .contentParent
-        case 2: self = .contentHeadline
-        case 3: self = .contentText
+        case 2: self = .contentText
         case 4: self = .contentFile
         default: self = .UNRECOGNIZED(rawValue)
         }
@@ -980,8 +970,7 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
         switch self {
         case .unknown: return 0
         case .contentParent: return 1
-        case .contentHeadline: return 2
-        case .contentText: return 3
+        case .contentText: return 2
         case .contentFile: return 4
         case .UNRECOGNIZED(let i): return i
         }
@@ -991,7 +980,6 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
       public static let allCases: [Com_Octopuscommunity_PutPostResponse.Error.Field] = [
         .unknown,
         .contentParent,
-        .contentHeadline,
         .contentText,
         .contentFile,
       ]
@@ -1046,7 +1034,7 @@ public struct Com_Octopuscommunity_ErrorDetails: Sendable {
     public init() {}
   }
 
-  public struct MissingHeadline: Sendable {
+  public struct MissingText: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1253,7 +1241,7 @@ public struct Com_Octopuscommunity_ReportContentRequest: Sendable {
 
   public var octoObjectID: String = String()
 
-  public var reasonCodes: [Com_Octopuscommunity_StatusReasonCode] = []
+  public var reasonCodes: [Com_Octopuscommunity_ReportReasonCode] = []
 
   public var customReason: String {
     get {return _customReason ?? String()}
@@ -1560,7 +1548,7 @@ extension Com_Octopuscommunity_UpdatePostResponse.Error: SwiftProtobuf.Message, 
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "message"),
     2: .same(proto: "field"),
-    102: .same(proto: "missingHeadline"),
+    102: .same(proto: "missingText"),
     103: .same(proto: "bannedWordUsed"),
     104: .same(proto: "maxCharLimitReached"),
     105: .same(proto: "emptyFile"),
@@ -1578,16 +1566,16 @@ extension Com_Octopuscommunity_UpdatePostResponse.Error: SwiftProtobuf.Message, 
       case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self._field) }()
       case 102: try {
-        var v: Com_Octopuscommunity_ErrorDetails.MissingHeadline?
+        var v: Com_Octopuscommunity_ErrorDetails.MissingText?
         var hadOneofValue = false
         if let current = self.details {
           hadOneofValue = true
-          if case .missingHeadline(let m) = current {v = m}
+          if case .missingText(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.details = .missingHeadline(v)
+          self.details = .missingText(v)
         }
       }()
       case 103: try {
@@ -1685,8 +1673,8 @@ extension Com_Octopuscommunity_UpdatePostResponse.Error: SwiftProtobuf.Message, 
       try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
     } }()
     switch self.details {
-    case .missingHeadline?: try {
-      guard case .missingHeadline(let v)? = self.details else { preconditionFailure() }
+    case .missingText?: try {
+      guard case .missingText(let v)? = self.details else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
     }()
     case .bannedWordUsed?: try {
@@ -1730,8 +1718,7 @@ extension Com_Octopuscommunity_UpdatePostResponse.Error: SwiftProtobuf.Message, 
 extension Com_Octopuscommunity_UpdatePostResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNKNOWN"),
-    2: .same(proto: "CONTENT_HEADLINE"),
-    3: .same(proto: "CONTENT_TEXT"),
+    2: .same(proto: "CONTENT_TEXT"),
     4: .same(proto: "CONTENT_FILE"),
   ]
 }
@@ -2682,7 +2669,7 @@ extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.Message, Swi
     1: .same(proto: "message"),
     2: .same(proto: "field"),
     101: .same(proto: "missingParent"),
-    102: .same(proto: "missingHeadline"),
+    102: .same(proto: "missingText"),
     103: .same(proto: "bannedWordUsed"),
     104: .same(proto: "maxCharLimitReached"),
     105: .same(proto: "emptyFile"),
@@ -2713,16 +2700,16 @@ extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.Message, Swi
         }
       }()
       case 102: try {
-        var v: Com_Octopuscommunity_ErrorDetails.MissingHeadline?
+        var v: Com_Octopuscommunity_ErrorDetails.MissingText?
         var hadOneofValue = false
         if let current = self.details {
           hadOneofValue = true
-          if case .missingHeadline(let m) = current {v = m}
+          if case .missingText(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.details = .missingHeadline(v)
+          self.details = .missingText(v)
         }
       }()
       case 103: try {
@@ -2824,8 +2811,8 @@ extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.Message, Swi
       guard case .missingParent(let v)? = self.details else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 101)
     }()
-    case .missingHeadline?: try {
-      guard case .missingHeadline(let v)? = self.details else { preconditionFailure() }
+    case .missingText?: try {
+      guard case .missingText(let v)? = self.details else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
     }()
     case .bannedWordUsed?: try {
@@ -2870,8 +2857,7 @@ extension Com_Octopuscommunity_PutPostResponse.Error.Field: SwiftProtobuf._Proto
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "UNKNOWN"),
     1: .same(proto: "CONTENT_PARENT"),
-    2: .same(proto: "CONTENT_HEADLINE"),
-    3: .same(proto: "CONTENT_TEXT"),
+    2: .same(proto: "CONTENT_TEXT"),
     4: .same(proto: "CONTENT_FILE"),
   ]
 }
@@ -2965,8 +2951,8 @@ extension Com_Octopuscommunity_ErrorDetails.BannedWordUsed: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_ErrorDetails.MissingHeadline: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".MissingHeadline"
+extension Com_Octopuscommunity_ErrorDetails.MissingText: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".MissingText"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2978,7 +2964,7 @@ extension Com_Octopuscommunity_ErrorDetails.MissingHeadline: SwiftProtobuf.Messa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.MissingHeadline, rhs: Com_Octopuscommunity_ErrorDetails.MissingHeadline) -> Bool {
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.MissingText, rhs: Com_Octopuscommunity_ErrorDetails.MissingText) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

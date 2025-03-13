@@ -4,26 +4,33 @@
 
 import Foundation
 import SwiftUI
+import Octopus
 import OctopusCore
 
 struct SettingsAboutView: View {
     @Environment(\.octopusTheme) private var theme
 
+    @Compat.StateObject private var viewModel: LinksProviderViewModel
+
+    init(octopus: OctopusSDK) {
+        _viewModel = Compat.StateObject(wrappedValue: LinksProviderViewModel(octopus: octopus))
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 20)
-            theme.colors.gray200.frame(height: 1)
+            theme.colors.gray300.frame(height: 1)
             Spacer().frame(height: 20)
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     SettingLinkItem(text: "Settings.CommunityGuidelines",
-                                    url: ExternalLinks.communityGuidelines)
+                                    url: viewModel.communityGuidelines)
 
                     SettingLinkItem(text: "Settings.PrivacyPolicy",
-                                    url: ExternalLinks.privacyPolicy)
+                                    url: viewModel.privacyPolicy)
 
                     SettingLinkItem(text: "Settings.TermsOfUse",
-                                    url: ExternalLinks.termsOfUse)
+                                    url: viewModel.termsOfUse)
                 }
             }
         }

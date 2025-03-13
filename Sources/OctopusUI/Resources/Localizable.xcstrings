@@ -102,7 +102,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Answer"
+            "value" : "Reply"
           }
         },
         "fr" : {
@@ -134,7 +134,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete this comment"
+            "value" : "Delete my comment"
           }
         },
         "fr" : {
@@ -150,7 +150,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Do you really want to delete this comment. This action cannot be undone."
+            "value" : "Are you sure you want to delete this comment? This action cannot be undone."
           }
         },
         "fr" : {
@@ -205,7 +205,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Etes-vous sûr de vouloir quitter l'édition ? Le contenu sera perdu."
+            "value" : "Êtes-vous sûr de vouloir quitter l'édition ? Le contenu sera perdu."
           }
         }
       }
@@ -330,13 +330,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ok"
+            "value" : "OK"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ok"
+            "value" : "OK"
           }
         }
       }
@@ -406,7 +406,7 @@
       }
     },
     "Connection.MagicLink.Description" : {
-      "comment" : "Subtitle of the connection screen. Param is the community name.",
+      "comment" : "Subtitle of the connection screen. ",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -473,23 +473,6 @@
         }
       }
     },
-    "Connection.MagicLink.Send.Error.NoNetwork" : {
-      "comment" : "Error displayed when there is no network (internet access not available)",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No network connection. Please check your internet connection."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pas de connexion internet. Veuillez vérifier votre connexion."
-          }
-        }
-      }
-    },
     "Connection.MagicLink.Send.Error.UnknownError" : {
       "comment" : "Unknown error during magic link process",
       "localizations" : {
@@ -519,7 +502,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Essayer avec une autre adresse"
+            "value" : "Essayez une autre adresse email"
           }
         }
       }
@@ -553,23 +536,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le lien de connexion est expiré. Merci d’en demander un nouveau."
-          }
-        }
-      }
-    },
-    "Connection.MagicLink.Sent.Error.NoNetwork" : {
-      "comment" : "Error displayed when there is no network (internet access not available)",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No network connection. Please check your internet connection."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pas de connexion internet. Veuillez vérifier votre connexion."
           }
         }
       }
@@ -608,7 +574,7 @@
       }
     },
     "Connection.MagicLink.Sent.Explanation_email:%@" : {
-      "comment" : "Explanation of the magic link email check screen",
+      "comment" : "Explanation of the magic link email check screen. Param is the email of the user",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -619,7 +585,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nous avons envoyé un e-mail à %@ avec un lien sur lequel vous pouvez cliquer pour vous connecter. Assurez-vous de cliquer sur le lien en utilisant cet appareil."
+            "value" : "Nous avons envoyé un email à %@ avec un lien sur lequel vous pouvez cliquer pour vous connecter. Assurez-vous de cliquer sur le lien en utilisant cet appareil."
           }
         }
       }
@@ -691,6 +657,86 @@
         }
       }
     },
+    "Content.AggregatedInfo.Comment" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commenter"
+          }
+        }
+      }
+    },
+    "Content.AggregatedInfo.Like" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Like"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "J'aime"
+          }
+        }
+      }
+    },
+    "Content.AggregatedInfo.View" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "-"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "-"
+          }
+        }
+      }
+    },
+    "Content.AggregatedInfo.View.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View count"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre de vues"
+          }
+        }
+      }
+    },
+    "Content.Create.AddPicture" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo"
+          }
+        }
+      }
+    },
     "Error.NoNetwork" : {
       "comment" : "Error displayed when there is no network (internet access not available)",
       "localizations" : {
@@ -730,7 +776,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oups, something went wrong. Please try again later."
+            "value" : "Oops, an error occurred. Please try again later."
           }
         },
         "fr" : {
@@ -762,7 +808,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Thank you, your report has been acknowledged and will be processed by our team."
+            "value" : "Thank you, your report has been received and will be handled by our team."
           }
         },
         "fr" : {
@@ -810,29 +856,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "We would like to know why you want to report this content."
+            "value" : "Why do you want to report this content?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nous aimerions savoir pourquoi vous souhaitez signaler ce contenu."
-          }
-        }
-      }
-    },
-    "Moderation.Content.MainText" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Report content"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Signaler du contenu"
+            "value" : "Pourquoi souhaitez-vous signaler ce contenu ?"
           }
         }
       }
@@ -874,29 +904,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "We would like to know why you want to report this user."
+            "value" : "Why do you want to report this user?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nous aimerions savoir pourquoi vous souhaitez signaler cet utilisateur."
-          }
-        }
-      }
-    },
-    "Moderation.Profile.MainText" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Report a user"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Signaler cet utilisateur"
+            "value" : "Pourquoi souhaitez-vous signaler cet utilisateur ?"
           }
         }
       }
@@ -906,7 +920,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Report this user"
+            "value" : "Report user"
           }
         },
         "fr" : {
@@ -917,98 +931,194 @@
         }
       }
     },
-    "Moderation.Reason.ChildExploitation" : {
+    "Moderation.Reason.AdultNudityOrSexualActivity" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Child exploitation"
+            "value" : "Adult Nudity or Sexual Activity"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exploitation d'enfants"
+            "value" : "Nudité ou activité sexuelle"
           }
         }
       }
     },
-    "Moderation.Reason.HarassmentIntimidationOrThreats" : {
+    "Moderation.Reason.AdultSexualExploitation" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Harassment, intimidation, or threats toward a user"
+            "value" : "Adult Sexual Exploitation"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Harcèlement, intimidation ou menaces envers un utilisateur"
+            "value" : "Exploitation sexuelle"
           }
         }
       }
     },
-    "Moderation.Reason.HateSpeechOrDiscriminatoryContent" : {
+    "Moderation.Reason.Aggressive" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hate speech or discriminatory content"
+            "value" : "Aggressive"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Discours haineux ou contenu discriminatoire"
+            "value" : "Agressivité"
           }
         }
       }
     },
-    "Moderation.Reason.IllegalContent" : {
+    "Moderation.Reason.BullyingOrHarassment" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Illegal content"
+            "value" : "Bullying or Harassment"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contenu illégal"
+            "value" : "Intimidation et harcèlement"
           }
         }
       }
     },
-    "Moderation.Reason.ImpersonationOrIdentityTheft" : {
+    "Moderation.Reason.ChildSexualAbuseMaterial" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impersonation or identity theft"
+            "value" : "Child Sexual Abuse Material"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usurpation d'identité ou vol d'identité"
+            "value" : "Abus de mineur"
           }
         }
       }
     },
-    "Moderation.Reason.MisinformationOrFakeNews" : {
+    "Moderation.Reason.CopyrightOrIntellectualPropertyInfringement" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Misinformation or fake news"
+            "value" : "Copyright or Intellectual Property Infringement"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Désinformation ou fausses nouvelles"
+            "value" : "Violation de la propriété intellectuelle"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.GraphicViolence" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Graphic Violence"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violence "
+          }
+        }
+      }
+    },
+    "Moderation.Reason.HarmOrCrime" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Harm or Crime"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenu préjudiciable ou criminel"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.HatefulConduct" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hateful Conduct"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenu haineux"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.HumanExploitation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Human Exploitation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exploitation humaine"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.Impersonation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impersonation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usurpation d'identité"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.Misinformation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misinformation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désinformation"
           }
         }
       }
@@ -1029,98 +1139,146 @@
         }
       }
     },
-    "Moderation.Reason.PornographyOrSexuallyExplicitContent" : {
+    "Moderation.Reason.PersonallyIdentifiableInformation" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pornography or sexually explicit content"
+            "value" : "Personally Identifiable Information"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pornographie ou contenu sexuellement explicite"
+            "value" : "Partage d'informations personnelles"
           }
         }
       }
     },
-    "Moderation.Reason.PromotesSuicideSelfInjuryOrEatingDisorders" : {
+    "Moderation.Reason.RegulatedGoods" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Promotes suicide, self-injury, or eating disorders"
+            "value" : "Regulated Goods"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Encourage le suicide, l'automutilation ou les troubles alimentaires"
+            "value" : "Produits réglementés"
           }
         }
       }
     },
-    "Moderation.Reason.SharingPersonalOrPrivateInformation" : {
+    "Moderation.Reason.SexuallySuggestive" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sharing personal or private information"
+            "value" : "Sexually Suggestive"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Partage d'informations personnelles ou privées"
+            "value" : "Contenu sexuellement suggestif"
           }
         }
       }
     },
-    "Moderation.Reason.SpamPromotionalOrUnsolicitedAdvertisingContent" : {
+    "Moderation.Reason.SexualSolicitationOrExplicitLanguage" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spam, promotional, or unsolicited advertising content"
+            "value" : "Sexual Solicitation or Explicit Language"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spam, contenu promotionnel ou publicité non sollicitée"
+            "value" : "Sollicitation sexuelle ou langage explicite"
           }
         }
       }
     },
-    "Moderation.Reason.Terrorism" : {
+    "Moderation.Reason.SpamOrScams" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terrorism"
+            "value" : "Spam or Scams"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terrorisme"
+            "value" : "Spam ou arnaques"
           }
         }
       }
     },
-    "Moderation.Reason.ViolentContentOrIncitingViolence" : {
+    "Moderation.Reason.SuicideOrSelfHarm" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Violent content or content inciting violence"
+            "value" : "Suicide or Self-harm"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contenu violent ou incitant à la violence"
+            "value" : "Suicide et automutilation"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.TerrorismOrganizedHateDangerousOrganizationsOrIndividual" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terrorism, Organized Hate, Dangerous Organizations or Individual"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terrorisme ou haine organisée"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.UsernamePolicy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Username Policy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Règles relatives aux noms d’utilisateur"
+          }
+        }
+      }
+    },
+    "Moderation.Reason.ViolentInstigation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violent Instigation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incitation à la violence"
           }
         }
       }
@@ -1153,24 +1311,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Poster"
-          }
-        }
-      }
-    },
-    "Post.Create.Headline.Placeholder" : {
-      "comment" : "Placeholder of the headline of a post",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add a title"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajoutez un titre"
+            "value" : "Publier"
           }
         }
       }
@@ -1196,7 +1337,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You haven't posted anything yet.\nShare your first ideas with the community"
+            "value" : "You haven't posted anything yet.\nShare your first ideas with the community!"
           }
         },
         "fr" : {
@@ -1213,13 +1354,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Write your text here (optional)"
+            "value" : "Write your post here"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rédigez votre message ici (optionnel)"
+            "value" : "Rédigez votre message ici"
           }
         }
       }
@@ -1296,7 +1437,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Do you really want to delete this post. This action cannot be undone."
+            "value" : "Are you sure you want to delete this message? This action cannot be undone."
           }
         },
         "fr" : {
@@ -1334,7 +1475,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Qu’en pensez-vous ?"
+            "value" : "Qu'en pensez-vous ?"
           }
         }
       }
@@ -1398,7 +1539,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Raison :"
+            "value" : "Raison : "
           }
         }
       }
@@ -1409,13 +1550,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Write a post..."
+            "value" : "Write a post"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nouvelle publication"
+            "value" : "Créer une publication"
           }
         }
       }
@@ -1426,7 +1567,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Read More"
+            "value" : "Read more"
           }
         },
         "fr" : {
@@ -1464,7 +1605,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Votre date de naissance :"
+            "value" : "Date de naissance :"
           }
         }
       }
@@ -1490,13 +1631,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter your birth date"
+            "value" : "Your birth date"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrez votre date de naissance"
+            "value" : "Date de naissance"
           }
         }
       }
@@ -1512,7 +1653,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous devez avoir au moins 16 ans pour créer un compte."
+            "value" : "Il faut avoir au moins 16 ans pour créer un compte."
           }
         }
       }
@@ -1522,13 +1663,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Join the community"
+            "value" : "OK"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rejoindre la communauté"
+            "value" : "OK"
           }
         }
       }
@@ -1545,7 +1686,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un soucis ? [Contactez-nous](https://)."
+            "value" : "Un soucis ? [Nous contacter](https://)."
           }
         }
       }
@@ -1561,7 +1702,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un soucis ? Contactez-nous"
+            "value" : "Un soucis ? Nous contacter."
           }
         }
       }
@@ -1593,7 +1734,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous devez avoir plus de %lld ans pour rejoindre la communauté."
+            "value" : "Vous devez avoir plus de %lld ans pour rejoindre la communauté"
           }
         }
       }
@@ -1603,13 +1744,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "By clicking on 'Join the community,' you agree to the Terms of Use, the Privacy Policy, and the Community Guidelines."
+            "value" : "By clicking on 'OK' you agree to the Terms of Use, the Privacy Policy, and the Community Guidelines."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En cliquant sur 'Rejoindre la communauté' vous acceptez les Conditions Générales d’Utilisation, la politique de confidentialité, et la Charte de la Communauté."
+            "value" : "Cliquer sur OK confirme l'acceptation des Conditions Générales d’Utilisation, de la Politique de Confidentialité et des Règles de la Communauté."
           }
         }
       }
@@ -1619,13 +1760,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "By clicking on 'Join the community' you agree to the [Terms of Use](https://%1$@), the [Privacy Policy](https://%2$@), and the [Community Guidelines](https://%3$@)."
+            "value" : "By clicking on 'OK' you agree to the [Terms of Use](https://%1$@), the [Privacy Policy](https://%2$@), and the [Community Guidelines](https://%3$@)."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En cliquant sur 'Rejoindre la communauté', vous acceptez les [Conditions Générales d’Utilisation](https://%1$@), la [politique de confidentialité](https://%2$@), et la [Charte de la Communauté](https://%3$@)."
+            "value" : "Cliquer sur OK confirme l'acceptation des [Conditions Générales d’Utilisation](https://%1$@), de la [politique de confidentialité](https://%2$@) et des [Règles de la Communauté](https://%3$@)."
           }
         }
       }
@@ -1641,7 +1782,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Votre pseudo :"
+            "value" : "Pseudo :"
           }
         }
       }
@@ -1657,7 +1798,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous pourrez le modifier plus tard dans votre profil."
+            "value" : "Il sera modifiable plus tard dans le profil."
           }
         }
       }
@@ -1667,13 +1808,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Welcome to your community!"
+            "value" : "One final step before interacting"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bienvenue dans votre communauté !"
+            "value" : "Un dernier détail avant de pouvoir participer"
           }
         }
       }
@@ -1683,13 +1824,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add a biography to differentiate yourself!"
+            "value" : "Add a bio to differentiate yourself!"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter une bio pour vous différencier !"
+            "value" : "Ajoutez une bio pour vous différencier !"
           }
         }
       }
@@ -1780,7 +1921,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Change picture"
+            "value" : "Replace the photo"
           }
         },
         "fr" : {
@@ -1829,13 +1970,157 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "My posts"
+            "value" : "Posts"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mes publications"
+            "value" : "Publications"
+          }
+        }
+      }
+    },
+    "Report.Reason.ChildExploitationOrAbuse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Child exploitation or abuse"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exploitation ou abus de mineurs"
+          }
+        }
+      }
+    },
+    "Report.Reason.ExplicitOrInappropriateContent" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explicit or inappropriate content"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenu sexuel ou inapproprié"
+          }
+        }
+      }
+    },
+    "Report.Reason.FakeProfilesAndImpersonation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fake profiles and impersonation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faux profils ou usurpation d’identité"
+          }
+        }
+      }
+    },
+    "Report.Reason.HateSpeechOrDiscriminationOrHarassment" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hate speech, discrimination, and harassment"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discours haineux, discrimination et harcèlement"
+          }
+        }
+      }
+    },
+    "Report.Reason.IntellectualPropertyViolation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intellectual property violation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violation de propriété intellectuelle"
+          }
+        }
+      }
+    },
+    "Report.Reason.Other" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre"
+          }
+        }
+      }
+    },
+    "Report.Reason.SpamAndScams" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam and scams"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spams et arnaques"
+          }
+        }
+      }
+    },
+    "Report.Reason.SuicideAndSelfHarm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suicide and self-harm"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suicide ou comportements autodestructeurs"
+          }
+        }
+      }
+    },
+    "Report.Reason.ViolenceAndTerrorism" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violence and terrorism"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Violence et terrorisme"
           }
         }
       }
@@ -1904,88 +2189,7 @@
         }
       }
     },
-    "Settings.Help.ContactUs.Explanation.Link_mailto:%@" : {
-      "comment" : "Please keep the linkable part between [] and keep the (https://) next to it, without any space.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can send us an email directly at [%@](https://)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous pouvez nous envoyer un mail directement à [%@](https://)"
-          }
-        }
-      }
-    },
-    "Settings.Help.ContactUs.Explanation.NoLink_email:%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can send us an email directly at %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous pouvez nous envoyer un mail directement à %@"
-          }
-        }
-      }
-    },
-    "Settings.Help.ContactUs.MainText" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How to contact us?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Comment nous contacter ?"
-          }
-        }
-      }
-    },
-    "Settings.Help.ContactUs.Questions.Link" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If you have any doubts or questions, do not hesitate to refer to the [Community Content Policy](https://)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En cas de doutes ou de questions, n’hésitez pas à vous référez à la [Politique de contenu de la communauté](https://)"
-          }
-        }
-      }
-    },
-    "Settings.Help.ContactUs.Questions.NoLink" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "If you have any doubts or questions, do not hesitate to refer to the Community Content Policy"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En cas de doutes ou de questions, n’hésitez pas à vous référez à la Politique de contenu de la communauté"
-          }
-        }
-      }
-    },
-    "Settings.Help.ContactUs.Title" : {
+    "Settings.Help.ContactUs" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2029,22 +2233,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Signaler un contenu problématique"
-          }
-        }
-      }
-    },
-    "Settings.Help.ReportProblem" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Report a problem"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Signaler un problème"
           }
         }
       }
@@ -2102,13 +2290,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "My Community profile"
+            "value" : "My community account"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mon profil communautaire"
+            "value" : "Mon compte communautaire"
           }
         }
       }
@@ -2172,7 +2360,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Votre demande de suppression a bien été prise en compte. Vous n'avez plus accès à votre compte. En cas de question, veuillez nous contacter à %@"
+            "value" : "Votre demande de suppression a bien été prise en compte. Vous n'avez plus accès à votre compte. En cas de question, veuillez nous contacter à %@."
           }
         }
       }
@@ -2198,13 +2386,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "We’re sorry to see you go. We’d like to understand why you want to delete your community account."
+            "value" : "We’re sorry to see you go. We’d like to understand why you want to delete your account:"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nous sommes désolés de vous voir partir. Nous aimerions savoir pourquoi vous souhaitez supprimer votre compte communautaire."
+            "value" : "Nous sommes désolés de vous voir partir. Nous aimerions savoir pourquoi vous souhaitez supprimer votre compte :"
           }
         }
       }
@@ -2236,7 +2424,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer mon profil"
+            "value" : "Supprimer mon compte"
           }
         }
       }
@@ -2246,7 +2434,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The community's content and moderation don’t feel right for me"
+            "value" : "The community's content and moderation don’t feel right for me."
           }
         },
         "fr" : {
@@ -2262,13 +2450,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I am concerned about the privacy of my data"
+            "value" : "I am concerned about the privacy of my data."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Je m’inquiète pour la confidentialité de mes données"
+            "value" : "Je m'inquiète pour la confidentialité de mes données"
           }
         }
       }
@@ -2294,7 +2482,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I'm no longer interested in using the community"
+            "value" : "I'm no longer interested in using the community."
           }
         },
         "fr" : {
@@ -2326,7 +2514,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I want to spend less time on social networks"
+            "value" : "I want to spend less time on social networks."
           }
         },
         "fr" : {
@@ -2342,7 +2530,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I am experiencing technical issues"
+            "value" : "I am experiencing technical issues."
           }
         },
         "fr" : {
@@ -2385,18 +2573,50 @@
         }
       }
     },
-    "Settings.Report.Explanation" : {
+    "Settings.Report.CommunityGuidelines.Link" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1. Go to the content you want to report (post, comment, or user).\n2. Tap the three dots in the top right corner of the item.\n3. Select \"Report\".\n4. Choose a reason from the list.\n5. Add a comment if needed, then confirm."
+            "value" : "If you have any doubts or questions, feel free to refer to the [Community Guidelines](https://)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1. Allez sur le contenu que vous souhaitez signaler (message, commentaire ou un utilisateur).\n2. Appuyez sur les 3 petits points en haut à droite de l'élément à signaler.\n3. Choisissez l’option “Signaler”\n4. Indiquez la raison du signalement en sélectionnant une option dans la liste proposée.\n5. Ajoutez un commentaire si nécessaire, puis validez."
+            "value" : "En cas de question, n'hésitez pas à consulter les [Règles de la Communauté](https://)."
+          }
+        }
+      }
+    },
+    "Settings.Report.CommunityGuidelines.NoLink" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If you have any doubts or questions, feel free to refer to the Community Guidelines."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cas de question, n'hésitez pas à consulter les Règles de la Communauté."
+          }
+        }
+      }
+    },
+    "Settings.Report.Explanation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Go to the content you want to report (post, comment, or user).\n2. Tap the three dots in the top right corner of the item.\n3. Select \\\"Report\\\".\n4. Choose a reason from the list.\n5. Add a comment if needed, then confirm.\n"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Allez sur le contenu que vous souhaitez signaler (message, commentaire ou un utilisateur).\n2. Appuyez sur les 3 petits points en haut à droite de l\\'élément à signaler.\n3. Choisissez l\\’option \\\"Signaler\\\"\n4. Indiquez la raison du signalement en sélectionnant une option dans la liste proposée.\n5. Ajoutez un commentaire si nécessaire, puis validez.\n"
           }
         }
       }
@@ -2428,7 +2648,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conditions Générales d’Utilisation"
+            "value" : "Conditions Générales d'Utilisation"
           }
         }
       }

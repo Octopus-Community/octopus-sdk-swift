@@ -22,11 +22,11 @@ struct TopicSelectionCapsule: View {
             Image(systemName: "chevron.down")
         }
         .font(theme.fonts.caption1.weight(.semibold))
-        .foregroundColor(theme.colors.gray600)
+        .foregroundColor(theme.colors.gray900)
         .padding(.vertical, 10)
         .padding(.horizontal, 12)
         .background(Capsule()
-            .foregroundColor(theme.colors.gray200))
+            .foregroundColor(theme.colors.gray300))
     }
 }
 

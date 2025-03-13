@@ -4,15 +4,21 @@
 
 import Foundation
 import SwiftUI
+import Octopus
 import OctopusCore
 
 struct SignalExplanationView: View {
     @Environment(\.octopusTheme) private var theme
+    @Compat.StateObject private var viewModel: LinksProviderViewModel
+
+    init(octopus: OctopusSDK) {
+        _viewModel = Compat.StateObject(wrappedValue: LinksProviderViewModel(octopus: octopus))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 20)
-            theme.colors.gray200.frame(height: 1)
+            theme.colors.gray300.frame(height: 1)
             Spacer().frame(height: 20)
             ScrollView {
                 HStack(alignment: .top) {
@@ -20,13 +26,13 @@ struct SignalExplanationView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 20, height: 20)
-                        .foregroundColor(theme.colors.gray600)
+                        .foregroundColor(theme.colors.gray900)
 
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Settings.Report.MainText", bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
-                            .foregroundColor(theme.colors.gray600)
+                            .foregroundColor(theme.colors.gray900)
 
                         Text("Settings.Report.Explanation", bundle: .module)
                             .font(theme.fonts.body2)
@@ -35,18 +41,18 @@ struct SignalExplanationView: View {
                             .lineSpacing(8)
 
                         if #available(iOS 15.0, *) {
-                            Text("Settings.Help.ContactUs.Questions.Link",
+                            Text("Settings.Report.CommunityGuidelines.Link",
                                  bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
                             .tint(theme.colors.link)
                             .environment(\.openURL, OpenURLAction { _ in
-                                UIApplication.shared.open(ExternalLinks.communityGuidelines)
+                                UIApplication.shared.open(viewModel.communityGuidelines)
                                 return .handled
                             })
                         } else {
-                            Compat.Link(destination: ExternalLinks.communityGuidelines) {
-                                Text("Settings.Help.ContactUs.Questions.NoLink", bundle: .module)
+                            Compat.Link(destination: viewModel.communityGuidelines) {
+                                Text("Settings.Report.CommunityGuidelines.NoLink", bundle: .module)
                                     .font(theme.fonts.body2)
                                     .fontWeight(.medium)
                                     .foregroundColor(theme.colors.link)
@@ -63,7 +69,7 @@ struct SignalExplanationView: View {
     }
 
     var contentPolicyView: some View {
-        WebView(url: ExternalLinks.communityGuidelines)
+        WebView(url: viewModel.communityGuidelines)
             .navigationBarTitle(Text("Settings.CommunityGuidelines", bundle: .module), displayMode: .inline)
     }
 }

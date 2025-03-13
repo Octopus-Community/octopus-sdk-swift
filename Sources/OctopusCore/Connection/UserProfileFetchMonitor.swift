@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import DependencyInjection
 import RemoteClient
 import GRPC
@@ -72,7 +73,7 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
                 } catch {
                     if let error = error as? RemoteClientError {
                         if case .notFound = error {
-                            print("NotFound received from server, logging out the user")
+                            if #available(iOS 14, *) { Logger.profile.debug("NotFound received from server, logging out the user") }
                             let connectionRepository = injector.getInjected(identifiedBy: Injected.connectionRepository)
                             Task {
                                 try await connectionRepository.logout()

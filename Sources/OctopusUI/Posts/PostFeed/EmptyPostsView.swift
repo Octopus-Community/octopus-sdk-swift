@@ -40,11 +40,11 @@ struct CreatePostEmptyPostView: View {
             Button(action: createPost) {
                 Text("Post.Create.Incentive.Button", bundle: .module)
                     .font(theme.fonts.body2)
-                    .foregroundColor(theme.colors.textOnAccent)
+                    .foregroundColor(theme.colors.onPrimary)
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(theme.colors.accent)
+                            .fill(theme.colors.primary)
                     )
             }
         }
