@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import RemoteClient
 import DependencyInjection
 import GrpcModels
@@ -36,13 +37,13 @@ public class Feed<Item: FeedItem> {
             hasMoreData = result.hasMoreItems
             listenForItems(publisher: result.itemsPublisher)
         } catch {
-            print("Error: \(error)")
+            if #available(iOS 14, *) { Logger.feed.debug("Error: \(error)") }
         }
     }
 
     public func refresh(pageSize: Int) async throws(ServerCallError) {
         guard !isFetching else {
-            print("Refresh called but ignored because isFetching is true")
+            if #available(iOS 14, *) { Logger.feed.trace("Refresh called but ignored because isFetching is true") }
             return
         }
         isFetching = true
@@ -62,12 +63,12 @@ public class Feed<Item: FeedItem> {
 
     public func loadPreviousItems(pageSize: Int) async throws(ServerCallError) {
         guard !isFetching else {
-            print("LoadPreviousItems called but ignored because isFetching is true")
+            if #available(iOS 14, *) { Logger.feed.trace("LoadPreviousItems called but ignored because isFetching is true") }
             return
         }
         do {
             if !hasFetchedDistantOnce {
-                print("Calling load previous but not called refresh before")
+                if #available(iOS 14, *) { Logger.feed.trace("Calling load previous but not called refresh before") }
                 try await refresh(pageSize: pageSize)
 
                 return
@@ -83,7 +84,7 @@ public class Feed<Item: FeedItem> {
             isFetching = false
             listenForItems(publisher: result.itemsPublisher)
         } catch {
-            print("An error occured during the load previous items call, loading local items instead")
+            if #available(iOS 14, *) { Logger.feed.debug("An error occured during the load previous items call, loading local items instead") }
             isFetching = false
             do {
                 let result = try await feedManager.getLocalFeedItems(feedId: id, pageSize: pageSize,
@@ -96,7 +97,7 @@ public class Feed<Item: FeedItem> {
     }
 
     public func fetchAll() async throws {
-        print("Fetch all called")
+        if #available(iOS 14, *) { Logger.feed.trace("Fetch all called") }
         // If a fetch is currently happening, wait for its end
         while isFetching {
             try await Task.sleep(nanoseconds: 1)

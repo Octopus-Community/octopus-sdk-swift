@@ -13,9 +13,9 @@ public extension Validators {
             case ratioTooBig
         }
 
-        public let minSize: CGFloat = 400
-        public let maxRatio: CGFloat = 21/9
-        public let maxRatioStr = "21:9"
+        public let minSize: CGFloat = 50
+        public let maxRatio: CGFloat = 32/9
+        public let maxRatioStr = "32:9"
         public func validate(_ image: UIImage) -> ValidationResult {
             let width = image.size.width
             let height = image.size.height

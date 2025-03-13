@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct RootFeedsView: View {
+    @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: RootFeedsViewModel
 
     @State private var showRootFeedPicker = false
@@ -89,6 +90,7 @@ private struct ContentView: View {
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 30, height: 30)
                         .padding(.leading, 16)
+                        .foregroundColor(theme.colors.gray900)
                 }
                 Compat.ScrollView(.horizontal, scrollToId: $scrollToId) {
                     HStack(spacing: 8) {
@@ -128,8 +130,8 @@ private struct RootFeedChip: View {
                 .fontWeight(.medium)
                 .foregroundColor(
                     selectedRootFeed == rootFeed ?
-                        theme.colors.textOnAccent :
-                        theme.colors.accent
+                        theme.colors.onPrimary :
+                        theme.colors.primary
                 )
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
@@ -137,8 +139,8 @@ private struct RootFeedChip: View {
                     Capsule()
                         .foregroundColor(
                             selectedRootFeed == rootFeed ?
-                                theme.colors.accent :
-                                theme.colors.accent.opacity(0.1)
+                                theme.colors.primary :
+                                theme.colors.primaryLowContrast
                         )
                 )
         }

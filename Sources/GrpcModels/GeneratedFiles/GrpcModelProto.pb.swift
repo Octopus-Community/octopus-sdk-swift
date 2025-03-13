@@ -63,41 +63,68 @@ public enum Com_Octopuscommunity_StatusReasonCode: SwiftProtobuf.Enum, Swift.Cas
   public typealias RawValue = Int
   case unspecifiedReason // = 0
 
-  ///Hate speech or discriminatory content
+  ///Hateful Conduct
   case hte // = 1
 
-  ///Harassment, intimidation, or threats toward a user
+  ///Bullying or Harassment
   case hrs // = 2
 
-  ///Violent content or content inciting violence
-  case vlc // = 3
+  ///Graphic Violence
+  case gv // = 3
 
-  ///Pornography or sexually explicit content
-  case sxc // = 4
+  ///Aggressive
+  case agg // = 4
 
-  ///Misinformation or fake news new
-  case fkc // = 5
+  ///Violent Instigation
+  case vlc // = 5
 
-  ///Spam, promotional, or unsolicited advertising content
-  case spm // = 6
+  ///Sexually Suggestive
+  case sxc // = 6
 
-  ///Sharing personal or private information
-  case pii // = 7
+  ///Adult Nudity or Sexual Activity
+  case nud // = 7
 
-  ///Illegal content
-  case ill // = 8
+  ///Sexual Solicitation or Explicit Language
+  case soli // = 8
 
-  ///Terrorism
-  case ter // = 9
+  ///Adult Sexual Exploitation
+  case aex // = 9
 
-  ///Child exploitation
+  ///Child Sexual Abuse Material
   case cex // = 10
 
-  ///Impersonation or identity theft
-  case imp // = 11
+  ///Suicide or Self-harm
+  case ssh // = 11
 
-  ///Promotes suicide, self injury or eating disorders
-  case ssh // = 12
+  ///Regulated Goods
+  case ill // = 12
+
+  ///Human Exploitation
+  case hex // = 13
+
+  ///Terrorism, Organized Hate, Dangerous Organizations or Individual
+  case ter // = 14
+
+  ///Harm or Crime
+  case hc // = 15
+
+  ///Spam or Scams
+  case spm // = 16
+
+  ///Impersonation
+  case imp // = 17
+
+  ///Misinformation
+  case mis // = 18
+
+  ///Personally Identifiable Information
+  case pii // = 19
+
+  ///Username Policy
+  case up // = 20
+
+  ///Copyright or Intellectual Property Infringement
+  case cip // = 21
 
   ///Other
   case oth // = 9999
@@ -112,16 +139,25 @@ public enum Com_Octopuscommunity_StatusReasonCode: SwiftProtobuf.Enum, Swift.Cas
     case 0: self = .unspecifiedReason
     case 1: self = .hte
     case 2: self = .hrs
-    case 3: self = .vlc
-    case 4: self = .sxc
-    case 5: self = .fkc
-    case 6: self = .spm
-    case 7: self = .pii
-    case 8: self = .ill
-    case 9: self = .ter
+    case 3: self = .gv
+    case 4: self = .agg
+    case 5: self = .vlc
+    case 6: self = .sxc
+    case 7: self = .nud
+    case 8: self = .soli
+    case 9: self = .aex
     case 10: self = .cex
-    case 11: self = .imp
-    case 12: self = .ssh
+    case 11: self = .ssh
+    case 12: self = .ill
+    case 13: self = .hex
+    case 14: self = .ter
+    case 15: self = .hc
+    case 16: self = .spm
+    case 17: self = .imp
+    case 18: self = .mis
+    case 19: self = .pii
+    case 20: self = .up
+    case 21: self = .cip
     case 9999: self = .oth
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -132,16 +168,25 @@ public enum Com_Octopuscommunity_StatusReasonCode: SwiftProtobuf.Enum, Swift.Cas
     case .unspecifiedReason: return 0
     case .hte: return 1
     case .hrs: return 2
-    case .vlc: return 3
-    case .sxc: return 4
-    case .fkc: return 5
-    case .spm: return 6
-    case .pii: return 7
-    case .ill: return 8
-    case .ter: return 9
+    case .gv: return 3
+    case .agg: return 4
+    case .vlc: return 5
+    case .sxc: return 6
+    case .nud: return 7
+    case .soli: return 8
+    case .aex: return 9
     case .cex: return 10
-    case .imp: return 11
-    case .ssh: return 12
+    case .ssh: return 11
+    case .ill: return 12
+    case .hex: return 13
+    case .ter: return 14
+    case .hc: return 15
+    case .spm: return 16
+    case .imp: return 17
+    case .mis: return 18
+    case .pii: return 19
+    case .up: return 20
+    case .cip: return 21
     case .oth: return 9999
     case .UNRECOGNIZED(let i): return i
     }
@@ -152,17 +197,110 @@ public enum Com_Octopuscommunity_StatusReasonCode: SwiftProtobuf.Enum, Swift.Cas
     .unspecifiedReason,
     .hte,
     .hrs,
+    .gv,
+    .agg,
     .vlc,
     .sxc,
-    .fkc,
-    .spm,
-    .pii,
-    .ill,
-    .ter,
+    .nud,
+    .soli,
+    .aex,
     .cex,
-    .imp,
     .ssh,
+    .ill,
+    .hex,
+    .ter,
+    .hc,
+    .spm,
+    .imp,
+    .mis,
+    .pii,
+    .up,
+    .cip,
     .oth,
+  ]
+
+}
+
+public enum Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case reportUnspecifiedReason // = 0
+
+  ///Hate speech, discrimination, and harassment
+  case reportHteHrs // = 1
+
+  ///Explicit or inappropriate content
+  case reportSxc // = 2
+
+  ///Violence and terrorism
+  case reportVlcTer // = 3
+
+  ///Spam and scams
+  case reportSpm // = 4
+
+  ///Suicide and self-harm
+  case reportSsh // = 5
+
+  ///Fake profiles and impersonation
+  case reportImp // = 6
+
+  ///Child exploitation or abuse
+  case reportCex // = 7
+
+  ///Intellectual property violation
+  case reportIpv // = 8
+
+  ///Other
+  case reportOth // = 9999
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .reportUnspecifiedReason
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .reportUnspecifiedReason
+    case 1: self = .reportHteHrs
+    case 2: self = .reportSxc
+    case 3: self = .reportVlcTer
+    case 4: self = .reportSpm
+    case 5: self = .reportSsh
+    case 6: self = .reportImp
+    case 7: self = .reportCex
+    case 8: self = .reportIpv
+    case 9999: self = .reportOth
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .reportUnspecifiedReason: return 0
+    case .reportHteHrs: return 1
+    case .reportSxc: return 2
+    case .reportVlcTer: return 3
+    case .reportSpm: return 4
+    case .reportSsh: return 5
+    case .reportImp: return 6
+    case .reportCex: return 7
+    case .reportIpv: return 8
+    case .reportOth: return 9999
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Com_Octopuscommunity_ReportReasonCode] = [
+    .reportUnspecifiedReason,
+    .reportHteHrs,
+    .reportSxc,
+    .reportVlcTer,
+    .reportSpm,
+    .reportSsh,
+    .reportImp,
+    .reportCex,
+    .reportIpv,
+    .reportOth,
   ]
 
 }
@@ -558,18 +696,9 @@ public struct Com_Octopuscommunity_Post: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var headline: String = String()
+  public var text: String = String()
 
-  public var text: String {
-    get {return _text ?? String()}
-    set {_text = newValue}
-  }
-  /// Returns true if `text` has been explicitly set.
-  public var hasText: Bool {return self._text != nil}
-  /// Clears the value of `text`. Subsequent reads from it will return its default value.
-  public mutating func clearText() {self._text = nil}
-
-  ///Children should be Comment
+  /// field 2 was "optional string text = 2;", now removed.
   public var media: Com_Octopuscommunity_StrictMedia {
     get {return _media ?? Com_Octopuscommunity_StrictMedia()}
     set {_media = newValue}
@@ -583,7 +712,6 @@ public struct Com_Octopuscommunity_Post: Sendable {
 
   public init() {}
 
-  fileprivate var _text: String? = nil
   fileprivate var _media: Com_Octopuscommunity_StrictMedia? = nil
 }
 
@@ -651,17 +779,41 @@ extension Com_Octopuscommunity_StatusReasonCode: SwiftProtobuf._ProtoNameProvidi
     0: .same(proto: "UNSPECIFIED_REASON"),
     1: .same(proto: "HTE"),
     2: .same(proto: "HRS"),
-    3: .same(proto: "VLC"),
-    4: .same(proto: "SXC"),
-    5: .same(proto: "FKC"),
-    6: .same(proto: "SPM"),
-    7: .same(proto: "PII"),
-    8: .same(proto: "ILL"),
-    9: .same(proto: "TER"),
+    3: .same(proto: "GV"),
+    4: .same(proto: "AGG"),
+    5: .same(proto: "VLC"),
+    6: .same(proto: "SXC"),
+    7: .same(proto: "NUD"),
+    8: .same(proto: "SOLI"),
+    9: .same(proto: "AEX"),
     10: .same(proto: "CEX"),
-    11: .same(proto: "IMP"),
-    12: .same(proto: "SSH"),
+    11: .same(proto: "SSH"),
+    12: .same(proto: "ILL"),
+    13: .same(proto: "HEX"),
+    14: .same(proto: "TER"),
+    15: .same(proto: "HC"),
+    16: .same(proto: "SPM"),
+    17: .same(proto: "IMP"),
+    18: .same(proto: "MIS"),
+    19: .same(proto: "PII"),
+    20: .same(proto: "UP"),
+    21: .same(proto: "CIP"),
     9999: .same(proto: "OTH"),
+  ]
+}
+
+extension Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "REPORT_UNSPECIFIED_REASON"),
+    1: .same(proto: "REPORT_HTE_HRS"),
+    2: .same(proto: "REPORT_SXC"),
+    3: .same(proto: "REPORT_VLC_TER"),
+    4: .same(proto: "REPORT_SPM"),
+    5: .same(proto: "REPORT_SSH"),
+    6: .same(proto: "REPORT_IMP"),
+    7: .same(proto: "REPORT_CEX"),
+    8: .same(proto: "REPORT_IPV"),
+    9999: .same(proto: "REPORT_OTH"),
   ]
 }
 
@@ -1346,8 +1498,7 @@ extension Com_Octopuscommunity_Media: SwiftProtobuf.Message, SwiftProtobuf._Mess
 extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Post"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "headline"),
-    2: .same(proto: "text"),
+    1: .same(proto: "text"),
     3: .same(proto: "media"),
   ]
 
@@ -1357,8 +1508,7 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.headline) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self._text) }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._media) }()
       default: break
       }
@@ -1370,12 +1520,9 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.headline.isEmpty {
-      try visitor.visitSingularStringField(value: self.headline, fieldNumber: 1)
+    if !self.text.isEmpty {
+      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
     }
-    try { if let v = self._text {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
-    } }()
     try { if let v = self._media {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     } }()
@@ -1383,8 +1530,7 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
   }
 
   public static func ==(lhs: Com_Octopuscommunity_Post, rhs: Com_Octopuscommunity_Post) -> Bool {
-    if lhs.headline != rhs.headline {return false}
-    if lhs._text != rhs._text {return false}
+    if lhs.text != rhs.text {return false}
     if lhs._media != rhs._media {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

@@ -4,6 +4,7 @@
 
 import Foundation
 import UIKit
+import os
 
 final class ImageCache: @unchecked Sendable {
     static let profile = ImageCache(subfolder: "profile",
@@ -27,7 +28,7 @@ final class ImageCache: @unchecked Sendable {
             try fileManager.createDirectory(at: imageFolder, withIntermediateDirectories: true)
             try cleanup(targetSize: diskCapacity)
         } catch {
-            print("ImageCache init error: \(error)")
+            if #available(iOS 14, *) { Logger.images.trace("ImageCache init error: \(error)") }
         }
     }
 

@@ -63,6 +63,13 @@ let package = Package(
             name: "DependencyInjection"
         ),
         .testTarget(
+            name: "OctopusUITests",
+            dependencies: [
+                "OctopusUI",
+                "Octopus",
+            ]
+        ),
+        .testTarget(
             name: "OctopusTests",
             dependencies: [
                 "Octopus",

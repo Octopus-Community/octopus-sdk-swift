@@ -71,7 +71,7 @@ class MockUserService: UserService {
         return response
     }
 
-    func reportUser(profileId: String, reasons: [Com_Octopuscommunity_StatusReasonCode],
+    func reportUser(profileId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                     authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportUserResponse {
         guard let response = reportUserResponses.popLast() else {

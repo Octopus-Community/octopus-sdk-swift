@@ -436,7 +436,7 @@ class FeedTests: XCTestCase {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "title\(itemId)"
+                        $0.text = "title\(itemId)"
                     }
                 }
             }
@@ -457,7 +457,7 @@ class FeedTests: XCTestCase {
     }
 
     private func createPost(id: String, updateDate: Date = Date(), authorId: String = "authorId") -> StorablePost {
-        StorablePost(uuid: id, headline: "title\(id)", text: nil, medias: [],
+        StorablePost(uuid: id, text: "title\(id)", medias: [],
                      author: MinimalProfile(uuid: authorId, nickname: "me", avatarUrl: nil),
                      creationDate: Date(),
                      updateDate: updateDate,

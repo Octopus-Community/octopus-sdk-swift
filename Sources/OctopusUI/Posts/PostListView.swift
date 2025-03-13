@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import os
 import Octopus
 import OctopusCore
 
@@ -55,7 +56,7 @@ struct PostListView: View {
                                 displayPostDetail = true
                             },
                             displayProfile: { profileId in
-                                print("Display profile \(profileId)")
+                                if #available(iOS 14, *) { Logger.profile.trace("Display profile \(profileId)") }
                                 if profileId == viewModel.thisUserProfileId {
                                     openRoute = .currentUserProfile
                                 } else {
@@ -141,7 +142,7 @@ struct PostListView: View {
                     .environment(\.dismissModal, $viewModel.openCreateProfile)
             }
             .navigationBarHidden(true)
-            .accentColor(theme.colors.accent)
+            .accentColor(theme.colors.primary)
         }
         .onValueChanged(of: selectedRootFeed) {
             guard let selectedRootFeed = $0 else { return }

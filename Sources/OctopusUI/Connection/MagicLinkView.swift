@@ -75,7 +75,7 @@ struct MagicLinkView: View {
                 displayEmailEntryError = true
             }
         }
-        .accentColor(theme.colors.accent)
+        .accentColor(theme.colors.primary)
     }
 }
 
@@ -83,7 +83,7 @@ private extension MagicLinkEmailEntryError {
     var displayMessage: DisplayableString {
         switch self {
         case .noNetwork:
-                .localizationKey("Connection.MagicLink.Send.Error.NoNetwork") // TODO: use common errors
+                .localizationKey("Error.NoNetwork")
         case let .detailedError(detail):
                 .localizedString(detail.message)
         case .server, .unknown:
@@ -96,7 +96,7 @@ private extension MagicLinkConfirmationError {
     var displayMessage: DisplayableString {
         switch self {
         case .noNetwork:
-                .localizationKey("Connection.MagicLink.Sent.Error.NoNetwork")
+                .localizationKey("Error.NoNetwork")
         case .magicLinkExpired:
                 .localizationKey("Connection.MagicLink.Sent.Error.Expired")
         case .noMagicLink, .needNewMagicLink:
@@ -163,7 +163,7 @@ private struct EnterEmailView: View {
             Spacer().frame(height: 52)
             HStack {
                 Text("Connection.MagicLink.Email.Description", bundle: .module)
-                    .foregroundColor(theme.colors.gray400)
+                    .foregroundColor(theme.colors.gray500)
                     .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)
                 Spacer()
@@ -181,7 +181,7 @@ private struct EnterEmailView: View {
             .padding()
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(theme.colors.gray200, lineWidth: 1)
+                    .stroke(theme.colors.gray300, lineWidth: 1)
 
             )
             Spacer()
@@ -189,14 +189,14 @@ private struct EnterEmailView: View {
             case .emailNeeded:
                 Button(action: sendMagicLink) {
                     Text("Connection.MagicLink.Send.Button", bundle: .module)
-                        .foregroundColor(theme.colors.textOnAccent)
+                        .foregroundColor(theme.colors.onPrimary)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .fill(sendEmailButtonAvailable ?
-                                        theme.colors.accent :
-                                        theme.colors.accent.opacity(0.3))
+                                        theme.colors.primary :
+                                        theme.colors.primary.opacity(0.3))
                         )
                 }
                 .disabled(!sendEmailButtonAvailable)
@@ -251,12 +251,12 @@ private struct MagicLinkConfirmationPendingView: View {
                     checkMagicLinkConfirmed()
                 }) {
                     Text("Connection.MagicLink.Sent.Refresh.Button", bundle: .module)
-                        .foregroundColor(theme.colors.textOnAccent)
+                        .foregroundColor(theme.colors.onPrimary)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(theme.colors.accent)
+                                .fill(theme.colors.primary)
                         )
                 }
             case .checkingMagicLink:

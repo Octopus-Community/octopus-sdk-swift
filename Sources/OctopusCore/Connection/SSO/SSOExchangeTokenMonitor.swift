@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import DependencyInjection
 import RemoteClient
 import GRPC
@@ -59,13 +60,13 @@ class SSOExchangeTokenMonitorDefault: SSOExchangeTokenMonitor, InjectableObject,
             .sink { [unowned self] connectionAvailable, clientUserData in
                 guard connectionAvailable else { return }
                 guard let clientUserData, let clientUserToken = clientUserData.token else { return }
-                print("Get JWT from client token")
+                if #available(iOS 14, *) { Logger.connection.trace("Get JWT from client token") }
                 Task { [self] in
                     do {
                         let response = try await remoteClient.userService.getJwt(clientToken: clientUserToken)
                         getJwtFromClientTokenResponse = response
                     } catch {
-                        print("Error during sso token exchange: \(error)")
+                        if #available(iOS 14, *) { Logger.connection.debug("Error during sso token exchange: \(error)") }
                         getJwtFromClientTokenResponse = .init()
                     }
                 }

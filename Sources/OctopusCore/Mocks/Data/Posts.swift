@@ -18,8 +18,7 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "AI Revolutionizes Healthcare with Unprecedented Advancements"
-                        $0.text = "AI-driven solutions are transforming the healthcare industry, improving diagnosis accuracy and patient outcomes."
+                        $0.text = "AI Revolutionizes Healthcare with Unprecedented Advancements"
                     }
                 }
             },
@@ -33,7 +32,7 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "New Discovery in Quantum Physics Challenges Current Theories"
+                        $0.text = "New Discovery in Quantum Physics Challenges Current Theories"
                     }
                 }
             },
@@ -47,8 +46,7 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Major Upset in Tennis as Underdog Wins Grand Slam"
-                        $0.text = "The tennis world was shocked when an unseeded player claimed victory in the prestigious Grand Slam tournament."
+                        $0.text = "Major Upset in Tennis as Underdog Wins Grand Slam"
                     }
                 }
             },
@@ -62,7 +60,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "New Blockbuster Breaks Box Office Records Worldwide"
                         $0.text = "The latest action movie has become the highest-grossing film of the year, surpassing all expectations."
                     }
                 }
@@ -77,7 +74,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Dos réparé, reprise du ski et cap sur Ushuaia pour Paco Rassat."
                         $0.text = "En grande difficulté économique, la station pourrait être sauvée par un projet porté par un ascenseur valléene et une commauté réunie grace à Octopus Community"
                     }
                 }
@@ -92,7 +88,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Glen Sannox suffers further blow as trials postponed due to blackout"
                         $0.text = "The Glen Sannox has suffered a further problem after sea trials came to a halt following an inadvertent blackout."
                     }
                 }
@@ -107,7 +102,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Online Learning Platforms See Surge in Enrollment"
                         $0.text = "Increased demand for flexible learning solutions has led to a boom in online education platforms."
                     }
                 }
@@ -122,7 +116,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Stock Market Volatility Continues Amid Economic Uncertainty"
                         $0.text = "Investors are facing challenges as market fluctuations show no signs of stabilizing."
                     }
                 }
@@ -137,7 +130,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Top Destinations for Adventure Travel in 2024"
                         $0.text = "These are the must-visit places for thrill-seekers looking for their next big adventure."
                     }
                 }
@@ -152,7 +144,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Vegan Cuisine Gains Popularity Among Food Enthusiasts"
                         $0.text = "The rise of plant-based diets has led to an increase in vegan restaurant options and recipes."
                     }
                 }
@@ -169,7 +160,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "New Album from Indie Band Tops Global Charts"
                         $0.text = "The latest album from a popular indie band has achieved international success, topping charts worldwide."
                     }
                 }
@@ -184,7 +174,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Sustainable Fashion Trends Take Center Stage"
                         $0.text = "Eco-conscious fashion is becoming a major movement, with designers focusing on sustainability."
                     }
                 }
@@ -199,7 +188,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "New Study Highlights the Benefits of Mindfulness Meditation"
                         $0.text = "Researchers have found significant mental health benefits for those practicing mindfulness meditation regularly."
                     }
                 }
@@ -214,7 +202,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Minimalism Grows as a Popular Lifestyle Choice"
                         $0.text = "More people are embracing minimalism, focusing on decluttering and simplifying their lives."
                     }
                 }
@@ -229,7 +216,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Climate Change Efforts Ramp Up as Global Temperatures Rise"
                         $0.text = "Countries worldwide are intensifying efforts to combat climate change in light of rising global temperatures."
                     }
                 }
@@ -244,7 +230,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "New Legislation Aims to Address Income Inequality"
                         $0.text = "Lawmakers are introducing new policies designed to close the widening gap between the rich and the poor."
                     }
                 }
@@ -259,7 +244,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Housing Market Remains Strong Amid Economic Challenges"
                         $0.text = "Despite economic uncertainties, the housing market continues to show resilience in many regions."
                     }
                 }
@@ -274,7 +258,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Electric Vehicles Continue to Gain Market Share"
                         $0.text = "EVs are steadily increasing their market share as more consumers make the switch to environmentally friendly cars."
                     }
                 }
@@ -289,7 +272,7 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Upcoming Game Release Generates Massive Hype"
+                        $0.text = "Upcoming Game Release Generates Massive Hype"
                     }
                 }
             },
@@ -303,7 +286,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Only Murders in the Building"
                         $0.text = "Martin Short’s athleticism was put to the test in Tuesday’s episode of “Only Murders in the Building” as Oliver volunteers to reenact how Sazz Pataki’s killer was able to murder the Brazzos stunt double, clean up the crime scene and bring her down to the incinerator all in 12 minutes."
                     }
                 }
@@ -320,7 +302,7 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "'The Last of Us’ zombie spider fungus found in Scotland"
+                        $0.text = "'The Last of Us’ zombie spider fungus found in Scotland"
                     }
                 }
             },
@@ -334,7 +316,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Turn old Glasgow offices into homes, property veterans say"
                         $0.text = "Two of the best-known figures on the Scottish commercial property scene have signalled hope that a brighter future can be secured for Glasgow’s ageing office stock, as debate continues to rage over how best to reverse the declining fortunes of the city centre."
                     }
                 }
@@ -349,7 +330,7 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Dobbies to shut two stores in Scotland as part of restructuring plan"
+                        $0.text = "Dobbies to shut two stores in Scotland as part of restructuring plan"
                     }
                 }
             },
@@ -363,7 +344,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "The village that's 'up there with anywhere in Scotland for a cosy autumn break'"
                         $0.text = "The village of Ballater in Royal Deeside may be famous for family connections, but this is a village that provides VIP hospitality for all"
                     }
                 }
@@ -378,7 +358,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Glen Sannox suffers further blow as trials postponed due to blackout"
                         $0.text = "The Glen Sannox has suffered a further problem after sea trials came to a halt following an inadvertent blackout."
                     }
                 }
@@ -393,7 +372,6 @@ enum MockData {
                 }
                 $0.content = .with {
                     $0.post = .with {
-                        $0.headline = "Glen Sannox suffers further blow as trials postponed due to blackout"
                         $0.text = "The Glen Sannox has suffered a further problem after sea trials came to a halt following an inadvertent blackout."
                     }
                 }

@@ -18,10 +18,8 @@ class CreatePostViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var dismiss = false
     @Published var alertError: DisplayableString?
-    @Published var headline = ""
     @Published var text: String = ""
     @Published var picture: ImageAndData?
-    @Published private(set) var headlineError: DisplayableString?
     @Published private(set) var textError: DisplayableString?
     @Published private(set) var pictureError: DisplayableString?
     @Published var selectedTopic: DisplayableTopic?
@@ -29,18 +27,18 @@ class CreatePostViewModel: ObservableObject {
     @Published private(set) var userAvatar: Author.Avatar?
     @Published private(set) var hasChanges = false
 
-    var sendButtonAvailable: Bool { !isLoading && headlineValid() && textValid() }
-    private var sendAvailable: Bool { sendButtonAvailable && topicValid() }
+    var sendButtonAvailable: Bool { !isLoading && validator.validate(text: text) }
 
-    let headlineMaxLength = 100
-    let textMaxLength = 3000
+    var textMaxLength: Int { validator.maxTextLength }
 
     let octopus: OctopusSDK
+    private let validator: Validators.Post
     private var storage = [AnyCancellable]()
     private var sendingCancellable: AnyCancellable?
 
     init(octopus: OctopusSDK) {
         self.octopus = octopus
+        validator = octopus.core.validators.post
 
         Publishers.CombineLatest3(
             octopus.core.profileRepository.$profile,
@@ -64,23 +62,12 @@ class CreatePostViewModel: ObservableObject {
             topics = $0.map { DisplayableTopic(topicId: $0.uuid, name: $0.name) }
         }.store(in: &storage)
 
-        Publishers.CombineLatest4(
-            $headline,
+        Publishers.CombineLatest3(
             $text,
             $picture,
             $selectedTopic)
-            .sink { [unowned self] headline, text, picture, selectedTopic in
-                hasChanges = !headline.isEmpty || !text.isEmpty || picture != nil || selectedTopic != nil
-            }.store(in: &storage)
-
-        $headline
-            .removeDuplicates()
-            .sink { [unowned self] headline in
-                if headline.count > headlineMaxLength {
-                    headlineError = .localizationKey("Error.TextTooLong_currentLength:\(headline.count)_maxLength:\(headlineMaxLength)")
-                } else {
-                    headlineError = nil
-                }
+            .sink { [unowned self] text, picture, selectedTopic in
+                hasChanges = !text.isEmpty || picture != nil || selectedTopic != nil
             }.store(in: &storage)
 
         $text
@@ -112,11 +99,11 @@ class CreatePostViewModel: ObservableObject {
     }
 
     func send() {
-        guard sendAvailable, let topic = selectedTopic else { return }
+        guard let topic = selectedTopic else { return }
+        let post = WritablePost(topicId: topic.topicId, text: text, imageData: picture?.imageData)
+        guard validator.validate(post: post) else { return }
 
         isLoading = true
-
-        let post = WritablePost(topicId: topic.topicId, headline: headline, text: text, imageData: picture?.imageData)
 
         Task {
             await send(post: post)
@@ -142,8 +129,6 @@ class CreatePostViewModel: ObservableObject {
                         alertError = .localizedString(multiErrorLocalizedString)
                     case let .linkedToField(field):
                         switch field {
-                        case .headline:
-                            headlineError = .localizedString(multiErrorLocalizedString)
                         case .text:
                             textError = .localizedString(multiErrorLocalizedString)
                         case .picture:
@@ -155,14 +140,6 @@ class CreatePostViewModel: ObservableObject {
                 alertError = serverError.displayableMessage
             }
         }
-    }
-
-    private func headlineValid() -> Bool {
-        return !headline.isEmpty && headline.count <= headlineMaxLength
-    }
-
-    private func textValid() -> Bool {
-        return text.count <= textMaxLength
     }
 
     private func topicValid() -> Bool {

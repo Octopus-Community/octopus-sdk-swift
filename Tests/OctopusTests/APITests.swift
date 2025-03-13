@@ -23,18 +23,18 @@ class APITests {
                 }
             }
         )
-        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
+        _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
     }
 
     @Test func testConnectionModeSSOWithoutAssociatedFields() throws {
         let ssoConfiguration = ConnectionMode.SSOConfiguration(
             loginRequired: { }
         )
-        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
+        _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
     }
 
     @Test func testConnectionModeOctopus() throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .octopus(deepLink: "DEEP_LINK"))
+        _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: .octopus(deepLink: "DEEP_LINK"))
     }
 
     @Test func testConnectUser() async throws {

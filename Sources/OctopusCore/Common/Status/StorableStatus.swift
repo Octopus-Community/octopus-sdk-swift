@@ -43,55 +43,82 @@ enum StorableStatus: Equatable {
 
 struct StorableStatusReason: Equatable {
     enum Code: Equatable {
-        case oth
         case hte
         case hrs
+        case gv
+        case agg
         case vlc
         case sxc
-        case fkc
-        case spm
-        case pii
-        case ill
-        case ter
+        case nud
+        case soli
+        case aex
         case cex
-        case imp
         case ssh
+        case ill
+        case hex
+        case ter
+        case hc
+        case spm
+        case imp
+        case mis
+        case pii
+        case up
+        case cip
+        case oth
         case UNRECOGNIZED(Int)
 
         public init(rawValue: Int) {
             switch rawValue {
-            case Com_Octopuscommunity_StatusReasonCode.oth.rawValue: self = .oth
             case Com_Octopuscommunity_StatusReasonCode.hte.rawValue: self = .hte
             case Com_Octopuscommunity_StatusReasonCode.hrs.rawValue: self = .hrs
+            case Com_Octopuscommunity_StatusReasonCode.gv.rawValue: self = .gv
+            case Com_Octopuscommunity_StatusReasonCode.agg.rawValue: self = .agg
             case Com_Octopuscommunity_StatusReasonCode.vlc.rawValue: self = .vlc
             case Com_Octopuscommunity_StatusReasonCode.sxc.rawValue: self = .sxc
-            case Com_Octopuscommunity_StatusReasonCode.fkc.rawValue: self = .fkc
-            case Com_Octopuscommunity_StatusReasonCode.spm.rawValue: self = .spm
-            case Com_Octopuscommunity_StatusReasonCode.pii.rawValue: self = .pii
-            case Com_Octopuscommunity_StatusReasonCode.ill.rawValue: self = .ill
-            case Com_Octopuscommunity_StatusReasonCode.ter.rawValue: self = .ter
+            case Com_Octopuscommunity_StatusReasonCode.nud.rawValue: self = .nud
+            case Com_Octopuscommunity_StatusReasonCode.soli.rawValue: self = .soli
+            case Com_Octopuscommunity_StatusReasonCode.aex.rawValue: self = .aex
             case Com_Octopuscommunity_StatusReasonCode.cex.rawValue: self = .cex
-            case Com_Octopuscommunity_StatusReasonCode.imp.rawValue: self = .imp
             case Com_Octopuscommunity_StatusReasonCode.ssh.rawValue: self = .ssh
+            case Com_Octopuscommunity_StatusReasonCode.ill.rawValue: self = .ill
+            case Com_Octopuscommunity_StatusReasonCode.hex.rawValue: self = .hex
+            case Com_Octopuscommunity_StatusReasonCode.ter.rawValue: self = .ter
+            case Com_Octopuscommunity_StatusReasonCode.hc.rawValue: self = .hc
+            case Com_Octopuscommunity_StatusReasonCode.spm.rawValue: self = .spm
+            case Com_Octopuscommunity_StatusReasonCode.imp.rawValue: self = .imp
+            case Com_Octopuscommunity_StatusReasonCode.mis.rawValue: self = .mis
+            case Com_Octopuscommunity_StatusReasonCode.pii.rawValue: self = .pii
+            case Com_Octopuscommunity_StatusReasonCode.up.rawValue: self = .up
+            case Com_Octopuscommunity_StatusReasonCode.cip.rawValue: self = .cip
+            case Com_Octopuscommunity_StatusReasonCode.oth.rawValue: self = .oth
             default: self = .UNRECOGNIZED(rawValue)
             }
         }
 
         public var rawValue: Int {
             switch self {
-            case .oth: return Com_Octopuscommunity_StatusReasonCode.oth.rawValue
             case .hte: return Com_Octopuscommunity_StatusReasonCode.hte.rawValue
             case .hrs: return Com_Octopuscommunity_StatusReasonCode.hrs.rawValue
+            case .gv: return Com_Octopuscommunity_StatusReasonCode.gv.rawValue
+            case .agg: return Com_Octopuscommunity_StatusReasonCode.agg.rawValue
             case .vlc: return Com_Octopuscommunity_StatusReasonCode.vlc.rawValue
             case .sxc: return Com_Octopuscommunity_StatusReasonCode.sxc.rawValue
-            case .fkc: return Com_Octopuscommunity_StatusReasonCode.fkc.rawValue
-            case .spm: return Com_Octopuscommunity_StatusReasonCode.spm.rawValue
-            case .pii: return Com_Octopuscommunity_StatusReasonCode.pii.rawValue
-            case .ill: return Com_Octopuscommunity_StatusReasonCode.ill.rawValue
-            case .ter: return Com_Octopuscommunity_StatusReasonCode.ter.rawValue
+            case .nud: return Com_Octopuscommunity_StatusReasonCode.nud.rawValue
+            case .soli: return Com_Octopuscommunity_StatusReasonCode.soli.rawValue
+            case .aex: return Com_Octopuscommunity_StatusReasonCode.aex.rawValue
             case .cex: return Com_Octopuscommunity_StatusReasonCode.cex.rawValue
-            case .imp: return Com_Octopuscommunity_StatusReasonCode.imp.rawValue
             case .ssh: return Com_Octopuscommunity_StatusReasonCode.ssh.rawValue
+            case .ill: return Com_Octopuscommunity_StatusReasonCode.ill.rawValue
+            case .hex: return Com_Octopuscommunity_StatusReasonCode.hex.rawValue
+            case .ter: return Com_Octopuscommunity_StatusReasonCode.ter.rawValue
+            case .hc: return Com_Octopuscommunity_StatusReasonCode.hc.rawValue
+            case .spm: return Com_Octopuscommunity_StatusReasonCode.spm.rawValue
+            case .imp: return Com_Octopuscommunity_StatusReasonCode.imp.rawValue
+            case .mis: return Com_Octopuscommunity_StatusReasonCode.mis.rawValue
+            case .pii: return Com_Octopuscommunity_StatusReasonCode.pii.rawValue
+            case .up: return Com_Octopuscommunity_StatusReasonCode.up.rawValue
+            case .cip: return Com_Octopuscommunity_StatusReasonCode.cip.rawValue
+            case .oth: return Com_Octopuscommunity_StatusReasonCode.oth.rawValue
             case .UNRECOGNIZED(let i): return i
             }
         }

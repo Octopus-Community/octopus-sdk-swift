@@ -23,7 +23,7 @@ struct SettingProfileView: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 20)
-            theme.colors.gray200.frame(height: 1)
+            theme.colors.gray300.frame(height: 1)
             Spacer().frame(height: 20)
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -32,13 +32,13 @@ struct SettingProfileView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 20, height: 20)
-                            .foregroundColor(theme.colors.gray600)
+                            .foregroundColor(theme.colors.gray900)
 
                         VStack(alignment: .leading, spacing: 20) {
                             Text("Settings.Profile.Email", bundle: .module)
                                 .font(theme.fonts.body2)
                                 .fontWeight(.medium)
-                                .foregroundColor(theme.colors.gray600)
+                                .foregroundColor(theme.colors.gray900)
 
                             Text(viewModel.email ?? "")
                                 .font(theme.fonts.body2)

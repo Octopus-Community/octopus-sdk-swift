@@ -33,12 +33,12 @@ struct CreateButton: View {
                     .font(theme.fonts.body2)
                 Spacer()
             }
-            .foregroundColor(theme.colors.textOnAccent)
+            .foregroundColor(theme.colors.onPrimary)
             .frame(maxWidth: .infinity)
             .padding(.horizontal)
             .padding(.vertical, 14)
             .background(
-                Capsule().foregroundColor(theme.colors.accent)
+                Capsule().foregroundColor(theme.colors.primary)
             )
         }
     }

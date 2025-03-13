@@ -32,14 +32,14 @@ struct CommentView: View {
                                 comment.author.name.textView
                                     .font(theme.fonts.caption1)
                                     .fontWeight(.semibold)
-                                    .foregroundColor(theme.colors.gray600)
+                                    .foregroundColor(theme.colors.gray900)
                             }
                             Circle()
                                 .frame(width: 2, height: 2)
-                                .foregroundColor(theme.colors.gray600)
+                                .foregroundColor(theme.colors.gray900)
                             Text(comment.relativeDate)
                                 .font(theme.fonts.caption1)
-                                .foregroundColor(theme.colors.gray400)
+                                .foregroundColor(theme.colors.gray500)
                             Spacer()
                             if comment.canBeDeleted || comment.canBeModerated {
                                 if #available(iOS 14.0, *) {
@@ -74,7 +74,7 @@ struct CommentView: View {
                             RichText(text)
                                 .font(theme.fonts.body2)
                                 .lineSpacing(4)
-                                .foregroundColor(theme.colors.gray600)
+                                .foregroundColor(theme.colors.gray900)
                         }
                     }.padding(8)
                     if let image = comment.image {
@@ -98,7 +98,7 @@ struct CommentView: View {
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerSize: CGSize(width: 12, height: 12))
-                        .foregroundColor(theme.colors.gray200)
+                        .foregroundColor(theme.colors.gray300)
                 )
 
                 let userInteractions = liveMeasures.userInteractions
@@ -107,11 +107,18 @@ struct CommentView: View {
                     Image(userInteractions.hasLiked ? .AggregatedInfo.likeActivated : .AggregatedInfo.like)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .foregroundColor(userInteractions.hasLiked ? theme.colors.like : theme.colors.gray500)
-                    Text(verbatim: aggregatedInfo.likeCount > 0 ? "\(aggregatedInfo.likeCount)" : "")
-                        .font(theme.fonts.caption1)
-                        .fontWeight(.medium)
-                        .foregroundColor(theme.colors.gray500)
+                        .foregroundColor(userInteractions.hasLiked ? theme.colors.like : theme.colors.gray700)
+                    if aggregatedInfo.likeCount > 0 {
+                        Text(verbatim: "\(aggregatedInfo.likeCount)")
+                            .font(theme.fonts.caption1)
+                            .fontWeight(.medium)
+                            .foregroundColor(theme.colors.gray700)
+                    } else {
+                        Text("Content.AggregatedInfo.Like", bundle: .module)
+                            .font(theme.fonts.caption1)
+                            .fontWeight(.medium)
+                            .foregroundColor(theme.colors.gray700)
+                    }
                 }
                 .fixedSize()
                 .frame(maxWidth: .infinity, alignment: .leading)

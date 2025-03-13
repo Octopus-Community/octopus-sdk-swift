@@ -31,7 +31,7 @@ struct DeleteAccountView: View {
         ZStack {
             VStack(spacing: 0) {
                 Spacer().frame(height: 20)
-                theme.colors.gray200.frame(height: 1)
+                theme.colors.gray300.frame(height: 1)
                 Spacer().frame(height: 20)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
@@ -69,7 +69,7 @@ struct DeleteAccountView: View {
                         .padding()
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(theme.colors.gray200, lineWidth: 1)
+                                .stroke(theme.colors.gray300, lineWidth: 1)
                         )
 
                         Spacer(minLength: 30)
@@ -78,14 +78,14 @@ struct DeleteAccountView: View {
                 }
                 Button(action: { displayDeleteUserAlert = true }) {
                     Text("Common.Continue", bundle: .module)
-                        .foregroundColor(theme.colors.textOnAccent)
+                        .foregroundColor(theme.colors.onPrimary)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .fill(selectedReason != nil ?
-                                      theme.colors.accent :
-                                        theme.colors.accent.opacity(0.3))
+                                      theme.colors.primary :
+                                        theme.colors.primary.opacity(0.3))
                         )
                 }
                 .padding(.horizontal, 20)
@@ -181,7 +181,7 @@ private struct ReasonCell: View {
                     .multilineTextAlignment(.leading)
                 Spacer()
             }
-            .foregroundColor(theme.colors.gray600)
+            .foregroundColor(theme.colors.gray900)
         }
     }
 }

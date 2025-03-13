@@ -1095,7 +1095,7 @@ public struct Com_Octopuscommunity_ReportUserRequest: Sendable {
 
   public var userID: String = String()
 
-  public var reasonCodes: [Com_Octopuscommunity_StatusReasonCode] = []
+  public var reasonCodes: [Com_Octopuscommunity_ReportReasonCode] = []
 
   public var customReason: String {
     get {return _customReason ?? String()}

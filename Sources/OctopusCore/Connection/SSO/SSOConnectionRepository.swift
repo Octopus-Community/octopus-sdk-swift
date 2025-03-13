@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import RemoteClient
 import DependencyInjection
 import GrpcModels
@@ -119,7 +120,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
                     let token = try await clientUserTokenProvider?()
                     userDataStorage.store(clientUserData: .init(id: user.userId, token: token))
                 } catch {
-                    print("Error while trying to fetch client user token: \(error)")
+                    if #available(iOS 14, *) { Logger.connection.debug("Error while trying to fetch client user token: \(error)") }
                 }
             }
         }

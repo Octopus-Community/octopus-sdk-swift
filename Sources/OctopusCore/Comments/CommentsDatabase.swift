@@ -5,6 +5,7 @@
 import Foundation
 import CoreData
 import Combine
+import os
 import DependencyInjection
 
 extension Injected {
@@ -116,7 +117,7 @@ class CommentsDatabase: InjectableObject {
 
             for additionalData in array {
                 guard let postEntity = existingPosts.first(where: { $0.uuid == additionalData.0 }) else {
-                    print("Developper error: updating additional data wihout comment")
+                    if #available(iOS 14, *) { Logger.comments.debug("Developper error: updating additional data wihout comment") }
                     continue
                 }
                 if let aggregatedInfo = additionalData.1 {

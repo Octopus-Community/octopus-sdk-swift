@@ -16,8 +16,15 @@
     {
       "target" : {
         "containerPath" : "container:..",
-        "identifier" : "DependencyInjectionTests",
-        "name" : "DependencyInjectionTests"
+        "identifier" : "OctopusCoreTests",
+        "name" : "OctopusCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:..",
+        "identifier" : "OctopusUITests",
+        "name" : "OctopusUITests"
       }
     },
     {
@@ -30,8 +37,8 @@
     {
       "target" : {
         "containerPath" : "container:..",
-        "identifier" : "OctopusCoreTests",
-        "name" : "OctopusCoreTests"
+        "identifier" : "DependencyInjectionTests",
+        "name" : "DependencyInjectionTests"
       }
     }
   ],

@@ -34,16 +34,16 @@ struct PostSummaryView: View {
                                     post.author.name.textView
                                         .font(theme.fonts.caption1)
                                         .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.gray600)
+                                        .foregroundColor(theme.colors.gray900)
                                 }
                                 Circle()
                                     .frame(width: 2, height: 2)
-                                    .foregroundColor(theme.colors.gray600)
+                                    .foregroundColor(theme.colors.gray900)
                                 OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
                                     Text(post.relativeDate)
                                         .font(theme.fonts.caption1)
                                         .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.gray400)
+                                        .foregroundColor(theme.colors.gray500)
                                 }
                             }
                             HStack(spacing: 4) {
@@ -51,12 +51,12 @@ struct PostSummaryView: View {
                                     Text(post.topic)
                                         .font(theme.fonts.caption2)
                                         .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.gray500)
+                                        .foregroundColor(theme.colors.primary)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
                                         .background(
                                             Capsule()
-                                                .foregroundColor(theme.colors.gray200)
+                                                .foregroundColor(theme.colors.primaryLowContrast)
                                         )
                                 }
                                 if case .moderated = post.content {
@@ -106,6 +106,7 @@ struct PostSummaryView: View {
                         }
                     }
                 }.padding(.horizontal, 20)
+
                 switch post.content {
                 case let .published(postContent):
                     OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
@@ -120,7 +121,7 @@ struct PostSummaryView: View {
             .padding(.top, 16)
             .padding(.bottom, 8)
 
-            theme.colors.gray200
+            theme.colors.gray300
                 .frame(height: 1)
         }
         .id("post-\(post.uuid)")
@@ -183,27 +184,19 @@ private struct PublishedContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Group {
-                Text(content.headline)
-                    .font(theme.fonts.body2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(theme.colors.gray600)
-                    .multilineTextAlignment(.leading)
-
-                if let text = content.text, !text.isEmpty {
-                    if content.textIsEllipsized {
-                        Text(verbatim: "\(text)... ")
-                            .font(theme.fonts.caption1)
-                            .foregroundColor(theme.colors.gray600)
-                        +
-                        Text("Post.List.ReadMore", bundle: .module)
-                            .font(theme.fonts.caption1)
-                            .bold()
-                            .foregroundColor(theme.colors.gray600)
-                    } else {
-                        Text(verbatim: "\(text)\(content.textIsEllipsized ? "..." : "")")
-                            .font(theme.fonts.caption1)
-                            .foregroundColor(theme.colors.gray600)
-                    }
+                if content.textIsEllipsized {
+                    Text(verbatim: "\(content.text)... ")
+                        .font(theme.fonts.body2)
+                        .foregroundColor(theme.colors.gray900)
+                    +
+                    Text("Post.List.ReadMore", bundle: .module)
+                        .font(theme.fonts.body2)
+                        .bold()
+                        .foregroundColor(theme.colors.gray900)
+                } else {
+                    Text(content.text)
+                        .font(theme.fonts.body2)
+                        .foregroundColor(theme.colors.gray900)
                 }
             }
             .padding(.horizontal, 20)

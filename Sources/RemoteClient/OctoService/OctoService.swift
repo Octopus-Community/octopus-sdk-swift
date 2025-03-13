@@ -37,7 +37,7 @@ public protocol OctoService {
     func delete(comment commentId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeleteCommentResponse
 
-    func reportContent(objectId: String, reasons: [Com_Octopuscommunity_StatusReasonCode],
+    func reportContent(objectId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportContentResponse
 
@@ -173,7 +173,7 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
     }
 
-    func reportContent(objectId: String, reasons: [Com_Octopuscommunity_StatusReasonCode],
+    func reportContent(objectId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportContentResponse {
         let request = Com_Octopuscommunity_ReportContentRequest.with {

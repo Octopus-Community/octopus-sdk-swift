@@ -24,11 +24,11 @@ struct CustomSegmentedControl: View {
                     Group {
                         if selectedTab == index {
                             Text(self.tabs[index], bundle: .module)
-                                .foregroundColor(theme.colors.accent)
+                                .foregroundColor(theme.colors.primary)
                                 .alignmentGuide(.centeredAlignment, computeValue: { d in d[HorizontalAlignment.center] })
                         } else {
                             Text(self.tabs[index], bundle: .module)
-                                .foregroundColor(theme.colors.accent)
+                                .foregroundColor(theme.colors.primary)
                                 .onTapGesture {
                                     withAnimation {
                                         selectedTab = index
@@ -43,7 +43,7 @@ struct CustomSegmentedControl: View {
             }
             Rectangle()
                 .frame(width: itemWidth, height: 2)
-                .foregroundColor(theme.colors.accent)
+                .foregroundColor(theme.colors.primary)
                 .alignmentGuide(.centeredAlignment, computeValue: { d in d[HorizontalAlignment.center] })
         }
         .frame(maxWidth: .infinity)

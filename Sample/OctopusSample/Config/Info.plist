@@ -27,6 +27,8 @@
 	<string>$(OCTOPUS_SSO_API_KEY)</string>
 	<key>OCTOPUS_REMOTE_BASE_URL</key>
 	<string>$(OCTOPUS_REMOTE_BASE_URL)</string>
+	<key>OCTOPUS_INTERNAL_DEMO_MODE</key>
+	<string>$(OCTOPUS_INTERNAL_DEMO_MODE)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

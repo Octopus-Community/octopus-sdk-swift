@@ -91,7 +91,8 @@ class MagicLinkViewModel: ObservableObject {
     }
 
     func checkMagicLinkConfirmed() {
-        guard case let .magicLinkConfirmationPending(email, state: .magicLinkSent) = state else { return }
+        guard case let .magicLinkConfirmationPending(email, state: subState) = state,
+                subState != .checkingMagicLink else { return }
 
         Task { [octopus] in
             state = .magicLinkConfirmationPending(email: email, state: .checkingMagicLink)

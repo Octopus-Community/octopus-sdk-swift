@@ -16,7 +16,8 @@ struct SampleRootView: View {
 
     @ObservedObject var model = SampleModel()
 
-    @State private var openOctopusAsModal = true
+    // First value is true if we are in internal demo mode.
+    @State private var openOctopusAsModal = DefaultValuesProvider.demoMode
     @State private var selectedTab = Tab.modal
 
     var body: some View {
@@ -36,6 +37,13 @@ struct SampleRootView: View {
                 }
                 .fullScreenCover(isPresented: $openOctopusAsModal) {
                     OctopusHomeScreen(octopus: model.octopus)
+                        // only for used for internal purpose, you can ignore this for the easiest way to use Octopus
+                        // If you want to override the theme, please have a look to Scenarios/CustomTheme
+                        .modify {
+                            if DefaultValuesProvider.demoMode {
+                                $0.environment(\.octopusTheme, demoTheme)
+                            } else { $0 }
+                        }
                 }
             }
             .tabItem {
@@ -66,6 +74,13 @@ struct SampleRootView: View {
         let buildNumber = (Bundle.main.infoDictionary!["CFBundleVersion"] as! String)
         return "\(appVersion) (#\(buildNumber))"
     }
+
+    let demoTheme = OctopusTheme(
+        colors: .init(
+            primarySet: OctopusTheme.Colors.ColorSet(
+                main: .InternalDemo.primary,
+                lowContrast: .InternalDemo.primaryLow,
+                highContrast: .InternalDemo.primaryHigh)))
 }
 
 #Preview {

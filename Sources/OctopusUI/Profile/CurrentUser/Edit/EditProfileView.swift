@@ -82,7 +82,7 @@ struct EditProfileView: View {
                 Text("Common.Save", bundle: .module)
                     .font(theme.fonts.navBarItem)
                     .fontWeight(.semibold)
-                    .foregroundColor(viewModel.saveAvailable ? theme.colors.accent : theme.colors.disabled)
+                    .foregroundColor(viewModel.saveAvailable ? theme.colors.primary : theme.colors.disabled)
             }
             .disabled(!viewModel.saveAvailable)
         } else {
@@ -202,10 +202,12 @@ private struct EditProfileFormView: View {
                 Text("Profile.Edit.Nickname.Description", bundle: .module)
                     .font(theme.fonts.body2)
                     .fontWeight(.medium)
+                    .foregroundColor(theme.colors.gray700)
                     .multilineTextAlignment(.center)
                 Spacer().frame(height: 6)
                 TextField(L10n("Profile.Nickname.Placeholder"), text: $nickname)
                     .font(theme.fonts.body2)
+                    .foregroundColor(theme.colors.gray900)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
                     .padding(.vertical, 14)
@@ -213,7 +215,7 @@ private struct EditProfileFormView: View {
                     .focused($nicknameFocused)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(nicknameFocused ? theme.colors.gray600 : theme.colors.gray200,
+                            .stroke(nicknameFocused ? theme.colors.gray900 : theme.colors.gray300,
                                     lineWidth: nicknameFocused ? 2 : 1)
                     )
                 Spacer().frame(height: 6)
@@ -237,6 +239,7 @@ private struct EditProfileFormView: View {
                     Text("Profile.Edit.Bio.Description", bundle: .module)
                         .font(theme.fonts.body2)
                         .fontWeight(.medium)
+                        .foregroundColor(theme.colors.gray700)
                         .multilineTextAlignment(.center)
                     Spacer()
                     Text(verbatim: "(\(bio.count)/\(bioMaxLength))")
@@ -246,6 +249,7 @@ private struct EditProfileFormView: View {
                 Spacer().frame(height: 6)
                 MultilineTextField(text: $bio, shouldFocus: $bioFocused, placeholderText: "Profile.Edit.Bio.Placeholder")
                     .font(theme.fonts.body2)
+                    .foregroundColor(theme.colors.gray900)
                     .focused($bioFocused)
                     .frame(minHeight: 140, alignment: .top)
                     .padding(.vertical, 14)
@@ -256,7 +260,7 @@ private struct EditProfileFormView: View {
                     }
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(bioFocused ? theme.colors.gray600 : theme.colors.gray200,
+                            .stroke(bioFocused ? theme.colors.gray900 : theme.colors.gray300,
                                     lineWidth: bioFocused ? 2 : 1)
                     )
                     .onValueChanged(of: bio) { [oldValue = bio] newValue in
@@ -311,7 +315,7 @@ struct MultilineTextField: View {
                 .placeholder(when: text.isEmpty) {
                     if let placeholderText {
                         Text(placeholderText, bundle: .module)
-                            .foregroundColor(theme.colors.gray400)
+                            .foregroundColor(theme.colors.gray500)
                     } else {
                         EmptyView()
                     }
@@ -323,7 +327,7 @@ struct MultilineTextField: View {
                 .placeholder(when: text.isEmpty) {
                     if let placeholderText {
                         Text(placeholderText, bundle: .module)
-                            .foregroundColor(theme.colors.gray400)
+                            .foregroundColor(theme.colors.gray500)
                     } else {
                         EmptyView()
                     }
@@ -362,9 +366,9 @@ private struct PictureView: View {
                 AuthorAvatarView(avatar: authorAvatar)
                     .overlay(
                         Image(.editPicture)
-                            .foregroundColor(theme.colors.textOnAccent)
+                            .foregroundColor(theme.colors.onPrimary)
                             .padding(8)
-                            .background(theme.colors.accent)
+                            .background(theme.colors.primary)
                             .clipShape(Circle())
                             .frame(width: 28, height: 28)
                             .offset(x: 30, y: 30)

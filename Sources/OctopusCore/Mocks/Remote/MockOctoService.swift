@@ -113,7 +113,7 @@ class MockOctoService: OctoService {
         return response
     }
 
-    func reportContent(objectId: String, reasons: [Com_Octopuscommunity_StatusReasonCode],
+    func reportContent(objectId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportContentResponse {
         guard let response = reportContentResponses.popLast() else {

@@ -5,6 +5,7 @@
 import Foundation
 import CoreData
 import Combine
+import os
 import DependencyInjection
 
 extension Injected {
@@ -96,7 +97,6 @@ class PostsDatabase: InjectableObject {
                     postEntity = PostEntity(context: context)
                 }
                 postEntity.uuid = post.uuid
-                postEntity.headline = post.headline
                 postEntity.text = post.text
                 postEntity.mediasRelationship = NSOrderedSet(array: post.medias.map {
                     let mediaEntity = MediaEntity(context: context)
@@ -146,7 +146,7 @@ class PostsDatabase: InjectableObject {
 
             for additionalData in array {
                 guard let postEntity = existingPosts.first(where: { $0.uuid == additionalData.0 }) else {
-                    print("Developper error: updating additional data wihout post")
+                    if #available(iOS 14, *) { Logger.posts.debug("Developper error: updating additional data without post") }
                     continue
                 }
                 if let aggregatedInfo = additionalData.1 {

@@ -8,6 +8,7 @@ import RemoteClient
 import GrpcModels
 import SwiftProtobuf
 import DependencyInjection
+import os
 
 extension Injected {
     static let commentsRepository = Injector.InjectedIdentifier<CommentsRepository>()
@@ -105,7 +106,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     public func fetchAdditionalData(ids: [String], incrementViewCount: Bool = false) async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            print("Fetching additional data for ids: \(ids)")
+            if #available(iOS 14, *) { Logger.comments.trace("Fetching additional data for ids: \(ids)") }
             let batchResponse = try await remoteClient.octoService.getBatch(
                 ids: ids,
                 options: [.aggregates, .interactions],

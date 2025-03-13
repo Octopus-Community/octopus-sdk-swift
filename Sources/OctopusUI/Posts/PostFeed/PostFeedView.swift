@@ -7,6 +7,7 @@ import SwiftUI
 import Combine
 import Octopus
 import OctopusCore
+import os
 
 struct PostFeedView<EmptyPostView: View>: View {
     @Environment(\.presentationMode) private var presentationMode
@@ -160,7 +161,7 @@ private struct PostsView<EmptyPostView: View>: View {
                         .frame(width: 100)
                         .frame(maxWidth: .infinity)
                         .onAppear {
-                            print("Loader appeared, loading previous items...")
+                            if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
                             loadPreviousItems()
                         }
                 }

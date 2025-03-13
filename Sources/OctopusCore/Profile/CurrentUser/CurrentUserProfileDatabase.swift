@@ -5,6 +5,7 @@
 import Foundation
 import CoreData
 import Combine
+import os
 import DependencyInjection
 
 extension Injected {
@@ -63,7 +64,7 @@ class CurrentUserProfileDatabase: InjectableObject {
     func update(blockedProfileIds: [String], on profileId: String) async throws {
         try await context.performAsync { [context] in
             guard let existingProfile = try context.fetch(PrivateProfileEntity.fetchById(id:profileId)).first else {
-                print("Developper error: updating blockedProfileIds without existing profile")
+                if #available(iOS 14, *) { Logger.profile.debug("Dev error: updating blockedProfileIds without existing profile") }
                 return
             }
             existingProfile.blocking = NSOrderedSet(array: blockedProfileIds.map {

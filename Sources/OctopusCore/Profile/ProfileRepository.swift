@@ -5,6 +5,7 @@
 import Foundation
 import Combine
 import RemoteClient
+import os
 import DependencyInjection
 import GrpcModels
 
@@ -78,7 +79,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
                     do {
                         try await processCurrentUserProfileResponse(response)
                     } catch {
-                        print("Error while processing user profile response: \(error)")
+                        if #available(iOS 14, *) { Logger.profile.debug("Error while processing user profile response: \(error)") }
                     }
                 }
             }
@@ -96,7 +97,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
             if appManagedFields.contains(.nickname),
                let clientNickname = clientUser.profile.nickname,
                profile.nickname != clientNickname {
-                print("Nickname changed")
+                if #available(iOS 14, *) { Logger.profile.trace("Nickname changed") }
                 nickname = .updated(clientNickname)
                 hasUpdate = true
             } else {
@@ -105,7 +106,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
 
             let bio: EditableProfile.FieldUpdate<String?>
             if appManagedFields.contains(.bio), profile.bio != clientUser.profile.bio {
-                print("Bio changed")
+                if #available(iOS 14, *) { Logger.profile.trace("Bio changed") }
                 bio = .updated(clientUser.profile.bio)
                 hasUpdate = true
             } else {
@@ -114,7 +115,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
 
             let picture: EditableProfile.FieldUpdate<Data?>
             if appManagedFields.contains(.picture), latestClientUserPicture != clientUser.profile.picture {
-                print("Picture changed")
+                if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
                 picture = .updated(clientUser.profile.picture)
                 hasUpdate = true
             } else {
@@ -131,7 +132,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
                     } catch {
                         // rollback client picture hash
                         latestClientUserPicture = previousClientUserPicture
-                        print("Error syncing profile: \(error)")
+                        if #available(iOS 14, *) { Logger.profile.debug("Error syncing profile: \(error)") }
                     }
                 }
             }
@@ -200,7 +201,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
                 throw UpdateProfile.Error.serverCall(.other(nil))
             }
         } catch {
-            print("update profile failed with error: \(error)")
+            if #available(iOS 14, *) { Logger.profile.debug("update profile failed with error: \(error)") }
             if let error = error as? UpdateProfile.Error {
                 throw error
             } else if let error = error as? AuthenticatedActionError {

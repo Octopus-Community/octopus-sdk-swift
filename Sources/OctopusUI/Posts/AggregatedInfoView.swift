@@ -15,6 +15,8 @@ struct AggregatedInfoView: View {
     let childrenTapped: () -> Void
     let likeTapped: () -> Void
 
+    @State private var isShowingPopover = false
+
     init(aggregatedInfo: AggregatedInfo, userInteractions: UserInteractions, minChildCount: Int? = nil,
          childrenTapped: @escaping () -> Void, likeTapped: @escaping () -> Void) {
         self.aggregatedInfo = aggregatedInfo
@@ -29,19 +31,36 @@ struct AggregatedInfoView: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
-            AggregateView(image: .AggregatedInfo.view, count: aggregatedInfo.viewCount, nullDisplayValue: "-")
+        HStack(spacing: 24) {
+            Button(action: { isShowingPopover = true }) {
+                AggregateView(image: .AggregatedInfo.view, count: aggregatedInfo.viewCount,
+                              nullDisplayValue: "Content.AggregatedInfo.View")
+            }
+            .modify {
+                if #available(iOS 16.4, *) {
+                    $0.popover(isPresented: $isShowingPopover, arrowEdge: .bottom) {
+                        Text("Content.AggregatedInfo.View.Explanation", bundle: .module)
+                            .font(theme.fonts.caption1)
+                            .foregroundColor(theme.colors.gray900)
+                            .padding(.horizontal)
+                            .presentationCompactAdaptation((.popover))
+                    }
+                } else {
+                    $0.disabled(true)
+                }
+            }
 
             Button(action: likeTapped) {
                 AggregateView(image: userInteractions.hasLiked ? .AggregatedInfo.likeActivated : .AggregatedInfo.like,
                               imageForegroundColor: userInteractions.hasLiked ?
-                              theme.colors.like : theme.colors.gray500,
+                              theme.colors.like : theme.colors.gray700,
                               count: aggregatedInfo.likeCount,
-                              nullDisplayValue: "")
+                              nullDisplayValue: "Content.AggregatedInfo.Like")
             }
 
             Button(action: childrenTapped) {
-                AggregateView(image: .AggregatedInfo.comment, count: childCount, nullDisplayValue: "-")
+                AggregateView(image: .AggregatedInfo.comment, count: childCount,
+                              nullDisplayValue: "Content.AggregatedInfo.Comment")
             }
         }
         .fixedSize()
@@ -55,9 +74,19 @@ private struct AggregateView: View {
     let image: ImageResource
     let imageForegroundColor: Color?
     let count: Int
-    let nullDisplayValue: String
+    let nullDisplayValue: LocalizedStringKey
 
-    init(image: ImageResource, imageForegroundColor: Color? = nil, count: Int, nullDisplayValue: String) {
+    private var monospacedFont: Font {
+        if #available(iOS 15.0, *) {
+            normalFont.monospaced()
+        } else {
+            normalFont.monospacedDigit()
+        }
+    }
+
+    private var normalFont: Font { theme.fonts.caption1 }
+
+    init(image: ImageResource, imageForegroundColor: Color? = nil, count: Int, nullDisplayValue: LocalizedStringKey) {
         self.image = image
         self.imageForegroundColor = imageForegroundColor
         self.count = count
@@ -69,22 +98,27 @@ private struct AggregateView: View {
             Image(image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .foregroundColor(imageForegroundColor ?? theme.colors.gray500)
+                .foregroundColor(imageForegroundColor ?? theme.colors.gray700)
             ZStack(alignment: .leading) {
                 Text(verbatim: "0000") // biggest possible string
+                    .font(monospacedFont)
                     .fontWeight(.medium)
                     .foregroundColor(Color.clear)
-                Text(count > 0 ? "\(count)" : nullDisplayValue)
+                Text(nullDisplayValue, bundle: .module) // biggest possible string
+                    .font(normalFont)
                     .fontWeight(.medium)
-            }
-            .modify {
-                if #available(iOS 15.0, *) {
-                    $0.font(theme.fonts.caption1.monospaced())
+                    .foregroundColor(Color.clear)
+                if count > 0 {
+                    Text(verbatim: "\(count)")
+                        .font(monospacedFont)
+                        .fontWeight(.medium)
                 } else {
-                    $0.font(theme.fonts.caption1.monospacedDigit())
+                    Text(nullDisplayValue, bundle: .module)
+                        .font(normalFont)
+                        .fontWeight(.medium)
                 }
             }
-            .foregroundColor(theme.colors.gray500)
+            .foregroundColor(theme.colors.gray700)
         }
     }
 }

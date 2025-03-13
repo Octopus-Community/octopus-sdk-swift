@@ -55,8 +55,7 @@
         </fetchIndex>
     </entity>
     <entity name="Post" representedClassName="PostEntity" parentEntity="OctoObject" syncable="YES">
-        <attribute name="headline" attributeType="String"/>
-        <attribute name="text" optional="YES" attributeType="String"/>
+        <attribute name="text" attributeType="String"/>
         <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="postMedia" inverseEntity="Media"/>
     </entity>
     <entity name="PrivateProfile" representedClassName="PrivateProfileEntity" syncable="YES">

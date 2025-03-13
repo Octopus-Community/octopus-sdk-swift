@@ -5,6 +5,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import os
 import Octopus
 import OctopusCore
 
@@ -44,7 +45,7 @@ class PostFeedViewModel: ObservableObject {
         self.octopus = octopus
         self.feed = postFeed
         self.ensureConnected = ensureConnected
-        print("Display post feed \(postFeed.id) \(Date())")
+        if #available(iOS 14, *) { Logger.posts.trace("Display post feed \(postFeed.id) \(Date())") }
 
         loadRemoteTopics()
 
@@ -86,7 +87,7 @@ class PostFeedViewModel: ObservableObject {
                 let onAppear: () -> Void
                 if idx == max(postCount - 10, 0), feed.hasMoreData {
                     onAppear = { [weak self] in
-                        print("Will refresh post list due to trigger")
+                        if #available(iOS 14, *) { Logger.posts.trace("Will refresh post list due to trigger") }
                         self?.loadPreviousItems()
                         self?.queueFetchAdditionalData(id: post.uuid)
                         self?.visiblePostIds.insert(post.uuid)
@@ -122,7 +123,7 @@ class PostFeedViewModel: ObservableObject {
             }
             if self.posts != newPosts {
                 self.posts = newPosts
-                print("Posts list updated done")
+                if #available(iOS 14, *) { Logger.posts.trace("Posts list updated done") }
             }
         }.store(in: &storage)
 
@@ -159,7 +160,7 @@ class PostFeedViewModel: ObservableObject {
     }
 
     func refresh() async {
-        print("Refresh async called")
+        if #available(iOS 14, *) { Logger.posts.trace("Refresh async called") }
         // refresh topics and remote posts
         await withTaskGroup(of: Void.self) { group in
             let topicsRepository = octopus.core.topicsRepository
@@ -235,7 +236,7 @@ class PostFeedViewModel: ObservableObject {
     }
 
     func refreshFeed(isManual: Bool) {
-        print("Refresh feed")
+        if #available(iOS 14, *) { Logger.posts.trace("Refresh feed") }
         Task {
             await refreshFeed(isManual: isManual)
         }
@@ -257,7 +258,7 @@ class PostFeedViewModel: ObservableObject {
         do {
             try await feed.refresh(pageSize: 10)
         } catch {
-            print("Error while refreshing posts feed: \(error)")
+            if #available(iOS 14, *) { Logger.posts.debug("Error while refreshing posts feed: \(error)") }
             if isManual {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
@@ -271,7 +272,7 @@ class PostFeedViewModel: ObservableObject {
             do {
                 try await feed.loadPreviousItems(pageSize: 50)
             } catch {
-                print("Error while loading posts feed previous items: \(error)")
+                if #available(iOS 14, *) { Logger.posts.debug("Error while loading posts feed previous items: \(error)") }
             }
         }
     }

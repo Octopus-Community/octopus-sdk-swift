@@ -25,10 +25,8 @@ struct CreatePostView: View {
     var body: some View {
         NavigationView {
             ContentView(isLoading: viewModel.isLoading,
-                        headline: $viewModel.headline,
                         text: $viewModel.text,
                         picture: $viewModel.picture,
-                        headlineError: viewModel.headlineError,
                         textError: viewModel.textError,
                         pictureError: viewModel.pictureError,
                         userAvatar: viewModel.userAvatar ?? .defaultImage(name: "?"),
@@ -109,7 +107,7 @@ struct CreatePostView: View {
                 viewModel.alertError = nil
             }
         }
-        .accentColor(theme.colors.accent)
+        .accentColor(theme.colors.primary)
     }
 
     @ViewBuilder
@@ -139,7 +137,7 @@ struct CreatePostView: View {
                 Text("Post.Create.Button", bundle: .module)
                     .font(theme.fonts.navBarItem)
                     .fontWeight(.semibold)
-                    .foregroundColor(viewModel.sendButtonAvailable ? theme.colors.accent : theme.colors.disabled)
+                    .foregroundColor(viewModel.sendButtonAvailable ? theme.colors.primary : theme.colors.disabled)
             }
             .disabled(!viewModel.sendButtonAvailable)
         } else {
@@ -160,11 +158,9 @@ struct CreatePostView: View {
 
 private struct ContentView: View {
     let isLoading: Bool
-    @Binding var headline: String
     @Binding var text: String
     @Binding var picture: ImageAndData?
 
-    let headlineError: DisplayableString?
     let textError: DisplayableString?
     let pictureError: DisplayableString?
 
@@ -175,8 +171,8 @@ private struct ContentView: View {
 
     var body: some View {
         ZStack {
-            WritingPostForm(headline: $headline, text: $text, picture: $picture,
-                            headlineError: headlineError, textError: textError, pictureError: pictureError,
+            WritingPostForm(text: $text, picture: $picture,
+                            textError: textError, pictureError: pictureError,
                             userAvatar: userAvatar, selectedTopic: selectedTopic,
                             showTopicPicker: $showTopicPicker)
             .disabled(isLoading)
@@ -186,11 +182,9 @@ private struct ContentView: View {
 
 private struct WritingPostForm: View {
     @Environment(\.octopusTheme) private var theme
-    @Binding var headline: String
     @Binding var text: String
     @Binding var picture: ImageAndData?
 
-    let headlineError: DisplayableString?
     let textError: DisplayableString?
     let pictureError: DisplayableString?
 
@@ -200,14 +194,13 @@ private struct WritingPostForm: View {
 
     @State private var selectedItems: [ImageAndData] = []
     @State private var imagePickingError: Error?
-    @State private var headlineFocused = true
-    @State private var textFocused = false
+    @State private var textFocused = true
     @State private var openPhotosPicker = false
     @State private var scrollToBottomOfId: String?
 
     var body: some View {
         VStack {
-            theme.colors.gray200
+            theme.colors.gray300
                 .frame(maxWidth: .infinity)
                 .frame(height: 1)
             Compat.ScrollView(scrollToId: $scrollToBottomOfId, idAnchor: .bottom) {
@@ -218,7 +211,6 @@ private struct WritingPostForm: View {
                                 .frame(width: 33, height: 33)
                             Button(action: {
                                 showTopicPicker = true
-                                headlineFocused = false
                                 textFocused = false
                             }) {
                                 TopicSelectionCapsule(topic: selectedTopic?.name)
@@ -228,57 +220,16 @@ private struct WritingPostForm: View {
                             .frame(height: 24)
                         VStack(alignment: .leading, spacing: 2) {
                             if #available(iOS 16.0, *) {
-                                TextField(String(""), text: $headline, axis: .vertical)
-                                    .multilineTextAlignment(.leading)
-                                    .focused($headlineFocused)
-                                    .foregroundColor(theme.colors.gray600)
-                                    .placeholder(when: headline.isEmpty) {
-                                        Text("Post.Create.Headline.Placeholder", bundle: .module)
-                                            .multilineTextAlignment(.leading)
-                                            .foregroundColor(theme.colors.gray400)
-                                    }
-                                    .font(theme.fonts.body2)
-                                    .fontWeight(.semibold)
-                                    .onValueChanged(of: headline) {
-                                        if $0.contains("\n") {
-                                            headlineFocused = false
-                                            headline = $0.replacingOccurrences(of: "\n", with: "")
-                                        }
-                                    }
-                            } else {
-                                TextField(String(""), text: $headline)
-                                    .multilineTextAlignment(.leading)
-                                    .focused($headlineFocused)
-                                    .foregroundColor(theme.colors.gray600)
-                                    .placeholder(when: headline.isEmpty) {
-                                        Text("Post.Create.Headline.Placeholder", bundle: .module)
-                                            .multilineTextAlignment(.leading)
-                                            .foregroundColor(theme.colors.gray400)
-                                    }
-                                    .font(theme.fonts.body2.weight(.semibold))
-                            }
-                            if let headlineError {
-                                theme.colors.error.frame(height: 1)
-                                Spacer().frame(height: 4)
-                                headlineError.textView
-                                    .font(theme.fonts.caption2)
-                                    .bold()
-                                    .foregroundColor(theme.colors.error)
-                                    .multilineTextAlignment(.leading)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            Spacer().frame(height: 20)
-                            if #available(iOS 16.0, *) {
                                 TextField(String(""), text: $text, axis: .vertical)
                                     .multilineTextAlignment(.leading)
                                     .focused($textFocused)
-                                    .foregroundColor(theme.colors.gray600)
+                                    .foregroundColor(theme.colors.gray900)
                                     .placeholder(when: text.isEmpty) {
                                         Text("Post.Create.Text.Placeholder", bundle: .module)
                                             .multilineTextAlignment(.leading)
-                                            .foregroundColor(theme.colors.gray400)
+                                            .foregroundColor(theme.colors.gray700)
                                     }
-                                    .font(theme.fonts.body2)
+                                    .font(theme.fonts.body1)
                                     .id("textInputView")
                                     .onChange(of: text) { [oldValue = text] newValue in
                                         // only scroll to bottom if the last line changed
@@ -294,13 +245,13 @@ private struct WritingPostForm: View {
                                 TextField(String(""), text: $text)
                                     .multilineTextAlignment(.leading)
                                     .focused($textFocused)
-                                    .foregroundColor(theme.colors.gray600)
+                                    .foregroundColor(theme.colors.gray900)
                                     .placeholder(when: text.isEmpty) {
                                         Text("Post.Create.Text.Placeholder", bundle: .module)
                                             .multilineTextAlignment(.leading)
-                                            .foregroundColor(theme.colors.gray400)
+                                            .foregroundColor(theme.colors.gray700)
                                     }
-                                    .font(theme.fonts.body2)
+                                    .font(theme.fonts.body1)
                             }
                             if let imageAndData = picture {
                                 Spacer().frame(height: 10)
@@ -371,15 +322,21 @@ private struct WritingPostForm: View {
                     }
                 }
 
-                theme.colors.gray200.frame(height: 1)
+                theme.colors.gray300.frame(height: 1)
 
                 HStack {
                     Button(action: { openPhotosPicker = true }) {
-                        Image(.addMedia)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .padding()
+                        HStack(spacing: 4) {
+                            Image(.addMedia)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                            Text("Content.Create.AddPicture", bundle: .module)
+                                .font(theme.fonts.body2)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(theme.colors.gray900)
+                        .padding()
                     }
                     Spacer()
                 }
@@ -399,8 +356,8 @@ private struct WritingPostForm: View {
 }
 
 #Preview {
-    ContentView(isLoading: false, headline: .constant(""), text: .constant(""), picture: .constant(nil),
-                headlineError: nil, textError: nil, pictureError: nil,
+    ContentView(isLoading: false, text: .constant(""), picture: .constant(nil),
+                textError: nil, pictureError: nil,
                 userAvatar: .defaultImage(name: "toto"),
                 selectedTopic: nil, showTopicPicker: .constant(false))
 }

@@ -27,6 +27,11 @@ class CreateProfileViewModel: ObservableObject {
     @Published private(set) var canEditNickname = true
     @Published private(set) var ageInformation: OctopusCore.ClientUserProfile.AgeInformation? // TODO: Djavan use an inner type
 
+    let communityGuidelines: URL
+    let privacyPolicy: URL
+    let termsOfUse: URL
+    let contactUs: URL
+
     private var nicknameHasBeenValidOnce = false
 
     var buttonAvailable: Bool { nicknameValid() && birthDateValid() }
@@ -49,6 +54,12 @@ class CreateProfileViewModel: ObservableObject {
         let currentYear = calendar.dateComponents([.year], from: Date()).year!
         let components = DateComponents(year: currentYear, month: 6, day: 15)
         birthDate = calendar.date(from: components)!
+
+        let externalLinksRepository = octopus.core.externalLinksRepository
+        communityGuidelines = externalLinksRepository.communityGuidelines
+        privacyPolicy = externalLinksRepository.privacyPolicy
+        termsOfUse = externalLinksRepository.termsOfUse
+        contactUs = externalLinksRepository.contactUs
 
         octopus.core.connectionRepository.connectionStatePublisher.sink { [unowned self] in
             switch $0 {

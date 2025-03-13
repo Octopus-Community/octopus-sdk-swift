@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import os
 import RemoteClient
 import DependencyInjection
 
@@ -37,7 +38,7 @@ class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObj
             token: userData.jwtToken,
             authFailure: { [weak self] in
                 guard let self else { return }
-                print("Authentication error received from server, logging out the user")
+                if #available(iOS 14, *) { Logger.connection.debug("Authentication error received from server, logging out the user") }
                 let connectionRepository = self.connectionRepository
                 Task {
                     try await connectionRepository.logout()
@@ -53,7 +54,7 @@ class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObj
             token: userData.jwtToken,
             authFailure: { [weak self] in
                 guard let self else { return }
-                print("Authentication error received from server, logging out the user")
+                if #available(iOS 14, *) { Logger.connection.debug("Authentication error received from server, logging out the user") }
                 let connectionRepository = self.connectionRepository
                 Task {
                     try await connectionRepository.logout()
