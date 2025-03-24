@@ -17,6 +17,6 @@ struct OpenProfileButton<Content: View>: View {
             }
         }) {
             content
-        }
+        }.buttonStyle(.plain)
     }
 }

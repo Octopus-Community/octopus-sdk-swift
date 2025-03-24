@@ -4,9 +4,9 @@
 
 import Foundation
 import Combine
-import RemoteClient
-import DependencyInjection
-import GrpcModels
+import OctopusRemoteClient
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 extension Injected {
     static let moderationRepository = Injector.InjectedIdentifier<ModerationRepository>()
@@ -15,7 +15,7 @@ extension Injected {
 public class ModerationRepository: InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.moderationRepository
 
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
 

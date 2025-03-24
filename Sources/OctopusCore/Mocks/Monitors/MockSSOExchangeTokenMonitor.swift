@@ -4,8 +4,8 @@
 
 import Foundation
 import Combine
-import DependencyInjection
-import GrpcModels
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 class MockSSOExchangeTokenMonitor: SSOExchangeTokenMonitor, InjectableObject {
     static let injectedIdentifier = Injected.ssoExchangeTokenMonitor

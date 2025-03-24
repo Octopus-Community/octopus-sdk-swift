@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 public struct Comment: Equatable, Sendable {
     public let uuid: String

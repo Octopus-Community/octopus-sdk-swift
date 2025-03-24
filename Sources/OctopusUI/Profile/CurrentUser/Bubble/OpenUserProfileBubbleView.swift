@@ -19,5 +19,6 @@ struct OpenUserProfileBubbleView: View {
         Button(action: userProfileTapped) {
             AuthorAvatarView(avatar: viewModel.avatar)
         }
+        .buttonStyle(.plain)
     }
 }

@@ -4,7 +4,7 @@
 
 import Foundation
 import KeychainAccess
-import DependencyInjection
+import OctopusDependencyInjection
 
 extension Injected {
     static let securedStorage = Injector.InjectedIdentifier<SecuredStorage>()

@@ -5,9 +5,9 @@
 import Foundation
 import Testing
 import Combine
-import DependencyInjection
-import RemoteClient
-import GrpcModels
+import OctopusDependencyInjection
+import OctopusRemoteClient
+import OctopusGrpcModels
 @testable import OctopusCore
 
 struct SSOExchangeTokenMonitorTests {

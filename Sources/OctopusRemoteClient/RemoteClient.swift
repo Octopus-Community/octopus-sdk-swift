@@ -4,13 +4,13 @@
 
 import Foundation
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 import Logging
 import NIOCore
 import NIOPosix
 import NIOHPACK
 
-public protocol RemoteClient {
+public protocol OctopusRemoteClient {
     var magicLinkStreamService: MagicLinkStreamService { get }
     var magicLinkService: MagicLinkService { get }
     var octoService: OctoService { get }
@@ -18,7 +18,7 @@ public protocol RemoteClient {
     var feedService: FeedService { get }
 }
 
-public class GrpcClient: RemoteClient {
+public class GrpcClient: OctopusRemoteClient {
     public let octoService: OctoService
     public let magicLinkService: MagicLinkService
     public let magicLinkStreamService: MagicLinkStreamService

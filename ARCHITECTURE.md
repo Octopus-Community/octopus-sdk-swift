@@ -24,4 +24,4 @@ Here is a quick explanation of what they do, just so you can get a better unders
 - `Repositories` are the public (but yet private to you!) interface for each kind of interaction with the model layer. For example PostsRepository, ConnectionRepository…
 - `Monitors` are objects that are observing a state and reacts accordingly. They are private to the SDK. They can be `NetworkMonitor` that monitors the network connectivity or `MagicLinkMonitor` that listen for app states (whether in foreground, with a magic link pending…) to query and update the magic link state. `Monitors` are generally objects that lives on their own and their only API is `start` and `stop`.
 - `Database interfaces` are objects that can do CRUD operations on a CoreDatabase stack
-- `Server interfaces` are part of another private target: `RemoteClient`. They are the interface to call the GRPC services.
+- `Server interfaces` are part of another private target: `OctopusRemoteClient`. They are the interface to call the GRPC services.

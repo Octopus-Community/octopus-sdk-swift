@@ -40,7 +40,7 @@ struct CreateButton: View {
             .background(
                 Capsule().foregroundColor(theme.colors.primary)
             )
-        }
+        }.buttonStyle(.plain)
     }
 }
 

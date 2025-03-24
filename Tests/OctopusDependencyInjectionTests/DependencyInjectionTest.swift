@@ -4,7 +4,7 @@
 
 import Testing
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 struct DependencyInjectionTest {
 

@@ -5,9 +5,9 @@
 import Foundation
 import Combine
 import os
-import RemoteClient
-import DependencyInjection
-import GrpcModels
+import OctopusRemoteClient
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 public protocol FeedItem: Equatable, Sendable {
     var id: String { get }

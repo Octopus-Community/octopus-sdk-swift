@@ -46,7 +46,7 @@ struct CreatePostEmptyPostView: View {
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(theme.colors.primary)
                     )
-            }
+            }.buttonStyle(.plain)
         }
     }
 }

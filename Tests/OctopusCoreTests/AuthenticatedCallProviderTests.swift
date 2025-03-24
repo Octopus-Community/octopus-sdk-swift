@@ -5,8 +5,8 @@
 import Foundation
 import XCTest
 import Combine
-import DependencyInjection
-import RemoteClient
+import OctopusDependencyInjection
+import OctopusRemoteClient
 @testable import OctopusCore
 
 class AuthenticatedCallProviderTests: XCTestCase {

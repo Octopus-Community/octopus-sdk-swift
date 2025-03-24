@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import RemoteClient
+import OctopusRemoteClient
 
 public enum AuthenticatedInputActionError<ValidationError: Sendable>: Error {
     case validation(ValidationError)

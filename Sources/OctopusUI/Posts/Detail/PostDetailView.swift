@@ -81,6 +81,7 @@ struct PostDetailView: View {
                             Button(action: { viewModel.createCommentTappedWithoutBeeingLoggedIn() }) {
                                 Color.clear
                             }
+                            .buttonStyle(.plain)
                         } else {
                             EmptyView()
                         }
@@ -394,6 +395,7 @@ private struct PostDetailContentView: View {
                                         .frame(width: 24, height: 24)
                                         .foregroundColor(theme.colors.gray500)
                                 })
+                                .buttonStyle(.plain)
                             } else {
                                 Button(action: { openActions = true }) {
                                     Image(.more)
@@ -401,6 +403,7 @@ private struct PostDetailContentView: View {
                                         .frame(width: 24, height: 24)
                                         .foregroundColor(theme.colors.gray500)
                                 }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -554,7 +557,7 @@ private struct CommentsView: View {
                             .fontWeight(.medium)
                             .foregroundColor(theme.colors.gray500)
                     }
-                }
+                }.buttonStyle(.plain)
             }
         }
         .padding(.top, 20)

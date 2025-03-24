@@ -168,5 +168,6 @@ private struct SettingItemView: View {
             }
             .padding(.horizontal, 20)
         }
+        .buttonStyle(.plain)
     }
 }

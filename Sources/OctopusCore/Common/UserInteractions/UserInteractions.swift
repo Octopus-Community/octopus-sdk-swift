@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 public struct UserInteractions: Equatable, Sendable {
     public static let empty = UserInteractions(userLikeId: nil)

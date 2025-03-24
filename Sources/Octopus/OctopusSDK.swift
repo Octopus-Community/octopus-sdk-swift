@@ -1,6 +1,6 @@
 import Foundation
 import OctopusCore
-import DependencyInjection
+import OctopusDependencyInjection
 
 /// Octopus Community main model object.
 /// This object holds a reference on all the repositories.

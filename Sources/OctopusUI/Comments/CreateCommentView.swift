@@ -90,6 +90,7 @@ private struct ContentView: View {
                 Button(action: userProfileTapped) {
                     AuthorAvatarView(avatar: avatar)
                 }
+                .buttonStyle(.plain)
                 .frame(width: 33, height: 33)
                 VStack(alignment: .leading, spacing: 4) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -145,6 +146,7 @@ private struct ContentView: View {
                                         .padding(4)
 
                                 }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -192,6 +194,7 @@ private struct ContentView: View {
                         .padding(.vertical, 8)
                         .foregroundColor(theme.colors.gray900)
                 }
+                .buttonStyle(.plain)
                 Spacer()
                 Button(action: {
                     textFocused = false
@@ -213,14 +216,16 @@ private struct ContentView: View {
                         Capsule().foregroundColor(
                             sendAvailable && !isLoading ? theme.colors.primary : theme.colors.disabled)
                     )
-                }.disabled(!sendAvailable || isLoading)
-                    .modify {
-                        if #available(iOS 17.0, *) {
-                            $0.geometryGroup()
-                        } else {
-                            $0
-                        }
+                }
+                .disabled(!sendAvailable || isLoading)
+                .modify {
+                    if #available(iOS 17.0, *) {
+                        $0.geometryGroup()
+                    } else {
+                        $0
                     }
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 16)
         }

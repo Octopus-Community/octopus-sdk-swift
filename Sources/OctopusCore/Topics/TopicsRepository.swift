@@ -4,9 +4,9 @@
 
 import Foundation
 import Combine
-import RemoteClient
-import GrpcModels
-import DependencyInjection
+import OctopusRemoteClient
+import OctopusGrpcModels
+import OctopusDependencyInjection
 
 public struct Topic: Equatable, Sendable {
     public let uuid: String
@@ -25,7 +25,7 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
     @Published public private(set) var topics: [Topic] = []
 
     private let topicsDatabase: TopicsDatabase
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private var storage: Set<AnyCancellable> = []
 
     init(injector: Injector) {

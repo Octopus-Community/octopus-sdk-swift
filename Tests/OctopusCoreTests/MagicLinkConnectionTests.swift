@@ -5,9 +5,9 @@
 import Foundation
 import XCTest
 import Combine
-import DependencyInjection
-import RemoteClient
-import GrpcModels
+import OctopusDependencyInjection
+import OctopusRemoteClient
+import OctopusGrpcModels
 import SwiftProtobuf
 @testable import OctopusCore
 

@@ -4,8 +4,8 @@
 
 import Foundation
 import os
-import RemoteClient
-import DependencyInjection
+import OctopusRemoteClient
+import OctopusDependencyInjection
 
 protocol AuthenticatedCallProvider {
     func authenticatedMethod() throws(AuthenticatedActionError) -> AuthenticationMethod

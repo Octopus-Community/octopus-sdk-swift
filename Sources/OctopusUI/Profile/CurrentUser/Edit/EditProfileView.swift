@@ -374,6 +374,7 @@ private struct PictureView: View {
                             .offset(x: 30, y: 30)
                     )
             }
+            .buttonStyle(.plain)
             .actionSheet(isPresented: $openActionList) {
                 ActionSheet(title: Text(verbatim: ""), buttons: [
                     ActionSheet.Button.default(Text("Profile.Edit.Picture.Change", bundle: .module)) {

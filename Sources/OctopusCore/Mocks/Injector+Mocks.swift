@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import DependencyInjection
+import OctopusDependencyInjection
 
 // restrict to DEBUG versions for security reasons. This way, we are sure that no release build can use mocks
 #if DEBUG

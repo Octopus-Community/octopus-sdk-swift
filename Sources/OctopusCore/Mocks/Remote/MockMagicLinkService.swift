@@ -3,8 +3,8 @@
 //
 
 import Foundation
-import RemoteClient
-import GrpcModels
+import OctopusRemoteClient
+import OctopusGrpcModels
 
 class MockMagicLinkService: MagicLinkService {
     /// Fifo of the responses to `generateLink`.

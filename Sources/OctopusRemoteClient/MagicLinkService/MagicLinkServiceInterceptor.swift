@@ -4,7 +4,7 @@
 
 import Foundation
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 
 final class MagicLinkServiceInterceptor: Com_Octopuscommunity_MagicLinkServiceClientInterceptorFactoryProtocol, @unchecked Sendable {
     private let updateTokenBlock: (String) -> Void

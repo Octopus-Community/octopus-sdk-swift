@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import DependencyInjection
+import OctopusDependencyInjection
 import Combine
 
 enum PostsFeedManager {

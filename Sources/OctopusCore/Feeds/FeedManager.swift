@@ -5,10 +5,10 @@
 import Foundation
 import Combine
 import os
-import GrpcModels
+import OctopusGrpcModels
 import SwiftProtobuf
-import DependencyInjection
-import RemoteClient
+import OctopusDependencyInjection
+import OctopusRemoteClient
 
 class FeedManager<Item: FeedItem>: @unchecked Sendable {
 
@@ -21,7 +21,7 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
 
     private let feedsDatabase: FeedItemInfosDatabase
     private let authCallProvider: AuthenticatedCallProvider
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let feedItemsDatabase: any FeedItemsDatabase<Item>
     private let networkMonitor: NetworkMonitor
 

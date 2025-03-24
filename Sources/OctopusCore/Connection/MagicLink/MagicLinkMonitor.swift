@@ -5,10 +5,10 @@
 import Foundation
 import Combine
 import os
-import DependencyInjection
-import RemoteClient
+import OctopusDependencyInjection
+import OctopusRemoteClient
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 
 extension Injected {
     static let magicLinkMonitor = Injector.InjectedIdentifier<MagicLinkMonitor>()
@@ -32,7 +32,7 @@ class MagicLinkMonitorDefault: MagicLinkMonitor, InjectableObject, @unchecked Se
     }
     @Published private var magicLinkAuthenticationResponse: Com_Octopuscommunity_IsAuthenticatedResponse?
 
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
     private let networkMonitor: NetworkMonitor
     private let appStateMonitor: AppStateMonitor

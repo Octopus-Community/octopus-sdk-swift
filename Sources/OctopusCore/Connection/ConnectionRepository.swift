@@ -4,9 +4,9 @@
 
 import Foundation
 import Combine
-import RemoteClient
-import DependencyInjection
-import GrpcModels
+import OctopusRemoteClient
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 public struct User: Sendable {
     public let profile: CurrentUserProfile

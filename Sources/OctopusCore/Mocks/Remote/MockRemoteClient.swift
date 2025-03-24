@@ -3,10 +3,10 @@
 //
 
 import Foundation
-import RemoteClient
-import DependencyInjection
+import OctopusRemoteClient
+import OctopusDependencyInjection
 
-class MockRemoteClient: RemoteClient, InjectableObject {
+class MockRemoteClient: OctopusRemoteClient, InjectableObject {
     static let injectedIdentifier = Injected.remoteClient
     let octoService: any OctoService
     let magicLinkService: any MagicLinkService

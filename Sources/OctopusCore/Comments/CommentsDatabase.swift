@@ -6,7 +6,7 @@ import Foundation
 import CoreData
 import Combine
 import os
-import DependencyInjection
+import OctopusDependencyInjection
 
 extension Injected {
     static let commentsDatabase = Injector.InjectedIdentifier<CommentsDatabase>()

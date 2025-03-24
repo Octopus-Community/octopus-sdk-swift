@@ -4,10 +4,10 @@
 
 import Foundation
 import Combine
-import RemoteClient
-import GrpcModels
+import OctopusRemoteClient
+import OctopusGrpcModels
 import SwiftProtobuf
-import DependencyInjection
+import OctopusDependencyInjection
 
 extension Injected {
     static let postsRepository = Injector.InjectedIdentifier<PostsRepository>()
@@ -16,7 +16,7 @@ extension Injected {
 public class PostsRepository: InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.postsRepository
 
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let authCallProvider: AuthenticatedCallProvider
     private let postsDatabase: PostsDatabase
     private let networkMonitor: NetworkMonitor

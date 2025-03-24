@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 public struct Media: Equatable, Sendable {
     public enum Kind: Sendable {

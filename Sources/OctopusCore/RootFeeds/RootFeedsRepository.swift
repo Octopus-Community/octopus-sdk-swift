@@ -3,9 +3,9 @@
 //
 
 import Foundation
-import DependencyInjection
-import RemoteClient
-import GrpcModels
+import OctopusDependencyInjection
+import OctopusRemoteClient
+import OctopusGrpcModels
 import Combine
 
 public struct RootFeed: Equatable, Hashable {
@@ -43,7 +43,7 @@ public class RootFeedsRepository: InjectableObject, @unchecked Sendable {
 
     private let rootFeedsDatabase: RootFeedsDatabase
     private let authCallProvider: AuthenticatedCallProvider
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let postFeedsStore: PostFeedsStore
 
     init(injector: Injector) {

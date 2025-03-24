@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import DependencyInjection
+import OctopusDependencyInjection
 
 extension Injected {
     static let validators = Injector.InjectedIdentifier<Validators>()

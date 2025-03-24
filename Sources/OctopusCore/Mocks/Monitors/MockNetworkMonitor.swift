@@ -4,7 +4,7 @@
 
 import Foundation
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 class MockNetworkMonitor: NetworkMonitor, InjectableObject {
     static let injectedIdentifier = Injected.networkMonitor

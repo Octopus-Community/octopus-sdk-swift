@@ -5,7 +5,7 @@
 import Foundation
 import Testing
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 @testable import OctopusCore
 
 @Suite

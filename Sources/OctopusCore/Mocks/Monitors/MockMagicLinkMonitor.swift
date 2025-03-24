@@ -4,8 +4,8 @@
 
 import Foundation
 import Combine
-import DependencyInjection
-import GrpcModels
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 class MockMagicLinkMonitor: MagicLinkMonitor, InjectableObject {
     static let injectedIdentifier = Injected.magicLinkMonitor
@@ -18,7 +18,7 @@ class MockMagicLinkMonitor: MagicLinkMonitor, InjectableObject {
     }
     @Published var magicLinkAuthenticationResponse: Com_Octopuscommunity_IsAuthenticatedResponse?
 
-    var getJwtFromClientTokenResponsePublisher: AnyPublisher<GrpcModels.Com_Octopuscommunity_IsAuthenticatedResponse, Never> { fatalError() }
+    var getJwtFromClientTokenResponsePublisher: AnyPublisher<OctopusGrpcModels.Com_Octopuscommunity_IsAuthenticatedResponse, Never> { fatalError() }
 
     func start() { }
 

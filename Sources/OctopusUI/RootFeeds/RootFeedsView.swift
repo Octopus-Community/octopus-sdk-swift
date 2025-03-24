@@ -92,6 +92,7 @@ private struct ContentView: View {
                         .padding(.leading, 16)
                         .foregroundColor(theme.colors.gray900)
                 }
+                .buttonStyle(.plain)
                 Compat.ScrollView(.horizontal, scrollToId: $scrollToId) {
                     HStack(spacing: 8) {
                         ForEach(rootFeeds, id: \.feedId) { rootFeed in
@@ -144,5 +145,6 @@ private struct RootFeedChip: View {
                         )
                 )
         }
+        .buttonStyle(.plain)
     }
 }

@@ -26,7 +26,7 @@ struct SettingsHelpView: View {
 
                     NavigationLink(destination: SignalExplanationView(octopus: viewModel.octopus)) {
                         SettingItem(text: "Settings.Help.ReportContent")
-                    }
+                    }.buttonStyle(.plain)
 
                     SettingLinkItem(text: "Settings.Help.ContactUs", url: viewModel.contactUs)
                 }
