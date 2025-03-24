@@ -68,8 +68,9 @@ struct SettingProfileView: View {
 
                             Spacer()
                         }
-                    }
+                    }.buttonStyle(.plain)
                 }
+                .buttonStyle(.plain)
                 .padding(.horizontal, 20)
             }
         }

@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 import SwiftProtobuf
 
 // Must be the same as `Com_Octopuscommunity_StatusValue`

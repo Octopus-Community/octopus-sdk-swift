@@ -3,8 +3,8 @@
 //
 
 import Foundation
-import RemoteClient
-import GrpcModels
+import OctopusRemoteClient
+import OctopusGrpcModels
 
 class MockUserService: UserService {
     /// Fifo of the responses to `getPublicProfile`.

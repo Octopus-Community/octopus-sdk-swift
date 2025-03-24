@@ -37,6 +37,7 @@ struct MagicLinkView: View {
                 }) {
                     Text("Common.Close", bundle: .module)
                 }
+                .buttonStyle(.plain)
                 .padding()
                 NavigationLink(destination: CreateProfileView(octopus: viewModel.octopus, isLoggedIn: $isLoggedIn),
                                isActive: $viewModel.profileCreationRequired) {
@@ -199,6 +200,7 @@ private struct EnterEmailView: View {
                                         theme.colors.primary.opacity(0.3))
                         )
                 }
+                .buttonStyle(.plain)
                 .disabled(!sendEmailButtonAvailable)
 
             case .emailSending:
@@ -235,6 +237,7 @@ private struct MagicLinkConfirmationPendingView: View {
             Button(action: enterNewEmail) {
                 Text("Connection.MagicLink.Sent.ChangeEmail", bundle: .module)
             }
+            .buttonStyle(.plain)
             .font(theme.fonts.body2)
             .foregroundColor(theme.colors.link)
             .multilineTextAlignment(.center)
@@ -259,6 +262,7 @@ private struct MagicLinkConfirmationPendingView: View {
                                 .fill(theme.colors.primary)
                         )
                 }
+                .buttonStyle(.plain)
             case .checkingMagicLink:
                 Compat.ProgressView()
                     .frame(width: 60)

@@ -4,8 +4,8 @@
 
 import Foundation
 import Combine
-import DependencyInjection
-import GrpcModels
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 class MockUserProfileFetchMonitor: UserProfileFetchMonitor, InjectableObject {
     static let injectedIdentifier = Injected.userProfileFetchMonitor

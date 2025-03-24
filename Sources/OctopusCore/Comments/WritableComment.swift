@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 import SwiftProtobuf
 
 public struct WritableComment: Sendable {

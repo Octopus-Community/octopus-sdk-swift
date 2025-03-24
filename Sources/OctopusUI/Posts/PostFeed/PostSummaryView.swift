@@ -40,24 +40,30 @@ struct PostSummaryView: View {
                                     .frame(width: 2, height: 2)
                                     .foregroundColor(theme.colors.gray900)
                                 OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
-                                    Text(post.relativeDate)
-                                        .font(theme.fonts.caption1)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.gray500)
+                                    HStack {
+                                        Text(post.relativeDate)
+                                            .font(theme.fonts.caption1)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(theme.colors.gray500)
+                                        Spacer()
+                                    }
                                 }
                             }
                             HStack(spacing: 4) {
                                 OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
-                                    Text(post.topic)
-                                        .font(theme.fonts.caption2)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.primary)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(
-                                            Capsule()
-                                                .foregroundColor(theme.colors.primaryLowContrast)
-                                        )
+                                    HStack {
+                                        Text(post.topic)
+                                            .font(theme.fonts.caption2)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(theme.colors.primary)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(
+                                                Capsule()
+                                                    .foregroundColor(theme.colors.primaryLowContrast)
+                                            )
+                                        Spacer()
+                                    }
                                 }
                                 if case .moderated = post.content {
                                     Text("Post.Status.Moderated", bundle: .module)
@@ -95,6 +101,7 @@ struct PostSummaryView: View {
                                             .foregroundColor(theme.colors.gray500)
                                     }.frame(width: 32, height: 32)
                                 })
+                                .buttonStyle(.plain)
                             } else {
                                 Button(action: { openActions = true }) {
                                     Image(.more)
@@ -102,6 +109,7 @@ struct PostSummaryView: View {
                                         .frame(width: 24, height: 24)
                                         .foregroundColor(theme.colors.gray500)
                                 }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -267,6 +275,7 @@ private struct OpenDetailButton<Content: View>: View {
             }
         }) {
             content
-        }
+                .contentShape(Rectangle())
+        }.buttonStyle(.plain)
     }
 }

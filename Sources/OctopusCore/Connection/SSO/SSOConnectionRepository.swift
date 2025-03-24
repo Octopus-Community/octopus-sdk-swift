@@ -5,9 +5,9 @@
 import Foundation
 import Combine
 import os
-import RemoteClient
-import DependencyInjection
-import GrpcModels
+import OctopusRemoteClient
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.connectionRepository
@@ -18,7 +18,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     @Published private(set) public var connectionState = ConnectionState.notConnected
 
     public let connectionMode: ConnectionMode
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor

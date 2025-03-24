@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 extension MockData {
     static var topics: [[Com_Octopuscommunity_OctoObject]] { [

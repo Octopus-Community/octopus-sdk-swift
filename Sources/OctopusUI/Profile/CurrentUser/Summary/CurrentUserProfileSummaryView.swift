@@ -205,6 +205,7 @@ private struct ProfileContentView<PostsView: View>: View {
                                             .offset(x: 26, y: 26)
                                     )
                             }
+                            .buttonStyle(.plain)
                         } else {
                             AuthorAvatarView(avatar: avatar)
                                 .frame(width: 71, height: 71)
@@ -218,6 +219,7 @@ private struct ProfileContentView<PostsView: View>: View {
                                 .padding(.vertical, 10)
                                 .padding(.horizontal, 12)
                         }
+                        .buttonStyle(.plain)
                         .background(
                             Capsule()
                                 .stroke(theme.colors.gray300, lineWidth: 1)
@@ -263,6 +265,7 @@ private struct ProfileContentView<PostsView: View>: View {
                             )
                             .foregroundColor(theme.colors.gray900)
                         }
+                        .buttonStyle(.plain)
                     }
                     Spacer().frame(height: 20)
                     CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)

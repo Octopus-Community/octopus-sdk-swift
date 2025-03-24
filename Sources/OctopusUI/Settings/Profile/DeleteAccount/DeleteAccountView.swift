@@ -88,6 +88,7 @@ struct DeleteAccountView: View {
                                         theme.colors.primary.opacity(0.3))
                         )
                 }
+                .buttonStyle(.plain)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 10)
                 .disabled(selectedReason == nil || viewModel.deleteAccountInProgress)
@@ -183,6 +184,7 @@ private struct ReasonCell: View {
             }
             .foregroundColor(theme.colors.gray900)
         }
+        .buttonStyle(.plain)
     }
 }
 

@@ -38,6 +38,7 @@ struct CreateProfileView: View {
             }) {
                 Text("Common.Close", bundle: .module)
             }
+            .buttonStyle(.plain)
             .padding()
         }
         .navigationBarBackButtonHidden(true)
@@ -275,6 +276,7 @@ private struct ContentView: View {
                                         theme.colors.primary.opacity(0.3))
                         )
                 }
+                .buttonStyle(.plain)
                 .disabled(!continueButtonAvailable)
             } else {
                 Compat.ProgressView()

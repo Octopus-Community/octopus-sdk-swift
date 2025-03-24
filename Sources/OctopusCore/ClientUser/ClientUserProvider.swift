@@ -4,7 +4,7 @@
 
 import Foundation
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 extension Injected {
     static let clientUserProvider = Injector.InjectedIdentifier<ClientUserProvider>()

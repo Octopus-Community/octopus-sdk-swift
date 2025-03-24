@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import RemoteClient
+import OctopusRemoteClient
 
 public struct EditableProfile: Sendable {
     public enum FieldUpdate<T: Sendable>: Sendable {
@@ -24,7 +24,7 @@ public struct EditableProfile: Sendable {
     }
 }
 
-/// Extension that adds translation to RemoteClient.FieldUpdate
+/// Extension that adds translation to OctopusRemoteClient.FieldUpdate
 extension EditableProfile.FieldUpdate {
     var backendValue: FieldUpdate<T> {
         switch self {

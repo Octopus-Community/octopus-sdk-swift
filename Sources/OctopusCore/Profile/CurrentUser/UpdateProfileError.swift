@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 public enum UpdateProfile {
     public enum Field: Sendable {

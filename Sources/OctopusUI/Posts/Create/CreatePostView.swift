@@ -122,6 +122,7 @@ struct CreatePostView: View {
             Text("Common.Cancel", bundle: .module)
                 .font(theme.fonts.navBarItem)
         }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -139,6 +140,7 @@ struct CreatePostView: View {
                     .fontWeight(.semibold)
                     .foregroundColor(viewModel.sendButtonAvailable ? theme.colors.primary : theme.colors.disabled)
             }
+            .buttonStyle(.plain)
             .disabled(!viewModel.sendButtonAvailable)
         } else {
             if #available(iOS 14.0, *) {
@@ -150,6 +152,7 @@ struct CreatePostView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(theme.colors.disabled)
                 }
+                .buttonStyle(.plain)
                 .disabled(true)
             }
         }
@@ -215,6 +218,7 @@ private struct WritingPostForm: View {
                             }) {
                                 TopicSelectionCapsule(topic: selectedTopic?.name)
                             }
+                            .buttonStyle(.plain)
                         }
                         Spacer()
                             .frame(height: 24)
@@ -278,6 +282,7 @@ private struct WritingPostForm: View {
                                             .padding()
 
                                     }
+                                    .buttonStyle(.plain)
                                 }
                             } else if text.isEmpty {
                                 // when there is no picture displayed, use the remaining part of the screen to catch tap
@@ -338,6 +343,7 @@ private struct WritingPostForm: View {
                         .foregroundColor(theme.colors.gray900)
                         .padding()
                     }
+                    .buttonStyle(.plain)
                     Spacer()
                 }
             }

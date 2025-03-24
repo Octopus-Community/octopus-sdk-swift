@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 public struct Profile: Equatable, Sendable {
     let id: String

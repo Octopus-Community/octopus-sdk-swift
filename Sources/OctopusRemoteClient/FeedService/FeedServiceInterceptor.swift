@@ -4,7 +4,7 @@
 
 import Foundation
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 
 final class FeedServiceInterceptor: Com_Octopuscommunity_FeedServiceClientInterceptorFactoryProtocol, @unchecked Sendable {
     private let updateTokenBlock: (String) -> Void

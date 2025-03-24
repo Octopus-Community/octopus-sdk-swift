@@ -5,10 +5,10 @@
 import Foundation
 import Combine
 import os
-import DependencyInjection
-import RemoteClient
+import OctopusDependencyInjection
+import OctopusRemoteClient
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 
 extension Injected {
     static let userProfileFetchMonitor = Injector.InjectedIdentifier<UserProfileFetchMonitor>()
@@ -33,7 +33,7 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
     @Published private var userProfileResponse: Com_Octopuscommunity_GetPrivateProfileResponse?
 
     private let injector: Injector
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor

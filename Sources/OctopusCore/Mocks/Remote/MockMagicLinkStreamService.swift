@@ -3,8 +3,8 @@
 //
 
 import Foundation
-import RemoteClient
-import GrpcModels
+import OctopusRemoteClient
+import OctopusGrpcModels
 import GRPC
 
 class MockMagicLinkStreamService: MagicLinkStreamService {

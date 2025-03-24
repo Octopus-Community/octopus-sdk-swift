@@ -4,7 +4,7 @@
 
 import Foundation
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 
 final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterceptorFactoryProtocol, @unchecked Sendable {
     private let updateTokenBlock: (String) -> Void
@@ -29,31 +29,31 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeBanUserInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_BanUserRequest, GrpcModels.Com_Octopuscommunity_BanUserResponse>] {
+    func makeBanUserInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_BanUserRequest, OctopusGrpcModels.Com_Octopuscommunity_BanUserResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeDeleteMyProfileInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_DeleteMyProfileRequest, GrpcModels.Com_Octopuscommunity_DeleteMyProfileResponse>] {
+    func makeDeleteMyProfileInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_DeleteMyProfileRequest, OctopusGrpcModels.Com_Octopuscommunity_DeleteMyProfileResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeUnbanUserInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_UnbanUserRequest, GrpcModels.Com_Octopuscommunity_UnbanUserResponse>] {
+    func makeUnbanUserInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UnbanUserRequest, OctopusGrpcModels.Com_Octopuscommunity_UnbanUserResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeReportUserInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_ReportUserRequest, GrpcModels.Com_Octopuscommunity_ReportUserResponse>] {
+    func makeReportUserInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ReportUserRequest, OctopusGrpcModels.Com_Octopuscommunity_ReportUserResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeBlockUserInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_BlockUserRequest, GrpcModels.Com_Octopuscommunity_BlockUserResponse>] {
+    func makeBlockUserInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_BlockUserRequest, OctopusGrpcModels.Com_Octopuscommunity_BlockUserResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeGetJwtFromClientSignedTokenInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, GrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>] {
+    func makeGetJwtFromClientSignedTokenInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, OctopusGrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makecreateUserInterceptors() -> [GRPC.ClientInterceptor<GrpcModels.Com_Octopuscommunity_CreateUserRequest, GrpcModels.Com_Octopuscommunity_CreateUserResponse>] {
+    func makecreateUserInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_CreateUserRequest, OctopusGrpcModels.Com_Octopuscommunity_CreateUserResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 }

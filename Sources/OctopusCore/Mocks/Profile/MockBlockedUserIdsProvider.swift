@@ -4,7 +4,7 @@
 
 import Foundation
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 class MockBlockedUserIdsProvider: BlockedUserIdsProvider, InjectableObject {
     static let injectedIdentifier = Injected.blockedUserIdsProvider

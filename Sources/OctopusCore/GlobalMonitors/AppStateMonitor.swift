@@ -5,7 +5,7 @@
 import Foundation
 import Network
 @preconcurrency import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 import UIKit
 
 extension Injected {

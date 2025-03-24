@@ -13,12 +13,14 @@ extension Compat {
         var body: some View {
             if #available(iOS 14.0, *) {
                 SwiftUI.Link(destination: destination, label: label)
+                    .buttonStyle(.plain)
             } else {
                 Button(
                     action: {
                         UIApplication.shared.open(destination)
                     },
                     label: label)
+                .buttonStyle(.plain)
             }
         }
     }

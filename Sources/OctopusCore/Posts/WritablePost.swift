@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 public struct WritablePost: Sendable, Equatable {
     public let text: String

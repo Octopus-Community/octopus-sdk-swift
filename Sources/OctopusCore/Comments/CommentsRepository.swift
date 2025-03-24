@@ -4,10 +4,10 @@
 
 import Foundation
 import Combine
-import RemoteClient
-import GrpcModels
+import OctopusRemoteClient
+import OctopusGrpcModels
 import SwiftProtobuf
-import DependencyInjection
+import OctopusDependencyInjection
 import os
 
 extension Injected {
@@ -27,7 +27,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     }
     private let _commentDeletedPublisher = PassthroughSubject<Comment?, Never>()
 
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let authCallProvider: AuthenticatedCallProvider
     private let commentsDatabase: CommentsDatabase
     private let networkMonitor: NetworkMonitor

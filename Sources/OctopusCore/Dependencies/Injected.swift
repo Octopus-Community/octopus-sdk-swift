@@ -3,12 +3,12 @@
 //
 
 import Foundation
-import DependencyInjection
-import RemoteClient
+import OctopusDependencyInjection
+import OctopusRemoteClient
 
 /// Namespace for injected objects
 enum Injected {
-    static let remoteClient = Injector.InjectedIdentifier<RemoteClient>()
+    static let remoteClient = Injector.InjectedIdentifier<OctopusRemoteClient>()
 }
 
 extension GrpcClient: InjectableObject {

@@ -36,6 +36,7 @@ struct AggregatedInfoView: View {
                 AggregateView(image: .AggregatedInfo.view, count: aggregatedInfo.viewCount,
                               nullDisplayValue: "Content.AggregatedInfo.View")
             }
+            .buttonStyle(.plain)
             .modify {
                 if #available(iOS 16.4, *) {
                     $0.popover(isPresented: $isShowingPopover, arrowEdge: .bottom) {
@@ -57,11 +58,13 @@ struct AggregatedInfoView: View {
                               count: aggregatedInfo.likeCount,
                               nullDisplayValue: "Content.AggregatedInfo.Like")
             }
+            .buttonStyle(.plain)
 
             Button(action: childrenTapped) {
                 AggregateView(image: .AggregatedInfo.comment, count: childCount,
                               nullDisplayValue: "Content.AggregatedInfo.Comment")
             }
+            .buttonStyle(.plain)
         }
         .fixedSize()
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -48,11 +48,13 @@ struct CommentView: View {
                                             Button(action: { displayDeleteAlert = true }) {
                                                 Label(L10n("Comment.Delete.Button"), systemImage: "trash")
                                             }
+                                            .buttonStyle(.plain)
                                         }
                                         if comment.canBeModerated {
                                             Button(action: { displayContentModeration(comment.uuid) }) {
                                                 Label(L10n("Moderation.Content.Button"), systemImage: "flag")
                                             }
+                                            .buttonStyle(.plain)
                                         }
                                     }, label: {
                                         Image(.more)
@@ -60,6 +62,7 @@ struct CommentView: View {
                                             .frame(width: 24, height: 24)
                                             .foregroundColor(theme.colors.gray500)
                                     })
+                                    .buttonStyle(.plain)
                                 } else {
                                     Button(action: { openActions = true }) {
                                         Image(.more)
@@ -67,6 +70,7 @@ struct CommentView: View {
                                             .frame(width: 24, height: 24)
                                             .foregroundColor(theme.colors.gray500)
                                     }
+                                    .buttonStyle(.plain)
                                 }
                             }
                         }
@@ -120,6 +124,7 @@ struct CommentView: View {
                             .foregroundColor(theme.colors.gray700)
                     }
                 }
+                .buttonStyle(.plain)
                 .fixedSize()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 8)

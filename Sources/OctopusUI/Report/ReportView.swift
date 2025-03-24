@@ -130,6 +130,7 @@ private struct ContentView: View {
                                         theme.colors.primary.opacity(0.3))
                         )
                 }
+                .buttonStyle(.plain)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 10)
                 .disabled(selectedReasons.isEmpty || moderationInProgress)
@@ -177,5 +178,6 @@ private struct ReasonCell: View {
             }
             .foregroundColor(theme.colors.gray900)
         }
+        .buttonStyle(.plain)
     }
 }

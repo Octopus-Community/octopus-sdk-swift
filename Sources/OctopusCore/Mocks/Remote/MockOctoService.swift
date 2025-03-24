@@ -3,8 +3,8 @@
 //
 
 import Foundation
-import RemoteClient
-import GrpcModels
+import OctopusRemoteClient
+import OctopusGrpcModels
 
 class MockOctoService: OctoService {
     /// Fifo of the responses to `get(octoObjectId:)`.
@@ -43,7 +43,7 @@ class MockOctoService: OctoService {
     func get(octoObjectId: String, options: GetOptions, incrementViewCount: Bool,
              authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_GetResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_GetResponse {
         guard let response = getResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetResponse must be called before"))
         }
@@ -53,7 +53,7 @@ class MockOctoService: OctoService {
     func getBatch(ids: [String], options: GetOptions, incrementViewCount: Bool,
                   authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_GetBatchResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_GetBatchResponse {
         guard let response = getBatchResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetBatchResponse must be called before"))
         }
@@ -82,7 +82,7 @@ class MockOctoService: OctoService {
     }
 
     func delete(post postId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_DeletePostResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_DeletePostResponse {
         guard let response = deletePostResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextDeletePostResponse must be called before"))
         }
@@ -90,7 +90,7 @@ class MockOctoService: OctoService {
     }
 
     func delete(comment commentId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_DeleteCommentResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_DeleteCommentResponse {
         guard let response = deleteCommentResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextDeleteCommentResponse must be called before"))
         }
@@ -98,7 +98,7 @@ class MockOctoService: OctoService {
     }
 
     func like(objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_PutLikeResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_PutLikeResponse {
         guard let response = putLikeResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextLikeResponse must be called before"))
         }
@@ -106,7 +106,7 @@ class MockOctoService: OctoService {
     }
 
     func unlike(likeId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_DeleteLikeResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_DeleteLikeResponse {
         guard let response = deleteLikeResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextUnlikeResponse must be called before"))
         }

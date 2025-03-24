@@ -5,7 +5,7 @@
 import Foundation
 import CoreData
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 extension Injected {
     static let rootFeedsDatabase = Injector.InjectedIdentifier<RootFeedsDatabase>()

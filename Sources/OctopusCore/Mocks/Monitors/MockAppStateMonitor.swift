@@ -4,7 +4,7 @@
 
 import Foundation
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 class MockAppStateMonitor: AppStateMonitor, InjectableObject {
     static let injectedIdentifier = Injected.appStateMonitor

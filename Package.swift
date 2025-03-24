@@ -33,34 +33,34 @@ let package = Package(
             name: "Octopus",
             dependencies: [
                 "OctopusCore",
-                "DependencyInjection",
+                "OctopusDependencyInjection",
             ]),
         .target(
             name: "OctopusCore",
             dependencies: [
-                "RemoteClient",
+                "OctopusRemoteClient",
                 "KeychainAccess",
-                "GrpcModels",
-                "DependencyInjection"
+                "OctopusGrpcModels",
+                "OctopusDependencyInjection"
             ],
             resources: [
                 .copy("Persistence/Database/OctopusModel.xcdatamodeld"),
             ]),
         .target(
-            name: "RemoteClient",
+            name: "OctopusRemoteClient",
             dependencies: [
-                "GrpcModels"
+                "OctopusGrpcModels"
             ]
         ),
         .target(
-            name: "GrpcModels",
+            name: "OctopusGrpcModels",
             dependencies: [
                 .product(name: "SwiftProtobuf", package: "swift-protobuf"),
                 .product(name: "GRPC", package: "grpc-swift"),
             ],
             exclude: ["ProtoFiles"]),
         .target(
-            name: "DependencyInjection"
+            name: "OctopusDependencyInjection"
         ),
         .testTarget(
             name: "OctopusUITests",
@@ -82,8 +82,8 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "DependencyInjectionTests",
-            dependencies: ["DependencyInjection"]
+            name: "OctopusDependencyInjectionTests",
+            dependencies: ["OctopusDependencyInjection"]
         )
     ]
 )

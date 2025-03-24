@@ -4,10 +4,10 @@
 
 import Foundation
 import Combine
-import RemoteClient
+import OctopusRemoteClient
 import os
-import DependencyInjection
-import GrpcModels
+import OctopusDependencyInjection
+import OctopusGrpcModels
 
 extension Injected {
     static let profileRepository = Injector.InjectedIdentifier<ProfileRepository>()
@@ -26,7 +26,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
     @UserDefault(key: "OctopusSDK.client.user.picture") private var latestClientUserPicture: Data?
 
     private let appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
     private let authCallProvider: AuthenticatedCallProvider
     private let userProfileDatabase: CurrentUserProfileDatabase

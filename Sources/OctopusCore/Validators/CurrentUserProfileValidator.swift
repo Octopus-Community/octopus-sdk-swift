@@ -3,7 +3,7 @@
 //
 
 import UIKit
-import DependencyInjection
+import OctopusDependencyInjection
 
 public extension Validators {
     class CurrentUserProfile {

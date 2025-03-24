@@ -124,6 +124,7 @@ struct ProfileSummaryView: View {
                                     .font(theme.fonts.navBarItem)
                             }.frame(width: 32, height: 32)
                         })
+                        .buttonStyle(.plain)
                     } else {
                         Button(action: { openActions = true }) {
                             Image(systemName: "ellipsis")
@@ -131,6 +132,7 @@ struct ProfileSummaryView: View {
                                 .padding(.leading)
                                 .font(theme.fonts.navBarItem)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
         )

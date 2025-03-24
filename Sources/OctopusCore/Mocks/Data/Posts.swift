@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import GrpcModels
+import OctopusGrpcModels
 
 enum MockData {
     static var posts: [[Com_Octopuscommunity_OctoObject]] { [

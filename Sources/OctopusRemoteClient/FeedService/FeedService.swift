@@ -4,7 +4,7 @@
 
 import Foundation
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 import Logging
 
 
@@ -32,7 +32,7 @@ class FeedServiceClient: ServiceClient, FeedService {
     }
 
     func getRootFeedsInfo(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_GetRootFeedsInfoResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_GetRootFeedsInfoResponse {
         let request = Com_Octopuscommunity_GetRootFeedsInfoRequest()
 
         return try await callRemote(authenticationMethod) {
@@ -42,7 +42,7 @@ class FeedServiceClient: ServiceClient, FeedService {
     }
 
     func initializeFeed(feedId: String, pageSize: Int32, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_GetFeedPageResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedPageResponse {
         let request = Com_Octopuscommunity_InitializeFeedRequest.with {
             $0.feedID = feedId
             $0.pageSize = pageSize
@@ -55,7 +55,7 @@ class FeedServiceClient: ServiceClient, FeedService {
     }
 
     func getNextFeedPage(pageCursor: String, pageSize: Int32, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> GrpcModels.Com_Octopuscommunity_GetFeedPageResponse {
+    -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedPageResponse {
         let request = Com_Octopuscommunity_GetFeedPageRequest.with {
             $0.pageCursor = pageCursor
             $0.pageSize = pageSize

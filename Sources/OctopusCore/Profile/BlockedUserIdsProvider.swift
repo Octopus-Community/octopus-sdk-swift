@@ -4,7 +4,7 @@
 
 import Foundation
 import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 protocol BlockedUserIdsProvider {
     var blockedUserIdsPublisher: AnyPublisher<[String], Never> { get }

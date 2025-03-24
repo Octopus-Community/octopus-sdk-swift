@@ -4,7 +4,7 @@
 
 import Foundation
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 import SwiftProtobuf
 import Logging
 

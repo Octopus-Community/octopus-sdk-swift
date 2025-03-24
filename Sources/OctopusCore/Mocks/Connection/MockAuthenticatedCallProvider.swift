@@ -3,8 +3,8 @@
 //
 
 import Foundation
-import DependencyInjection
-import RemoteClient
+import OctopusDependencyInjection
+import OctopusRemoteClient
 
 class MockAuthenticatedCallProvider: AuthenticatedCallProvider, InjectableObject {
     static let injectedIdentifier = Injected.authenticatedCallProvider

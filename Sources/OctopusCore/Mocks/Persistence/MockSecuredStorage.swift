@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import DependencyInjection
+import OctopusDependencyInjection
 
 class MockSecuredStorage: SecuredStorage, InjectableObject {
     static let injectedIdentifier = Injected.securedStorage

@@ -5,10 +5,10 @@
 import Foundation
 import Combine
 import os
-import DependencyInjection
-import RemoteClient
+import OctopusDependencyInjection
+import OctopusRemoteClient
 import GRPC
-import GrpcModels
+import OctopusGrpcModels
 
 extension Injected {
     static let ssoExchangeTokenMonitor = Injector.InjectedIdentifier<SSOExchangeTokenMonitor>()
@@ -32,7 +32,7 @@ class SSOExchangeTokenMonitorDefault: SSOExchangeTokenMonitor, InjectableObject,
     }
     @Published private var getJwtFromClientTokenResponse: Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse?
 
-    private let remoteClient: RemoteClient
+    private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
     private let networkMonitor: NetworkMonitor
 

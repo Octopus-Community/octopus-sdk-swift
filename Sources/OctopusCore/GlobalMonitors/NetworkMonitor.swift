@@ -5,7 +5,7 @@
 import Foundation
 import Network
 @preconcurrency import Combine
-import DependencyInjection
+import OctopusDependencyInjection
 
 extension Injected {
     static let networkMonitor = Injector.InjectedIdentifier<NetworkMonitor>()
