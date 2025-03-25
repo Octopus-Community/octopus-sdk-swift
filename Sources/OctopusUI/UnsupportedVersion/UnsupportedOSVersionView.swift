@@ -15,12 +15,12 @@ struct UnsupportedOSVersionView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 44)
 
-            Text("UnsupportedOS.Title")
+            Text("UnsupportedOS.Title", bundle: .module)
                 .font(.title)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
 
-            Text("UnsupportedOS.Explanation")
+            Text("UnsupportedOS.Explanation", bundle: .module)
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)

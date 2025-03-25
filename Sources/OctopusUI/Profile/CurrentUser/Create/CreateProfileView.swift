@@ -170,7 +170,7 @@ private struct ContentView: View {
                     case .legalAgeReached:
                         EmptyView()
                     case .underaged:
-                        Text("Profile.Create.BirthDate.Underaged")
+                        Text("Profile.Create.BirthDate.Underaged", bundle: .module)
                             .font(theme.fonts.caption2)
                             .fontWeight(.bold)
                             .foregroundColor(theme.colors.error)
