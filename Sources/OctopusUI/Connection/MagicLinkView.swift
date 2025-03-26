@@ -36,6 +36,7 @@ struct MagicLinkView: View {
                     dismissModal.wrappedValue = false
                 }) {
                     Text("Common.Close", bundle: .module)
+                        .font(theme.fonts.navBarItem)
                 }
                 .buttonStyle(.plain)
                 .padding()
@@ -190,6 +191,7 @@ private struct EnterEmailView: View {
             case .emailNeeded:
                 Button(action: sendMagicLink) {
                     Text("Connection.MagicLink.Send.Button", bundle: .module)
+                        .font(theme.fonts.body2)
                         .foregroundColor(theme.colors.onPrimary)
                         .padding()
                         .frame(maxWidth: .infinity)
