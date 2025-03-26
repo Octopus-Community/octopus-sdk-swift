@@ -7,6 +7,7 @@ import Testing
 import OctopusUI
 import Octopus
 import UIKit
+import SwiftUI
 
 @Suite(.disabled("Disabled because we only need that they compile"))
 @MainActor
@@ -24,7 +25,15 @@ class APITests {
         theme = OctopusTheme(
             colors: .init(primarySet: .init(main: .red, lowContrast: .blue, highContrast: .yellow),
                           onPrimary: .white),
-            fonts: .init(),
+            fonts: .init(
+                title1: Font.custom("Courier New", size: 26),
+                title2: Font.custom("Courier New", size: 20),
+                body1: Font.custom("Courier New", size: 17),
+                body2: Font.custom("Courier New", size: 14),
+                caption1: Font.custom("Courier New", size: 12),
+                caption2: Font.custom("Courier New", size: 10),
+                navBarItem: Font.custom("Courier New", size: 17)
+            ),
             assets: .init(logo: UIImage()))
 
         // check that it can be passed as environment

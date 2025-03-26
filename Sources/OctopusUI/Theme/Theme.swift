@@ -93,26 +93,49 @@ public struct OctopusTheme: Sendable {
 
     /// Fonts of the theme
     public struct Fonts: Sendable {
-
-        // Non editable values
+        // Editable values
         /// Title 1 font
-        public let title1: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 26))
+        public let title1: Font
         /// Title 2 font
-        public let title2: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 22))
+        public let title2: Font
         /// Body 1 font
-        public let body1: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 18))
+        public let body1: Font
         /// Body 2 font
-        public let body2: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 16))
+        public let body2: Font
         /// Caption 1 font
-        public let caption1: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 14))
+        public let caption1: Font
         /// Caption 2 font
-        public let caption2: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 12))
+        public let caption2: Font
+        /// Font used for navigation bar items.
+        public let navBarItem: Font
 
-        let navBarItem: Font = .body
-        let backButton: Font = .body.weight(.semibold)
-        
         /// Constructor of fonts
-        public init() { }
+        /// - Parameters:
+        ///   - title1: the font for the title1 text style. Default value is scaled system font with base size of 26
+        ///   - title2: the font for the title2 text style. Default value is scaled system font with base size of 22
+        ///   - body1: the font for the body1 text style. Default value is scaled system font with base size of 18
+        ///   - body2: the font for the body2 text style. Default value is scaled system font with base size of 16
+        ///   - caption1: the font for the caption1 text style. Default value is scaled system font with base size of 14
+        ///   - caption2: the font for the caption2 text style. Default value is scaled system font with base size of 12
+        ///   - navBarItem: the font for the navigation bar items. Default value is system `.body` to match the default
+        ///                 font used for navigation bar items
+        public init(
+            title1: Font = Font.system(size: UIFontMetrics(forTextStyle: .title1).scaledValue(for: 26)),
+            title2: Font = Font.system(size: UIFontMetrics(forTextStyle: .title2).scaledValue(for: 22)),
+            body1: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 18)),
+            body2: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 16)),
+            caption1: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption1).scaledValue(for: 14)),
+            caption2: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption2).scaledValue(for: 12)),
+            navBarItem: Font = .body
+        ) {
+            self.title1 = title1
+            self.title2 = title2
+            self.body1 = body1
+            self.body2 = body2
+            self.caption1 = caption1
+            self.caption2 = caption2
+            self.navBarItem = navBarItem
+        }
     }
     
     /// The colors of the theme

@@ -18,6 +18,15 @@ struct CustomThemeCell: View {
                 main: .Scenarios.CustomTheme.Colors.primary,
                 lowContrast: .Scenarios.CustomTheme.Colors.primaryLow,
                 highContrast: .Scenarios.CustomTheme.Colors.primaryHigh)),
+        fonts: .init(
+            title1: Font.custom("Courier New", size: 26),
+            title2: Font.custom("Courier New", size: 20),
+            body1: Font.custom("Courier New", size: 17),
+            body2: Font.custom("Courier New", size: 14),
+            caption1: Font.custom("Courier New", size: 12),
+            caption2: Font.custom("Courier New", size: 10),
+            navBarItem: Font.custom("Courier New", size: 17)
+        ),
         assets: .init(logo: UIImage(resource: .Scenarios.CustomTheme.appLogo)))
 
     @State private var showModal = false
