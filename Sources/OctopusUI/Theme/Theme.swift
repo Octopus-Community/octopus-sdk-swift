@@ -120,12 +120,12 @@ public struct OctopusTheme: Sendable {
         ///   - navBarItem: the font for the navigation bar items. Default value is system `.body` to match the default
         ///                 font used for navigation bar items
         public init(
-            title1: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 26)),
-            title2: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 22)),
-            body1: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 18)),
-            body2: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 16)),
-            caption1: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 14)),
-            caption2: Font = Font.system(size: UIFontMetrics.default.scaledValue(for: 12)),
+            title1: Font = Font.system(size: UIFontMetrics(forTextStyle: .title1).scaledValue(for: 26)),
+            title2: Font = Font.system(size: UIFontMetrics(forTextStyle: .title2).scaledValue(for: 22)),
+            body1: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 18)),
+            body2: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 16)),
+            caption1: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption1).scaledValue(for: 14)),
+            caption2: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption2).scaledValue(for: 12)),
             navBarItem: Font = .body
         ) {
             self.title1 = title1
