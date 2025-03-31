@@ -19,10 +19,13 @@ public struct OctopusHomeScreen: View {
     @Environment(\.presentationMode) private var presentationMode
 
     private let octopus: OctopusSDK
+    private let bottomSafeAreaInset: CGFloat
 
     
     /// Constructor of the `OctopusHomeScreen`.
-    /// - Parameter octopus: The Octopus SDK
+    /// - Parameter:
+    ///    - octopus: The Octopus SDK
+    ///    - bottomSafeAreaInset: the bottom safe area inset. Default is 0. Only used on iOS 15+.
     ///
     /// You can pass an OctopusTheme as an environment to customize the colors, fonts and images used in this
     /// view:
@@ -30,8 +33,9 @@ public struct OctopusHomeScreen: View {
     /// OctopusHomeScreen(octopus: octopus)
     ///     .environment(\.octopusTheme, appTheme)
     /// ```
-    public init(octopus: OctopusSDK) {
+    public init(octopus: OctopusSDK, bottomSafeAreaInset: CGFloat = 0) {
         self.octopus = octopus
+        self.bottomSafeAreaInset = bottomSafeAreaInset
 
         let coloredAppearance = UINavigationBarAppearance()
         coloredAppearance.configureWithTransparentBackground()
@@ -70,6 +74,13 @@ public struct OctopusHomeScreen: View {
                                 "⚠️ You are trying to push the OctopusHomeScreen from a screen that already has a navigation bar.")
                         }
                     }
+                    .modify {
+                        if #available(iOS 15.0, *) {
+                            $0.safeAreaInset(edge: .bottom) {
+                                Spacer().frame(height: bottomSafeAreaInset)
+                            }
+                        } else { $0 }
+                    }
             } else {
                 UnsupportedOSVersionView()
                     .navigationBarItems(
@@ -88,6 +99,7 @@ public struct OctopusHomeScreen: View {
             }
         }
         .accentColor(theme.colors.primary)
+        .navigationViewStyle(.stack)
     }
 }
 
