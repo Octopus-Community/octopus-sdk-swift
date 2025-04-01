@@ -32,7 +32,7 @@ struct PostSummaryView: View {
                             HStack(spacing: 4) {
                                 OpenProfileButton(author: post.author, displayProfile: displayProfile) {
                                     post.author.name.textView
-                                        .font(theme.fonts.caption1)
+                                        .font(theme.fonts.body2)
                                         .fontWeight(.semibold)
                                         .foregroundColor(theme.colors.gray900)
                                 }

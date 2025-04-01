@@ -51,7 +51,8 @@ struct SampleRootView: View {
             }.tag(Tab.modal)
 
             // This example shows you that you can display an OctopusHomeScreen as view
-            OctopusHomeScreen(octopus: model.octopus)
+            // You can pass a `bottomSafeAreaInset` in order to add some safe area at the bottom of `OctopusHomeScreen`.
+            OctopusHomeScreen(octopus: model.octopus, bottomSafeAreaInset: 10)
             .tabItem {
                 Text("Octo Tab")
             }.tag(Tab.embedded)
