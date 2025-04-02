@@ -79,7 +79,7 @@ struct PostDetailView: View {
                     Group {
                         if viewModel.thisUserProfileId == nil {
                             Button(action: { viewModel.createCommentTappedWithoutBeeingLoggedIn() }) {
-                                Color.clear
+                                Color.white.opacity(0.0001)
                             }
                             .buttonStyle(.plain)
                         } else {
