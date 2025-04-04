@@ -33,6 +33,9 @@ struct CurrentUserProfileSummaryView: View {
     @State private var displayModerateId: String?
     @State private var displayContentModeration = false
 
+    @State private var displayOpenEditProfileInApp = false
+    @State private var openEditProfileInApp: (() -> Void)?
+
     init(octopus: OctopusSDK, dismiss: Binding<Bool>) {
         _viewModel = Compat.StateObject(wrappedValue: CurrentUserProfileSummaryViewModel(octopus: octopus))
         _dismiss = dismiss
@@ -41,29 +44,11 @@ struct CurrentUserProfileSummaryView: View {
     var body: some View {
         VStack {
             ContentView(profile: viewModel.profile, refresh: viewModel.refresh, openEdition: {
-                if let editProfileCallback = viewModel.editProfileCallback {
-                    editProfileCallback(nil)
-                } else {
-                    photoPickerFocused = false
-                    bioFocused = false
-                    openEditionScreen = true
-                }
+                openEdition(field: nil)
             }, openEditionWithBioFocused: {
-                if let editProfileCallback = viewModel.editProfileCallback {
-                    editProfileCallback(.bio)
-                } else {
-                    photoPickerFocused = false
-                    bioFocused = true
-                    openEditionScreen = true
-                }
+                openEdition(field: .bio)
             }, openEditionWithPhotoPicker: {
-                if let editProfileCallback = viewModel.editProfileCallback {
-                    editProfileCallback(.picture)
-                } else {
-                    photoPickerFocused = true
-                    bioFocused = false
-                    openEditionScreen = true
-                }
+                openEdition(field: .picture)
             }) {
                 if let postFeedViewModel = viewModel.postFeedViewModel {
                     PostFeedView(
@@ -127,6 +112,19 @@ struct CurrentUserProfileSummaryView: View {
             message: { error in
                 error.textView
             })
+        .alert(
+            "Profile.Edit.ClientApp.Alert.Title",
+            isPresented: $displayOpenEditProfileInApp,
+            presenting: openEditProfileInApp,
+            actions: { openEditProfileInApp in
+                Button(action: openEditProfileInApp) {
+                    Text("Common.Ok", bundle: .module)
+                }
+                Button(action: {}) {
+                    Text("Common.Cancel", bundle: .module)
+                }
+            },
+            message: { _ in })
         .navigationBarItems(
             trailing:
                 Button(action: { openSettings = true }) {
@@ -148,6 +146,47 @@ struct CurrentUserProfileSummaryView: View {
         .onValueChanged(of: displayError) {
             guard !$0 else { return }
             viewModel.error = nil
+        }
+    }
+
+    func openEdition(field: CurrentUserProfileSummaryViewModel.CoreProfileField?) {
+        enum Action {
+            case openOctopusEdition(CurrentUserProfileSummaryViewModel.CoreProfileField?)
+            case openAlertToAppEdition(() -> Void)
+            case openAppEdition(() -> Void)
+        }
+        let action: Action
+        switch viewModel.editConfig {
+        case let .editInApp(editProfileCallback):
+            if let field {
+                action = .openAlertToAppEdition({ editProfileCallback(field) })
+            } else {
+                action = .openAppEdition({ editProfileCallback(nil) })
+            }
+        case let .mixed(appManagedFields, editProfileCallback):
+            if let field {
+                if appManagedFields.contains(field) {
+                    action = .openAlertToAppEdition({ editProfileCallback(field) })
+                } else {
+                    action = .openOctopusEdition(field)
+                }
+            } else {
+                action = .openOctopusEdition(nil)
+            }
+        case .editInOctopus:
+            action = .openOctopusEdition(field)
+        }
+
+        switch action {
+        case let .openOctopusEdition(field):
+            photoPickerFocused = field == .picture
+            bioFocused = field == .bio
+            openEditionScreen = true
+        case let .openAlertToAppEdition(openAppEdition):
+            openEditProfileInApp = openAppEdition
+            displayOpenEditProfileInApp = true
+        case let .openAppEdition(openAppEdition):
+            openAppEdition()
         }
     }
 }

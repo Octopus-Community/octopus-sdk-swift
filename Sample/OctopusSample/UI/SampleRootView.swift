@@ -8,17 +8,23 @@ import OctopusUI
 import Octopus
 
 struct SampleRootView: View {
-    private enum Tab: Hashable {
+    private enum Tab: Int, Hashable {
         case modal
         case embedded
         case more
     }
 
-    @ObservedObject var model = SampleModel()
+    private let savedSelectedTabKey = "savedSelectedTab"
 
     // First value is true if we are in internal demo mode.
-    @State private var openOctopusAsModal = DefaultValuesProvider.demoMode
-    @State private var selectedTab = Tab.modal
+    @State private var openOctopusAsModal: Bool
+    @State private var selectedTab: Tab// = Tab.modal
+
+    init() {
+        let savedSelectedTab = Tab(rawValue: UserDefaults.standard.integer(forKey: savedSelectedTabKey)) ?? .modal
+        _selectedTab = State(initialValue: savedSelectedTab)
+        _openOctopusAsModal = State(initialValue: savedSelectedTab == .modal ? DefaultValuesProvider.demoMode : false)
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -36,7 +42,13 @@ struct SampleRootView: View {
                         .padding()
                 }
                 .fullScreenCover(isPresented: $openOctopusAsModal) {
-                    OctopusHomeScreen(octopus: model.octopus)
+                    // Init of OctopusSDK should be done as soon as possible in your app (in your AppDelegate for example)
+                    // This is not what we do here because this sample showcases multiple way of initializing the SDK.
+                    let octopus = try! OctopusSDK(
+                        apiKey: APIKeys.octopusAuth,
+                        connectionMode: .octopus(deepLink: "com.octopuscommunity.sample://magic-link")
+                    )
+                    OctopusHomeScreen(octopus: octopus)
                         // only for used for internal purpose, you can ignore this for the easiest way to use Octopus
                         // If you want to override the theme, please have a look to Scenarios/CustomTheme
                         .modify {
@@ -51,22 +63,35 @@ struct SampleRootView: View {
             }.tag(Tab.modal)
 
             // This example shows you that you can display an OctopusHomeScreen as view
-            // You can pass a `bottomSafeAreaInset` in order to add some safe area at the bottom of `OctopusHomeScreen`.
-            OctopusHomeScreen(octopus: model.octopus, bottomSafeAreaInset: 10)
+            Group {
+                if selectedTab == .embedded {
+                    // Init of OctopusSDK should be done as soon as possible in your app (in your AppDelegate for example)
+                    // This is not what we do here because this sample showcases multiple way of initializing the SDK.
+                    let octopus = try! OctopusSDK(apiKey: APIKeys.octopusAuth)
+                    // You can pass a `bottomSafeAreaInset` in order to add some safe area at the bottom of `OctopusHomeScreen`.
+                    OctopusHomeScreen(octopus: octopus, bottomSafeAreaInset: 10)
+                } else {
+                    Text("Loading")
+                }
+            }
             .tabItem {
                 Text("Octo Tab")
             }.tag(Tab.embedded)
 
             // Entry point for a list of specific, advanced examples
             NavigationView {
-                ScenariosView(model: model)
+                ScenariosView()
             }
             .tabItem {
                 Text("More")
             }.tag(Tab.more)
-        }.onAppear() {
+        }
+        .onAppear() {
             UITabBar.appearance().barTintColor = UIColor.systemGroupedBackground
             UITabBar.appearance().backgroundColor = UIColor.systemGroupedBackground
+        }
+        .onValueChanged(of: selectedTab) {
+            UserDefaults.standard.set($0.rawValue, forKey: savedSelectedTabKey)
         }
     }
 

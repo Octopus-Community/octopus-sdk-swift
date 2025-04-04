@@ -9,6 +9,15 @@ import OctopusCore
 
 @MainActor
 class CurrentUserProfileSummaryViewModel: ObservableObject {
+    typealias CoreProfileField = OctopusCore.ConnectionMode.SSOConfiguration.ProfileField
+    typealias EditProfileInAppBlock = (CoreProfileField?) -> Void
+
+    enum EditConfig {
+        case editInOctopus
+        case mixed(Set<CoreProfileField>, EditProfileInAppBlock)
+        case editInApp(EditProfileInAppBlock)
+    }
+
     @Published var profile: CurrentUserProfile?
     @Published private(set) var dismiss = false
     @Published var error: DisplayableString?
@@ -19,20 +28,23 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
 
     @Published private var isFetchingProfile: Bool = false
 
+    let editConfig: EditConfig
+
     let octopus: OctopusSDK
-    let editProfileCallback: ((OctopusCore.ConnectionMode.SSOConfiguration.ProfileField?) -> Void)?
 
     private var storage = [AnyCancellable]()
 
     init(octopus: OctopusSDK) {
         self.octopus = octopus
         if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode,
-           // only open the client's edit profile screen if there is at least one managed fields
-           // TODO: when hybrid case is handled, do that if appManagedFields == ProfileFields.allCases
            !configuration.appManagedFields.isEmpty {
-            editProfileCallback = configuration.modifyUser
+            if configuration.appManagedFields.isStrictSubset(of: CoreProfileField.allCases) {
+                editConfig = .mixed(configuration.appManagedFields, configuration.modifyUser)
+            } else {
+                editConfig = .editInApp(configuration.modifyUser)
+            }
         } else {
-            editProfileCallback = nil
+            editConfig = .editInOctopus
         }
 
         Task {

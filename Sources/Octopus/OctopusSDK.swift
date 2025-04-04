@@ -1,6 +1,7 @@
 import Foundation
 import OctopusCore
 import OctopusDependencyInjection
+import os
 
 /// Octopus Community main model object.
 /// This object holds a reference on all the repositories.
@@ -46,7 +47,11 @@ public class OctopusSDK: ObservableObject {
     public func connectUser(_ user: ClientUser, tokenProvider: @Sendable @escaping () async throws -> String) {
         let connectionRepository = core.connectionRepository
         Task {
-            try await connectionRepository.connectUser(user.coreValue, tokenProvider: tokenProvider)
+            do {
+                try await connectionRepository.connectUser(user.coreValue, tokenProvider: tokenProvider)
+            } catch {
+                if #available(iOS 14, *) { Logger.connection.debug("Error while trying to connect client user token: \(error)") }
+            }
         }
     }
     
@@ -58,7 +63,11 @@ public class OctopusSDK: ObservableObject {
     public func disconnectUser() {
         let connectionRepository = core.connectionRepository
         Task {
-            try await connectionRepository.disconnectUser()
+            do {
+                try await connectionRepository.disconnectUser()
+            } catch {
+                if #available(iOS 14, *) { Logger.connection.debug("Error while trying to disconnect client user token: \(error)") }
+            }
         }
     }
 }

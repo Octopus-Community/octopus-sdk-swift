@@ -16,6 +16,9 @@
     "App Login Flow" : {
 
     },
+    "App managed fields: %@." : {
+
+    },
     "App Version: %@" : {
       "localizations" : {
         "en" : {
@@ -68,16 +71,13 @@
     "Email: %@" : {
 
     },
-    "In order to test this, you must set your API key to OCTOPUS_SSO_API_KEY in secrets.xcconfig." : {
-
-    },
-    "In order to test this, your community should be configured to have all app managed fields." : {
-
-    },
-    "In order to test this, your community should be configured to have no app managed fields." : {
+    "In order to test these scenarios, your community should be configured to use SSO authentication." : {
 
     },
     "Information about the age" : {
+
+    },
+    "Loading" : {
 
     },
     "Login" : {
@@ -126,6 +126,9 @@
 
     },
     "Scenarios" : {
+
+    },
+    "Some App Managed Fields" : {
 
     },
     "SSO Connection" : {

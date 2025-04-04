@@ -9,10 +9,11 @@ import Octopus
 
 /// ViewModel of the SSO View
 ///
-/// This view models listen to `appUser` to pass it to the SDK and this is what you should do: as soon as your users
-/// changes, inform the SDK about it.
+/// This view models listen to `appManagedFields` in order to reset the sdk with the new value.
+/// It also listens to `appUser` to pass it to the SDK and this is what you should do: as soon as your users changes,
+/// inform the SDK about it.
 @MainActor
-class SSOWithAllAppManagedFieldsViewModel: ObservableObject {
+class SSOWithSomeAppManagedFieldsViewModel: ObservableObject {
     @Published var openLogin = false
     @Published var openEditProfile = false
 
@@ -21,13 +22,16 @@ class SSOWithAllAppManagedFieldsViewModel: ObservableObject {
 
     @Published private var isDisplayed = false
 
+    // Set the appManagedFields that matches your configuration here
+    let appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField> = [.nickname, .picture]
+
     private let tokenProvider: TokenProvider
     private let appUserStore: AppUserStore
     private var storage = [AnyCancellable]()
 
     init() {
         self.tokenProvider = TokenProvider()
-        self.appUserStore = AppUserStore(prefix: "AllAppManagedFields")
+        self.appUserStore = AppUserStore(prefix: "SomeAppManagedFields")
 
         appUser = appUserStore.user
 
@@ -43,10 +47,9 @@ class SSOWithAllAppManagedFieldsViewModel: ObservableObject {
     }
 
     func onAppear() {
-        // For this scenario, we need the SDK to be on a different connection mode
         octopus = try! OctopusSDK(apiKey: APIKeys.ssoAllManagedFields, connectionMode: .sso(
             .init(
-                appManagedFields: Set(ConnectionMode.SSOConfiguration.ProfileField.allCases),
+                appManagedFields: appManagedFields,
                 loginRequired: { [weak self] in
                     guard let self else { return }
                     openLogin = true

@@ -35,6 +35,8 @@ struct PostSummaryView: View {
                                         .font(theme.fonts.body2)
                                         .fontWeight(.semibold)
                                         .foregroundColor(theme.colors.gray900)
+                                        .fixedSize(horizontal: false, vertical: true) // Prevents unnecessary truncation
+
                                 }
                                 Circle()
                                     .frame(width: 2, height: 2)
@@ -44,11 +46,13 @@ struct PostSummaryView: View {
                                         Text(post.relativeDate)
                                             .font(theme.fonts.caption1)
                                             .fontWeight(.semibold)
+                                            .lineLimit(1) // Always on one line
+                                            .layoutPriority(1) // Ensures it does not get pushed out
                                             .foregroundColor(theme.colors.gray500)
-                                        Spacer()
                                     }
                                 }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             HStack(spacing: 4) {
                                 OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
                                     HStack {

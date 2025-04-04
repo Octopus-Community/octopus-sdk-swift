@@ -9,8 +9,6 @@ import OctopusUI
 
 /// Scenario that shows how to open the Octopus SDK on a sheet.
 struct SheetCell: View {
-    @ObservedObject var model: SampleModel
-
     @State private var showModal = false
 
     var body: some View {
@@ -23,7 +21,10 @@ struct SheetCell: View {
             showModal = true
         }
         .sheet(isPresented: $showModal) {
-            OctopusHomeScreen(octopus: model.octopus)
+            // Init of OctopusSDK should be done as soon as possible in your app (in your AppDelegate for example)
+            // This is not what we do here because this sample showcases multiple way of initializing the SDK.
+            let octopus = try! OctopusSDK(apiKey: APIKeys.octopusAuth)
+            OctopusHomeScreen(octopus: octopus)
         }
     }
 }

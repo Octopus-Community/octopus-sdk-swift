@@ -28,7 +28,7 @@ public enum ConnectionMode {
         /// Set of profile fields that can only be updated by your app, not by Octopus.
         /// For example: if you `appManagedFields` contains `.nickname`, only your app will be able to update the
         /// user's nickname.
-        let appManagedFields: Set<ProfileField>
+        public let appManagedFields: Set<ProfileField>
 
         /// Block called when OctopusSDK needs a logged in user.
         /// When this block is called, you should start your login process.

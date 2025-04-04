@@ -14,6 +14,7 @@ class ClientUserProvider: InjectableObject, @unchecked Sendable {
     static let injectedIdentifier = Injected.clientUserProvider
 
     @Published private(set) var clientUser: ClientUser?
+    @Published private(set) var hasLoadedClientUser: Bool = false
 
     private let userDataStorage: UserDataStorage
     private var storage: Set<AnyCancellable> = []
@@ -43,6 +44,7 @@ class ClientUserProvider: InjectableObject, @unchecked Sendable {
                 .receive(on: DispatchQueue.main)
                 .sink { [unowned self] in
                     self.clientUser = $0
+                    self.hasLoadedClientUser = true
                 }.store(in: &storage)
         }
     }
