@@ -23,8 +23,12 @@
 	<string>12.0</string>
 	<key>OCTOPUS_API_KEY</key>
 	<string>$(OCTOPUS_API_KEY)</string>
-	<key>OCTOPUS_SSO_API_KEY</key>
-	<string>$(OCTOPUS_SSO_API_KEY)</string>
+	<key>OCTOPUS_SSO_NO_MANAGED_FIELDS_API_KEY</key>
+	<string>$(OCTOPUS_SSO_NO_MANAGED_FIELDS_API_KEY)</string>
+	<key>OCTOPUS_SSO_SOME_MANAGED_FIELDS_API_KEY</key>
+	<string>$(OCTOPUS_SSO_SOME_MANAGED_FIELDS_API_KEY)</string>
+	<key>OCTOPUS_SSO_ALL_MANAGED_FIELDS_API_KEY</key>
+	<string>$(OCTOPUS_SSO_ALL_MANAGED_FIELDS_API_KEY)</string>
 	<key>OCTOPUS_REMOTE_BASE_URL</key>
 	<string>$(OCTOPUS_REMOTE_BASE_URL)</string>
 	<key>OCTOPUS_INTERNAL_DEMO_MODE</key>

@@ -26,7 +26,11 @@ struct EditProfileView: View {
     }
 
     var body: some View {
-        ContentView(isLoading: viewModel.isLoading, nickname: $viewModel.nickname,
+        ContentView(isLoading: viewModel.isLoading,
+                    nicknameEditConfig: viewModel.nicknameEditConfig,
+                    bioEditConfig: viewModel.bioEditConfig,
+                    pictureEditConfig: viewModel.pictureEditConfig,
+                    nickname: $viewModel.nickname,
                     bio: $viewModel.bio, picture: $viewModel.picture, nicknameForAvatar: viewModel.nicknameForAvatar,
                     nicknameError: viewModel.nicknameError, bioError: viewModel.bioError,
                     pictureError: viewModel.pictureError, bioFocused: bioFocused, bioMaxLength: viewModel.bioMaxLength,
@@ -120,6 +124,9 @@ private struct ContentView: View {
     @Environment(\.octopusTheme) private var theme
 
     let isLoading: Bool
+    let nicknameEditConfig: EditProfileViewModel.FieldEditConfig
+    let bioEditConfig: EditProfileViewModel.FieldEditConfig
+    let pictureEditConfig: EditProfileViewModel.FieldEditConfig
     @Binding var nickname: String
     @Binding var bio: String
     @Binding var picture: EditProfileViewModel.Picture
@@ -135,9 +142,13 @@ private struct ContentView: View {
     let photoPickerFocused: Bool
 
     var body: some View {
-        EditProfileFormView(nickname: $nickname, bio: $bio, picture: $picture, nicknameForAvatar: nicknameForAvatar,
-                            nicknameError: nicknameError, bioError: bioError, pictureError: pictureError,
-                            bioFocused: bioFocused, bioMaxLength: bioMaxLength, photoPickerFocused: photoPickerFocused)
+        EditProfileFormView(
+            nicknameEditConfig: nicknameEditConfig,
+            bioEditConfig: bioEditConfig,
+            pictureEditConfig: pictureEditConfig,
+            nickname: $nickname, bio: $bio, picture: $picture, nicknameForAvatar: nicknameForAvatar,
+            nicknameError: nicknameError, bioError: bioError, pictureError: pictureError,
+            bioFocused: bioFocused, bioMaxLength: bioMaxLength, photoPickerFocused: photoPickerFocused)
         .disabled(isLoading)
     }
 }
@@ -145,6 +156,9 @@ private struct ContentView: View {
 private struct EditProfileFormView: View {
     @Environment(\.octopusTheme) private var theme
 
+    let nicknameEditConfig: EditProfileViewModel.FieldEditConfig
+    let bioEditConfig: EditProfileViewModel.FieldEditConfig
+    let pictureEditConfig: EditProfileViewModel.FieldEditConfig
     @Binding var nickname: String
     @Binding var bio: String
     @Binding var picture: EditProfileViewModel.Picture
@@ -157,26 +171,35 @@ private struct EditProfileFormView: View {
     let bioMaxLength: Int
     let photoPickerFocused: Bool
 
-    @State private var nicknameFocused = true
+    @State private var nicknameFocused = false
     @State private var bioFocused: Bool
     @State private var scrollToBottomOfId: String?
 
+    @State private var displayOpenEditProfileInApp = false
+    @State private var openEditProfileInApp: (() -> Void)?
+
     private let pictureSize: CGFloat = 90
 
-    init(nickname: Binding<String>, bio: Binding<String>, picture: Binding<EditProfileViewModel.Picture>,
+    init(nicknameEditConfig: EditProfileViewModel.FieldEditConfig,
+         bioEditConfig: EditProfileViewModel.FieldEditConfig,
+         pictureEditConfig: EditProfileViewModel.FieldEditConfig,
+         nickname: Binding<String>, bio: Binding<String>, picture: Binding<EditProfileViewModel.Picture>,
          nicknameForAvatar: String,
          nicknameError: DisplayableString?, bioError: DisplayableString?, pictureError: DisplayableString?,
          bioFocused: Bool, bioMaxLength: Int, photoPickerFocused: Bool) {
         _nickname = nickname
         _bio = bio
         _picture = picture
+        self.nicknameEditConfig = nicknameEditConfig
+        self.bioEditConfig = bioEditConfig
+        self.pictureEditConfig = pictureEditConfig
         self.nicknameForAvatar = nicknameForAvatar
         self.nicknameError = nicknameError
         self.bioError = bioError
         self.pictureError = pictureError
-        _bioFocused = .init(initialValue: bioFocused)
+        _bioFocused = .init(initialValue: bioEditConfig.fieldIsEditable ? bioFocused : false)
         self.bioMaxLength = bioMaxLength
-        self.photoPickerFocused = photoPickerFocused
+        self.photoPickerFocused = pictureEditConfig.fieldIsEditable ? photoPickerFocused : false
     }
 
     var body: some View {
@@ -187,6 +210,16 @@ private struct EditProfileFormView: View {
                     Spacer()
                     PictureView(picture: $picture, nickname: nicknameForAvatar, openPhotosPicker: photoPickerFocused)
                         .frame(width: pictureSize, height: pictureSize)
+                        .disabled(!pictureEditConfig.fieldIsEditable)
+                        .opacity(1.0) // Prevents fading due to disabled
+                        .modify {
+                            if let callback = pictureEditConfig.callback {
+                                $0.onTapGesture {
+                                    openEditProfileInApp = callback
+                                    displayOpenEditProfileInApp = true
+                                }
+                            } else { $0 }
+                        }
                     Spacer()
                 }
                 if let pictureError {
@@ -218,6 +251,22 @@ private struct EditProfileFormView: View {
                             .stroke(nicknameFocused ? theme.colors.gray900 : theme.colors.gray300,
                                     lineWidth: nicknameFocused ? 2 : 1)
                     )
+                    .disabled(!nicknameEditConfig.fieldIsEditable)
+                    .overlay(
+                        Group {
+                            if let callback = nicknameEditConfig.callback {
+                                Button(action: {
+                                    openEditProfileInApp = callback
+                                    displayOpenEditProfileInApp = true
+                                }) {
+                                    Color.white.opacity(0.0001)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                EmptyView()
+                            }
+                        }
+                    )
                 Spacer().frame(height: 6)
                 Text("Profile.Edit.Nickname.Explanation", bundle: .module)
                     .font(theme.fonts.caption1)
@@ -242,9 +291,11 @@ private struct EditProfileFormView: View {
                         .foregroundColor(theme.colors.gray700)
                         .multilineTextAlignment(.center)
                     Spacer()
-                    Text(verbatim: "(\(bio.count)/\(bioMaxLength))")
-                        .font(theme.fonts.body2)
-                        .foregroundColor(bio.count <= bioMaxLength ? theme.colors.gray500 : theme.colors.error)
+                    if bioEditConfig.fieldIsEditable {
+                        Text(verbatim: "(\(bio.count)/\(bioMaxLength))")
+                            .font(theme.fonts.body2)
+                            .foregroundColor(bio.count <= bioMaxLength ? theme.colors.gray500 : theme.colors.error)
+                    }
                 }
                 Spacer().frame(height: 6)
                 MultilineTextField(text: $bio, shouldFocus: $bioFocused, placeholderText: "Profile.Edit.Bio.Placeholder")
@@ -273,6 +324,24 @@ private struct EditProfileFormView: View {
                             }
                         }
                     }
+                    .disabled(!bioEditConfig.fieldIsEditable)
+                    .overlay(
+                        Group {
+                            if let callback = bioEditConfig.callback {
+                                Button(action: {
+                                    nicknameFocused = false
+                                    bioFocused = false
+                                    openEditProfileInApp = callback
+                                    displayOpenEditProfileInApp = true
+                                }) {
+                                    Color.white.opacity(0.0001)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                EmptyView()
+                            }
+                        }
+                    )
                 if let bioError {
                     Spacer().frame(height: 4)
                     bioError.textView
@@ -289,6 +358,19 @@ private struct EditProfileFormView: View {
             }
             .padding(.top)
             .padding(.horizontal, 20)
+            .alert(
+                "Profile.Edit.ClientApp.Alert.Title",
+                isPresented: $displayOpenEditProfileInApp,
+                presenting: openEditProfileInApp,
+                actions: { openEditProfileInApp in
+                    Button(action: openEditProfileInApp) {
+                        Text("Common.Ok", bundle: .module)
+                    }
+                    Button(action: {}) {
+                        Text("Common.Cancel", bundle: .module)
+                    }
+                },
+                message: { _ in })
         }
     }
 }
@@ -374,7 +456,7 @@ private struct PictureView: View {
                             .offset(x: 30, y: 30)
                     )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderless)
             .actionSheet(isPresented: $openActionList) {
                 ActionSheet(title: Text(verbatim: ""), buttons: [
                     ActionSheet.Button.default(Text("Profile.Edit.Picture.Change", bundle: .module)) {

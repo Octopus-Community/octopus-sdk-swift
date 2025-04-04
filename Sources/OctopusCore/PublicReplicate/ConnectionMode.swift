@@ -14,7 +14,7 @@ public enum ConnectionMode {
     /// Configuration of the SSO connection mode
     public struct SSOConfiguration {
         /// The field of a Profile
-        public enum ProfileField {
+        public enum ProfileField: CaseIterable {
             /// Username
             case nickname
             /// Biography

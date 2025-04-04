@@ -17,6 +17,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.profileRepository
 
     @Published public private(set) var profile: CurrentUserProfile?
+    @Published private(set) var hasLoadedProfile: Bool = false
 
     public var onCurrentUserProfileUpdated: AnyPublisher<Void, Never> {
         _onCurrentUserProfileUpdated.receive(on: DispatchQueue.main).eraseToAnyPublisher()
@@ -69,7 +70,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] in
                 self.profile = $0
-
+                hasLoadedProfile = true
             }.store(in: &storage)
 
         userProfileFetchMonitor.userProfileResponsePublisher
@@ -86,7 +87,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
             .store(in: &storage)
 
         Publishers.CombineLatest3(
-            $profile,
+            $profile.removeDuplicates(),
             clientUserProvider.$clientUser,
             networkMonitor.connectionAvailablePublisher
         )
@@ -97,7 +98,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
             if appManagedFields.contains(.nickname),
                let clientNickname = clientUser.profile.nickname,
                profile.nickname != clientNickname {
-                if #available(iOS 14, *) { Logger.profile.trace("Nickname changed") }
+                if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profile.nickname), new: \(clientNickname))") }
                 nickname = .updated(clientNickname)
                 hasUpdate = true
             } else {
@@ -106,7 +107,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
 
             let bio: EditableProfile.FieldUpdate<String?>
             if appManagedFields.contains(.bio), profile.bio != clientUser.profile.bio {
-                if #available(iOS 14, *) { Logger.profile.trace("Bio changed") }
+                if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profile.bio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
                 bio = .updated(clientUser.profile.bio)
                 hasUpdate = true
             } else {

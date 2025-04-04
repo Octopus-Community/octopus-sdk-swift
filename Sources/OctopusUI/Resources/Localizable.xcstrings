@@ -652,7 +652,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nous tentons de récupérer vos données. Veillez reessayer dans quelques instants. "
+            "value" : "Nous tentons de récupérer vos données. Veuillez réessayer dans quelques instants."
           }
         }
       }
@@ -1879,6 +1879,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modifier le profil"
+          }
+        }
+      }
+    },
+    "Profile.Edit.ClientApp.Alert.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We will redirect you to the dedicated page to edit this item."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nous allons vous rediriger vers la page dédiée pour modifier cet élément."
           }
         }
       }

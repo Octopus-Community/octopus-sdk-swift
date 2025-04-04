@@ -34,7 +34,7 @@ public class OctopusSDKCore: ObservableObject {
             apiKey: apiKey, sdkVersion: version,
             updateTokenBlock: { [userDataStorage] newToken in
                 guard let userData = userDataStorage.userData else { return }
-                let newUserData = UserDataStorage.UserData(id: userData.id, jwtToken: newToken)
+                let newUserData = UserDataStorage.UserData(id: userData.id, clientId: userData.clientId, jwtToken: newToken)
                 userDataStorage.store(userData: newUserData)
             })
         injector.register { _ in remoteClient }
@@ -76,7 +76,6 @@ public class OctopusSDKCore: ObservableObject {
             injector.register { MagicLinkConnectionRepository(connectionMode: connectionMode, injector: $0) }
             appManagedFields = []
         case let .sso(config):
-            injector.register { SSOExchangeTokenMonitorDefault(injector: $0) }
             injector.register { SSOConnectionRepository(connectionMode: connectionMode, injector: $0) }
             injector.register { ClientUserProfileDatabase(injector: $0) }
             appManagedFields = config.appManagedFields
@@ -93,7 +92,7 @@ public class OctopusSDKCore: ObservableObject {
         case .octopus:
             injector.getInjected(identifiedBy: Injected.magicLinkMonitor).start()
         case .sso:
-            injector.getInjected(identifiedBy: Injected.ssoExchangeTokenMonitor).start()
+            break
         }
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).start()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).start()
@@ -119,7 +118,7 @@ public class OctopusSDKCore: ObservableObject {
         case .octopus:
             injector.getInjected(identifiedBy: Injected.magicLinkMonitor).stop()
         case .sso:
-            injector.getInjected(identifiedBy: Injected.ssoExchangeTokenMonitor).stop()
+            break
         }
         injector.getInjected(identifiedBy: Injected.appStateMonitor).stop()
         injector.getInjected(identifiedBy: Injected.networkMonitor).stop()

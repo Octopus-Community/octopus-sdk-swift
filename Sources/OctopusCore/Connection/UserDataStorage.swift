@@ -27,7 +27,6 @@ class UserDataStorage: InjectableObject {
 
     struct ClientUserData: Equatable {
         let id: String
-        let token: String?
     }
 
     struct MagicLinkData: Equatable {
@@ -45,7 +44,6 @@ class UserDataStorage: InjectableObject {
     private enum ClientUserKeys {
         static let base = "client_user"
         static let id = "\(base)_id"
-        static let token = "\(base)_token"
     }
 
     private struct MagicLinkKeys {
@@ -69,8 +67,7 @@ class UserDataStorage: InjectableObject {
         }
 
         if let id = securedStorage[ClientUserKeys.id] {
-            let token = securedStorage[ClientUserKeys.token]
-            clientUserData = ClientUserData(id: id, token: token)
+            clientUserData = ClientUserData(id: id)
         }
 
         if let magicLinkId = securedStorage[MagicLinkKeys.identifier], let email = securedStorage[MagicLinkKeys.email] {
@@ -81,13 +78,13 @@ class UserDataStorage: InjectableObject {
     func store(userData: UserData?) {
         securedStorage[UserKeys.id] = userData?.id
         securedStorage[UserKeys.jwtToken] = userData?.jwtToken
+        securedStorage[UserKeys.clientId] = userData?.clientId
 
         self.userData = userData
     }
 
     func store(clientUserData: ClientUserData?) {
         securedStorage[ClientUserKeys.id] = clientUserData?.id
-        securedStorage[ClientUserKeys.token] = clientUserData?.token
 
         self.clientUserData = clientUserData
     }

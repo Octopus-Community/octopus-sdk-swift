@@ -9,25 +9,23 @@ import Octopus
 
 /// ViewModel of the SSO View
 ///
-/// This view models listen to `appManagedFields` in order to reset the sdk with the new value.
-/// It also listens to `appUser` to pass it to the SDK and this is what you should do: as soon as your users changes,
-/// inform the SDK about it.
+/// This view models listen to listens to `appUser` to pass it to the SDK and this is what you should do: as soon as
+/// your users changes, inform the SDK about it.
 @MainActor
 class SSOWithoutAppManagedFieldsViewModel: ObservableObject {
     @Published var openLogin = false
     @Published var openEditProfile = false
 
     @Published var appUser: AppUser?
+    @Published var octopus: OctopusSDK?
 
     @Published private var isDisplayed = false
 
-    private let model: SampleModel
     private let tokenProvider: TokenProvider
     private let appUserStore: AppUserStore
     private var storage = [AnyCancellable]()
 
-    init(model: SampleModel) {
-        self.model = model
+    init() {
         self.tokenProvider = TokenProvider()
         self.appUserStore = AppUserStore(prefix: "NoAppManagedFields")
 
@@ -46,39 +44,38 @@ class SSOWithoutAppManagedFieldsViewModel: ObservableObject {
 
     func onAppear() {
         // For this scenario, we need the SDK to be on a different connection mode
-        model.setConnectionMode(
-            .sso(
-                .init(
-                    loginRequired: { [weak self] in
-                        guard let self else { return }
-                        openLogin = true
-                    })
-            )
-        )
+        octopus = try! OctopusSDK(apiKey: APIKeys.ssoNoManagedFields, connectionMode: .sso(
+            .init(
+                loginRequired: { [weak self] in
+                    guard let self else { return }
+                    openLogin = true
+                })
+        ))
         isDisplayed = true
     }
 
     func onDisappear() {
         isDisplayed = false
-        model.setConnectionMode(.octopus(deepLink: nil))
+        octopus = nil
     }
 
     /// Whenever your user is modified, inform the SDK as soon as possible.
     private func userUpdated(appUser: AppUser?) {
+        guard let octopus else { return }
         if let appUser {
             let clientUser = ClientUser(
                 userId: appUser.userId,
                 profile: .init(nickname: appUser.nickname, bio: appUser.bio,
                                picture: appUser.picture,
                                ageInformation: appUser.ageInformation?.sdkValue))
-            model.octopus.connectUser(
+            octopus.connectUser(
                 clientUser,
                 tokenProvider: { [weak self] in
                     guard let self else { throw NSError(domain: "", code: 0, userInfo: nil) }
                     return try await self.tokenProvider.getToken(userId: appUser.userId)
                 })
         } else {
-            model.octopus.disconnectUser()
+            octopus.disconnectUser()
         }
     }
 }

@@ -8,25 +8,28 @@ import Combine
 import Octopus
 import OctopusUI
 
-/// View that lets you see how to configure the sdk in SSO mode.
+/// View that lets you see how to configure the sdk in SSO mode, with some fields that are managed by your app.
+/// To use this scenario, be sure that your community is configured with the same options: sso with some app managed
+/// fields.
 ///
-/// SSOViewModel keeps track of the app's current user and let's you edit its profile.
+/// SSOWithSomeAppManagedFieldsViewModel keeps track of the app's current user and let's you edit its profile.
 /// Whenever the app user changes, the view model informs the SDK about this change and you should do that in your app
 /// too.
-struct SSOWithAllAppManagedFieldsView: View {
-    @StateObjectCompat private var viewModel: SSOWithAllAppManagedFieldsViewModel
+struct SSOWithSomeAppManagedFieldsView: View {
+    @StateObjectCompat private var viewModel: SSOWithSomeAppManagedFieldsViewModel
 
     @State private var showModal = false
     @State private var showLogin = false
     @State private var showEditProfileWithAge = false
-    @State private var appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField> = []
 
     init() {
-        self._viewModel = StateObjectCompat(wrappedValue: SSOWithAllAppManagedFieldsViewModel())
+        self._viewModel = StateObjectCompat(wrappedValue: SSOWithSomeAppManagedFieldsViewModel())
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
+            Text("App managed fields: \(viewModel.appManagedFields.map { $0.displayName }.joined(separator: ", ")).")
+                .font(.headline)
             Text("Client User Config:")
                 .font(.headline)
             VStack {
@@ -73,6 +76,16 @@ struct SSOWithAllAppManagedFieldsView: View {
         .onDisappear() {
             viewModel.onDisappear()
         }
-        .navigationBarTitle(Text("All App Managed Fields"), displayMode: .inline)
+        .navigationBarTitle(Text("Some App Managed Fields"), displayMode: .inline)
+    }
+}
+
+extension ConnectionMode.SSOConfiguration.ProfileField {
+    var displayName: String {
+        return switch self {
+        case .nickname: "Nickname"
+        case .bio: "Bio"
+        case .picture: "Picture"
+        }
     }
 }

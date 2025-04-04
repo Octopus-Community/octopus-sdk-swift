@@ -9,8 +9,6 @@ import OctopusUI
 
 /// Scenario that shows how to pass a custom theme to the Octopus SDK.
 struct CustomThemeCell: View {
-    @ObservedObject var model: SampleModel
-
     /// Create a custom theme
     let appTheme = OctopusTheme(
         colors: .init(
@@ -41,7 +39,10 @@ struct CustomThemeCell: View {
             showModal = true
         }
         .fullScreenCover(isPresented: $showModal) {
-            OctopusHomeScreen(octopus: model.octopus)
+            // Init of OctopusSDK should be done as soon as possible in your app (in your AppDelegate for example)
+            // This is not what we do here because this sample showcases multiple way of initializing the SDK.
+            let octopus = try! OctopusSDK(apiKey: APIKeys.octopusAuth)
+            OctopusHomeScreen(octopus: octopus)
                 /// Pass the custom theme
                 .environment(\.octopusTheme, appTheme)
         }

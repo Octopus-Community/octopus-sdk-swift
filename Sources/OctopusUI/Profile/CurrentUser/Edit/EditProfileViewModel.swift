@@ -16,6 +16,29 @@ class EditProfileViewModel: ObservableObject {
         case deleted
     }
 
+    enum FieldEditConfig {
+        case editInOctopus
+        case editInApp(() -> Void)
+
+        var fieldIsEditable: Bool {
+            switch self {
+            case .editInApp: return false
+            case .editInOctopus: return true
+            }
+        }
+
+        var callback: (() -> Void)? {
+            switch self {
+            case .editInApp(let callback): return callback
+            case .editInOctopus: return nil
+            }
+        }
+    }
+
+    let nicknameEditConfig: FieldEditConfig
+    let bioEditConfig: FieldEditConfig
+    let pictureEditConfig: FieldEditConfig
+
     @Published private(set) var isLoading = false
     @Published private(set) var dismiss = false
     @Published private(set) var alertError: DisplayableString?
@@ -66,6 +89,39 @@ class EditProfileViewModel: ObservableObject {
     init(octopus: OctopusSDK) {
         self.octopus = octopus
         validator = octopus.core.validators.currentUserProfile
+
+        if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode {
+            nicknameEditConfig = configuration.appManagedFields.contains(.nickname) ?
+                .editInApp({ configuration.modifyUser(.nickname) }) :
+                .editInOctopus
+            bioEditConfig = configuration.appManagedFields.contains(.bio) ?
+                .editInApp({ configuration.modifyUser(.bio) }) :
+                .editInOctopus
+            pictureEditConfig = configuration.appManagedFields.contains(.picture) ?
+                .editInApp({ configuration.modifyUser(.picture) }) :
+                .editInOctopus
+
+            // update app managed fields
+            octopus.core.profileRepository.$profile
+                .compactMap { $0 }
+                .sink { [unowned self] profile in
+                    savedProfile = profile
+                    if configuration.appManagedFields.contains(.nickname) {
+                        nickname = profile.nickname
+                        nicknameForAvatar = profile.nickname
+                    }
+                    if configuration.appManagedFields.contains(.bio) {
+                        bio = profile.bio ?? ""
+                    }
+                    if configuration.appManagedFields.contains(.picture) {
+                        picture = .unchanged(profile.pictureUrl)
+                    }
+                }.store(in: &storage)
+        } else {
+            nicknameEditConfig = .editInOctopus
+            bioEditConfig = .editInOctopus
+            pictureEditConfig = .editInOctopus
+        }
 
         // feed the values with the first profile we get
         octopus.core.profileRepository.$profile

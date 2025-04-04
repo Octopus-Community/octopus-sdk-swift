@@ -15,7 +15,6 @@ class SSOConnectionTests: XCTestCase {
     /// Object that is tested
     private var connectionRepository: ConnectionRepository!
 
-    private var mockSSOExchangeTokenMonitor: MockSSOExchangeTokenMonitor!
     private var mockUserService: MockUserService!
     private var mockUserProfileFetchMonitor: MockUserProfileFetchMonitor!
     private var userDataStorage: UserDataStorage!
@@ -30,7 +29,7 @@ class SSOConnectionTests: XCTestCase {
         injector.register { ClientUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
         injector.register { ProfileRepository(appManagedFields: [], injector: $0) }
-        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .ssoExchangeTokenMonitor,
+        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
                                .userProfileFetchMonitor, .blockedUserIdsProvider)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
@@ -46,7 +45,6 @@ class SSOConnectionTests: XCTestCase {
         connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
             .userService as! MockUserService)
-        mockSSOExchangeTokenMonitor = (injector.getInjected(identifiedBy: Injected.ssoExchangeTokenMonitor) as! MockSSOExchangeTokenMonitor)
         mockUserProfileFetchMonitor = (injector.getInjected(
             identifiedBy: Injected.userProfileFetchMonitor) as! MockUserProfileFetchMonitor)
 
@@ -86,7 +84,7 @@ class SSOConnectionTests: XCTestCase {
             tokenProvider: {
                 clientUserTokenAsked = true
                 // If a fetch is currently happening, wait for its end
-                while simulateGetClientTokenFinished {
+                while !simulateGetClientTokenFinished {
                     try? await Task.sleep(nanoseconds: 10)
                 }
                 return "fake_client_token"
@@ -95,12 +93,8 @@ class SSOConnectionTests: XCTestCase {
         await fulfillment(of: [clientConnectedExpectation], timeout: 0.5)
         XCTAssert(clientUserTokenAsked)
 
-        // Simulate the fact that the client received the client user token. The monitor should automatically fetch
-        // the token
-        simulateGetClientTokenFinished = true
-
-        // simulate that the monitor has fetched the token
-        mockSSOExchangeTokenMonitor.getJwtFromClientTokenResponse = .with {
+        // simulate that the backend has sent the token
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
             $0.result = .success(.with {
                 $0.jwt = "fake_jwt"
                 $0.userID = "userId"
@@ -109,7 +103,11 @@ class SSOConnectionTests: XCTestCase {
                     $0.nickname = "nickname"
                 }
             })
-        }
+        })
+
+        // Simulate the fact that the client received the client user token. The monitor should automatically fetch
+        // the token
+        simulateGetClientTokenFinished = true
 
         await fulfillment(of: [loggedInExpectation], timeout: 0.5)
         XCTAssertNotNil(user)
@@ -119,7 +117,6 @@ class SSOConnectionTests: XCTestCase {
     }
 
     func testTokenExchangeError() async throws {
-        let clientConnectedExpectation = XCTestExpectation(description: "Client is connected")
         let errorExpectation = XCTestExpectation(description: "An error has been catched")
 
         connectionRepository.connectionStatePublisher.sink { connectionState in
@@ -128,8 +125,6 @@ class SSOConnectionTests: XCTestCase {
             case let .clientConnected(_, error):
                 if error != nil {
                     errorExpectation.fulfill()
-                } else {
-                    clientConnectedExpectation.fulfill()
                 }
             default: break
             }
@@ -140,16 +135,8 @@ class SSOConnectionTests: XCTestCase {
             return
         }
 
-        try await connectionRepository.connectUser(
-            .init(userId: "clientUserId", profile: .empty),
-            tokenProvider: {
-                return "invalid_client_token"
-            })
-
-        await fulfillment(of: [clientConnectedExpectation], timeout: 0.5)
-
         // simulate that the monitor has fetched the token
-        mockSSOExchangeTokenMonitor.getJwtFromClientTokenResponse = .with {
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
             $0.result = .fail(.with {
                 $0.errors = [
                     .with {
@@ -158,7 +145,13 @@ class SSOConnectionTests: XCTestCase {
                     }
                 ]
             })
-        }
+        })
+
+        try await connectionRepository.connectUser(
+            .init(userId: "clientUserId", profile: .empty),
+            tokenProvider: {
+                return "invalid_client_token"
+            })
 
         await fulfillment(of: [errorExpectation], timeout: 0.5)
     }

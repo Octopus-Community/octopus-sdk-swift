@@ -22,7 +22,6 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     private let userDataStorage: UserDataStorage
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
-    private let ssoExchangeTokenMonitor: SSOExchangeTokenMonitor
     private let profileRepository: ProfileRepository
     private let userProfileDatabase: CurrentUserProfileDatabase
     private let clientUserProfileDatabase: ClientUserProfileDatabase
@@ -36,13 +35,14 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
 
     private var clientUserTokenProvider: (() async throws -> String)?
 
+    private var connectionStateIsSet = false
+
     init(connectionMode: ConnectionMode, injector: Injector) {
         self.connectionMode = connectionMode
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
-        ssoExchangeTokenMonitor = injector.getInjected(identifiedBy: Injected.ssoExchangeTokenMonitor)
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
         clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
@@ -50,10 +50,19 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         clientUserProvider = injector.getInjected(identifiedBy: Injected.clientUserProvider)
 
         Publishers.CombineLatest3(
-            clientUserProvider.$clientUser,
+            // ensure that clientUser value is not the initial one
+            Publishers.CombineLatest(
+                clientUserProvider.$clientUser,
+                clientUserProvider.$hasLoadedClientUser.filter { $0 }
+            ).map { $0.0 }.removeDuplicates(),
             userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
-            profileRepository.$profile.removeDuplicates().receive(on: DispatchQueue.main)
+            // ensure that profile value is not the initial one
+            Publishers.CombineLatest(
+                profileRepository.$profile,
+                profileRepository.$hasLoadedProfile.filter { $0 }
+            ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main)
         )
+        .receive(on: DispatchQueue.main)
         .sink { [unowned self] clientUser, userData, profile in
             let newConnectionState: ConnectionState
             if let userData, let clientUser {
@@ -72,25 +81,25 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
                         lockedFields: lockedFields)
                 }
             } else if let clientUser {
-                newConnectionState = .clientConnected(clientUser, nil)
+                var exchangeTokenError: ExchangeTokenError?
+                if case let .clientConnected(currentClientUser, currentExchangeTokenError) = connectionState,
+                   clientUser.userId == currentClientUser.userId {
+                    exchangeTokenError = currentExchangeTokenError
+                }
+                newConnectionState = .clientConnected(clientUser, exchangeTokenError)
             } else {
                 newConnectionState = .notConnected
             }
             connectionState = newConnectionState
+            connectionStateIsSet = true
         }.store(in: &storage)
-
-        ssoExchangeTokenMonitor
-            .getJwtFromClientTokenResponsePublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [unowned self] response in
-                // can ignore error that are threw because the connection state is also changed
-                _ = try? processGetJwtFromClientResponse(response)
-            }
-            .store(in: &storage)
     }
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws {
         let previousClientUserId = userDataStorage.clientUserData?.id
+        // since connection state is not set immediatly, we need to wait for its first "real" value, not the one that
+        // it has been init with.
+        try? await TaskUtils.wait(for: connectionStateIsSet)
         let currentState = connectionState
         self.clientUserTokenProvider = tokenProvider
         // if client user changed, logout
@@ -101,24 +110,21 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             }
         }
         try await clientUserProfileDatabase.upsert(profile: user.profile, clientUserId: user.userId)
-        // if state is not (connected or clientConnected without error for this client user), ask for a token
+        // if state is not connected to the same user, ask for a token
         let tokenNeeded: Bool
         switch currentState {
-        case let .clientConnected(currentClientUser, error):
-            tokenNeeded = currentClientUser.userId != user.userId || error != nil
-        case .connected:
+        case .connected, .profileCreationRequired:
             tokenNeeded = previousClientUserId != user.userId
         default:
             tokenNeeded = true
         }
         if previousClientUserId != user.userId {
-            userDataStorage.store(clientUserData: .init(id: user.userId, token: nil))
+            userDataStorage.store(clientUserData: .init(id: user.userId))
         }
         if tokenNeeded {
             Task {
                 do {
-                    let token = try await clientUserTokenProvider?()
-                    userDataStorage.store(clientUserData: .init(id: user.userId, token: token))
+                    try await doLinkClientUserToOctopusUser(clientUserId: user.userId)
                 } catch {
                     if #available(iOS 14, *) { Logger.connection.debug("Error while trying to fetch client user token: \(error)") }
                 }
@@ -137,14 +143,20 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     }
 
     func linkClientUserToOctopusUser() async throws(ExchangeTokenError) {
+        guard case let .clientConnected(clientUser, _) = connectionState else { throw .unknown(InternalError.incorrectState) }
+        try await doLinkClientUserToOctopusUser(clientUserId: clientUser.userId)
+    }
+
+    private func doLinkClientUserToOctopusUser(clientUserId: String) async throws(ExchangeTokenError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         // a client user with a callback to get token should have been set prior to this call
         guard let clientUserTokenProvider else { throw .unknown(InternalError.incorrectState) }
-        guard case .clientConnected = connectionState else { throw .unknown(InternalError.incorrectState) }
         do {
+            if #available(iOS 14, *) { Logger.connection.trace("Asking for client user token") }
             let token = try await clientUserTokenProvider()
+            if #available(iOS 14, *) { Logger.connection.trace("Exchanging client user token for Octopus JWT") }
             let response = try await remoteClient.userService.getJwt(clientToken: token)
-            try processGetJwtFromClientResponse(response)
+            try processGetJwtFromClientResponse(response, clientUserId: clientUserId)
         } catch {
             if let linkClientUserToOctopusUserError = error as? ExchangeTokenError {
                 throw linkClientUserToOctopusUserError
@@ -157,8 +169,8 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     }
 
     private func processGetJwtFromClientResponse(
-        _ response: Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse) throws(ExchangeTokenError) {
-            guard case let .clientConnected(clientUser, _) = connectionState else { return }
+        _ response: Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse,
+        clientUserId: String) throws(ExchangeTokenError) {
             switch response.result {
             case .success(let success):
                 if let profile = StorableCurrentUserProfile(from: success.profile, userId: success.userID) {
@@ -174,25 +186,35 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
                             .first { $0 != nil }
                             .receive(on: DispatchQueue.main)
                             .sink { [unowned self] result in
-                                userDataStorage.store(userData: .init(id: success.userID, clientId: clientUser.userId,
+                                userDataStorage.store(userData: .init(id: success.userID, clientId: clientUserId,
                                                                       jwtToken: success.jwt))
 
-                                // Remove the token from the clientUserData
-                                userDataStorage.store(clientUserData: .init(id: clientUser.userId, token: nil))
                                 userInDbCancellable = nil
                             }
                     }
                 } else {
-                    userDataStorage.store(userData: .init(id: success.userID, clientId: clientUser.userId,
+                    userDataStorage.store(userData: .init(id: success.userID, clientId: clientUserId,
                                                           jwtToken: success.jwt))
-                    // Remove the token from the clientUserData
-                    userDataStorage.store(clientUserData: .init(id: clientUser.userId, token: nil))
                 }
             case let .fail(failure):
                 let detailedErrors = failure.errors.map { ExchangeTokenError.DetailedError(from: $0) }
+                let clientUser: ClientUser
+                if case let .clientConnected(currentClientUser, _) = connectionState,
+                    currentClientUser.userId == clientUserId {
+                    clientUser = currentClientUser
+                } else {
+                    clientUser = ClientUser(userId: clientUserId, profile: .empty)
+                }
                 connectionState = .clientConnected(clientUser, .detailedErrors(detailedErrors))
                 throw .detailedErrors(detailedErrors)
             case .none:
+                let clientUser: ClientUser
+                if case let .clientConnected(currentClientUser, _) = connectionState,
+                    currentClientUser.userId == clientUserId {
+                    clientUser = currentClientUser
+                } else {
+                    clientUser = ClientUser(userId: clientUserId, profile: .empty)
+                }
                 connectionState = .clientConnected(clientUser, .unknown(nil))
                 throw .unknown(nil)
             }

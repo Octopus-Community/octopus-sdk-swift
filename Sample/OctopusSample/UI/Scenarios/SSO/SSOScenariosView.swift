@@ -6,17 +6,15 @@ import Foundation
 import SwiftUI
 
 struct SSOScenariosView: View {
-    @ObservedObject var model: SampleModel
-    
+   
     var body: some View {
         VStack(alignment: .leading) {
             List {
-                WithoutAppManagedFieldsCell(model: model)
-                WithAllAppManagedFieldsCell(model: model)
-
-                // Hybrid case is not handled yet
+                WithoutAppManagedFieldsCell()
+                WithAllAppManagedFieldsCell()
+                WithSomeAppManagedFieldsCell()
             }
-            Text("In order to test this, you must set your API key to OCTOPUS_SSO_API_KEY in secrets.xcconfig.")
+            Text("In order to test these scenarios, your community should be configured to use SSO authentication.")
                 .font(.caption)
                 .fontWeight(.bold)
                 .foregroundColor(.red)

@@ -16,6 +16,7 @@ class TokenProvider {
 
     struct Payload: Encodable {
         let sub: String
+        let iat: Int
         let exp: Int
     }
 
@@ -33,6 +34,7 @@ class TokenProvider {
         let headerBase64String = headerJSONData.urlSafeBase64EncodedString()
 
         let payloadJSONData = try JSONEncoder().encode(Payload(sub: userId,
+                                                               iat: Int(Date().timeIntervalSince1970),
                                                                exp: Int(Date.distantFuture.timeIntervalSince1970)))
         let payloadBase64String = payloadJSONData.urlSafeBase64EncodedString()
 
@@ -42,6 +44,7 @@ class TokenProvider {
         let signatureBase64String = Data(signature).urlSafeBase64EncodedString()
 
         let token = [headerBase64String, payloadBase64String, signatureBase64String].joined(separator: ".")
+        print("Generating token for user \(userId)")
         return token
     }
 }

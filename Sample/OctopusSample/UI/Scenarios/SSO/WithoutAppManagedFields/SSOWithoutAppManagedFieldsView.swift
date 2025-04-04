@@ -10,25 +10,22 @@ import OctopusUI
 
 /// View that lets you see how to configure the sdk in SSO mode.
 ///
-/// SampleModel is used to reconfigure the SDK
 /// SSOViewModel keeps track of the app's current user and let's you edit its profile.
 /// Whenever the app user changes, the view model informs the SDK about this change and you should do that in your app
 /// too.
 struct SSOWithoutAppManagedFieldsView: View {
-    @ObservedObject var model: SampleModel
     @StateObjectCompat private var viewModel: SSOWithoutAppManagedFieldsViewModel
 
     @State private var showModal = false
     @State private var showLogin = false
     @State private var showEditProfileWithAge = false
 
-    init(model: SampleModel) {
-        self.model = model
-        self._viewModel = StateObjectCompat(wrappedValue: SSOWithoutAppManagedFieldsViewModel(model: model))
+    init() {
+        self._viewModel = StateObjectCompat(wrappedValue: SSOWithoutAppManagedFieldsViewModel())
     }
 
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 20) {
             Text("Client User Config:")
                 .font(.headline)
             VStack {
@@ -55,7 +52,7 @@ struct SSOWithoutAppManagedFieldsView: View {
         .fullScreenCover(isPresented: $showModal) {
             // Display the UI of the sdk and whenever the SDK asks for login screen or edit profile screens,
             // display them
-            OctopusHomeScreen(octopus: model.octopus)
+            OctopusHomeScreen(octopus: viewModel.octopus!)
                 .fullScreenCover(isPresented: $viewModel.openLogin) {
                     AppLoginScreen(appUser: $viewModel.appUser)
                 }
