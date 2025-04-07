@@ -25,7 +25,10 @@ class CommentsTests: XCTestCase {
         injector.register { _ in try! CoreDataStack(inRam: true) }
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
-        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor)
+        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
+        injector.register { FeedItemInfosDatabase(injector: $0) }
+        injector.register { ReplyFeedsStore(injector: $0) }
+        injector.register { RepliesDatabase(injector: $0) }
 
         commentsRepository = CommentsRepository(injector: injector)
         commentsDatabase = injector.getInjected(identifiedBy: Injected.commentsDatabase)
@@ -42,13 +45,16 @@ class CommentsTests: XCTestCase {
                 sendExpectation.fulfill()
             }.store(in: &storage)
 
-        injectPutComment(Comment(uuid: "newComment", text: "My Comment", medias: [],
-                                 author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
-                                 creationDate: Date(), updateDate: Date(),
-                                 parentId: "postId",
-                                 aggregatedInfo: .empty,
-                                 userInteractions: UserInteractions(userLikeId: nil),
-                                 innerStatus: .published, innerStatusReasons: []))
+        injectPutComment(StorableComment(uuid: "newComment", text: "My Comment", medias: [],
+                                         author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                                         creationDate: Date(), updateDate: Date(),
+                                         status: .published, statusReasons: [],
+                                         parentId: "postId",
+                                         descReplyFeedId: nil,
+                                         ascReplyFeedId: nil,
+                                         aggregatedInfo: .empty,
+                                         userInteractions: UserInteractions(userLikeId: nil, pollVoteId: nil)
+                                         ))
         let comment = WritableComment(postId: "postId", text: "My Comment", imageData: nil)
         try await commentsRepository.send(comment)
 
@@ -57,13 +63,15 @@ class CommentsTests: XCTestCase {
 
     func testDeleteComment() async throws {
         try await commentsDatabase.upsert(comments: [
-            Comment(uuid: "1", text: "My Comment", medias: [],
-                    author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
-                    creationDate: Date(), updateDate: Date(),
-                    parentId: "postId",
-                    aggregatedInfo: .empty,
-                    userInteractions: UserInteractions(userLikeId: nil),
-                    innerStatus: .published, innerStatusReasons: [])
+            StorableComment(uuid: "1", text: "My Comment", medias: [],
+                            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                            creationDate: Date(), updateDate: Date(),
+                            status: .published, statusReasons: [],
+                            parentId: "postId",
+                            descReplyFeedId: nil,
+                            ascReplyFeedId: nil,
+                            aggregatedInfo: .empty,
+                            userInteractions: UserInteractions(userLikeId: nil, pollVoteId: nil))
         ])
 
         mockOctoService.injectNextDeleteCommentResponse(Com_Octopuscommunity_DeleteCommentResponse())
@@ -75,7 +83,7 @@ class CommentsTests: XCTestCase {
         XCTAssertTrue(comments.isEmpty)
     }
 
-    func injectPutComment(_ comment: Comment) {
+    func injectPutComment(_ comment: StorableComment) {
         let octoObject = Com_Octopuscommunity_OctoObject.with {
             $0.createdAt = comment.creationDate.timestampMs
             $0.id = comment.uuid

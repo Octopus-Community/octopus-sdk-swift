@@ -30,15 +30,15 @@
     {
       "target" : {
         "containerPath" : "container:..",
-        "identifier" : "OctopusTests",
-        "name" : "OctopusTests"
+        "identifier" : "OctopusDependencyInjectionTests",
+        "name" : "OctopusDependencyInjectionTests"
       }
     },
     {
       "target" : {
         "containerPath" : "container:..",
-        "identifier" : "DependencyInjectionTests",
-        "name" : "DependencyInjectionTests"
+        "identifier" : "OctopusTests",
+        "name" : "OctopusTests"
       }
     }
   ],

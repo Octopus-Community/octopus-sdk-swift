@@ -44,6 +44,7 @@ struct PostFeedView<EmptyPostView: View>: View {
                 displayProfile: displayProfile,
                 deletePost: viewModel.deletePost(postId:),
                 toggleLike: viewModel.toggleLike(postId:),
+                voteOnPoll: viewModel.vote(pollAnswerId:postId:),
                 displayContentModeration: {
                     if viewModel.ensureConnected() {
                         displayContentModeration($0)
@@ -102,6 +103,7 @@ private struct ContentView<EmptyPostView: View>: View {
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let toggleLike: (String) -> Void
+    let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
     @ViewBuilder var emptyPostView: EmptyPostView
 
@@ -112,7 +114,7 @@ private struct ContentView<EmptyPostView: View>: View {
                           loadPreviousItems: loadPreviousItems,
                           displayPostDetail: displayPostDetail,
                           displayProfile: displayProfile,
-                          deletePost: deletePost, toggleLike: toggleLike,
+                          deletePost: deletePost, toggleLike: toggleLike, voteOnPoll: voteOnPoll,
                           displayContentModeration: displayContentModeration,
                           emptyPostView: { emptyPostView })
             } else {
@@ -132,6 +134,7 @@ private struct PostsView<EmptyPostView: View>: View {
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let toggleLike: (String) -> Void
+    let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
     @ViewBuilder var emptyPostView: EmptyPostView
 
@@ -143,7 +146,8 @@ private struct PostsView<EmptyPostView: View>: View {
                 ForEach(posts, id: \.uuid) { post in
                     PostSummaryView(post: post, width: width, displayPostDetail: displayPostDetail,
                                     displayProfile: displayProfile, deletePost: deletePost,
-                                    toggleLike: toggleLike, displayContentModeration: displayContentModeration)
+                                    toggleLike: toggleLike, voteOnPoll: voteOnPoll,
+                                    displayContentModeration: displayContentModeration)
                         .contentShape(Rectangle())
                         .onAppear { post.displayEvents.onAppear() }
                         .onDisappear() { post.displayEvents.onDisappear() }
@@ -154,6 +158,7 @@ private struct PostsView<EmptyPostView: View>: View {
                                 $0
                             }
                         }
+                        .disableAnimation()
 
                 }
                 if hasMoreData {
@@ -166,12 +171,7 @@ private struct PostsView<EmptyPostView: View>: View {
                         }
                 }
             }
-            .readWidth()
-            .onPreferenceChange(WidthPreferenceKey.self) { [$width] newWidth in
-                if let newWidth {
-                    $width.wrappedValue = newWidth
-                }
-            }
+            .readWidth($width)
         } else {
             emptyPostView
         }

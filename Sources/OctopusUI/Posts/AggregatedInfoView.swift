@@ -71,7 +71,7 @@ struct AggregatedInfoView: View {
     }
 }
 
-private struct AggregateView: View {
+struct AggregateView: View {
     @Environment(\.octopusTheme) private var theme
 
     let image: ImageResource
@@ -97,11 +97,19 @@ private struct AggregateView: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
-            Image(image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .foregroundColor(imageForegroundColor ?? theme.colors.gray700)
+        HStack(spacing: 8) {
+            // make sure the image has the same height as the text. To do that, use a squared font size based
+            // transparent image and put our image on overlay of this transparent image
+            Image(systemName: "square")
+                .font(normalFont.weight(.medium))
+                .foregroundColor(Color.clear)
+                .overlay(
+                    Image(image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .foregroundColor(imageForegroundColor ?? theme.colors.gray700)
+                        .padding(-2) // make it slightly bigger
+                )
             ZStack(alignment: .leading) {
                 Text(verbatim: "0000") // biggest possible string
                     .font(monospacedFont)

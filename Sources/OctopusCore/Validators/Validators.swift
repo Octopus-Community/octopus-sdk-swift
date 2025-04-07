@@ -14,13 +14,17 @@ public class Validators: InjectableObject {
 
     public let currentUserProfile: Validators.CurrentUserProfile
     public let picture: Validators.Picture
+    public let poll: Validators.Poll
     public let post: Validators.Post
     public let comment: Validators.Comment
+    public let reply: Validators.Reply
 
     init(appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>) {
         picture = Picture()
-        post = Post(pictureValidator: picture)
+        poll = Poll()
+        post = Post(pictureValidator: picture, pollValidator: poll)
         comment = Comment(pictureValidator: picture)
+        reply = Reply(pictureValidator: picture)
         currentUserProfile = CurrentUserProfile(pictureValidator: picture, appManagedFields: appManagedFields)
     }
 }

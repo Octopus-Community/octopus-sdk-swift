@@ -177,6 +177,22 @@
         }
       }
     },
+    "Comment.Detail.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replies"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réponses"
+          }
+        }
+      }
+    },
     "Common.Cancel" : {
       "comment" : "Cancel action",
       "localizations" : {
@@ -652,7 +668,23 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nous tentons de récupérer vos données. Veuillez réessayer dans quelques instants."
+            "value" : "Nous tentons de récupérer vos données. Veillez reessayer dans quelques instants. "
+          }
+        }
+      }
+    },
+    "Content.AggregatedInfo.Answer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reply"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répondre"
           }
         }
       }
@@ -737,6 +769,39 @@
         }
       }
     },
+    "Content.Create.AddPoll" : {
+      "comment" : "Button that adds a poll to a content",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poll"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sondage"
+          }
+        }
+      }
+    },
+    "Content.Detail.NotAvailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Content unavailable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenu indisponible"
+          }
+        }
+      }
+    },
     "Error.NoNetwork" : {
       "comment" : "Error displayed when there is no network (internet access not available)",
       "localizations" : {
@@ -754,7 +819,23 @@
         }
       }
     },
-    "Error.TextTooLong_currentLength:%lld_maxLength:%lld" : {
+    "Error.Text.Empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This text cannot be empty"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce texte ne peut pas être vide"
+          }
+        }
+      }
+    },
+    "Error.Text.TooLong_currentLength:%lld_maxLength:%lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1299,6 +1380,94 @@
         }
       }
     },
+    "Poll.Create.Option.Add" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add an option"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une option"
+          }
+        }
+      }
+    },
+    "Poll.Create.Option.Text.Placeholder_index:%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Option %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Option %lld"
+          }
+        }
+      }
+    },
+    "Poll.Create.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poll"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sondage"
+          }
+        }
+      }
+    },
+    "Poll.Results.VoteCount_total:%lld" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vote"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld votes"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vote"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld votes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Post.Create.Button" : {
       "comment" : "Action displayed on the button in the create post screen",
       "localizations" : {
@@ -1480,23 +1649,7 @@
         }
       }
     },
-    "Post.Detail.NotAvailable" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Content unavailable"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contenu indisponible"
-          }
-        }
-      }
-    },
-    "Post.List.Empty" : {
+    "Post.List.Default.Empty" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1557,6 +1710,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Créer une publication"
+          }
+        }
+      }
+    },
+    "Post.List.OtherUser.Empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This user hasn’t created any posts yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet utilisateur n'a pas encore partagé de publication."
           }
         }
       }
@@ -1993,6 +2162,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Publications"
+          }
+        }
+      }
+    },
+    "Reply.Create.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Post"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publier"
+          }
+        }
+      }
+    },
+    "Reply.Create.Text.Placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a reply"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répondre au commentaire"
+          }
+        }
+      }
+    },
+    "Reply.Delete.Button" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete my reply"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la réponse"
+          }
+        }
+      }
+    },
+    "Reply.Delete.Confirmation.Title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Are you sure you want to delete this reply? This action cannot be undone."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voulez-vous vraiment supprimer cette réponse ? Cette action est irréversible."
+          }
+        }
+      }
+    },
+    "Reply.Delete.Done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reply deleted"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réponse supprimée"
+          }
+        }
+      }
+    },
+    "Reply.See_count:%lld" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "See %lld reply"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "See %lld replies"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Voir %lld réponse"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Voir %lld réponses"
+                }
+              }
+            }
           }
         }
       }

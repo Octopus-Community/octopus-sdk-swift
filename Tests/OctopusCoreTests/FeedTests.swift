@@ -29,6 +29,8 @@ class FeedTests: XCTestCase {
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { CommentFeedsStore(injector: $0) }
+        injector.register { ReplyFeedsStore(injector: $0) }
+        injector.register { RepliesDatabase(injector: $0) }
         injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
 
         let remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
@@ -383,6 +385,8 @@ class FeedTests: XCTestCase {
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { CommentFeedsStore(injector: $0) }
+        injector.register { ReplyFeedsStore(injector: $0) }
+        injector.register { RepliesDatabase(injector: $0) }
         injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
 
         postsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
@@ -457,13 +461,13 @@ class FeedTests: XCTestCase {
     }
 
     private func createPost(id: String, updateDate: Date = Date(), authorId: String = "authorId") -> StorablePost {
-        StorablePost(uuid: id, text: "title\(id)", medias: [],
+        StorablePost(uuid: id, text: "title\(id)", medias: [], poll: nil,
                      author: MinimalProfile(uuid: authorId, nickname: "me", avatarUrl: nil),
                      creationDate: Date(),
                      updateDate: updateDate,
                      status: .published, statusReasons: [],
                      parentId: "",
-                     descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: nil, userLikeId: nil)
+                     descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty)
     }
 
     private func insert(feedItems: [String], feedId: String, db: FeedItemInfosDatabase) async throws {

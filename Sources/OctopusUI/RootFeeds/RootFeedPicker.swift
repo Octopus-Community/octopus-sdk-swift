@@ -20,12 +20,7 @@ struct RootFeedPicker: View {
     var body: some View {
         VStack { // Ensures the content wraps its natural height
             ContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
-                .readHeight()
-                .onPreferenceChange(HeightPreferenceKey.self) { [$contentHeight] height in
-                    if let height {
-                        $contentHeight.wrappedValue = height
-                    }
-                }
+                .readHeight($contentHeight)
                 .opacity(contentHeight <= UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Hide if scrolling is needed
         }
         .frame(height: min(contentHeight, UIScreen.main.bounds.height * 0.8)) // Limit height

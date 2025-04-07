@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24C101" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D70" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BlockedUser" representedClassName="BlockedUserEntity" syncable="YES">
         <attribute name="profileId" optional="YES" attributeType="String"/>
         <relationship name="blockedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PrivateProfile" inverseName="blocking" inverseEntity="PrivateProfile"/>
@@ -32,6 +32,7 @@
         <attribute name="width" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="commentMedia" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Comment" inverseName="mediasRelationship" inverseEntity="Comment"/>
         <relationship name="postMedia" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="mediasRelationship" inverseEntity="Post"/>
+        <relationship name="replyMedia" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Reply" inverseName="mediasRelationship" inverseEntity="Reply"/>
     </entity>
     <entity name="OctoObject" representedClassName="OctoObjectEntity" isAbstract="YES" syncable="YES">
         <attribute name="ascChildrenFeedId" optional="YES" attributeType="String"/>
@@ -43,20 +44,34 @@
         <attribute name="descChildrenFeedId" optional="YES" attributeType="String"/>
         <attribute name="likeCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="parentId" optional="YES" attributeType="String"/>
+        <attribute name="pollTotalVoteCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="statusReasonCodes" optional="YES" attributeType="String"/>
         <attribute name="statusReasonMessages" optional="YES" attributeType="String"/>
         <attribute name="statusValue" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="updateTimestamp" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="userLikeId" optional="YES" attributeType="String"/>
+        <attribute name="userPollVoteId" optional="YES" attributeType="String"/>
         <attribute name="uuid" attributeType="String"/>
         <attribute name="viewCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="pollOptionResultsRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PollOptionResult" inverseName="resultFor" inverseEntity="PollOptionResult"/>
         <fetchIndex name="byParentId">
             <fetchIndexElement property="parentId" type="Binary" order="ascending"/>
         </fetchIndex>
     </entity>
+    <entity name="PollOption" representedClassName="PollOptionEntity" syncable="YES">
+        <attribute name="text" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+        <relationship name="poll" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="pollOptionsRelationship" inverseEntity="Post"/>
+    </entity>
+    <entity name="PollOptionResult" representedClassName="PollOptionResultEntity" syncable="YES">
+        <attribute name="optionId" attributeType="String"/>
+        <attribute name="voteCount" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="resultFor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="OctoObject" inverseName="pollOptionResultsRelationship" inverseEntity="OctoObject"/>
+    </entity>
     <entity name="Post" representedClassName="PostEntity" parentEntity="OctoObject" syncable="YES">
         <attribute name="text" attributeType="String"/>
         <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="postMedia" inverseEntity="Media"/>
+        <relationship name="pollOptionsRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PollOption" inverseName="poll" inverseEntity="PollOption"/>
     </entity>
     <entity name="PrivateProfile" representedClassName="PrivateProfileEntity" syncable="YES">
         <attribute name="ascPostFeedId" attributeType="String"/>
@@ -79,6 +94,10 @@
         <attribute name="nickname" optional="YES" attributeType="String"/>
         <attribute name="pictureUrl" optional="YES" attributeType="URI"/>
         <attribute name="profileId" attributeType="String"/>
+    </entity>
+    <entity name="Reply" representedClassName="ReplyEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="replyMedia" inverseEntity="Media"/>
     </entity>
     <entity name="RootFeed" representedClassName="RootFeedEntity" syncable="YES">
         <attribute name="label" attributeType="String"/>

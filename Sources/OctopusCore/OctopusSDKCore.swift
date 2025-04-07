@@ -12,6 +12,7 @@ public class OctopusSDKCore: ObservableObject {
     public let rootFeedsRepository: RootFeedsRepository
     public let postsRepository: PostsRepository
     public let commentsRepository: CommentsRepository
+    public let repliesRepository: RepliesRepository
     public let topicsRepository: TopicsRepository
     public let moderationRepository: ModerationRepository
     public let externalLinksRepository: ExternalLinksRepository
@@ -51,13 +52,15 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { RootFeedsRepository(injector: $0) }
         injector.register { PostsRepository(injector: $0) }
         injector.register { CommentsRepository(injector: $0) }
+        injector.register { RepliesRepository(injector: $0) }
         injector.register { TopicsRepository(injector: $0) }
         injector.register { ModerationRepository(injector: $0) }
         injector.register { ExternalLinksRepository(injector: $0, apiKey: apiKey) }
 
         // Feed
-        injector.register { CommentFeedsStore(injector: $0) }
         injector.register { PostFeedsStore(injector: $0) }
+        injector.register { CommentFeedsStore(injector: $0) }
+        injector.register { ReplyFeedsStore(injector: $0) }
 
         // Database
         injector.register { CurrentUserProfileDatabase(injector: $0) }
@@ -66,6 +69,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
         injector.register { CommentsDatabase(injector: $0) }
+        injector.register { RepliesDatabase(injector: $0) }
         injector.register { TopicsDatabase(injector: $0) }
 
         // Connection mode related instanciations
@@ -103,6 +107,7 @@ public class OctopusSDKCore: ObservableObject {
         rootFeedsRepository = injector.getInjected(identifiedBy: Injected.rootFeedsRepository)
         postsRepository = injector.getInjected(identifiedBy: Injected.postsRepository)
         commentsRepository = injector.getInjected(identifiedBy: Injected.commentsRepository)
+        repliesRepository = injector.getInjected(identifiedBy: Injected.repliesRepository)
         topicsRepository = injector.getInjected(identifiedBy: Injected.topicsRepository)
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
         validators = injector.getInjected(identifiedBy: Injected.validators)

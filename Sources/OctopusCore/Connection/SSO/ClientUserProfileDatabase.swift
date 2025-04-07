@@ -23,14 +23,15 @@ class ClientUserProfileDatabase: InjectableObject {
     }
 
     func profilePublisher(clientUserId: String) -> AnyPublisher<ClientUserProfile?, Error> {
-        return context
+        (context
             .publisher(request: ClientUserEntity.fetchByClientUserId(clientUserId)) {
                 guard let profileEntity = $0.first?.profile else { return [] }
                 return [ClientUserProfile(from: profileEntity)]
-            }
-            .map(\.first)
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
+            }  as AnyPublisher<[ClientUserProfile], Error>
+        )
+        .map(\.first)
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
     }
 
     func upsert(profile: ClientUserProfile, clientUserId: String) async throws {

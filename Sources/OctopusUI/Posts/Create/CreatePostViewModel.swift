@@ -15,30 +15,56 @@ class CreatePostViewModel: ObservableObject {
         let name: String
     }
 
+    enum Attachment: Equatable {
+        case image(ImageAndData)
+        case poll(EditablePoll)
+
+        var hasImage: Bool {
+            switch self {
+            case .image: return true
+            default: return false
+            }
+        }
+
+        var hasPoll: Bool {
+            switch self {
+            case .poll: return true
+            default: return false
+            }
+        }
+    }
+
     @Published private(set) var isLoading = false
     @Published private(set) var dismiss = false
     @Published var alertError: DisplayableString?
     @Published var text: String = ""
-    @Published var picture: ImageAndData?
+    @Published var attachment: Attachment?
     @Published private(set) var textError: DisplayableString?
     @Published private(set) var pictureError: DisplayableString?
+    @Published private(set) var pollError: DisplayableString?
     @Published var selectedTopic: DisplayableTopic?
     @Published var topics = [DisplayableTopic]()
     @Published private(set) var userAvatar: Author.Avatar?
     @Published private(set) var hasChanges = false
 
-    var sendButtonAvailable: Bool { !isLoading && validator.validate(text: text) }
+    var sendButtonAvailable: Bool {
+        !isLoading &&
+        validator.validate(text: text) &&
+        validator.validate(attachment: .init(from: attachment))
+    }
 
     var textMaxLength: Int { validator.maxTextLength }
 
     let octopus: OctopusSDK
     private let validator: Validators.Post
+    private let pollValidator: Validators.Poll
     private var storage = [AnyCancellable]()
     private var sendingCancellable: AnyCancellable?
 
     init(octopus: OctopusSDK) {
         self.octopus = octopus
         validator = octopus.core.validators.post
+        pollValidator = octopus.core.validators.poll
 
         Publishers.CombineLatest3(
             octopus.core.profileRepository.$profile,
@@ -64,43 +90,49 @@ class CreatePostViewModel: ObservableObject {
 
         Publishers.CombineLatest3(
             $text,
-            $picture,
+            $attachment,
             $selectedTopic)
             .sink { [unowned self] text, picture, selectedTopic in
-                hasChanges = !text.isEmpty || picture != nil || selectedTopic != nil
+                hasChanges = !text.isEmpty || attachment != nil || selectedTopic != nil
             }.store(in: &storage)
 
         $text
             .removeDuplicates()
             .sink { [unowned self] text in
                 if text.count > textMaxLength {
-                    textError = .localizationKey("Error.TextTooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
+                    textError = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
                 } else {
                     textError = nil
                 }
             }.store(in: &storage)
 
-        $picture
+        $attachment
             .removeDuplicates()
             .receive(on: DispatchQueue.main) // needed because we can reset the picture
-            .sink { [unowned self] picture in
-                if let picture {
+            .sink { [unowned self] attachment in
+                switch attachment {
+                case let .image(imageAndData):
                     let validator = octopus.core.validators.picture
-                    switch validator.validate(picture.image) {
+                    switch validator.validate(imageAndData.image) {
                     case .sideTooSmall, .ratioTooBig:
                         alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(validator.maxRatioStr)_minSize:\(Int(validator.minSize))")
-                        self.picture = nil
+                        self.attachment = nil
                     case .valid:
-                        break
+                        pictureError = nil
                     }
+                case .poll:
+                    // validation is done inside the EditablePoll directly
+                    pollError = nil
+                case .none:
+                    pictureError = nil
+                    pollError = nil
                 }
-                pictureError = nil
             }.store(in: &storage)
     }
 
     func send() {
         guard let topic = selectedTopic else { return }
-        let post = WritablePost(topicId: topic.topicId, text: text, imageData: picture?.imageData)
+        let post = WritablePost(topicId: topic.topicId, text: text, attachment: .init(from: attachment))
         guard validator.validate(post: post) else { return }
 
         isLoading = true
@@ -133,6 +165,8 @@ class CreatePostViewModel: ObservableObject {
                             textError = .localizedString(multiErrorLocalizedString)
                         case .picture:
                             pictureError = .localizedString(multiErrorLocalizedString)
+                        case .poll:
+                            pollError = .localizedString(multiErrorLocalizedString)
                         }
                     }
                 }
@@ -142,7 +176,24 @@ class CreatePostViewModel: ObservableObject {
         }
     }
 
+    func createPoll() {
+        attachment = .poll(EditablePoll(validator: pollValidator))
+    }
+
     private func topicValid() -> Bool {
         return selectedTopic != nil
+    }
+}
+
+private extension WritablePost.Attachment {
+    init?(from attachment: CreatePostViewModel.Attachment?) {
+        switch attachment {
+        case let .image(imageAndData):
+            self = .image(imageAndData.imageData)
+        case let .poll(editablePoll):
+            let poll = WritablePoll(options: editablePoll.options.map { .init(text: $0.text) })
+            self = .poll(poll)
+        case .none: return nil
+        }
     }
 }

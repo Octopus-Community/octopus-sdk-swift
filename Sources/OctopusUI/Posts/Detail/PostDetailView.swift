@@ -16,8 +16,6 @@ struct PostDetailView: View {
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
 
-    @State private var topicPickerDetentHeight: CGFloat = 0
-    @State private var commentCanBeDismissed = false
     @State private var showChangesWillBeLostAlert = false
 
     @State private var displayWillDeleteAlert = false
@@ -25,6 +23,10 @@ struct PostDetailView: View {
 
     @State private var displayProfileId: String?
     @State private var displayProfile = false
+
+    @State private var displayCommentId: String?
+    @State private var answerToComment = true
+    @State private var displayCommentDetail = false
 
     @State private var commentTextFocused = false
     @State private var commentHasChanges = false
@@ -54,6 +56,16 @@ struct PostDetailView: View {
                     scrollToBottom: $viewModel.scrollToBottom,
                     loadPreviousComments: viewModel.loadPreviousComments,
                     refresh: viewModel.refresh,
+                    displayCommentDetail: { commentId in
+                        displayCommentId = commentId
+                        answerToComment = false
+                        displayCommentDetail = true
+                    },
+                    replyToComment: { commentId in
+                        displayCommentId = commentId
+                        answerToComment = true
+                        displayCommentDetail = true
+                    },
                     displayProfile: { profileId in
                         if profileId == viewModel.thisUserProfileId {
                             viewModel.openUserProfile = true
@@ -66,12 +78,14 @@ struct PostDetailView: View {
                     deletePost: viewModel.deletePost,
                     deleteComment: viewModel.deleteComment,
                     togglePostLike: viewModel.togglePostLike,
+                    voteOnPoll: viewModel.vote,
                     toggleCommentLike: viewModel.toggleCommentLike,
                     displayContentModeration: {
                         guard viewModel.ensureConnected() else { return }
                         moderationContext = .content(contentId: $0)
                         displayContentModeration = true
                     })
+
                 CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
                                   textFocused: $commentTextFocused,
                                   hasChanges: $commentHasChanges)
@@ -87,6 +101,18 @@ struct PostDetailView: View {
                         }
                     }
                 )
+
+                NavigationLink(
+                    destination: Group {
+                        if let displayCommentId {
+                            CommentDetailView(octopus: viewModel.octopus, commentUuid: displayCommentId,
+                                              reply: answerToComment)
+                        } else { EmptyView() }
+                    },
+                    isActive: $displayCommentDetail) {
+                        EmptyView()
+                    }.hidden()
+
                 NavigationLink(destination:
                                 Group {
                     if let displayProfileId {
@@ -109,12 +135,7 @@ struct PostDetailView: View {
                     }.hidden()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .readWidth()
-            .onPreferenceChange(WidthPreferenceKey.self) { [$width] newWidth in
-                if let newWidth {
-                    $width.wrappedValue = newWidth
-                }
-            }
+            .readWidth($width)
 
             if viewModel.postDeletion == .inProgress || viewModel.isDeletingComment {
                 Compat.ProgressView()
@@ -229,7 +250,7 @@ struct PostDetailView: View {
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
-                    Text("Post.Detail.NotAvailable", bundle: .module),
+                    Text("Content.Detail.NotAvailable", bundle: .module),
                     isPresented: $viewModel.postNotAvailable, actions: {
                         Button(action: { presentationMode.wrappedValue.dismiss() }) {
                             Text("Common.Ok", bundle: .module)
@@ -238,7 +259,7 @@ struct PostDetailView: View {
                     })
             } else {
                 $0.alert(isPresented: $viewModel.postNotAvailable) {
-                    Alert(title: Text("Post.Detail.NotAvailable", bundle: .module),
+                    Alert(title: Text("Content.Detail.NotAvailable", bundle: .module),
                           dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
                         presentationMode.wrappedValue.dismiss()
                     }))
@@ -282,18 +303,21 @@ struct PostDetailView: View {
 private struct ContentView: View {
     @Environment(\.octopusTheme) private var theme
     let post: PostDetailViewModel.Post?
-    let comments: [PostDetailViewModel.Comment]?
+    let comments: [DisplayableFeedResponse]?
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
     let width: CGFloat
     @Binding var scrollToBottom: Bool
     let loadPreviousComments: () -> Void
     let refresh: @Sendable () async -> Void
+    let displayCommentDetail: (String) -> Void
+    let replyToComment: (String) -> Void
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
     let deletePost: () -> Void
     let deleteComment: (String) -> Void
     let togglePostLike: () -> Void
+    let voteOnPoll: (String) -> Bool
     let toggleCommentLike: (String) -> Void
     let displayContentModeration: (String) -> Void
 
@@ -305,11 +329,14 @@ private struct ContentView: View {
                                       hideLoadMoreCommentsLoader: hideLoadMoreCommentsLoader,
                                       width: width,
                                       loadPreviousComments: loadPreviousComments,
+                                      displayCommentDetail: displayCommentDetail,
+                                      replyToComment: replyToComment,
                                       displayProfile: displayProfile,
                                       openCreateComment: openCreateComment,
                                       deletePost: deletePost,
                                       deleteComment: deleteComment,
                                       togglePostLike: togglePostLike,
+                                      voteOnPoll: voteOnPoll,
                                       toggleCommentLike: toggleCommentLike,
                                       displayContentModeration: displayContentModeration)
                     .navigationBarTitle(Text(post.topic), displayMode: .inline)
@@ -317,7 +344,7 @@ private struct ContentView: View {
                 VStack {
                     Spacer().frame(height: 54)
                     Image(.postDetailMissing)
-                    Text("Post.Detail.NotAvailable", bundle: .module)
+                    Text("Content.Detail.NotAvailable", bundle: .module)
                         .font(theme.fonts.body2)
                         .fontWeight(.medium)
                         .foregroundColor(theme.colors.gray500)
@@ -331,21 +358,26 @@ private struct PostDetailContentView: View {
     @Environment(\.octopusTheme) private var theme
 
     let post: PostDetailViewModel.Post
-    let comments: [PostDetailViewModel.Comment]?
+    let comments: [DisplayableFeedResponse]?
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
     let width: CGFloat
     let loadPreviousComments: () -> Void
+    let displayCommentDetail: (String) -> Void
+    let replyToComment: (String) -> Void
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
     let deletePost: () -> Void
     let deleteComment: (String) -> Void
     let togglePostLike: () -> Void
+    let voteOnPoll: (String) -> Bool
     let toggleCommentLike: (String) -> Void
     let displayContentModeration: (String) -> Void
 
     @State private var displayWillDeleteAlert = false
     @State private var openActions = false
+
+    private let horizontalPadding = CGFloat(16)
 
     var body: some View {
         VStack {
@@ -354,25 +386,13 @@ private struct PostDetailContentView: View {
                     HStack {
                         OpenProfileButton(author: post.author, displayProfile: displayProfile) {
                             AuthorAvatarView(avatar: post.author.avatar)
-                                .frame(width: 33, height: 33)
+                                .frame(width: 40, height: 40)
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            HStack(spacing: 4) {
-                                OpenProfileButton(author: post.author, displayProfile: displayProfile) {
-                                    post.author.name.textView
-                                        .font(theme.fonts.body2)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.gray900)
-                                }
-                                Circle()
-                                    .frame(width: 2, height: 2)
-                                    .foregroundColor(theme.colors.gray900)
-                                Text(post.relativeDate)
-                                    .font(theme.fonts.caption1)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(theme.colors.gray500)
-                            }
+                            AuthorAndDateHeaderView(author: post.author, relativeDate: post.relativeDate,
+                                                    displayProfile: displayProfile)
+                            TopicCapsule(topic: post.topic)
                         }
                         Spacer()
 
@@ -416,8 +436,9 @@ private struct PostDetailContentView: View {
                         .foregroundColor(theme.colors.gray900)
                     
                     Spacer().frame(height: 10)
-                }.padding(.horizontal, 20)
-                if let image = post.image {
+                }.padding(.horizontal, horizontalPadding)
+                switch post.attachment {
+                case let .image(image):
                     AsyncCachedImage(
                         url: image.url, cache: .content,
                         placeholder: {
@@ -432,6 +453,14 @@ private struct PostDetailContentView: View {
                                 .resizable()
                                 .frame(idealWidth: width, idealHeight: image.size.height * width / image.size.width)
                         })
+                case let .poll(poll):
+                    PollView(poll: poll,
+                             aggregatedInfo: post.aggregatedInfo,
+                             userInteractions: post.userInteractions,
+                             vote: voteOnPoll)
+                    .padding(.horizontal, horizontalPadding)
+                case .none:
+                    EmptyView()
                 }
 
                 Spacer().frame(height: 10)
@@ -440,20 +469,25 @@ private struct PostDetailContentView: View {
                                    minChildCount: comments?.count,
                                    childrenTapped: { openCreateComment() },
                                    likeTapped: togglePostLike)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, horizontalPadding)
             }
-            .padding(.top, 16)
             .padding(.bottom, 12)
+
+            theme.colors.gray300.frame(height: 1)
+
             if let comments {
                 CommentsView(comments: comments,
                              hasMoreData: hasMoreComments,
                              hideLoader: hideLoadMoreCommentsLoader,
                              loadPreviousComments: loadPreviousComments,
+                             displayCommentDetail: displayCommentDetail,
+                             replyToComment: replyToComment,
                              displayProfile: displayProfile,
                              openCreateComment: openCreateComment,
                              deleteComment: deleteComment,
                              toggleLike: toggleCommentLike,
                              displayContentModeration: displayContentModeration)
+                .padding(.horizontal, horizontalPadding)
             } else {
                 Compat.ProgressView()
             }
@@ -508,10 +542,12 @@ private struct PostDetailContentView: View {
 private struct CommentsView: View {
     @Environment(\.octopusTheme) private var theme
 
-    let comments: [PostDetailViewModel.Comment]
+    let comments: [DisplayableFeedResponse]
     let hasMoreData: Bool
     let hideLoader: Bool
     let loadPreviousComments: () -> Void
+    let displayCommentDetail: (String) -> Void
+    let replyToComment: (String) -> Void
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
     let deleteComment: (String) -> Void
@@ -522,7 +558,9 @@ private struct CommentsView: View {
         Compat.LazyVStack {
             if !comments.isEmpty {
                 ForEach(comments, id: \.uuid) { comment in
-                    CommentView(comment: comment, displayProfile: displayProfile, deleteComment: deleteComment,
+                    ResponseFeedItemView(response: comment,
+                                displayResponseDetail: displayCommentDetail, replyToResponse: replyToComment,
+                                displayProfile: displayProfile, deleteResponse: deleteComment,
                                 toggleLike: toggleLike, displayContentModeration: displayContentModeration)
                         .onAppear {
                             comment.displayEvents.onAppear()
@@ -555,23 +593,12 @@ private struct CommentsView: View {
                         Text("Post.Detail.NoComments", bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
-                            .foregroundColor(theme.colors.gray500)
                     }
+                    .foregroundColor(theme.colors.gray500)
                 }.buttonStyle(.plain)
             }
         }
         .padding(.top, 20)
         .frame(maxHeight: .infinity)
-        .background(RoundedRectangle(cornerRadius: 20)
-            .stroke(theme.colors.gray300, lineWidth: 1)
-            .padding(.horizontal, -1)
-            .foregroundColor(Color(.systemBackground))
-            .overlay(
-                Rectangle()
-                    .padding(.top, 20)
-                    .padding(.bottom, -1)
-                    .foregroundColor(Color(.systemBackground))
-            )
-        )
     }
 }

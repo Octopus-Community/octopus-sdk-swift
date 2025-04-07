@@ -19,13 +19,27 @@ public extension Validators {
         public var maxRatioStr: String { pictureValidator.maxRatioStr }
 
         private let pictureValidator: Validators.Picture
+        private let pollValidator: Validators.Poll
 
-        public init(pictureValidator: Validators.Picture) {
+        public init(pictureValidator: Validators.Picture, pollValidator: Validators.Poll) {
             self.pictureValidator = pictureValidator
+            self.pollValidator = pollValidator
         }
 
         public func validate(picture: UIImage) -> Picture.ValidationResult {
             return pictureValidator.validate(picture)
+        }
+
+        public func validate(attachment: WritablePost.Attachment?) -> Bool {
+            switch attachment {
+            case .image:
+                // We can't check picture because we only have the data here
+                return true
+            case let .poll(poll):
+                return pollValidator.validate(poll)
+            case .none:
+                return true
+            }
         }
 
         public func validate(text: String) -> Bool {
@@ -34,7 +48,9 @@ public extension Validators {
 
         public func validate(post: WritablePost) -> Bool {
             // Note that we can't check picture because we only have the data here
-            return validate(text: post.text) && !post.parentId.isEmpty
+            return validate(text: post.text) &&
+                validate(attachment: post.attachment) &&
+                !post.parentId.isEmpty
         }
     }
 }

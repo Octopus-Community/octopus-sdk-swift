@@ -27,15 +27,24 @@ public protocol OctoService {
     func put(comment: Com_Octopuscommunity_RwOctoObject,
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutCommentResponse
 
+    func put(reply: Com_Octopuscommunity_RwOctoObject,
+             authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutReplyResponse
+
     func like(objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutLikeResponse
 
     func unlike(likeId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteLikeResponse
+
+    func voteOnPoll(objectId: String, answerId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse
 
     func delete(post postId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeletePostResponse
 
     func delete(comment commentId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeleteCommentResponse
+
+    func delete(reply replyId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_DeleteReplyResponse
 
     func reportContent(objectId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
@@ -124,6 +133,17 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
     }
 
+    public func put(reply: Com_Octopuscommunity_RwOctoObject,
+                    authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutReplyResponse {
+        let request = Com_Octopuscommunity_PutRequest.with {
+            $0.octoObject = reply
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.putReply(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
     func delete(post postId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeletePostResponse {
         let request = Com_Octopuscommunity_DeletePostRequest.with {
@@ -142,6 +162,17 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.deleteComment(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func delete(reply replyId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_DeleteReplyResponse {
+        let request = Com_Octopuscommunity_DeleteReplyRequest.with {
+            $0.octoObjectID = replyId
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.deleteReply(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }
@@ -169,6 +200,24 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.deleteLike(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func voteOnPoll(objectId: String, answerId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse {
+        let request = Com_Octopuscommunity_PutRequest.with {
+            $0.octoObject = .with {
+                $0.parentID = objectId
+                $0.content = .with {
+                    $0.vote = .with {
+                        $0.pollAnswerID = answerId
+                    }
+                }
+            }
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.putPollVote(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

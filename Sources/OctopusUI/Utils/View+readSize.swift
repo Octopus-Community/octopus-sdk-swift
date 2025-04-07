@@ -5,21 +5,18 @@
 import Foundation
 import SwiftUI
 
-struct HeightPreferenceKey: PreferenceKey {
-    static let defaultValue: CGFloat? = nil
-
-    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
-        guard let nextValue = nextValue() else { return }
-        value = nextValue
-    }
-}
-
 private struct ReadHeightModifier: ViewModifier {
+    @Binding var height: CGFloat
+
     private var sizeView: some View {
         GeometryReader { geometry in
             Color.clear
-                .preference(key: HeightPreferenceKey.self,
-                            value: geometry.size.height)
+                .onAppear {
+                    $height.wrappedValue = geometry.size.height
+                }
+                .onValueChanged(of: geometry.size.height) {
+                    $height.wrappedValue = $0
+                }
         }
     }
 
@@ -29,26 +26,23 @@ private struct ReadHeightModifier: ViewModifier {
 }
 
 extension View {
-    func readHeight() -> some View {
-        self.modifier(ReadHeightModifier())
-    }
-}
-
-struct WidthPreferenceKey: PreferenceKey {
-    static let defaultValue: CGFloat? = nil
-
-    static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
-        guard let nextValue = nextValue() else { return }
-        value = nextValue
+    func readHeight(_ height: Binding<CGFloat>) -> some View {
+        self.modifier(ReadHeightModifier(height: height))
     }
 }
 
 private struct ReadWidthModifier: ViewModifier {
+    @Binding var width: CGFloat
+
     private var sizeView: some View {
         GeometryReader { geometry in
             Color.clear
-                .preference(key: WidthPreferenceKey.self,
-                            value: geometry.size.width)
+                .onAppear {
+                    $width.wrappedValue = geometry.size.width
+                }
+                .onValueChanged(of: geometry.size.width) {
+                    $width.wrappedValue = $0
+                }
         }
     }
 
@@ -58,7 +52,7 @@ private struct ReadWidthModifier: ViewModifier {
 }
 
 extension View {
-    func readWidth() -> some View {
-        self.modifier(ReadWidthModifier())
+    func readWidth(_ width: Binding<CGFloat>) -> some View {
+        self.modifier(ReadWidthModifier(width: width))
     }
 }

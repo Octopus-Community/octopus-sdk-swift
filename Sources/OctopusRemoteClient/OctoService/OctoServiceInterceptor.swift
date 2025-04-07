@@ -64,4 +64,20 @@ final class OctoServiceInterceptor: Com_Octopuscommunity_OctoObjectServiceClient
     func makeReportContentInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ReportContentRequest, OctopusGrpcModels.Com_Octopuscommunity_ReportContentResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
+
+    func makePutPollVoteInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_PutRequest, OctopusGrpcModels.Com_Octopuscommunity_PutPollVoteResponse>] {
+        [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makePutReplyInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_PutRequest, OctopusGrpcModels.Com_Octopuscommunity_PutReplyResponse>] {
+        [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeDeleteReplyInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_DeleteReplyRequest, OctopusGrpcModels.Com_Octopuscommunity_DeleteReplyResponse>] {
+        [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeModerateReplyInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ModerateReplyRequest, OctopusGrpcModels.Com_Octopuscommunity_ModerateReplyResponse>] {
+        [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
 }

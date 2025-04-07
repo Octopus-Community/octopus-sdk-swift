@@ -166,7 +166,7 @@ class EditProfileViewModel: ObservableObject {
                 case let .failure(error):
                     switch error {
                     case .tooLong:
-                        bioError = .localizationKey("Error.TextTooLong_currentLength:\(bio.count)_maxLength:\(bioMaxLength)")
+                        bioError = .localizationKey("Error.Text.TooLong_currentLength:\(bio.count)_maxLength:\(bioMaxLength)")
                     }
                 case .success:
                     bioError = nil
