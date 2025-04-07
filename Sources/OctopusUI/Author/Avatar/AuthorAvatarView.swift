@@ -45,6 +45,7 @@ struct AuthorAvatarView: View {
     @Environment(\.octopusTheme) private var theme
 
     let avatar: Author.Avatar?
+    @State private var width: CGFloat = 0
 
     var body: some View {
         switch avatar {
@@ -92,12 +93,13 @@ struct AuthorAvatarView: View {
             Image(systemName: "person")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .padding(12)
+                .padding(max(width * 0.24, 4))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(
                     Circle()
                         .foregroundColor(theme.colors.gray200)
                 )
+                .readWidth($width)
         }
     }
 }

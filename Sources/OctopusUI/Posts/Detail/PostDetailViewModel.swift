@@ -13,9 +13,13 @@ import os
 class PostDetailViewModel: ObservableObject {
 
     struct Post: Equatable {
+        enum Attachment: Equatable {
+            case image(ImageMedia)
+            case poll(DisplayablePoll)
+        }
         let uuid: String
         let text: String
-        let image: ImageMedia?
+        let attachment: Attachment?
         let author: Author
         let relativeDate: String
         let topic: String
@@ -23,32 +27,6 @@ class PostDetailViewModel: ObservableObject {
         let userInteractions: UserInteractions
         let canBeDeleted: Bool
         let canBeModerated: Bool
-    }
-
-    struct Comment: Equatable {
-        let uuid: String
-        let text: String?
-        let image: ImageMedia?
-        let author: Author
-        let relativeDate: String
-        let canBeDeleted: Bool
-        let canBeModerated: Bool
-
-        let aggregatedInfo: AggregatedInfo
-        let userInteractions: UserInteractions
-        let liveMeasures: AnyPublisher<LiveMeasures, Never>
-
-        let displayEvents: CellDisplayEvents
-
-        static func == (lhs: PostDetailViewModel.Comment, rhs: PostDetailViewModel.Comment) -> Bool {
-            return lhs.uuid == rhs.uuid &&
-            lhs.text == rhs.text &&
-            lhs.image == rhs.image &&
-            lhs.author == rhs.author &&
-            lhs.relativeDate == rhs.relativeDate &&
-            lhs.canBeDeleted == rhs.canBeDeleted &&
-            lhs.canBeModerated == rhs.canBeModerated
-        }
     }
 
     enum PostDeletion {
@@ -61,13 +39,13 @@ class PostDetailViewModel: ObservableObject {
 
     // Comments
     private var feedStorage = [AnyCancellable]()
-    private var feed: Feed<OctopusCore.Comment>?
+    private var feed: Feed<Comment>?
 
-    @Published private(set) var comments: [Comment]?
+    @Published private(set) var comments: [DisplayableFeedResponse]?
     @Published var scrollToBottom = false
     @Published private(set) var hasMoreData = false
     @Published private(set) var hideLoadMoreCommentsLoader = false
-    @Published private var modelComments: [OctopusCore.Comment]?
+    @Published private var modelComments: [Comment]?
     private var autoFetchLatestCommentsTask: Task<Void, Swift.Error>?
     private var autoFetchLatestCommentsCancellable: AnyCancellable?
 
@@ -93,7 +71,7 @@ class PostDetailViewModel: ObservableObject {
 
     let octopus: OctopusSDK
     let postUuid: String
-    private var newestFirstCommentsFeed: Feed<OctopusCore.Comment>?
+    private var newestFirstCommentsFeed: Feed<Comment>?
     private var scrollToMostRecentComment: Bool
 
     private var internalPost: OctopusCore.Post?
@@ -166,7 +144,7 @@ class PostDetailViewModel: ObservableObject {
                 return
             }
             let commentsCount = comments.count
-            let newComments = comments.enumerated().compactMap { [unowned self] idx, comment -> Comment? in
+            let newComments = comments.enumerated().compactMap { [unowned self] idx, comment -> DisplayableFeedResponse? in
                 guard comment.canBeDisplayed else { return nil }
                 let onAppearAction: () -> Void
                 let onDisappearAction: () -> Void
@@ -230,9 +208,11 @@ class PostDetailViewModel: ObservableObject {
                     liveMeasures[comment.uuid] = newPublisher
                 }
                 liveMeasurePublisher.send(LiveMeasures(aggregatedInfo: comment.aggregatedInfo, userInteractions: comment.userInteractions))
-                return Comment(from: comment, liveMeasurePublisher: liveMeasurePublisher.eraseToAnyPublisher(),
-                               thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
-                               onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
+                return DisplayableFeedResponse(
+                    from: comment,
+                    liveMeasurePublisher: liveMeasurePublisher.eraseToAnyPublisher(),
+                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
+                    onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
             }
             if newComments.isEmpty {
                 shouldFetchLatestComments.send(true)
@@ -331,9 +311,20 @@ class PostDetailViewModel: ObservableObject {
         if shouldFetchLatestComments.value {
             startAutoFetchLatestComments()
         }
+        // update the child count and view number when the view is displayed
+        Task {
+            do {
+                try await octopus.core.postsRepository.fetchAdditionalData(ids: [postUuid],
+                                                                           incrementViewCount: false)
+            } catch {
+                if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
+                    self.error = error.displayableMessage
+                }
+            }
+        }
     }
 
-    private func set(feed: Feed<OctopusCore.Comment>) {
+    private func set(feed: Feed<Comment>) {
         guard feed.id != self.feed?.id else { return }
         comments = nil
         self.feed = feed
@@ -499,9 +490,9 @@ class PostDetailViewModel: ObservableObject {
     }
 
     private func merge(
-        oldestFirstCommentsFeedItems: [OctopusCore.Comment],
-        newestFirstCommentsFeedItems: [OctopusCore.Comment])
-    -> [OctopusCore.Comment] {
+        oldestFirstCommentsFeedItems: [Comment],
+        newestFirstCommentsFeedItems: [Comment])
+    -> [Comment] {
         var mergedComments = oldestFirstCommentsFeedItems
         for newComment in newestFirstCommentsFeedItems.reversed() {
             if !mergedComments.contains(where: { $0.uuid == newComment.uuid}) {
@@ -685,6 +676,49 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
+    func vote(pollAnswerId: String) -> Bool {
+        guard ensureConnected() else { return false }
+        guard let post = internalPost else {
+            error = .localizationKey("Error.Unknown")
+            return false
+        }
+        Task {
+            await vote(pollAnswerId: pollAnswerId, post: post)
+        }
+        return true
+    }
+
+    private func vote(pollAnswerId: String, post: OctopusCore.Post) async {
+        do {
+            try await octopus.core.postsRepository.vote(pollAnswerId: pollAnswerId, post: post)
+        } catch {
+            switch error {
+            case let .validation(argumentError):
+                // special case where the error missingParent is returned: reload the post to check that it has not been
+                // deleted
+                for error in argumentError.errors.values.flatMap({ $0 }) {
+                    if case .missingParent = error.detail {
+                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
+                        break
+                    }
+                }
+                for (displayKind, errors) in argumentError.errors {
+                    guard !errors.isEmpty else { continue }
+                    let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
+                    switch displayKind {
+                    case .alert:
+                        self.error = .localizedString(multiErrorLocalizedString)
+                    case let .linkedToField(field):
+                        switch field {
+                        }
+                    }
+                }
+            case let .serverCall(serverError):
+                self.error = serverError.displayableMessage
+            }
+        }
+    }
+
     func toggleCommentLike(commentId: String) {
         guard ensureConnected() else { return }
         let comment = feed?.items?.first(where: { $0.id == commentId }) ??
@@ -729,7 +763,7 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    private func toggleCommentLike(comment: OctopusCore.Comment) async {
+    private func toggleCommentLike(comment: Comment) async {
         do {
             try await octopus.core.commentsRepository.toggleLike(comment: comment)
         } catch {
@@ -753,6 +787,19 @@ class PostDetailViewModel: ObservableObject {
     }
 }
 
+extension PostDetailViewModel.Post.Attachment {
+    init?(from post: Post) {
+        if let poll = post.poll {
+            self = .poll(DisplayablePoll(from: poll))
+        } else if let media = post.medias.first(where: { $0.kind == .image }),
+                  let imageMedia = ImageMedia(from: media) {
+            self = .image(imageMedia)
+        } else {
+            return nil
+        }
+    }
+}
+
 extension PostDetailViewModel.Post {
     init(from post: Post, thisUserProfileId: String?, topic: Topic, dateFormatter: RelativeDateTimeFormatter) {
         uuid = post.uuid
@@ -760,28 +807,10 @@ extension PostDetailViewModel.Post {
         author = .init(profile: post.author)
         relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())
         self.topic = topic.name
-        image = ImageMedia(from: post.medias.first(where: { $0.kind == .image }))
+        attachment = .init(from: post)
         canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
         canBeModerated = post.author?.uuid != thisUserProfileId
         aggregatedInfo = post.aggregatedInfo
         userInteractions = post.userInteractions
-    }
-}
-
-extension PostDetailViewModel.Comment {
-    init(from comment: Comment, liveMeasurePublisher: AnyPublisher<LiveMeasures, Never>,
-         thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter,
-         onAppearAction: @escaping () -> Void, onDisappearAction: @escaping () -> Void) {
-        uuid = comment.uuid
-        text = comment.text
-        author = .init(profile: comment.author)
-        relativeDate = dateFormatter.customLocalizedStructure(for: comment.creationDate, relativeTo: Date())
-        image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
-        canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
-        canBeModerated = comment.author?.uuid != thisUserProfileId
-        aggregatedInfo = .empty//comment.aggregatedInfo
-        userInteractions = .empty//comment.userInteractions
-        liveMeasures = liveMeasurePublisher
-        displayEvents = CellDisplayEvents(onAppear: onAppearAction, onDisappear: onDisappearAction)
     }
 }

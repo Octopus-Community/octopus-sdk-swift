@@ -33,6 +33,8 @@ class ProfileTests: XCTestCase {
         injector.register { PostFeedsStore(injector: $0) }
         injector.register { CommentFeedsStore(injector: $0) }
         injector.register { CommentsDatabase(injector: $0) }
+        injector.register { ReplyFeedsStore(injector: $0) }
+        injector.register { RepliesDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ClientUserProvider(connectionMode: .octopus(deepLink: nil), injector: $0) }

@@ -14,7 +14,6 @@ struct PostListView: View {
 
     // TODO: remove this. It is temporary handling the isLoggedIn just in case the product team ask it again
     @State private var loggedInDone: Bool = false
-    @State private var dismissCurrentProfileFlow = false
 
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
@@ -151,10 +150,6 @@ struct PostListView: View {
         .onAppear() {
             guard let selectedRootFeed = selectedRootFeed else { return }
             viewModel.set(feed: selectedRootFeed.feed)
-        }
-        .onValueChanged(of: dismissCurrentProfileFlow) {
-            guard $0 else { return }
-            viewModel.openUserProfile = false
         }
         .alert(
             "Common.Error",

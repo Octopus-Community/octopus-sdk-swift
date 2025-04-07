@@ -195,9 +195,52 @@ class PostFeedViewModel: ObservableObject {
         }
     }
 
+    func vote(pollAnswerId: String, postId: String) -> Bool {
+        guard ensureConnected() else { return false }
+        guard let post = feed.items?.first(where: { $0.id == postId }) else {
+            error = .localizationKey("Error.Unknown")
+            return false
+        }
+        Task {
+            await vote(pollAnswerId: pollAnswerId, post: post)
+        }
+        return true
+    }
+
     private func toggleLike(post: Post) async {
         do {
             try await octopus.core.postsRepository.toggleLike(post: post)
+        } catch {
+            switch error {
+            case let .validation(argumentError):
+                // special case where the error missingParent is returned: reload the post to check that it has not been
+                // deleted
+                for error in argumentError.errors.values.flatMap({ $0 }) {
+                    if case .missingParent = error.detail {
+                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
+                        break
+                    }
+                }
+                for (displayKind, errors) in argumentError.errors {
+                    guard !errors.isEmpty else { continue }
+                    let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
+                    switch displayKind {
+                    case .alert:
+                        self.error = .localizedString(multiErrorLocalizedString)
+                    case let .linkedToField(field):
+                        switch field {
+                        }
+                    }
+                }
+            case let .serverCall(serverError):
+                self.error = serverError.displayableMessage
+            }
+        }
+    }
+
+    private func vote(pollAnswerId: String, post: Post) async {
+        do {
+            try await octopus.core.postsRepository.vote(pollAnswerId: pollAnswerId, post: post)
         } catch {
             switch error {
             case let .validation(argumentError):

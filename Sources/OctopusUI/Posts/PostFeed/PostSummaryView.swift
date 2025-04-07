@@ -13,6 +13,7 @@ struct PostSummaryView: View {
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let toggleLike: (String) -> Void
+    let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
 
     @State private var openActions = false
@@ -29,43 +30,12 @@ struct PostSummaryView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            HStack(spacing: 4) {
-                                OpenProfileButton(author: post.author, displayProfile: displayProfile) {
-                                    post.author.name.textView
-                                        .font(theme.fonts.body2)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(theme.colors.gray900)
-                                        .fixedSize(horizontal: false, vertical: true) // Prevents unnecessary truncation
-
-                                }
-                                Circle()
-                                    .frame(width: 2, height: 2)
-                                    .foregroundColor(theme.colors.gray900)
-                                OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
-                                    HStack {
-                                        Text(post.relativeDate)
-                                            .font(theme.fonts.caption1)
-                                            .fontWeight(.semibold)
-                                            .lineLimit(1) // Always on one line
-                                            .layoutPriority(1) // Ensures it does not get pushed out
-                                            .foregroundColor(theme.colors.gray500)
-                                    }
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            AuthorAndDateHeaderView(author: post.author, relativeDate: post.relativeDate,
+                                                    displayProfile: displayProfile)
                             HStack(spacing: 4) {
                                 OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
                                     HStack {
-                                        Text(post.topic)
-                                            .font(theme.fonts.caption2)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(theme.colors.primary)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(
-                                                Capsule()
-                                                    .foregroundColor(theme.colors.primaryLowContrast)
-                                            )
+                                        TopicCapsule(topic: post.topic)
                                         Spacer()
                                     }
                                 }
@@ -124,7 +94,8 @@ struct PostSummaryView: View {
                     OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
                         PublishedContentView(content: postContent, width: width,
                                              childrenTapped: { displayPostDetail(post.uuid, true) },
-                                             likeTapped: { toggleLike(post.uuid) })
+                                             likeTapped: { toggleLike(post.uuid) },
+                                             voteOnPoll: { voteOnPoll($0, post.uuid) })
                     }
                 case let .moderated(reasons):
                     ModeratedPostContentView(reasons: reasons)
@@ -189,6 +160,7 @@ private struct PublishedContentView: View {
     let width: CGFloat
     let childrenTapped: () -> Void
     let likeTapped: () -> Void
+    let voteOnPoll: (String) -> Bool
     private let minAspectRatio: CGFloat = 4 / 5
 
     @State private var liveMeasures: LiveMeasures = .init(aggregatedInfo: .empty, userInteractions: .empty)
@@ -213,7 +185,8 @@ private struct PublishedContentView: View {
             }
             .padding(.horizontal, 20)
 
-            if let image = content.image {
+            switch content.attachment {
+            case let .image(image):
                 AsyncCachedImage(
                     url: image.url, cache: .content,
                     placeholder: {
@@ -231,6 +204,14 @@ private struct PublishedContentView: View {
                             .clipped()
                             .allowsHitTesting(false) // weird bug on iOS 17 where it prevents opening the menu (...)
                     })
+            case let .poll(poll):
+                PollView(poll: poll,
+                         aggregatedInfo: liveMeasures.aggregatedInfo,
+                         userInteractions: liveMeasures.userInteractions,
+                         vote: voteOnPoll)
+                .padding(.horizontal, 20)
+            case .none:
+                EmptyView()
             }
 
             AggregatedInfoView(aggregatedInfo: liveMeasures.aggregatedInfo, userInteractions: liveMeasures.userInteractions,
@@ -239,8 +220,10 @@ private struct PublishedContentView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .multilineTextAlignment(.leading)
-        .onReceive(content.liveMeasures) {
-            liveMeasures = $0
+        .onReceive(content.liveMeasures) { newLiveMeasures in
+            withAnimation {
+                liveMeasures = newLiveMeasures
+            }
         }
     }
 }

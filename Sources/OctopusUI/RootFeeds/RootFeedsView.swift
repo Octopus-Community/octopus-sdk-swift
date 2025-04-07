@@ -16,6 +16,7 @@ struct RootFeedsView: View {
 
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
+    @State private var height: CGFloat = 0
 
     init(octopus: OctopusSDK) {
         _viewModel = Compat.StateObject(wrappedValue: RootFeedsViewModel(octopus: octopus))
@@ -30,13 +31,11 @@ struct RootFeedsView: View {
         .sheet(isPresented: $showRootFeedPicker) {
             if #available(iOS 16.0, *) {
                 RootFeedPicker(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed)
-                .readHeight()
-                .onPreferenceChange(HeightPreferenceKey.self) { [$rootFeedPickerDetentHeight] height in
-                    if let height {
-                        // add a small padding otherwise multi line texts are not correctly rendered
-                        // TODO: change that fixed size to a ScaledMetric (but not available on iOS 13)
-                        $rootFeedPickerDetentHeight.wrappedValue = height + 40
-                    }
+                .readHeight($height)
+                .onValueChanged(of: height) { [$rootFeedPickerDetentHeight] height in
+                    // add a small padding otherwise multi line texts are not correctly rendered
+                    // TODO: change that fixed size to a ScaledMetric (but not available on iOS 13)
+                    $rootFeedPickerDetentHeight.wrappedValue = height + 40
                 }
                 .presentationDetents([.height(rootFeedPickerDetentHeight)])
                 .presentationDragIndicator(.visible)

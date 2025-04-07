@@ -5,6 +5,7 @@
 import Foundation
 import SwiftUI
 import Octopus
+import OctopusCore
 
 struct CreatePostView: View {
     @Environment(\.octopusTheme) private var theme
@@ -17,6 +18,7 @@ struct CreatePostView: View {
     @State private var displayableError: DisplayableString?
     @State private var topicPickerDetentHeight: CGFloat = 0
     @State private var showChangesWillBeLostAlert = false
+    @State private var height: CGFloat = 0
 
     init(octopus: OctopusSDK) {
         _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(octopus: octopus))
@@ -26,24 +28,24 @@ struct CreatePostView: View {
         NavigationView {
             ContentView(isLoading: viewModel.isLoading,
                         text: $viewModel.text,
-                        picture: $viewModel.picture,
+                        attachment: $viewModel.attachment,
                         textError: viewModel.textError,
                         pictureError: viewModel.pictureError,
+                        pollError: viewModel.pollError,
                         userAvatar: viewModel.userAvatar ?? .defaultImage(name: "?"),
                         selectedTopic: viewModel.selectedTopic,
-                        showTopicPicker: $showTopicPicker)
+                        showTopicPicker: $showTopicPicker,
+                        createPoll: viewModel.createPoll)
             .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
             .navigationBarItems(leading: cancelButton, trailing: postButton)
             .sheet(isPresented: $showTopicPicker) {
                 if #available(iOS 16.0, *) {
                     TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
-                    .readHeight()
-                    .onPreferenceChange(HeightPreferenceKey.self) { [$topicPickerDetentHeight] height in
-                        if let height {
-                            // add a small padding otherwise multi line texts are not correctly rendered
-                            // TODO: change that fixed size to a ScaledMetric (but not available on iOS 13)
-                            $topicPickerDetentHeight.wrappedValue = height + 40
-                        }
+                    .readHeight($height)
+                    .onValueChanged(of: height) { [$topicPickerDetentHeight] height in
+                        // add a small padding otherwise multi line texts are not correctly rendered
+                        // TODO: change that fixed size to a ScaledMetric (but not available on iOS 13)
+                        $topicPickerDetentHeight.wrappedValue = height + 40
                     }
                     .presentationDetents([.height(topicPickerDetentHeight)])
                     .presentationDragIndicator(.visible)
@@ -162,22 +164,25 @@ struct CreatePostView: View {
 private struct ContentView: View {
     let isLoading: Bool
     @Binding var text: String
-    @Binding var picture: ImageAndData?
+    @Binding var attachment: CreatePostViewModel.Attachment?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
+    let pollError: DisplayableString?
 
     let userAvatar: Author.Avatar
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
 
     @Binding var showTopicPicker: Bool
+    let createPoll: () -> Void
 
     var body: some View {
         ZStack {
-            WritingPostForm(text: $text, picture: $picture,
-                            textError: textError, pictureError: pictureError,
+            WritingPostForm(text: $text, attachment: $attachment,
+                            textError: textError, pictureError: pictureError, pollError: pollError,
                             userAvatar: userAvatar, selectedTopic: selectedTopic,
-                            showTopicPicker: $showTopicPicker)
+                            showTopicPicker: $showTopicPicker,
+                            createPoll: createPoll)
             .disabled(isLoading)
         }
     }
@@ -186,20 +191,23 @@ private struct ContentView: View {
 private struct WritingPostForm: View {
     @Environment(\.octopusTheme) private var theme
     @Binding var text: String
-    @Binding var picture: ImageAndData?
+    @Binding var attachment: CreatePostViewModel.Attachment?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
+    let pollError: DisplayableString?
 
     let userAvatar: Author.Avatar
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
     @Binding var showTopicPicker: Bool
+    let createPoll: () -> Void
 
     @State private var selectedItems: [ImageAndData] = []
     @State private var imagePickingError: Error?
     @State private var textFocused = true
     @State private var openPhotosPicker = false
     @State private var scrollToBottomOfId: String?
+
 
     var body: some View {
         VStack {
@@ -257,14 +265,14 @@ private struct WritingPostForm: View {
                                     }
                                     .font(theme.fonts.body1)
                             }
-                            if let imageAndData = picture {
+                            switch attachment {
+                            case let .image(imageAndData):
                                 Spacer().frame(height: 10)
                                 ZStack(alignment: .topTrailing) {
                                     Image(uiImage: imageAndData.image)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                     Button(action: {
-                                        picture = nil
                                         selectedItems = []
                                     }) {
                                         Image(systemName: "xmark")
@@ -284,13 +292,25 @@ private struct WritingPostForm: View {
                                     }
                                     .buttonStyle(.plain)
                                 }
-                            } else if text.isEmpty {
-                                // when there is no picture displayed, use the remaining part of the screen to catch tap
-                                Color(UIColor.systemBackground)
-                                    .frame(height: 150)
-                                    .onTapGesture {
-                                        textFocused = true
-                                    }
+                            case let .poll(editablePoll):
+                                Spacer().frame(height: 10)
+                                CreatePollView(
+                                    poll: Binding(get: { editablePoll }, set: { attachment = .poll($0) }),
+                                    deletePoll: {
+                                        attachment = nil
+                                    })
+                            case nil:
+                                if text.isEmpty {
+                                    // when there is no attachment displayed, use the remaining part of the screen to
+                                    // catch tap
+                                    Color(UIColor.systemBackground)
+                                        .frame(height: 150)
+                                        .onTapGesture {
+                                            textFocused = true
+                                        }
+                                } else {
+                                    EmptyView()
+                                }
                             }
                         }
                         Spacer()
@@ -300,7 +320,7 @@ private struct WritingPostForm: View {
                 }
             }
             VStack(spacing: 0) {
-                if pictureError != nil || textError != nil {
+                if pictureError != nil || textError != nil || pollError != nil {
                     theme.colors.error.frame(height: 1)
                     Spacer().frame(height: 4)
 
@@ -325,25 +345,56 @@ private struct WritingPostForm: View {
                             .padding(.horizontal, 16)
                         Spacer().frame(height: 4)
                     }
+
+                    if let pollError {
+                        pollError.textView
+                            .font(theme.fonts.caption2)
+                            .bold()
+                            .foregroundColor(theme.colors.error)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                        Spacer().frame(height: 4)
+                    }
                 }
 
-                theme.colors.gray300.frame(height: 1)
+                if !(attachment?.hasPoll ?? false) {
+                    theme.colors.gray300.frame(height: 1)
+                }
 
                 HStack {
-                    Button(action: { openPhotosPicker = true }) {
-                        HStack(spacing: 4) {
-                            Image(.addMedia)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 24, height: 24)
-                            Text("Content.Create.AddPicture", bundle: .module)
-                                .font(theme.fonts.body2)
-                                .fontWeight(.medium)
+                    if !(attachment?.hasPoll ?? false) {
+                        Button(action: { openPhotosPicker = true }) {
+                            HStack(spacing: 4) {
+                                Image(.addMedia)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                Text("Content.Create.AddPicture", bundle: .module)
+                                    .font(theme.fonts.body2)
+                                    .fontWeight(.medium)
+                            }
+                            .foregroundColor(theme.colors.gray900)
+                            .padding()
                         }
-                        .foregroundColor(theme.colors.gray900)
-                        .padding()
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                    if attachment == nil {
+                        Button(action: createPoll) {
+                            HStack(spacing: 4) {
+                                Image(.poll)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                Text("Content.Create.AddPoll", bundle: .module)
+                                    .font(theme.fonts.body2)
+                                    .fontWeight(.medium)
+                            }
+                            .foregroundColor(theme.colors.gray900)
+                            .padding()
+                        }
+                        .buttonStyle(.plain)
+                    }
                     Spacer()
                 }
             }
@@ -351,19 +402,20 @@ private struct WritingPostForm: View {
         .imagesPicker(isPresented: $openPhotosPicker, selection: $selectedItems, error: $imagePickingError,
                       maxSelectionCount: 1)
         .onValueChanged(of: selectedItems) {
-            picture = $0.first
+            attachment = $0.first.map { .image($0) }
         }
-        .onValueChanged(of: picture) {
-            if $0 == nil {
-                selectedItems = []
+        .onValueChanged(of: attachment) {
+            switch $0 {
+            case .image: break
+            default: selectedItems = []
             }
         }
     }
 }
 
 #Preview {
-    ContentView(isLoading: false, text: .constant(""), picture: .constant(nil),
-                textError: nil, pictureError: nil,
+    ContentView(isLoading: false, text: .constant(""), attachment: .constant(nil),
+                textError: nil, pictureError: nil, pollError: nil,
                 userAvatar: .defaultImage(name: "toto"),
-                selectedTopic: nil, showTopicPicker: .constant(false))
+                selectedTopic: nil, showTopicPicker: .constant(false), createPoll: { })
 }

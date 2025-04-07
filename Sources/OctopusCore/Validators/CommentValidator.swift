@@ -12,7 +12,7 @@ public extension Validators {
             case tooLong
         }
 
-        public let maxCommentLength = 3000
+        public let maxTextLength = 3000
 
         public var minSize: CGFloat { pictureValidator.minSize }
         public var maxRatio: CGFloat { pictureValidator.maxRatio }
@@ -29,7 +29,7 @@ public extension Validators {
         }
 
         public func validate(text: String) -> Bool {
-            return text.count <= maxCommentLength
+            return text.count <= maxTextLength
         }
 
         public func validate(comment: WritableComment) -> Bool {

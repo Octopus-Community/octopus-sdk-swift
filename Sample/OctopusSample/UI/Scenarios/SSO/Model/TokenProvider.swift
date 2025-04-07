@@ -33,9 +33,11 @@ class TokenProvider {
         let headerJSONData = try JSONEncoder().encode(Header())
         let headerBase64String = headerJSONData.urlSafeBase64EncodedString()
 
-        let payloadJSONData = try JSONEncoder().encode(Payload(sub: userId,
-                                                               iat: Int(Date().timeIntervalSince1970),
-                                                               exp: Int(Date.distantFuture.timeIntervalSince1970)))
+        let payloadJSONData = try JSONEncoder().encode(
+            Payload(sub: userId,
+                    iat: Int(Date().timeIntervalSince1970),
+                    exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
+        )
         let payloadBase64String = payloadJSONData.urlSafeBase64EncodedString()
 
         let toSign = Data((headerBase64String + "." + payloadBase64String).utf8)

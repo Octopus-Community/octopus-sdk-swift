@@ -22,18 +22,27 @@ class MockOctoService: OctoService {
     /// Fifo of the responses to `put(comment:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putCommentResponses = [Com_Octopuscommunity_PutCommentResponse]()
+    /// Fifo of the responses to `put(reply:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var putReplyResponses = [Com_Octopuscommunity_PutReplyResponse]()
     /// Fifo of the responses to `delete(post:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var deletePostResponses = [Com_Octopuscommunity_DeletePostResponse]()
     /// Fifo of the responses to `delete(comment:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var deleteCommentResponses = [Com_Octopuscommunity_DeleteCommentResponse]()
+    /// Fifo of the responses to `delete(reply:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var deleteReplyResponses = [Com_Octopuscommunity_DeleteReplyResponse]()
     /// Fifo of the responses to `like(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putLikeResponses = [Com_Octopuscommunity_PutLikeResponse]()
     /// Fifo of the responses to `unlike(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var deleteLikeResponses = [Com_Octopuscommunity_DeleteLikeResponse]()
+    /// Fifo of the responses to `voteOnPoll(:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var putPollVoteResponses = [Com_Octopuscommunity_PutPollVoteResponse]()
     /// Fifo of the responses to `reportContent(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var reportContentResponses = [Com_Octopuscommunity_ReportContentResponse]()
@@ -74,9 +83,19 @@ class MockOctoService: OctoService {
         return response
     }
 
-    func put(comment: Com_Octopuscommunity_RwOctoObject, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutCommentResponse {
+    func put(comment: Com_Octopuscommunity_RwOctoObject, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_PutCommentResponse {
         guard let response = putCommentResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextPutPostResponse must be called before"))
+            throw .unknown(MockError("Dev error, injectNextPutCommentResponse must be called before"))
+        }
+        return response
+    }
+
+    func put(reply: Com_Octopuscommunity_RwOctoObject, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError)
+    -> Com_Octopuscommunity_PutReplyResponse {
+        guard let response = putReplyResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextPutReplyResponse must be called before"))
         }
         return response
     }
@@ -97,6 +116,14 @@ class MockOctoService: OctoService {
         return response
     }
 
+    func delete(reply replyId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> OctopusGrpcModels.Com_Octopuscommunity_DeleteReplyResponse {
+        guard let response = deleteReplyResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextDeleteReplyResponse must be called before"))
+        }
+        return response
+    }
+
     func like(objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_PutLikeResponse {
         guard let response = putLikeResponses.popLast() else {
@@ -109,6 +136,14 @@ class MockOctoService: OctoService {
     -> OctopusGrpcModels.Com_Octopuscommunity_DeleteLikeResponse {
         guard let response = deleteLikeResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextUnlikeResponse must be called before"))
+        }
+        return response
+    }
+
+    func voteOnPoll(objectId: String, answerId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse {
+        guard let response = putPollVoteResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextVoteOnPollResponse must be called before"))
         }
         return response
     }
@@ -144,6 +179,10 @@ extension MockOctoService {
         putCommentResponses.insert(response, at: 0)
     }
 
+    func injectNextPutReplyResponse(_ response: Com_Octopuscommunity_PutReplyResponse) {
+        putReplyResponses.insert(response, at: 0)
+    }
+
     func injectNextDeletePostResponse(_ response: Com_Octopuscommunity_DeletePostResponse) {
         deletePostResponses.insert(response, at: 0)
     }
@@ -152,12 +191,20 @@ extension MockOctoService {
         deleteCommentResponses.insert(response, at: 0)
     }
 
+    func injectNextDeleteReplyResponse(_ response: Com_Octopuscommunity_DeleteReplyResponse) {
+        deleteReplyResponses.insert(response, at: 0)
+    }
+
     func injectNextLikeResponse(_ response: Com_Octopuscommunity_PutLikeResponse) {
         putLikeResponses.insert(response, at: 0)
     }
 
     func injectNextUnlikeResponse(_ response: Com_Octopuscommunity_DeleteLikeResponse) {
         deleteLikeResponses.insert(response, at: 0)
+    }
+
+    func injectNextVoteOnPollResponse(_ response: Com_Octopuscommunity_PutPollVoteResponse) {
+        putPollVoteResponses.insert(response, at: 0)
     }
 
     func injectNextReportContentResponse(_ response: Com_Octopuscommunity_ReportContentResponse) {

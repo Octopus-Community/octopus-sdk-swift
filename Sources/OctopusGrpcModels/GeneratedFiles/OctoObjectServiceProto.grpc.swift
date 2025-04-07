@@ -41,6 +41,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_ModerateCommentRequest, Com_Octopuscommunity_ModerateCommentResponse>
 
+  func putReply(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReplyResponse>
+
+  func deleteReply(
+    _ request: Com_Octopuscommunity_DeleteReplyRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_DeleteReplyRequest, Com_Octopuscommunity_DeleteReplyResponse>
+
+  func moderateReply(
+    _ request: Com_Octopuscommunity_ModerateReplyRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ModerateReplyRequest, Com_Octopuscommunity_ModerateReplyResponse>
+
   func putPost(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
@@ -50,6 +65,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>
+
+  func putPollVote(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>
 
   func deleteLike(
     _ request: Com_Octopuscommunity_DeleteLikeRequest,
@@ -123,7 +143,7 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
-  ///TODO create a PutCommentRequest
+  /// Unary call to PutComment
   ///
   /// - Parameters:
   ///   - request: Request to send to PutComment.
@@ -141,7 +161,7 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
-  /// Unary call to DeleteComment
+  ///TODO create a DeleteRequest
   ///
   /// - Parameters:
   ///   - request: Request to send to DeleteComment.
@@ -177,7 +197,61 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
-  ///TODO create a PutPostRequest
+  /// Unary call to PutReply
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to PutReply.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func putReply(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReplyResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutReplyInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to DeleteReply
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to DeleteReply.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func deleteReply(
+    _ request: Com_Octopuscommunity_DeleteReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_DeleteReplyRequest, Com_Octopuscommunity_DeleteReplyResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteReplyInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to ModerateReply
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to ModerateReply.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func moderateReply(
+    _ request: Com_Octopuscommunity_ModerateReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ModerateReplyRequest, Com_Octopuscommunity_ModerateReplyResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeModerateReplyInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to PutPost
   ///
   /// - Parameters:
   ///   - request: Request to send to PutPost.
@@ -210,6 +284,24 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to PutPollVote
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to PutPollVote.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func putPollVote(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPollVote.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? []
     )
   }
 
@@ -409,6 +501,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ModerateCommentRequest, Com_Octopuscommunity_ModerateCommentResponse>
 
+  func makePutReplyCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReplyResponse>
+
+  func makeDeleteReplyCall(
+    _ request: Com_Octopuscommunity_DeleteReplyRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteReplyRequest, Com_Octopuscommunity_DeleteReplyResponse>
+
+  func makeModerateReplyCall(
+    _ request: Com_Octopuscommunity_ModerateReplyRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ModerateReplyRequest, Com_Octopuscommunity_ModerateReplyResponse>
+
   func makePutPostCall(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
@@ -418,6 +525,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>
+
+  func makePutPollVoteCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>
 
   func makeDeleteLikeCall(
     _ request: Com_Octopuscommunity_DeleteLikeRequest,
@@ -520,6 +632,42 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func makePutReplyCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReplyResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutReplyInterceptors() ?? []
+    )
+  }
+
+  public func makeDeleteReplyCall(
+    _ request: Com_Octopuscommunity_DeleteReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteReplyRequest, Com_Octopuscommunity_DeleteReplyResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteReplyInterceptors() ?? []
+    )
+  }
+
+  public func makeModerateReplyCall(
+    _ request: Com_Octopuscommunity_ModerateReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ModerateReplyRequest, Com_Octopuscommunity_ModerateReplyResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeModerateReplyInterceptors() ?? []
+    )
+  }
+
   public func makePutPostCall(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions? = nil
@@ -541,6 +689,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
+    )
+  }
+
+  public func makePutPollVoteCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPollVote.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? []
     )
   }
 
@@ -679,6 +839,42 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func putReply(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_PutReplyResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutReplyInterceptors() ?? []
+    )
+  }
+
+  public func deleteReply(
+    _ request: Com_Octopuscommunity_DeleteReplyRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_DeleteReplyResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteReplyInterceptors() ?? []
+    )
+  }
+
+  public func moderateReply(
+    _ request: Com_Octopuscommunity_ModerateReplyRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_ModerateReplyResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeModerateReplyInterceptors() ?? []
+    )
+  }
+
   public func putPost(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions? = nil
@@ -700,6 +896,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
+    )
+  }
+
+  public func putPollVote(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_PutPollVoteResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPollVote.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? []
     )
   }
 
@@ -810,11 +1018,23 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
   /// - Returns: Interceptors to use when invoking 'moderateComment'.
   func makeModerateCommentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ModerateCommentRequest, Com_Octopuscommunity_ModerateCommentResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'putReply'.
+  func makePutReplyInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReplyResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'deleteReply'.
+  func makeDeleteReplyInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_DeleteReplyRequest, Com_Octopuscommunity_DeleteReplyResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'moderateReply'.
+  func makeModerateReplyInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ModerateReplyRequest, Com_Octopuscommunity_ModerateReplyResponse>]
+
   /// - Returns: Interceptors to use when invoking 'putPost'.
   func makePutPostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>]
 
   /// - Returns: Interceptors to use when invoking 'putLike'.
   func makePutLikeInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'putPollVote'.
+  func makePutPollVoteInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>]
 
   /// - Returns: Interceptors to use when invoking 'deleteLike'.
   func makeDeleteLikeInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>]
@@ -845,8 +1065,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putComment,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteComment,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateComment,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReply,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReply,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPollVote,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getTopics,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.updatePost,
@@ -887,6 +1111,24 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let putReply = GRPCMethodDescriptor(
+      name: "PutReply",
+      path: "/com.octopuscommunity.OctoObjectService/PutReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let deleteReply = GRPCMethodDescriptor(
+      name: "DeleteReply",
+      path: "/com.octopuscommunity.OctoObjectService/DeleteReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let moderateReply = GRPCMethodDescriptor(
+      name: "ModerateReply",
+      path: "/com.octopuscommunity.OctoObjectService/ModerateReply",
+      type: GRPCCallType.unary
+    )
+
     public static let putPost = GRPCMethodDescriptor(
       name: "PutPost",
       path: "/com.octopuscommunity.OctoObjectService/PutPost",
@@ -896,6 +1138,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
     public static let putLike = GRPCMethodDescriptor(
       name: "PutLike",
       path: "/com.octopuscommunity.OctoObjectService/PutLike",
+      type: GRPCCallType.unary
+    )
+
+    public static let putPollVote = GRPCMethodDescriptor(
+      name: "PutPollVote",
+      path: "/com.octopuscommunity.OctoObjectService/PutPollVote",
       type: GRPCCallType.unary
     )
 
@@ -946,17 +1194,24 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
 
   func getBatch(request: Com_Octopuscommunity_GetBatchRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetBatchResponse>
 
-  ///TODO create a PutCommentRequest
   func putComment(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutCommentResponse>
 
+  ///TODO create a DeleteRequest
   func deleteComment(request: Com_Octopuscommunity_DeleteCommentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_DeleteCommentResponse>
 
   func moderateComment(request: Com_Octopuscommunity_ModerateCommentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ModerateCommentResponse>
 
-  ///TODO create a PutPostRequest
+  func putReply(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutReplyResponse>
+
+  func deleteReply(request: Com_Octopuscommunity_DeleteReplyRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_DeleteReplyResponse>
+
+  func moderateReply(request: Com_Octopuscommunity_ModerateReplyRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ModerateReplyResponse>
+
   func putPost(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutPostResponse>
 
   func putLike(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutLikeResponse>
+
+  func putPollVote(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutPollVoteResponse>
 
   func deleteLike(request: Com_Octopuscommunity_DeleteLikeRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_DeleteLikeResponse>
 
@@ -1029,6 +1284,33 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         userFunction: self.moderateComment(request:context:)
       )
 
+    case "PutReply":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutReplyResponse>(),
+        interceptors: self.interceptors?.makePutReplyInterceptors() ?? [],
+        userFunction: self.putReply(request:context:)
+      )
+
+    case "DeleteReply":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteReplyResponse>(),
+        interceptors: self.interceptors?.makeDeleteReplyInterceptors() ?? [],
+        userFunction: self.deleteReply(request:context:)
+      )
+
+    case "ModerateReply":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ModerateReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ModerateReplyResponse>(),
+        interceptors: self.interceptors?.makeModerateReplyInterceptors() ?? [],
+        userFunction: self.moderateReply(request:context:)
+      )
+
     case "PutPost":
       return UnaryServerHandler(
         context: context,
@@ -1045,6 +1327,15 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutLikeResponse>(),
         interceptors: self.interceptors?.makePutLikeInterceptors() ?? [],
         userFunction: self.putLike(request:context:)
+      )
+
+    case "PutPollVote":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutPollVoteResponse>(),
+        interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? [],
+        userFunction: self.putPollVote(request:context:)
       )
 
     case "DeleteLike":
@@ -1124,12 +1415,12 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_GetBatchResponse
 
-  ///TODO create a PutCommentRequest
   func putComment(
     request: Com_Octopuscommunity_PutRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_PutCommentResponse
 
+  ///TODO create a DeleteRequest
   func deleteComment(
     request: Com_Octopuscommunity_DeleteCommentRequest,
     context: GRPCAsyncServerCallContext
@@ -1140,7 +1431,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_ModerateCommentResponse
 
-  ///TODO create a PutPostRequest
+  func putReply(
+    request: Com_Octopuscommunity_PutRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_PutReplyResponse
+
+  func deleteReply(
+    request: Com_Octopuscommunity_DeleteReplyRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_DeleteReplyResponse
+
+  func moderateReply(
+    request: Com_Octopuscommunity_ModerateReplyRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_ModerateReplyResponse
+
   func putPost(
     request: Com_Octopuscommunity_PutRequest,
     context: GRPCAsyncServerCallContext
@@ -1150,6 +1455,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     request: Com_Octopuscommunity_PutRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_PutLikeResponse
+
+  func putPollVote(
+    request: Com_Octopuscommunity_PutRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_PutPollVoteResponse
 
   func deleteLike(
     request: Com_Octopuscommunity_DeleteLikeRequest,
@@ -1247,6 +1557,33 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         wrapping: { try await self.moderateComment(request: $0, context: $1) }
       )
 
+    case "PutReply":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutReplyResponse>(),
+        interceptors: self.interceptors?.makePutReplyInterceptors() ?? [],
+        wrapping: { try await self.putReply(request: $0, context: $1) }
+      )
+
+    case "DeleteReply":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteReplyResponse>(),
+        interceptors: self.interceptors?.makeDeleteReplyInterceptors() ?? [],
+        wrapping: { try await self.deleteReply(request: $0, context: $1) }
+      )
+
+    case "ModerateReply":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ModerateReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ModerateReplyResponse>(),
+        interceptors: self.interceptors?.makeModerateReplyInterceptors() ?? [],
+        wrapping: { try await self.moderateReply(request: $0, context: $1) }
+      )
+
     case "PutPost":
       return GRPCAsyncServerHandler(
         context: context,
@@ -1263,6 +1600,15 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutLikeResponse>(),
         interceptors: self.interceptors?.makePutLikeInterceptors() ?? [],
         wrapping: { try await self.putLike(request: $0, context: $1) }
+      )
+
+    case "PutPollVote":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutPollVoteResponse>(),
+        interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? [],
+        wrapping: { try await self.putPollVote(request: $0, context: $1) }
       )
 
     case "DeleteLike":
@@ -1347,6 +1693,18 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeModerateCommentInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ModerateCommentRequest, Com_Octopuscommunity_ModerateCommentResponse>]
 
+  /// - Returns: Interceptors to use when handling 'putReply'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makePutReplyInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReplyResponse>]
+
+  /// - Returns: Interceptors to use when handling 'deleteReply'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeDeleteReplyInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_DeleteReplyRequest, Com_Octopuscommunity_DeleteReplyResponse>]
+
+  /// - Returns: Interceptors to use when handling 'moderateReply'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeModerateReplyInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ModerateReplyRequest, Com_Octopuscommunity_ModerateReplyResponse>]
+
   /// - Returns: Interceptors to use when handling 'putPost'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makePutPostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>]
@@ -1354,6 +1712,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   /// - Returns: Interceptors to use when handling 'putLike'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makePutLikeInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
+
+  /// - Returns: Interceptors to use when handling 'putPollVote'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makePutPollVoteInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>]
 
   /// - Returns: Interceptors to use when handling 'deleteLike'.
   ///   Defaults to calling `self.makeInterceptors()`.
@@ -1390,8 +1752,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putComment,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteComment,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderateComment,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putReply,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteReply,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderateReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putPost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putLike,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putPollVote,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getTopics,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.updatePost,
@@ -1432,6 +1798,24 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let putReply = GRPCMethodDescriptor(
+      name: "PutReply",
+      path: "/com.octopuscommunity.OctoObjectService/PutReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let deleteReply = GRPCMethodDescriptor(
+      name: "DeleteReply",
+      path: "/com.octopuscommunity.OctoObjectService/DeleteReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let moderateReply = GRPCMethodDescriptor(
+      name: "ModerateReply",
+      path: "/com.octopuscommunity.OctoObjectService/ModerateReply",
+      type: GRPCCallType.unary
+    )
+
     public static let putPost = GRPCMethodDescriptor(
       name: "PutPost",
       path: "/com.octopuscommunity.OctoObjectService/PutPost",
@@ -1441,6 +1825,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
     public static let putLike = GRPCMethodDescriptor(
       name: "PutLike",
       path: "/com.octopuscommunity.OctoObjectService/PutLike",
+      type: GRPCCallType.unary
+    )
+
+    public static let putPollVote = GRPCMethodDescriptor(
+      name: "PutPollVote",
+      path: "/com.octopuscommunity.OctoObjectService/PutPollVote",
       type: GRPCCallType.unary
     )
 

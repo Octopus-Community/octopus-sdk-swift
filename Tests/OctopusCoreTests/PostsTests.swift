@@ -27,6 +27,8 @@ class PostsTests: XCTestCase {
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { CommentFeedsStore(injector: $0) }
+        injector.register { ReplyFeedsStore(injector: $0) }
+        injector.register { RepliesDatabase(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
         injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
 
@@ -48,12 +50,12 @@ class PostsTests: XCTestCase {
             }.store(in: &storage)
 
         injectPutPost(StorablePost(
-            uuid: "newPost", text: "My Post", medias: [],
+            uuid: "newPost", text: "My Post", medias: [], poll: nil,
             author: .init(uuid: "me", nickname: "Me", avatarUrl: nil), creationDate: Date(), updateDate: Date(),
             status: .published, statusReasons: [],
             parentId: "topicId",
-            descCommentFeedId: nil, ascCommentFeedId: nil, aggregatedInfo: nil, userLikeId: nil))
-        let post = WritablePost(topicId: "topicId", text: "My Post", imageData: nil)
+            descCommentFeedId: nil, ascCommentFeedId: nil, aggregatedInfo: .empty, userInteractions: .empty))
+        let post = WritablePost(topicId: "topicId", text: "My Post", attachment: nil)
         try await postsRepository.send(post)
 
         await fulfillment(of: [sendExpectation], timeout: 0.5)
@@ -71,12 +73,12 @@ class PostsTests: XCTestCase {
             }.store(in: &storage)
 
         injectGetPost(
-            .init(uuid: "1", text: "First Post", medias: [],
+            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
                   author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: nil, userLikeId: nil))
+                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty))
         _ = try await postsRepository.fetchPost(uuid: "1")
 
         await fulfillment(of: [localExpectation], timeout: 0.5)
@@ -85,12 +87,12 @@ class PostsTests: XCTestCase {
     func testGetPostIsFilteredOutIfAuthorIsBlocked() async throws {
         // precondition: a post with an author is in the db
         try await postsDatabase.upsert(posts: [
-            .init(uuid: "1", text: "First Post", medias: [],
+            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
                   author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: nil, userLikeId: nil)
+                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty)
         ])
 
         let postPresentExpectation = XCTestExpectation(description: "Post is present")
@@ -123,12 +125,12 @@ class PostsTests: XCTestCase {
 
     func testDeletePost() async throws {
         try await postsDatabase.upsert(posts: [
-            .init(uuid: "1", text: "First Post", medias: [],
+            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
                   author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: nil, userLikeId: nil)
+                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty)
         ])
 
         let localExpectation = XCTestExpectation(description: "DB updated")
@@ -150,19 +152,14 @@ class PostsTests: XCTestCase {
     func injectGetPost(_ item: StorablePost) {
         let post = octoPost(from: item)
 
-        let aggregate: Com_Octopuscommunity_Aggregate?
-        if let aggregatedInfo = item.aggregatedInfo {
-            aggregate = .with {
-                $0.childrenCount = UInt32(aggregatedInfo.childCount)
-                $0.likeCount = UInt32(aggregatedInfo.likeCount)
-                $0.viewCount = UInt32(aggregatedInfo.viewCount)
+        let aggregate = Com_Octopuscommunity_Aggregate.with {
+                $0.childrenCount = UInt32(item.aggregatedInfo.childCount)
+                $0.likeCount = UInt32(item.aggregatedInfo.likeCount)
+                $0.viewCount = UInt32(item.aggregatedInfo.viewCount)
             }
-        } else {
-            aggregate = nil
-        }
 
         let requesterCtx = Com_Octopuscommunity_RequesterCtx.with {
-            if let userLikeId = item.userLikeId {
+            if let userLikeId = item.userInteractions.userLikeId {
                 $0.likeID = userLikeId
             }
         }
@@ -170,9 +167,7 @@ class PostsTests: XCTestCase {
 
         mockOctoService.injectNextGetResponse(.with {
             $0.octoObject = post
-            if let aggregate {
-                $0.aggregate = aggregate
-            }
+            $0.aggregate = aggregate
             $0.requesterCtx = requesterCtx
         })
     }

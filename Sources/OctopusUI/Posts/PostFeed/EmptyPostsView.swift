@@ -12,12 +12,12 @@ struct DefaultEmptyPostsView: View {
         VStack {
             Spacer().frame(height: 54)
             Image(.postDetailMissing)
-            Text("Post.List.Empty", bundle: .module)
+            Text("Post.List.Default.Empty", bundle: .module)
                 .font(theme.fonts.body2)
                 .fontWeight(.medium)
-                .foregroundColor(theme.colors.gray500)
                 .multilineTextAlignment(.center)
         }
+        .foregroundColor(theme.colors.gray500)
         .padding(.horizontal)
     }
 }
@@ -31,6 +31,7 @@ struct CreatePostEmptyPostView: View {
         VStack {
             Spacer().frame(height: 54)
             Image(.postDetailMissing)
+                .foregroundColor(theme.colors.gray500)
             Text("Post.Create.Incentive.Explanation", bundle: .module)
                 .font(theme.fonts.body2)
                 .fontWeight(.medium)
@@ -48,5 +49,22 @@ struct CreatePostEmptyPostView: View {
                     )
             }.buttonStyle(.plain)
         }
+    }
+}
+
+struct OtherUserEmptyPostView: View {
+    @Environment(\.octopusTheme) private var theme
+
+    var body: some View {
+        VStack {
+            Spacer().frame(height: 54)
+            Image(.postDetailMissing)
+            Text("Post.List.OtherUser.Empty", bundle: .module)
+                .font(theme.fonts.body2)
+                .fontWeight(.medium)
+                .multilineTextAlignment(.center)
+        }
+        .foregroundColor(theme.colors.gray500)
+        .padding(.horizontal)
     }
 }

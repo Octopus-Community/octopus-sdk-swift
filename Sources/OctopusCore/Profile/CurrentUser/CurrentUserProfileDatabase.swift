@@ -24,14 +24,15 @@ class CurrentUserProfileDatabase: InjectableObject {
     }
 
     func profilePublisher(userId: String) -> AnyPublisher<StorableCurrentUserProfile?, Error> {
-        return context
+        (context
             .publisher(request: PrivateProfileEntity.fetchByUserId(userId: userId)) {
                 guard let profileEntity = $0.first else { return [] }
                 return [StorableCurrentUserProfile(from: profileEntity)]
-            }
-            .map(\.first)
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
+            } as AnyPublisher<[StorableCurrentUserProfile], Error>
+        )
+        .map(\.first)
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
     }
 
     func upsert(profile: StorableCurrentUserProfile) async throws {

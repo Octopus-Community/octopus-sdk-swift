@@ -6,14 +6,20 @@ import Foundation
 import CoreData
 
 @objc(CommentEntity)
-class CommentEntity: OctoObjectEntity {
-    @NSManaged public var text: String?
-    @NSManaged public var mediasRelationship: NSOrderedSet
-
-    var medias: [MediaEntity] {
-        mediasRelationship.array as? [MediaEntity] ?? []
+class CommentEntity: ResponseEntity {
+    func fill(with comment: StorableComment, context: NSManagedObjectContext) {
+        super.fill(with: comment, context: context)
+        if descChildrenFeedId?.nilIfEmpty == nil || comment.descReplyFeedId?.nilIfEmpty != nil {
+            descChildrenFeedId = comment.descReplyFeedId
+        }
+        if ascChildrenFeedId?.nilIfEmpty == nil || comment.ascReplyFeedId?.nilIfEmpty != nil {
+            ascChildrenFeedId = comment.ascReplyFeedId
+        }
     }
+}
 
+// Extension that adds all fetch requests needed
+extension CommentEntity: FetchableContentEntity {
     @nonobjc public class func fetchAll() -> NSFetchRequest<CommentEntity> {
         return NSFetchRequest<CommentEntity>(entityName: "Comment")
     }
@@ -34,13 +40,6 @@ class CommentEntity: OctoObjectEntity {
     @nonobjc public class func fetchAllExcept(ids: [String]) -> NSFetchRequest<CommentEntity> {
         let request = fetchAll()
         request.predicate = NSPredicate(format: "NOT (%K IN %@)", #keyPath(CommentEntity.uuid), ids)
-        return request
-    }
-
-    @nonobjc public class func fetchSortedAndByParentId(parentId: String) -> NSFetchRequest<CommentEntity> {
-        let request = fetchAll()
-        request.predicate = NSPredicate(format: "%K LIKE %@", #keyPath(CommentEntity.parentId), parentId)
-        request.sortDescriptors = [NSSortDescriptor(key: #keyPath(CommentEntity.creationTimestamp), ascending: true)]
         return request
     }
 }

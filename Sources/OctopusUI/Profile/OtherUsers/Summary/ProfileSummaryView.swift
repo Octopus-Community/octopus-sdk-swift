@@ -51,7 +51,7 @@ struct ProfileSummaryView: View {
                             moderationContext = .content(contentId: $0)
                             displayContentModeration = true
                         }) {
-                            DefaultEmptyPostsView()
+                            OtherUserEmptyPostView()
                         }
                 } else {
                     EmptyView()

@@ -13,19 +13,19 @@ struct DisplayablePost: Equatable {
     }
 
     struct PostContent: Equatable {
+        enum Attachment: Equatable {
+            case image(ImageMedia)
+            case poll(DisplayablePoll)
+        }
         let text: String
-        let image: ImageMedia?
+        let attachment: Attachment?
         let textIsEllipsized: Bool
-        let aggregatedInfo: AggregatedInfo
-        let userInteractions: UserInteractions
         let liveMeasures: AnyPublisher<LiveMeasures, Never>
 
         static func == (lhs: DisplayablePost.PostContent, rhs: DisplayablePost.PostContent) -> Bool {
             return lhs.text == rhs.text &&
-            lhs.image == rhs.image &&
-            lhs.textIsEllipsized == rhs.textIsEllipsized &&
-            lhs.aggregatedInfo == rhs.aggregatedInfo &&
-            lhs.userInteractions == rhs.userInteractions
+            lhs.attachment == rhs.attachment &&
+            lhs.textIsEllipsized == rhs.textIsEllipsized
         }
     }
     let uuid: String
@@ -58,12 +58,8 @@ extension DisplayablePost {
 
             content = .published(PostContent(
                 text: displayableText,
-                image: ImageMedia(from: post.medias.first(where: { $0.kind == .image })),
+                attachment: PostContent.Attachment(from: post),
                 textIsEllipsized: post.text != displayableText,
-//                aggregatedInfo: post.aggregatedInfo,
-//                userInteractions: post.userInteractions,
-                aggregatedInfo: .empty,
-                userInteractions: .empty,
                 liveMeasures: liveMeasurePublisher)
             )
             canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
@@ -78,5 +74,18 @@ extension DisplayablePost {
         relativeDate = dateFormatter.customLocalizedStructure(for: post.creationDate, relativeTo: Date())
         self.topic = topic?.name ?? ""
         displayEvents = CellDisplayEvents(onAppear: onAppear, onDisappear: onDisappear)
+    }
+}
+
+extension DisplayablePost.PostContent.Attachment {
+    init?(from post: Post) {
+        if let poll = post.poll {
+            self = .poll(DisplayablePoll(from: poll))
+        } else if let media = post.medias.first(where: { $0.kind == .image }),
+                  let imageMedia = ImageMedia(from: media) {
+            self = .image(imageMedia)
+        } else {
+            return nil
+        }
     }
 }

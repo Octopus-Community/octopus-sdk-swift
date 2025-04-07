@@ -13,7 +13,7 @@ class CreateCommentViewModel: ObservableObject {
 
     @Published private(set) var avatar: Author.Avatar = .notConnected
     @Published private(set) var isLoading = false
-    @Published private(set) var alertError: DisplayableString?
+    @Published var alertError: DisplayableString?
     @Published var text: String = ""
     @Published var picture: ImageAndData?
     @Published private(set) var textError: DisplayableString?
@@ -24,7 +24,7 @@ class CreateCommentViewModel: ObservableObject {
         validator.validate(comment: WritableComment(postId: postId, text: text, imageData: picture?.imageData))
     }
 
-    var textMaxLength: Int { validator.maxCommentLength }
+    var textMaxLength: Int { validator.maxTextLength }
 
     let octopus: OctopusSDK
     let postId: String
@@ -53,7 +53,7 @@ class CreateCommentViewModel: ObservableObject {
             .removeDuplicates()
             .sink { [unowned self] text in
                 if !validator.validate(text: text) {
-                    textError = .localizationKey("Error.TextTooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
+                    textError = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
                 } else {
                     textError = nil
                 }
