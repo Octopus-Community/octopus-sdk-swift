@@ -162,57 +162,15 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
     }
 
     @discardableResult
+    public func createCurrentUserProfile(with profile: EditableProfile)
+    async throws(UpdateProfile.Error) -> (CurrentUserProfile, Data?) {
+        try await createOrUpdateUserProfile(with: profile, isCreation: true)
+    }
+
+    @discardableResult
     public func updateCurrentUserProfile(with profile: EditableProfile)
     async throws(UpdateProfile.Error) -> (CurrentUserProfile, Data?) {
-        guard validator.validate(profile: profile) else {
-            throw .serverCall(.other(InternalError.objectMalformed))
-        }
-        // this function can be called when we are not yet fully connected, so we do not use the user but the userData
-        guard let userData = userDataStorage.userData else {
-            throw .serverCall(.userNotAuthenticated)
-        }
-        guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
-        do {
-            var profile = profile
-            var resizedPicture: Data?
-            if case let .updated(imageData) = profile.picture, let imageData {
-                resizedPicture = ImageResizer.resizeIfNeeded(imageData: imageData)
-                profile.picture = .updated(resizedPicture)
-            }
-            let response = try await remoteClient.userService.updateProfile(
-                userId: userData.id,
-                nickname: profile.nickname.backendValue,
-                bio: profile.bio.backendValue,
-                picture: profile.picture.backendValue,
-                authenticationMethod: try authCallProvider.authenticatedMethod())
-            switch response.result {
-            case let .success(content):
-                if let profile = StorableCurrentUserProfile(from: content.profile, userId: userData.id) {
-                    try await userProfileDatabase.upsert(profile: profile)
-                    _onCurrentUserProfileUpdated.send()
-                    let userProfile = CurrentUserProfile(storableProfile: profile, postFeedsStore: postFeedsStore)
-                    return (userProfile, resizedPicture)
-                } else {
-                    throw UpdateProfile.Error.serverCall(.other(nil))
-                }
-
-            case let .fail(failure):
-                throw UpdateProfile.Error.validation(.init(from: failure))
-            case .none:
-                throw UpdateProfile.Error.serverCall(.other(nil))
-            }
-        } catch {
-            if #available(iOS 14, *) { Logger.profile.debug("update profile failed with error: \(error)") }
-            if let error = error as? UpdateProfile.Error {
-                throw error
-            } else if let error = error as? AuthenticatedActionError {
-                throw .serverCall(error)
-            } else if let error = error as? RemoteClientError {
-                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
-            } else {
-                throw .serverCall(.other(error))
-            }
-        }
+        try await createOrUpdateUserProfile(with: profile, isCreation: false)
     }
 
     func deleteCurrentUserProfile(profileId: String) async throws {
@@ -264,6 +222,61 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
                 throw .serverError(ServerError(remoteClientError: error))
             } else {
                 throw .other(error)
+            }
+        }
+    }
+
+    @discardableResult
+    public func createOrUpdateUserProfile(with profile: EditableProfile, isCreation: Bool)
+    async throws(UpdateProfile.Error) -> (CurrentUserProfile, Data?) {
+        guard validator.validate(profile: profile) else {
+            throw .serverCall(.other(InternalError.objectMalformed))
+        }
+        // this function can be called when we are not yet fully connected, so we do not use the user but the userData
+        guard let userData = userDataStorage.userData else {
+            throw .serverCall(.userNotAuthenticated)
+        }
+        guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
+        do {
+            var profile = profile
+            var resizedPicture: Data?
+            if case let .updated(imageData) = profile.picture, let imageData {
+                resizedPicture = ImageResizer.resizeIfNeeded(imageData: imageData)
+                profile.picture = .updated(resizedPicture)
+            }
+            let response = try await remoteClient.userService.updateProfile(
+                userId: userData.id,
+                nickname: profile.nickname.backendValue,
+                bio: profile.bio.backendValue,
+                picture: profile.picture.backendValue,
+                isProfileCreation: isCreation,
+                authenticationMethod: try authCallProvider.authenticatedMethod())
+            switch response.result {
+            case let .success(content):
+                if let profile = StorableCurrentUserProfile(from: content.profile, userId: userData.id) {
+                    try await userProfileDatabase.upsert(profile: profile)
+                    _onCurrentUserProfileUpdated.send()
+                    let userProfile = CurrentUserProfile(storableProfile: profile, postFeedsStore: postFeedsStore)
+                    return (userProfile, resizedPicture)
+                } else {
+                    throw UpdateProfile.Error.serverCall(.other(nil))
+                }
+
+            case let .fail(failure):
+                throw UpdateProfile.Error.validation(.init(from: failure))
+            case .none:
+                throw UpdateProfile.Error.serverCall(.other(nil))
+            }
+        } catch {
+            if #available(iOS 14, *) { Logger.profile.debug("update profile failed with error: \(error)") }
+            if let error = error as? UpdateProfile.Error {
+                throw error
+            } else if let error = error as? AuthenticatedActionError {
+                throw .serverCall(error)
+            } else if let error = error as? RemoteClientError {
+                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
+            } else {
+                throw .serverCall(.other(error))
             }
         }
     }

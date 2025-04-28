@@ -52,7 +52,7 @@ extension DisplayablePost {
 
             // Display max 200 chars and 4 new lines.
             let displayableText = String(post.text.prefix(200))
-                .split(separator: "\n")
+                .split(separator: "\n", omittingEmptySubsequences: false)
                 .prefix(4)
                 .joined(separator: "\n")
 

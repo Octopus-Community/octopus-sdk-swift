@@ -24,7 +24,7 @@ class SSOConnectionTests: XCTestCase {
     override func setUp() {
         let connectionMode = ConnectionMode.sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
         let injector = Injector()
-        injector.register { _ in try! CoreDataStack(inRam: true) }
+        injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { ClientUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }

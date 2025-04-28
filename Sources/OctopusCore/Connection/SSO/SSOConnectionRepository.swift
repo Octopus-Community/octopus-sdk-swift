@@ -20,7 +20,6 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     public let connectionMode: ConnectionMode
     private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
-    private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
     private let profileRepository: ProfileRepository
     private let userProfileDatabase: CurrentUserProfileDatabase
@@ -41,7 +40,6 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         self.connectionMode = connectionMode
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
-        authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)

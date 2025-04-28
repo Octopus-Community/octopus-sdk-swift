@@ -24,7 +24,7 @@ class FeedTests: XCTestCase {
 
     override func setUp() {
         let injector = Injector()
-        injector.register { _ in try! CoreDataStack(inRam: true) }
+        injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { PostsDatabase(injector: $0) }
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
@@ -380,7 +380,7 @@ class FeedTests: XCTestCase {
 
         // use a custom env, because we need the db before initializing the FeedManager
         let injector = Injector()
-        injector.register { _ in try! CoreDataStack(inRam: true) }
+        injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { PostsDatabase(injector: $0) }
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }

@@ -15,11 +15,10 @@ extension Injected {
 class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
     static let injectedIdentifier = Injected.commentsDatabase
     
-    private let coreDataStack: CoreDataStack
     private let context: NSManagedObjectContext
 
     override init(injector: Injector) {
-        coreDataStack = injector.getInjected(identifiedBy: Injected.coreDataStack)
+        let coreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
         context = coreDataStack.saveContext
         super.init(injector: injector)
     }
@@ -53,9 +52,8 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
     }
 
     func getComments(ids: [String]) async throws -> [StorableComment] {
-        let mainContext = coreDataStack.persistentContainer.viewContext
-        let fetchedComments = try await mainContext.performAsync { [mainContext] in
-            try mainContext.fetch(CommentEntity.fetchAllByIds(ids: ids))
+        let fetchedComments = try await context.performAsync { [context] in
+            try context.fetch(CommentEntity.fetchAllByIds(ids: ids))
                 .map { StorableComment(from: $0) }
         }
 

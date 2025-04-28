@@ -3,4 +3,4 @@
 //
 
 /// Version of the SDK
-public let version: String = "1.1.0"
+public let version: String = "1.1.1"

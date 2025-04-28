@@ -15,11 +15,10 @@ extension Injected {
 class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
     static let injectedIdentifier = Injected.repliesDatabase
 
-    private let coreDataStack: CoreDataStack
     private let context: NSManagedObjectContext
 
     override init(injector: Injector) {
-        coreDataStack = injector.getInjected(identifiedBy: Injected.coreDataStack)
+        let coreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
         context = coreDataStack.saveContext
         super.init(injector: injector)
     }
@@ -41,9 +40,8 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
     }
 
     func getReplies(ids: [String]) async throws -> [StorableReply] {
-        let mainContext = coreDataStack.persistentContainer.viewContext
-        let fetchedReplies = try await mainContext.performAsync { [mainContext] in
-            try mainContext.fetch(ReplyEntity.fetchAllByIds(ids: ids))
+        let fetchedReplies = try await context.performAsync { [context] in
+            try context.fetch(ReplyEntity.fetchAllByIds(ids: ids))
                 .map { StorableReply(from: $0) }
         }
 

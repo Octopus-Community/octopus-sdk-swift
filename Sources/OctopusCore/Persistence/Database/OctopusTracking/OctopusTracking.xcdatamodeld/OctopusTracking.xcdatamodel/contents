@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D81" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="EnteringAppEvent" representedClassName="EnteringAppEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="firstSession" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="EnteringUIEvent" representedClassName="EnteringUIEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="firstSession" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="Event" representedClassName="EventEntity" isAbstract="YES" syncable="YES">
+        <attribute name="appSessionId" optional="YES" attributeType="String"/>
+        <attribute name="sendingAttempts" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="timestamp" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="uiSessionId" optional="YES" attributeType="String"/>
+        <attribute name="uuid" attributeType="String"/>
+    </entity>
+    <entity name="LeavingAppEvent" representedClassName="LeavingAppEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="endTimestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="firstSession" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="startTimestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="LeavingUIEvent" representedClassName="LeavingUIEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="endTimestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="firstSession" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="startTimestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+    </entity>
+</model>

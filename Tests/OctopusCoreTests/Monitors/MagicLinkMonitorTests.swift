@@ -23,7 +23,7 @@ struct MagicLinkMonitorTests {
 
     init() {
         let injector = Injector()
-        injector.register { _ in try! CoreDataStack(inRam: true) }
+        injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { UserDataStorage(injector: $0) }
         injector.register { MagicLinkConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: $0) }
         injector.registerMocks(.remoteClient, .appStateMonitor, .networkMonitor, .securedStorage)

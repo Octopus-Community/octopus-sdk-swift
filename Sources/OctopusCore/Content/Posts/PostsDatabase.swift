@@ -16,11 +16,10 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
 
     static let injectedIdentifier = Injected.postsDatabase
     
-    private let coreDataStack: CoreDataStack
     private let context: NSManagedObjectContext
 
     override init(injector: Injector) {
-        coreDataStack = injector.getInjected(identifiedBy: Injected.coreDataStack)
+        let coreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
         context = coreDataStack.saveContext
         super.init(injector: injector)
     }
