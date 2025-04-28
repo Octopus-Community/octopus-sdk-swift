@@ -44,7 +44,8 @@ let package = Package(
                 "OctopusDependencyInjection"
             ],
             resources: [
-                .copy("Persistence/Database/OctopusModel.xcdatamodeld"),
+                .copy("Persistence/Database/OctopusModel/OctopusModel.xcdatamodeld"),
+                .copy("Persistence/Database/OctopusTracking/OctopusTracking.xcdatamodeld"),
             ]),
         .target(
             name: "OctopusRemoteClient",

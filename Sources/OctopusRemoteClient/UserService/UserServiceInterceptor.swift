@@ -56,4 +56,8 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
     func makecreateUserInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_CreateUserRequest, OctopusGrpcModels.Com_Octopuscommunity_CreateUserResponse>] {
         [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
+
+    func makeCreateProfileInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UpdateProfileRequest, OctopusGrpcModels.Com_Octopuscommunity_UpdateProfileResponse>] {
+        [RefreshingTokenInterceptor(updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
 }

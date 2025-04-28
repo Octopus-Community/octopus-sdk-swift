@@ -18,13 +18,11 @@ class SecuredStorageDefault: SecuredStorage, InjectableObject {
     static let injectedIdentifier = Injected.securedStorage
 
     private let keychain: Keychain
-    @UserDefault(key: "OctopusSDK.InstallId") private var installId: String?
 
-    init(apiKey: String) {
+    init(apiKey: String, isNewInstall: Bool) {
         keychain = Keychain(service: "com.octopus.keychain\(Bundle.main.bundleIdentifier.map { ".\($0)" } ?? "")")
         // delete the content of the keychain if the app has been re-installed
-        if installId == nil {
-            installId = UUID().uuidString
+        if isNewInstall {
             try? keychain.removeAll()
         }
 

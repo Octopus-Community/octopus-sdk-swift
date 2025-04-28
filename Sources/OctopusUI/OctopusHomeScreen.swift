@@ -98,6 +98,12 @@ public struct OctopusHomeScreen: View {
                     )
             }
         }
+        .onAppear {
+            octopus.core.trackingRepository.octopusUISessionStarted()
+        }
+        .onDisappear {
+            octopus.core.trackingRepository.octopusUISessionEnded()
+        }
         .accentColor(theme.colors.primary)
         .navigationViewStyle(.stack)
     }

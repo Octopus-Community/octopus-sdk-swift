@@ -23,7 +23,7 @@ class ProfileTests: XCTestCase {
 
     override func setUp() {
         let injector = Injector()
-        injector.register { _ in try! CoreDataStack(inRam: true) }
+        injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .magicLinkMonitor,
@@ -96,6 +96,40 @@ class ProfileTests: XCTestCase {
         try await profileRepository.fetchCurrentUserProfile()
         await fulfillment(of: [userProfilePublishedExpectation], timeout: 0.5)
         XCTAssertEqual(profile?.nickname, "nickname")
+    }
+
+    func testProfileCreated() async throws {
+        var profile: CurrentUserProfile?
+        profileRepository.$profile.sink {
+            profile = $0
+        }.store(in: &storage)
+
+        // start with a connected user but without a profile
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
+
+        try await delay()
+        XCTAssertNil(profile)
+
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(
+                .with {
+                    $0.profile = .with {
+                        $0.id = "profileId"
+                        $0.nickname = "nickname"
+                        $0.bio = "Bio"
+                    }
+                })
+        })
+        try await profileRepository.createCurrentUserProfile(with: EditableProfile(nickname: .updated("nickname"),
+                                                                                   bio: .updated("Bio")))
+
+        try await delay()
+        guard let profile else {
+            XCTFail("Profile should be non nil")
+            return
+        }
+        XCTAssertEqual(profile.nickname, "nickname")
+        XCTAssertEqual(profile.bio, "Bio")
     }
 
     func testProfileUpdate() async throws {

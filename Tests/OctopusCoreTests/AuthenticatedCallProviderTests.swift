@@ -19,7 +19,7 @@ class AuthenticatedCallProviderTests: XCTestCase {
     override func setUp() {
         let injector = Injector()
         injector.register { MockConnectionRepository(injector: $0) }
-        injector.register { _ in try! CoreDataStack(inRam: true) }
+        injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.registerMocks(.securedStorage, .remoteClient, .networkMonitor, .blockedUserIdsProvider)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { PostFeedsStore(injector: $0) }

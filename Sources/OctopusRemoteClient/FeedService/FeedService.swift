@@ -25,10 +25,11 @@ class FeedServiceClient: ServiceClient, FeedService {
     private let client: Com_Octopuscommunity_FeedServiceAsyncClient
 
 
-    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, updateTokenBlock: @escaping (String) -> Void) {
+    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+         updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_FeedServiceAsyncClient(
             channel: unaryChannel, interceptors: FeedServiceInterceptor(updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
     }
 
     func getRootFeedsInfo(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)

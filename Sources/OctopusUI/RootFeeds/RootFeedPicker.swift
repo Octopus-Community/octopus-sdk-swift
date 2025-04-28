@@ -73,6 +73,7 @@ private struct TitleView: View {
             .font(theme.fonts.body2)
             .fontWeight(.semibold)
             .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
             .padding()
     }
 }

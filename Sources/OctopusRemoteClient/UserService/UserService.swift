@@ -22,6 +22,7 @@ public protocol UserService {
                        nickname: FieldUpdate<String>,
                        bio: FieldUpdate<String?>,
                        picture: FieldUpdate<Data?>,
+                       isProfileCreation: Bool,
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse
 
@@ -52,10 +53,11 @@ class UserServiceClient: ServiceClient, UserService {
     private let client: Com_Octopuscommunity_UserServiceAsyncClient
 
 
-    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, updateTokenBlock: @escaping (String) -> Void) {
+    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+         updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_UserServiceAsyncClient(
             channel: unaryChannel, interceptors: UserServiceInterceptor(updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
     }
 
     func getPublicProfile(
@@ -89,6 +91,7 @@ class UserServiceClient: ServiceClient, UserService {
                               nickname: FieldUpdate<String>,
                               bio: FieldUpdate<String?>,
                               picture: FieldUpdate<Data?>,
+                              isProfileCreation: Bool,
                               authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {
         let request = Com_Octopuscommunity_UpdateProfileRequest.with {
@@ -112,8 +115,15 @@ class UserServiceClient: ServiceClient, UserService {
             }
         }
         return try await callRemote(authenticationMethod) {
-            try await client.updateProfile(request,
-                                           callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+            if isProfileCreation {
+                return try await client.createProfile(
+                    request,
+                    callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+            } else {
+                return try await client.updateProfile(
+                    request,
+                    callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+            }
         }
     }
 

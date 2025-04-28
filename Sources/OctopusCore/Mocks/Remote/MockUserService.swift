@@ -49,6 +49,7 @@ class MockUserService: UserService {
                        nickname: FieldUpdate<String>,
                        bio: FieldUpdate<String?>,
                        picture: FieldUpdate<Data?>,
+                       isProfileCreation: Bool,
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {
         guard let response = updateProfileResponses.popLast() else {

@@ -138,7 +138,7 @@ class CreateProfileViewModel: ObservableObject {
         Task { [octopus] in
             isLoading = true
             do {
-                try await octopus.core.profileRepository.updateCurrentUserProfile(
+                try await octopus.core.profileRepository.createCurrentUserProfile(
                     with: .init(nickname: .updated(nickname), bio: bio, picture: picture))
             } catch let error as UpdateProfile.Error {
                 switch error {

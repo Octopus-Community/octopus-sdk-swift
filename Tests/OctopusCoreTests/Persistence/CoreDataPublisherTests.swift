@@ -10,13 +10,13 @@ import OctopusDependencyInjection
 
 @Suite
 class CoreDataPublisherTests {
-    let coreDataStack = try! CoreDataStack(inRam: true)
+    let coreDataStack = try! ModelCoreDataStack(inRam: true)
     private var storage = [AnyCancellable]()
 
     @Test
     @MainActor // we use viewContext so it needs to be on the main thread
     func testPublisher() async throws {
-        let context = coreDataStack.persistentContainer.viewContext
+        let context = coreDataStack.saveContext
         var posts: [PostEntity]?
         context
             .publisher(request: PostEntity.fetchAll()) { $0 }
@@ -39,7 +39,7 @@ class CoreDataPublisherTests {
         postEntity.authorNickname = "Author"
         postEntity.creationTimestamp = 0
         postEntity.parentId = "parentId"
-        try coreDataStack.persistentContainer.viewContext.save()
+        try context.save()
 
         try await delay()
 

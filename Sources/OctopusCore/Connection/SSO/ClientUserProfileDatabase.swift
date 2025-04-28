@@ -14,11 +14,10 @@ extension Injected {
 class ClientUserProfileDatabase: InjectableObject {
     static let injectedIdentifier = Injected.clientUserProfileDatabase
 
-    private let coreDataStack: CoreDataStack
     private let context: NSManagedObjectContext
 
     init(injector: Injector) {
-        coreDataStack = injector.getInjected(identifiedBy: Injected.coreDataStack)
+        let coreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
         context = coreDataStack.saveContext
     }
 

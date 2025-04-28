@@ -6,55 +6,42 @@ import Foundation
 import CoreData
 import Combine
 import os
-import OctopusDependencyInjection
 
-extension Injected {
-    static let coreDataStack = Injector.InjectedIdentifier<CoreDataStack>()
-}
-
-class CoreDataStack: InjectableObject, @unchecked Sendable {
-
-    enum CoreDataErrors: Error, CustomStringConvertible {
-        case modelFileNotFound
-        case modelFileCorrupted(URL)
-
-        var description: String {
-            switch self {
-            case .modelFileNotFound:
-                return "A model file named \(CoreDataStack.persistentContainerName) cannot be found in the module."
-            case let .modelFileCorrupted(url):
-                return "The model file located at \(url.relativePath) cannot be used to initialize the " +
-                    "NSManagedObjectModel"
-            }
-        }
-    }
-
-    static let injectedIdentifier = Injected.coreDataStack
-    private static let persistentContainerName = "OctopusModel"
-    // use only one model even in the Unit Tests.
-    // cf https://stackoverflow.com/questions/51851485/multiple-nsentitydescriptions-claim-nsmanagedobject-subclass
-    nonisolated(unsafe) static let model: NSManagedObjectModel = {
-        guard let modelURL = Bundle.module.url(forResource: persistentContainerName, withExtension:"momd") else {
-            fatalError("A model file named \(persistentContainerName) cannot be found in the module.")
-        }
-
-        guard let mom = NSManagedObjectModel(contentsOf: modelURL) else {
-            fatalError("The model file located at \(modelURL.relativePath) cannot be used to initialize the " +
-                       "NSManagedObjectModel")
-        }
-        return mom
-    }()
-
-    let persistentContainer: NSPersistentContainer
+/// Object that is in charge of loading a core data stack
+class CoreDataStackManager: @unchecked Sendable {
+    private let persistentContainer: NSPersistentContainer
     lazy var saveContext: NSManagedObjectContext = {
         persistentContainer.newBackgroundContext()
     }()
 
-    init(inRam: Bool = false) throws(CoreDataErrors) {
-        persistentContainer = NSPersistentContainer(name: Self.persistentContainerName, managedObjectModel: Self.model)
+    // use only one model even in the Unit Tests.
+    // cf https://stackoverflow.com/questions/51851485/multiple-nsentitydescriptions-claim-nsmanagedobject-subclass
+    nonisolated(unsafe) static var models = [String: NSManagedObjectModel]()
+
+    init(persistentContainerName: String, inRam: Bool = false) throws(CoreDataErrors) {
+        persistentContainer = NSPersistentContainer(
+            name: persistentContainerName,
+            managedObjectModel: try Self.loadModel(name: persistentContainerName)
+        )
         persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
 
         self.load(inRam: inRam)
+    }
+
+    private static func loadModel(name: String) throws(CoreDataErrors) -> NSManagedObjectModel {
+        if let model = models[name] {
+            return model
+        }
+
+        guard let modelURL = Bundle.module.url(forResource: name, withExtension:"momd") else {
+            throw .modelFileNotFound(name)
+        }
+
+        guard let mom = NSManagedObjectModel(contentsOf: modelURL) else {
+            throw .modelFileCorrupted(modelURL)
+        }
+        models[name] = mom
+        return mom
     }
 
     /// Load persistent stores. In case of error, delete the existing persistent stores and create/load it again.
@@ -107,21 +94,6 @@ class CoreDataStack: InjectableObject, @unchecked Sendable {
             if FileManager.default.fileExists(atPath: storeUrl.path),
                FileManager.default.isDeletableFile(atPath: storeUrl.path) {
                 try FileManager.default.removeItem(at: storeUrl)
-            }
-        }
-    }
-
-    func performInBackground(_ block: @escaping (NSManagedObjectContext) throws -> Void) async rethrows {
-        if #available(iOS 15.0, *) {
-            try await persistentContainer.performBackgroundTask { context in
-                try block(context)
-            }
-        } else {
-            await withCheckedContinuation { continuation in
-                persistentContainer.performBackgroundTask { context in
-                    try? block(context)
-                    continuation.resume()
-                }
             }
         }
     }

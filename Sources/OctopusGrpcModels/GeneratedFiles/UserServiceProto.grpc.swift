@@ -36,6 +36,11 @@ public protocol Com_Octopuscommunity_UserServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>
 
+  func createProfile(
+    _ request: Com_Octopuscommunity_UpdateProfileRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>
+
   func updateProfile(
     _ request: Com_Octopuscommunity_UpdateProfileRequest,
     callOptions: CallOptions?
@@ -146,6 +151,24 @@ extension Com_Octopuscommunity_UserServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makecreateUserInterceptors() ?? []
+    )
+  }
+
+  ///Same as UpdateProfile, just help to understand the use case for tracking signup
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to CreateProfile.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func createProfile(
+    _ request: Com_Octopuscommunity_UpdateProfileRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.createProfile.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateProfileInterceptors() ?? []
     )
   }
 
@@ -358,6 +381,11 @@ public protocol Com_Octopuscommunity_UserServiceAsyncClientProtocol: GRPCClient 
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>
 
+  func makeCreateProfileCall(
+    _ request: Com_Octopuscommunity_UpdateProfileRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>
+
   func makeUpdateProfileCall(
     _ request: Com_Octopuscommunity_UpdateProfileRequest,
     callOptions: CallOptions?
@@ -449,6 +477,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makecreateUserInterceptors() ?? []
+    )
+  }
+
+  public func makeCreateProfileCall(
+    _ request: Com_Octopuscommunity_UpdateProfileRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.createProfile.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateProfileInterceptors() ?? []
     )
   }
 
@@ -587,6 +627,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
     )
   }
 
+  public func createProfile(
+    _ request: Com_Octopuscommunity_UpdateProfileRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UpdateProfileResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.createProfile.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateProfileInterceptors() ?? []
+    )
+  }
+
   public func updateProfile(
     _ request: Com_Octopuscommunity_UpdateProfileRequest,
     callOptions: CallOptions? = nil
@@ -703,6 +755,9 @@ public protocol Com_Octopuscommunity_UserServiceClientInterceptorFactoryProtocol
   /// - Returns: Interceptors to use when invoking 'createUser'.
   func makecreateUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'createProfile'.
+  func makeCreateProfileInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>]
+
   /// - Returns: Interceptors to use when invoking 'updateProfile'.
   func makeUpdateProfileInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>]
 
@@ -734,6 +789,7 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.banUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.unbanUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.createUser,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.createProfile,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.updateProfile,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.getPublicProfile,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.getPrivateProfile,
@@ -766,6 +822,12 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
     public static let createUser = GRPCMethodDescriptor(
       name: "createUser",
       path: "/com.octopuscommunity.UserService/createUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let createProfile = GRPCMethodDescriptor(
+      name: "CreateProfile",
+      path: "/com.octopuscommunity.UserService/CreateProfile",
       type: GRPCCallType.unary
     )
 
@@ -826,6 +888,9 @@ public protocol Com_Octopuscommunity_UserServiceProvider: CallHandlerProvider {
   func unbanUser(request: Com_Octopuscommunity_UnbanUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnbanUserResponse>
 
   func createUser(request: Com_Octopuscommunity_CreateUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_CreateUserResponse>
+
+  ///Same as UpdateProfile, just help to understand the use case for tracking signup
+  func createProfile(request: Com_Octopuscommunity_UpdateProfileRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UpdateProfileResponse>
 
   func updateProfile(request: Com_Octopuscommunity_UpdateProfileRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UpdateProfileResponse>
 
@@ -888,6 +953,15 @@ extension Com_Octopuscommunity_UserServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_CreateUserResponse>(),
         interceptors: self.interceptors?.makecreateUserInterceptors() ?? [],
         userFunction: self.createUser(request:context:)
+      )
+
+    case "CreateProfile":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UpdateProfileRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UpdateProfileResponse>(),
+        interceptors: self.interceptors?.makeCreateProfileInterceptors() ?? [],
+        userFunction: self.createProfile(request:context:)
       )
 
     case "UpdateProfile":
@@ -987,6 +1061,12 @@ public protocol Com_Octopuscommunity_UserServiceAsyncProvider: CallHandlerProvid
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_CreateUserResponse
 
+  ///Same as UpdateProfile, just help to understand the use case for tracking signup
+  func createProfile(
+    request: Com_Octopuscommunity_UpdateProfileRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UpdateProfileResponse
+
   func updateProfile(
     request: Com_Octopuscommunity_UpdateProfileRequest,
     context: GRPCAsyncServerCallContext
@@ -1078,6 +1158,15 @@ extension Com_Octopuscommunity_UserServiceAsyncProvider {
         wrapping: { try await self.createUser(request: $0, context: $1) }
       )
 
+    case "CreateProfile":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UpdateProfileRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UpdateProfileResponse>(),
+        interceptors: self.interceptors?.makeCreateProfileInterceptors() ?? [],
+        wrapping: { try await self.createProfile(request: $0, context: $1) }
+      )
+
     case "UpdateProfile":
       return GRPCAsyncServerHandler(
         context: context,
@@ -1165,6 +1254,10 @@ public protocol Com_Octopuscommunity_UserServiceServerInterceptorFactoryProtocol
   ///   Defaults to calling `self.makeInterceptors()`.
   func makecreateUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>]
 
+  /// - Returns: Interceptors to use when handling 'createProfile'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeCreateProfileInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>]
+
   /// - Returns: Interceptors to use when handling 'updateProfile'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUpdateProfileInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>]
@@ -1203,6 +1296,7 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.banUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.unbanUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.createUser,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.createProfile,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.updateProfile,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.getPublicProfile,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.getPrivateProfile,
@@ -1235,6 +1329,12 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
     public static let createUser = GRPCMethodDescriptor(
       name: "createUser",
       path: "/com.octopuscommunity.UserService/createUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let createProfile = GRPCMethodDescriptor(
+      name: "CreateProfile",
+      path: "/com.octopuscommunity.UserService/CreateProfile",
       type: GRPCCallType.unary
     )
 
