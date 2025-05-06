@@ -64,13 +64,13 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
             }
             consecutivePresentItemIds.append(feedItemId)
         }
+        let feedItems = try await feedItemsDatabase.getFeedItems(ids: currentIds + consecutivePresentItemIds)
+        let feedItemsPublisher = try feedItemsDatabase.feedItemsPublisher(ids: currentIds + consecutivePresentItemIds)
+            .prepend(feedItems).eraseToAnyPublisher()
         guard !consecutivePresentItemIds.isEmpty else {
             return Result(hasMoreItems: false, currentPageCursor: nil, nextPageCursor: nil,
-                          itemsPublisher: Just([]).setFailureType(to: Error.self).eraseToAnyPublisher())
+                          itemsPublisher: feedItemsPublisher)
         }
-        let feedItems = try await feedItemsDatabase.getFeedItems(ids: currentIds + feedItemInfoIds)
-        let feedItemsPublisher = try feedItemsDatabase.feedItemsPublisher(ids: currentIds + feedItemInfoIds)
-            .prepend(feedItems).eraseToAnyPublisher()
 
         let hasMoreItems: Bool
         if !missingFeedItems.isEmpty {

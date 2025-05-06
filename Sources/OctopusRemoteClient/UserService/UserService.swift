@@ -80,6 +80,7 @@ class UserServiceClient: ServiceClient, UserService {
         let request = Com_Octopuscommunity_GetPrivateProfileRequest.with {
             $0.userID = userId
             $0.fetchUserBlockList = true
+            $0.fetchNotificationsBadge = true
         }
         return try await callRemote(authenticationMethod) {
             try await client.getPrivateProfile(

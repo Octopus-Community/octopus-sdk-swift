@@ -6,7 +6,7 @@ add your own social network within your app. We handle all the work for you: UI,
 You can easily integrate all of these features with our Android and iOS SDKs.
 
 ## How to use
-If you want to use OctopusSDK, follow our [official documentation](https://octopuscommunity.notion.site/iOS-SDK-Setup-Guide-1a1d0ed811a980e8896bdf540bac6d6f) for integration.
+If you want to use OctopusSDK, follow our [official documentation](https://octopus-documentation.pages.dev/) for integration.
 
 ## How to run the tests
 We provide tests in the Swift Package.

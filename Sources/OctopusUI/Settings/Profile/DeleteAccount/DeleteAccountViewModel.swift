@@ -18,8 +18,17 @@ class DeleteAccountViewModel: ObservableObject {
     private var storage = [AnyCancellable]()
     let octopus: OctopusSDK
 
-    init(octopus: OctopusSDK) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
         self.octopus = octopus
+
+        Publishers.CombineLatest(
+            $deleteAccountInProgress,
+            $accountDeleted
+        ).sink {
+            let shouldBeLocked = $0 || $1
+            guard shouldBeLocked != mainFlowPath.isLocked else { return }
+            mainFlowPath.isLocked = shouldBeLocked
+        }.store(in: &storage)
     }
 
     func deleteAccount(reason: DeleteAccountReason) {

@@ -12,6 +12,7 @@ struct CustomSegmentedControl: View {
     // if set, it will be used to fake the number of tabs (used to size the tabs)
     let tabCount: Int?
     @Binding var selectedTab: Int
+    @State private var animatedSelectedTab: Int = 0
 
     @State private var width: CGFloat = 0
 
@@ -21,25 +22,25 @@ struct CustomSegmentedControl: View {
         VStack(alignment: .centeredAlignment, spacing: 18) {
             HStack(spacing: 0) {
                 ForEach(tabs.indices, id: \.self) { index in
-                    Group {
-                        if selectedTab == index {
-                            Text(self.tabs[index], bundle: .module)
-                                .foregroundColor(theme.colors.primary)
-                                .alignmentGuide(.centeredAlignment, computeValue: { d in d[HorizontalAlignment.center] })
-                        } else {
-                            Text(self.tabs[index], bundle: .module)
-                                .foregroundColor(theme.colors.primary)
-                                .onTapGesture {
-                                    withAnimation {
-                                        selectedTab = index
-                                    }
-                                }
+                    Text(self.tabs[index], bundle: .module)
+                        .font(theme.fonts.body2.weight(.medium))
+                        .foregroundColor(selectedTab == index ? theme.colors.primary : theme.colors.gray700)
+                        .onTapGesture {
+                            selectedTab = index
                         }
-                    }
-                    .font(theme.fonts.body2.weight(.medium))
-                    .frame(width: itemWidth)
+                        .contentShape(Rectangle())
+                        .frame(width: itemWidth)
+                        .modify {
+                            if animatedSelectedTab == index {
+                                $0.alignmentGuide(.centeredAlignment, computeValue: { d in d[HorizontalAlignment.center] })
+                            } else {
+                                $0
+                            }
+                        }
                 }
-                Spacer()
+                if tabs.count == 1 {
+                    Spacer()
+                }
             }
             Rectangle()
                 .frame(width: itemWidth, height: 2)
@@ -50,12 +51,29 @@ struct CustomSegmentedControl: View {
         .background(GeometryReader { geometry in
             Color.clear
                 .onValueChanged(of: geometry.size.width) { width in
-                    self.width = width
+                    let window = UIApplication.shared.windows.first
+                    let leftPadding = window?.safeAreaInsets.left ?? 0
+                    let rightPadding = window?.safeAreaInsets.right ?? 0
+                    let horizontalPadding = leftPadding + rightPadding
+                    self.width = min(width, UIScreen.main.bounds.width - horizontalPadding)
                 }
                 .onAppear {
-                    self.width = geometry.size.width
+                    let window = UIApplication.shared.windows.first
+                    let leftPadding = window?.safeAreaInsets.left ?? 0
+                    let rightPadding = window?.safeAreaInsets.right ?? 0
+                    let horizontalPadding = leftPadding + rightPadding
+                    self.width = min(geometry.size.width, UIScreen.main.bounds.width - horizontalPadding)
                 }
         })
+        .onAppear {
+            animatedSelectedTab = selectedTab
+        }
+        .onValueChanged(of: selectedTab) { selectedTab in
+            withAnimation(.spring(duration: 0.2)) {
+                animatedSelectedTab = selectedTab
+            }
+        }
+        .padding(.top, 16)
     }
 
     private var tabCountForSizing: Int {
@@ -66,7 +84,7 @@ struct CustomSegmentedControl: View {
     }
 
     private var itemWidth: CGFloat {
-        max(width / (CGFloat(tabCountForSizing) + 0.1), 100) // +0.1 to avoid overlaps
+        return max(width / CGFloat(tabCountForSizing), 100)
     }
 }
 

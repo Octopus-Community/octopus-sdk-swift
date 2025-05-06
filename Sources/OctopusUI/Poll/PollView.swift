@@ -34,7 +34,9 @@ struct PollView: View {
                                 }
                             }) {
                                 PollOptionView(pollOption: pollOption, state: state)
+                                    .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }

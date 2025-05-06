@@ -11,14 +11,11 @@ struct CreateProfileView: View {
     @Compat.StateObject private var viewModel: CreateProfileViewModel
     @Environment(\.dismissModal) var dismissModal
 
-    @Binding var isLoggedIn: Bool
-
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
 
-    init(octopus: OctopusSDK, isLoggedIn: Binding<Bool>) {
+    init(octopus: OctopusSDK) {
         _viewModel = Compat.StateObject(wrappedValue: CreateProfileViewModel(octopus: octopus))
-        _isLoggedIn = isLoggedIn
     }
 
     var body: some View {
@@ -57,7 +54,6 @@ struct CreateProfileView: View {
         }
         .onReceive(viewModel.$isLoggedIn) { isLoggedIn in
             guard isLoggedIn else { return }
-            self.isLoggedIn = true
             dismissModal.wrappedValue = false
         }
         .onReceive(viewModel.$alertError) { displayableError in

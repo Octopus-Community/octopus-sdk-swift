@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct ProfileSummaryView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
@@ -16,20 +17,13 @@ struct ProfileSummaryView: View {
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
 
-    @State private var displayPostDetailId: String?
-    @State private var displayMostRecentComment = false
-    @State private var displayPostDetail = false
-
-    @State private var moderationContext: ReportView.Context?
-    @State private var displayContentModeration = false
-
     @State private var displayBlockUserAlert = false
 
     @State private var openActions = false
 
-    // TODO: Delete when router is fully used
-    @State private var displaySSOError = false
-    @State private var displayableSSOError: DisplayableString?
+    @State private var noConnectedReplacementAction: ConnectedActionReplacement?
+
+    @State private var zoomableImageInfo: ZoomableImageInfo?
 
     init(octopus: OctopusSDK, profileId: String) {
         _viewModel = Compat.StateObject(wrappedValue: ProfileSummaryViewModel(octopus: octopus, profileId: profileId))
@@ -37,19 +31,17 @@ struct ProfileSummaryView: View {
 
     var body: some View {
         VStack {
-            ContentView(profile: viewModel.profile, refresh: viewModel.refresh) {
+            ContentView(profile: viewModel.profile, zoomableImageInfo: $zoomableImageInfo, refresh: viewModel.refresh) {
                 if let postFeedViewModel = viewModel.postFeedViewModel {
                     PostFeedView(
                         viewModel: postFeedViewModel,
+                        zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
-                            displayPostDetailId = $0
-                            displayMostRecentComment = $1
-                            displayPostDetail = true
+                            navigator.push(.postDetail(postId: $0, scrollToMostRecentComment: $1))
                         },
                         displayProfile: { _ in },
                         displayContentModeration: {
-                            moderationContext = .content(contentId: $0)
-                            displayContentModeration = true
+                            navigator.push(.reportContent(contentId: $0))
                         }) {
                             OtherUserEmptyPostView()
                         }
@@ -57,27 +49,10 @@ struct ProfileSummaryView: View {
                     EmptyView()
                 }
             }
-            NavigationLink(destination:
-                Group {
-                    if let displayPostDetailId {
-                        PostDetailView(octopus: viewModel.octopus, postUuid: displayPostDetailId,
-                                       scrollToMostRecentComment: displayMostRecentComment)
-                    } else {
-                        EmptyView()
-                    }
-            }, isActive: $displayPostDetail) {
-                EmptyView()
-            }.hidden()
-            NavigationLink(
-                destination:Group {
-                    if let moderationContext {
-                        ReportView(octopus: viewModel.octopus, context: moderationContext)
-                    } else { EmptyView() }
-                },
-                isActive:  $displayContentModeration) {
-                    EmptyView()
-                }.hidden()
         }
+        .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
+                                defaultLeadingBarItem: leadingBarItem,
+                                defaultTrailingBarItem: trailingBarItem)
         .alert(
             "Common.Error",
             isPresented: $displayError,
@@ -86,56 +61,6 @@ struct ProfileSummaryView: View {
             message: { error in
                 error.textView
             })
-        .fullScreenCover(isPresented: $viewModel.openLogin) {
-            MagicLinkView(octopus: viewModel.octopus, isLoggedIn: .constant(false))
-                .environment(\.dismissModal, $viewModel.openLogin)
-        }
-        .fullScreenCover(isPresented: $viewModel.openCreateProfile) {
-            NavigationView {
-                CreateProfileView(octopus: viewModel.octopus, isLoggedIn: .constant(false))
-                    .environment(\.dismissModal, $viewModel.openCreateProfile)
-            }
-            .navigationBarHidden(true)
-            .accentColor(theme.colors.primary)
-        }
-        .navigationBarItems(
-            trailing:
-                Group {
-                    if #available(iOS 14.0, *) {
-                        Menu(content: {
-                            Button(action: {
-                                guard viewModel.ensureConnected() else { return }
-                                moderationContext = .profile(profileId: viewModel.profileId)
-                                displayContentModeration = true
-                            }) {
-                                Label(L10n("Moderation.Profile.Button"), systemImage: "flag")
-                            }
-                            Button(action: {
-                                guard viewModel.ensureConnected() else { return }
-                                displayBlockUserAlert = true
-                            }) {
-                                Label(L10n("Block.Profile.Button"), systemImage: "person.slash")
-                            }
-                        }, label: {
-                            VStack {
-                                Image(systemName: "ellipsis")
-                                    .padding(.vertical)
-                                    .padding(.leading)
-                                    .font(theme.fonts.navBarItem)
-                            }.frame(width: 32, height: 32)
-                        })
-                        .buttonStyle(.plain)
-                    } else {
-                        Button(action: { openActions = true }) {
-                            Image(systemName: "ellipsis")
-                                .padding(.vertical)
-                                .padding(.leading)
-                                .font(theme.fonts.navBarItem)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-        )
         .onReceive(viewModel.$error) { error in
             guard let error else { return }
             displayableError = error
@@ -149,8 +74,7 @@ struct ProfileSummaryView: View {
             ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: [
                 ActionSheet.Button.destructive(Text("Moderation.Profile.Button", bundle: .module)) {
                     guard viewModel.ensureConnected() else { return }
-                    moderationContext = .profile(profileId: viewModel.profileId)
-                    displayContentModeration = true
+                    navigator.push(.reportProfile(profileId: viewModel.profileId))
                 },
                 ActionSheet.Button.destructive(Text("Block.Profile.Button", bundle: .module)) {
                     guard viewModel.ensureConnected() else { return }
@@ -201,38 +125,61 @@ struct ProfileSummaryView: View {
                 }
             }
         }
-        .alert(
-            "Common.Error",
-            isPresented: $displaySSOError,
-            presenting: displayableSSOError,
-            actions: { _ in
-                Button(action: viewModel.linkClientUserToOctopusUser) {
-                    Text("Common.Retry", bundle: .module)
+        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+    }
+
+    @ViewBuilder
+    private var leadingBarItem: some View {
+        EmptyView()
+    }
+
+    @ViewBuilder
+    private var trailingBarItem: some View {
+        if #available(iOS 14.0, *) {
+            Menu(content: {
+                Button(action: {
+                    guard viewModel.ensureConnected() else { return }
+                    navigator.push(.reportProfile(profileId: viewModel.profileId))
+                }) {
+                    Label(L10n("Moderation.Profile.Button"), systemImage: "flag")
                 }
-                Button(action: {}) {
-                    Text("Common.Cancel", bundle: .module)
+                Button(action: {
+                    guard viewModel.ensureConnected() else { return }
+                    displayBlockUserAlert = true
+                }) {
+                    Label(L10n("Block.Profile.Button"), systemImage: "person.slash")
                 }
-            },
-            message: { error in
-                error.textView
+            }, label: {
+                VStack {
+                    Image(systemName: "ellipsis")
+                        .padding(.vertical)
+                        .padding(.leading)
+                        .font(theme.fonts.navBarItem)
+                }.frame(width: 32, height: 32)
             })
-        .onReceive(viewModel.$ssoError) { error in
-            guard let error else { return }
-            displayableSSOError = error
-            displaySSOError = true
+            .buttonStyle(.plain)
+        } else {
+            Button(action: { openActions = true }) {
+                Image(systemName: "ellipsis")
+                    .padding(.vertical)
+                    .padding(.leading)
+                    .font(theme.fonts.navBarItem)
+            }
+            .buttonStyle(.plain)
         }
     }
 }
 
 private struct ContentView<PostsView: View>: View {
     let profile: Profile?
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
 
     @ViewBuilder let postsView: PostsView
 
     var body: some View {
         if let profile {
-            ProfileContentView(profile: profile, refresh: refresh) {
+            ProfileContentView(profile: profile, zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
                 postsView
             }
         } else {
@@ -244,6 +191,7 @@ private struct ContentView<PostsView: View>: View {
 private struct ProfileContentView<PostsView: View>: View {
     @Environment(\.octopusTheme) private var theme
     let profile: Profile
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
     @ViewBuilder let postsView: PostsView
 
@@ -254,7 +202,7 @@ private struct ProfileContentView<PostsView: View>: View {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer().frame(height: 20)
-                    AuthorAvatarView(avatar: avatar)
+                    ZoomableAuthorAvatarView(avatar: avatar, zoomableImageInfo: $zoomableImageInfo)
                         .frame(width: 71, height: 71)
                     Spacer().frame(height: 14)
                     Text(profile.nickname ?? "")

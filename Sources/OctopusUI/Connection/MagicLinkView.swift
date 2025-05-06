@@ -11,17 +11,14 @@ struct MagicLinkView: View {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.dismissModal) var dismissModal
 
-    @Binding var isLoggedIn: Bool
-
     @State private var displayEmailEntryError = false
     @State private var emailEntryError: MagicLinkEmailEntryError?
 
     @State private var displayMagicLinkConfirmationError = false
     @State private var magicLinkConfirmationError: MagicLinkConfirmationError?
 
-    init(octopus: OctopusSDK, isLoggedIn: Binding<Bool>) {
+    init(octopus: OctopusSDK) {
         _viewModel = Compat.StateObject(wrappedValue: MagicLinkViewModel(octopus: octopus))
-        _isLoggedIn = isLoggedIn
     }
 
     var body: some View {
@@ -40,7 +37,7 @@ struct MagicLinkView: View {
                 }
                 .buttonStyle(.plain)
                 .padding()
-                NavigationLink(destination: CreateProfileView(octopus: viewModel.octopus, isLoggedIn: $isLoggedIn),
+                NavigationLink(destination: CreateProfileView(octopus: viewModel.octopus),
                                isActive: $viewModel.profileCreationRequired) {
                     EmptyView()
                 }.hidden()
@@ -63,7 +60,6 @@ struct MagicLinkView: View {
                 })
             .onReceive(viewModel.$isLoggedIn) { isLoggedIn in
                 guard isLoggedIn else { return }
-                self.isLoggedIn = true
                 dismissModal.wrappedValue = false
             }
             .onReceive(viewModel.$confirmationError) { magicLinkConfirmationError in

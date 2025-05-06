@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 import Octopus
 import OctopusCore
 import UIKit
@@ -38,15 +39,12 @@ class CommentDetailViewModel: ObservableObject {
 
     @Published private(set) var replies: [DisplayableFeedResponse]?
     @Published var scrollToBottom = false
+    @Published var scrollToId: String?
     @Published private(set) var hasMoreData = false
     @Published private(set) var hideLoadMoreRepliesLoader = false
     @Published private var modelReplies: [Reply]?
     private var autoFetchLatestRepliesTask: Task<Void, Swift.Error>?
     private var autoFetchLatestRepliesCancellable: AnyCancellable?
-
-    @Published var openLogin = false
-    @Published var openCreateProfile = false
-    @Published var openUserProfile = false
 
     @Published var commentDeletion: CommentDeletion?
 
@@ -55,10 +53,16 @@ class CommentDetailViewModel: ObservableObject {
 
     @Published var commentNotAvailable = false
 
-    @Published private(set) var ssoError: DisplayableString? // TODO: Delete when router is fully used
-
     private var shouldFetchLatestReplies = CurrentValueSubject<Bool, Never>(false)
     private var liveMeasures: [String: CurrentValueSubject<LiveMeasures, Never>] = [:]
+
+    @Published var authenticationAction: ConnectedActionReplacement?
+    var authenticationActionBinding: Binding<ConnectedActionReplacement?> {
+        Binding(
+            get: { self.authenticationAction },
+            set: { self.authenticationAction = $0 }
+        )
+    }
 
     var thisUserProfileId: String? {
         octopus.core.profileRepository.profile?.id
@@ -66,8 +70,10 @@ class CommentDetailViewModel: ObservableObject {
 
     let octopus: OctopusSDK
     let commentUuid: String
+    let connectedActionChecker: ConnectedActionChecker
     private var newestFirstRepliesFeed: Feed<Reply>?
     private var reply: Bool
+    private var replyToScrollTo: String?
 
     private var internalComment: Comment?
 
@@ -84,10 +90,12 @@ class CommentDetailViewModel: ObservableObject {
         return relativeDateFormatter
     }()
 
-    init(octopus: OctopusSDK, commentUuid: String, reply: Bool) {
+    init(octopus: OctopusSDK, commentUuid: String, reply: Bool, replyToScrollTo: String?) {
         self.octopus = octopus
         self.commentUuid = commentUuid
         self.reply = reply
+        self.replyToScrollTo = replyToScrollTo
+        connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         Publishers.CombineLatest(
             octopus.core.commentsRepository.getComment(uuid: commentUuid).removeDuplicates().replaceError(with: nil),
@@ -210,6 +218,11 @@ class CommentDetailViewModel: ObservableObject {
             }
             if self.replies != newReplies {
                 self.replies = newReplies
+                if let replyToScrollTo = self.replyToScrollTo,
+                   replies?.contains(where: { $0.uuid == replyToScrollTo }) ?? false {
+                    self.scrollToId = "Reply-\(replyToScrollTo)"
+                    self.replyToScrollTo = nil
+                }
                 if #available(iOS 14, *) { Logger.comments.trace("Replies list updated done") }
             }
         }.store(in: &storage)
@@ -230,16 +243,7 @@ class CommentDetailViewModel: ObservableObject {
             refreshFeed(isManual: false)
         }.store(in: &storage)
 
-        $openUserProfile
-            .removeDuplicates()
-            .dropFirst()
-            .sink { [unowned self] in
-                // refresh automatically when the user profile is dismissed
-                guard !$0 else { return }
-                fetchComment()
-            }.store(in: &storage)
-
-        /// Reload post when app moves to foreground
+        /// Reload comment when app moves to foreground
         NotificationCenter.default
             .publisher(for: UIApplication.willEnterForegroundNotification)
             .sink { [unowned self] _ in
@@ -322,63 +326,13 @@ class CommentDetailViewModel: ObservableObject {
             await feed.populateWithLocalData(pageSize: 10)
         }
 
-        if reply {
+        if let replyToScrollTo {
+            loadAllReplies(until: replyToScrollTo)
+        } else if reply {
             loadAllReplies(scrollToBottom: true)
             reply = false
         } else {
             refreshFeed(isManual: false)
-        }
-    }
-
-    func userProfileTapped() {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            openUserProfile = true
-        }
-    }
-
-    func createReplyTappedWithoutBeeingLoggedIn() {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            break
         }
     }
 
@@ -415,11 +369,15 @@ class CommentDetailViewModel: ObservableObject {
 
         autoFetchLatestRepliesTask = Task {
             repeat {
-                do {
-                    try await newestFirstRepliesFeed.refresh(pageSize: 10)
-                } catch {
-                    if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
-                        self.error = error.displayableMessage
+                // only fetch new replies if we are not fetching all replies until the replyToScrollTo otherwise it
+                // messes up with the scroll
+                if replyToScrollTo == nil {
+                    do {
+                        try await newestFirstRepliesFeed.refresh(pageSize: 10)
+                    } catch {
+                        if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
+                            self.error = error.displayableMessage
+                        }
                     }
                 }
                 // wait for 5 seconds
@@ -428,7 +386,7 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
-    func loadAllReplies(scrollToBottom: Bool) {
+    private func loadAllReplies(scrollToBottom: Bool) {
         guard let feed else { return }
         Task {
             do {
@@ -441,6 +399,17 @@ class CommentDetailViewModel: ObservableObject {
                     self.hideLoadMoreRepliesLoader = true
                     self.scrollToBottom = true
                 }
+            }
+        }
+    }
+
+    private func loadAllReplies(until id: String) {
+        guard let feed else { return }
+        Task {
+            do {
+                try await feed.fetchAll(until: id)
+            } catch {
+                if #available(iOS 14, *) { Logger.replies.debug("Error: \(error)") }
             }
         }
     }
@@ -499,55 +468,7 @@ class CommentDetailViewModel: ObservableObject {
     }
 
     func ensureConnected() -> Bool {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            return true
-        }
-        return false
-    }
-
-    // TODO: Delete when router is fully used
-    func linkClientUserToOctopusUser() {
-        Task {
-            await linkClientUserToOctopusUser()
-        }
-    }
-
-    // TODO: Delete when router is fully used
-    private func linkClientUserToOctopusUser() async {
-        do {
-            try await octopus.core.connectionRepository.linkClientUserToOctopusUser()
-        } catch {
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        }
+        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
     }
 
     private func fetchComment(uuid: String, incrementViewCount: Bool) async throws(ServerCallError) {

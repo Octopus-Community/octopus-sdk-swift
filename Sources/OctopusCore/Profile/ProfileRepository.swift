@@ -177,6 +177,11 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
         try await userProfileDatabase.delete(profileId: profileId)
     }
 
+    func resetNotificationBadgeCount() async throws {
+        guard let profile else { throw InternalError.incorrectState }
+        try await userProfileDatabase.resetNotificationBadgeCount(on: profile.id)
+    }
+
     // MARK: Other users APIs
 
     public func getProfile(profileId: String) -> AnyPublisher<Profile?, Error> {

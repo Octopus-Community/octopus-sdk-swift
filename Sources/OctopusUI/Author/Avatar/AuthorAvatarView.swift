@@ -76,8 +76,8 @@ struct AuthorAvatarView: View {
                         Circle()
                             .foregroundColor(name.avatarColor)
                     )
-            }, content: { image in
-                image
+            }, content: { cachedImage in
+                Image(uiImage: cachedImage.fullSizeImage)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             })

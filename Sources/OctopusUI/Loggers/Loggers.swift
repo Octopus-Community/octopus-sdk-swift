@@ -20,6 +20,8 @@ extension Logger {
     static let posts = Logger(subsystem: subsystem, category: "Posts")
     /// Logs that are related to the profile
     static let profile = Logger(subsystem: subsystem, category: "Profile")
+    /// Logs that are related to the notifications
+    static let notifs = Logger(subsystem: subsystem, category: "Notifications")
     /// Logs that are related to general stuff
     static let general = Logger(subsystem: subsystem, category: "General")
 }

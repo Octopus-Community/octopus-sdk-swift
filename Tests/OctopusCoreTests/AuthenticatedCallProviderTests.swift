@@ -134,7 +134,8 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
                             profile: CurrentUserProfile(
                                 storableProfile: StorableCurrentUserProfile(
                                     id: "profileId", userId: userData.id, nickname: "nickname", email: nil, bio: nil,
-                                    pictureUrl: nil, descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []),
+                                    pictureUrl: nil, notificationBadgeCount: 0,
+                                    descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []),
                                 postFeedsStore: postFeedsStore),
                             jwtToken: userData.jwtToken))
                 } else {

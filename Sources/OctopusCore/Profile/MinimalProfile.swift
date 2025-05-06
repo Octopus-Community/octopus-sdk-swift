@@ -20,6 +20,12 @@ extension MinimalProfile {
         avatarUrl = entity.authorAvatarUrl
     }
 
+    init(from entity: MinimalProfileEntity) {
+        uuid = entity.profileId
+        nickname = entity.nickname
+        avatarUrl = entity.avatarUrl
+    }
+
     init(from profile: Com_Octopuscommunity_MinimalProfile) {
         uuid = profile.profileID
         nickname = profile.nickname

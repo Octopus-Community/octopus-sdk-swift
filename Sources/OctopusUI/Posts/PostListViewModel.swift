@@ -7,16 +7,22 @@ import Combine
 import Octopus
 import OctopusCore
 import UIKit
+import SwiftUI
 
 @MainActor
 class PostListViewModel: ObservableObject {
     @Published var openLogin = false
-    @Published var openCreateProfile = false
     @Published var openCreatePost = false
-    @Published var openUserProfile = false
-    @Published private(set) var ssoError: DisplayableString? // TODO: Delete when router is fully used
 
     @Published var scrollToTop = false
+
+    @Published var authenticationAction: ConnectedActionReplacement?
+    var authenticationActionBinding: Binding<ConnectedActionReplacement?> {
+        Binding(
+            get: { self.authenticationAction },
+            set: { self.authenticationAction = $0 }
+        )
+    }
 
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
     var thisUserProfileId: String? {
@@ -24,6 +30,8 @@ class PostListViewModel: ObservableObject {
     }
 
     let octopus: OctopusSDK
+    let connectedActionChecker: ConnectedActionChecker
+
     private var storage = [AnyCancellable]()
     private var feedStorage = [AnyCancellable]()
     private var relativeDateFormatter: RelativeDateTimeFormatter = {
@@ -36,8 +44,9 @@ class PostListViewModel: ObservableObject {
 
     private var feed: Feed<OctopusCore.Post>?
 
-    init(octopus: OctopusSDK) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
         self.octopus = octopus
+        connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         $openCreatePost
             .removeDuplicates()
@@ -49,14 +58,24 @@ class PostListViewModel: ObservableObject {
                 scrollToTop = true
             }.store(in: &storage)
 
-        $openUserProfile
-            .removeDuplicates()
-            .dropFirst()
-            .sink { [unowned self] in
-                // refresh automatically when the user profile is dismissed
-                guard !$0 else { return }
-                refreshFeed(isManual: false)
+        mainFlowPath.$path
+            .prepend([])
+            .zip(mainFlowPath.$path.removeDuplicates())
+            .sink { [unowned self] previous, current in
+                if case .currentUserProfile = previous.last, current == [] {
+                    // refresh automatically when the user profile is dismissed
+                    refreshFeed(isManual: false)
+                    refrehCurrentUserProfile()
+                }
             }.store(in: &storage)
+
+        /// Reload current profile when app moves to foreground
+        NotificationCenter.default
+            .publisher(for: UIApplication.willEnterForegroundNotification)
+            .sink { [unowned self] _ in
+                refrehCurrentUserProfile()
+            }
+            .store(in: &storage)
     }
 
     func set(feed: Feed<Post>) {
@@ -67,71 +86,28 @@ class PostListViewModel: ObservableObject {
         })
     }
 
-    func userProfileTapped() {
-        guard ensureConnected() else { return }
-        openUserProfile = true
-    }
-
     func createPostTapped() {
         guard ensureConnected() else { return }
         openCreatePost = true
     }
 
-    // TODO: Delete when router is fully used
-    private func ensureConnected() -> Bool {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            return true
-        }
-        return false
-    }
-
-    // TODO: Delete when router is fully used
-    func linkClientUserToOctopusUser() {
-        Task {
-            await linkClientUserToOctopusUser()
-        }
-    }
-
-    // TODO: Delete when router is fully used
-    private func linkClientUserToOctopusUser() async {
-        do {
-            try await octopus.core.connectionRepository.linkClientUserToOctopusUser()
-        } catch {
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        }
+    func ensureConnected() -> Bool {
+        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
     }
 
     func refresh() async {
-        await postFeedViewModel?.refresh()
+        await withTaskGroup(of: Void.self) { group in
+            let profileRepository = octopus.core.profileRepository
+            group.addTask { [self] in await postFeedViewModel?.refresh() }
+            group.addTask { try? await profileRepository.fetchCurrentUserProfile() }
+
+            await group.waitForAll()
+        }
+    }
+
+    private func refrehCurrentUserProfile() {
+        let profileRepository = octopus.core.profileRepository
+        Task { try? await profileRepository.fetchCurrentUserProfile() }
     }
 
     private func refreshFeed(isManual: Bool) {

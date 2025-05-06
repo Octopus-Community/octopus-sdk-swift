@@ -8,99 +8,63 @@ import Octopus
 import OctopusCore
 
 struct CurrentUserProfileSummaryView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
     @Compat.StateObject private var viewModel: CurrentUserProfileSummaryViewModel
 
-    @Binding private var dismiss: Bool
-
-    @State private var openEditionScreen = false
-    @State private var openSettings = false
     @State private var openCreatePost = false
     @State private var displayDeleteUserAlert = false
 
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
 
-    @State private var bioFocused = false
-    @State private var photoPickerFocused = false
-
-    @State private var displayPostDetailId: String?
-    @State private var displayMostRecentComment = false
-    @State private var displayPostDetail = false
-
-    @State private var displayModerateId: String?
-    @State private var displayContentModeration = false
-
     @State private var displayOpenEditProfileInApp = false
     @State private var openEditProfileInApp: (() -> Void)?
 
-    init(octopus: OctopusSDK, dismiss: Binding<Bool>) {
-        _viewModel = Compat.StateObject(wrappedValue: CurrentUserProfileSummaryViewModel(octopus: octopus))
-        _dismiss = dismiss
+    @State private var zoomableImageInfo: ZoomableImageInfo?
+
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
+        _viewModel = Compat.StateObject(wrappedValue: CurrentUserProfileSummaryViewModel(
+            octopus: octopus, mainFlowPath: mainFlowPath))
     }
 
     var body: some View {
-        VStack {
-            ContentView(profile: viewModel.profile, refresh: viewModel.refresh, openEdition: {
+        ContentView(
+            profile: viewModel.profile,
+            zoomableImageInfo: $zoomableImageInfo,
+            hasInitialNotSeenNotifications: viewModel.hasInitialNotSeenNotifications,
+            refresh: viewModel.refresh,
+            openEdition: {
                 openEdition(field: nil)
             }, openEditionWithBioFocused: {
                 openEdition(field: .bio)
             }, openEditionWithPhotoPicker: {
                 openEdition(field: .picture)
-            }) {
+            }, postsView: {
                 if let postFeedViewModel = viewModel.postFeedViewModel {
                     PostFeedView(
                         viewModel: postFeedViewModel,
+                        zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
-                            displayPostDetailId = $0
-                            displayMostRecentComment = $1
-                            displayPostDetail = true
+                            navigator.push(.postDetail(postId: $0, scrollToMostRecentComment: $1))
                         },
                         displayProfile: { _ in },
                         displayContentModeration: {
-                            displayModerateId = $0
-                            displayContentModeration = true
+                            navigator.push(.reportContent(contentId: $0))
                         }) {
                             CreatePostEmptyPostView(createPost: { openCreatePost = true })
                         }
                 } else {
                     EmptyView()
                 }
-            }
-            NavigationLink(destination: EditProfileView(octopus: viewModel.octopus, bioFocused: bioFocused,
-                                                        photoPickerFocused: photoPickerFocused),
-                           isActive: $openEditionScreen) {
-                EmptyView()
-            }.hidden()
-            NavigationLink(destination: SettingsListView(octopus: viewModel.octopus, popToRoot: $dismiss,
-                                                         preventAutoDismiss: $viewModel.preventAutoDismiss),
-                           isActive: $openSettings) {
-                EmptyView()
-            }.hidden()
-            NavigationLink(destination:
-                Group {
-                    if let displayPostDetailId {
-                        PostDetailView(octopus: viewModel.octopus, postUuid: displayPostDetailId,
-                                       scrollToMostRecentComment: displayMostRecentComment)
-                    } else {
-                        EmptyView()
-                    }
-            }, isActive: $displayPostDetail) {
-                EmptyView()
-            }.hidden()
-            NavigationLink(
-                destination:Group {
-                    if let displayModerateId {
-                        ReportView(octopus: viewModel.octopus,
-                                   context: .content(contentId: displayModerateId))
-                    } else { EmptyView() }
-                },
-                isActive:  $displayContentModeration) {
-                    EmptyView()
-                }.hidden()
-        }
+            }, notificationsView: {
+                NotificationCenterView(viewModel: viewModel.notifCenterViewModel)
+            })
+        .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
+                                defaultLeadingBarItem: leadingBarItem,
+                                defaultTrailingBarItem: trailingBarItem)
         .fullScreenCover(isPresented: $openCreatePost) {
             CreatePostView(octopus: viewModel.octopus)
         }
@@ -125,15 +89,6 @@ struct CurrentUserProfileSummaryView: View {
                 }
             },
             message: { _ in })
-        .navigationBarItems(
-            trailing:
-                Button(action: { openSettings = true }) {
-                    Image(systemName: "ellipsis")
-                        .padding(.vertical)
-                        .padding(.leading)
-                        .font(theme.fonts.navBarItem)
-                }
-        )
         .onReceive(viewModel.$error) { error in
             guard let error else { return }
             displayableError = error
@@ -141,7 +96,7 @@ struct CurrentUserProfileSummaryView: View {
         }
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
-            dismiss = true
+            navigator.popToRoot()
         }
         .onValueChanged(of: displayError) {
             guard !$0 else { return }
@@ -179,9 +134,7 @@ struct CurrentUserProfileSummaryView: View {
 
         switch action {
         case let .openOctopusEdition(field):
-            photoPickerFocused = field == .picture
-            bioFocused = field == .bio
-            openEditionScreen = true
+            navigator.push(.editProfile(bioFocused: field == .bio, pictureFocused: field == .picture))
         case let .openAlertToAppEdition(openAppEdition):
             openEditProfileInApp = openAppEdition
             displayOpenEditProfileInApp = true
@@ -189,24 +142,45 @@ struct CurrentUserProfileSummaryView: View {
             openAppEdition()
         }
     }
+
+    @ViewBuilder
+    private var leadingBarItem: some View {
+        EmptyView()
+    }
+
+    @ViewBuilder
+    private var trailingBarItem: some View {
+        Button(action: { navigator.push(.settingsList) }) {
+            Image(systemName: "ellipsis")
+                .padding(.vertical)
+                .padding(.leading)
+                .font(theme.fonts.navBarItem)
+        }
+    }
 }
 
-private struct ContentView<PostsView: View>: View {
+private struct ContentView<PostsView: View, NotificationsView: View>: View {
     let profile: CurrentUserProfile?
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
+    let hasInitialNotSeenNotifications: Bool
     let refresh: @Sendable () async -> Void
     let openEdition: () -> Void
     let openEditionWithBioFocused: () -> Void
     let openEditionWithPhotoPicker: () -> Void
 
     @ViewBuilder let postsView: PostsView
+    @ViewBuilder let notificationsView: NotificationsView
 
     var body: some View {
         if let profile {
-            ProfileContentView(profile: profile, refresh: refresh, openEdition: openEdition,
+            ProfileContentView(profile: profile,
+                               zoomableImageInfo: $zoomableImageInfo,
+                               hasInitialNotSeenNotifications: hasInitialNotSeenNotifications,
+                               refresh: refresh, openEdition: openEdition,
                                openEditionWithBioFocused: openEditionWithBioFocused,
-                               openEditionWithPhotoPicker: openEditionWithPhotoPicker) {
-                postsView
-            }
+                               openEditionWithPhotoPicker: openEditionWithPhotoPicker,
+                               postsView: { postsView },
+                               notificationsView: { notificationsView })
         } else {
             Compat.ProgressView()
                 .frame(width: 60)
@@ -214,104 +188,155 @@ private struct ContentView<PostsView: View>: View {
     }
 }
 
-private struct ProfileContentView<PostsView: View>: View {
+private struct ProfileContentView<PostsView: View, NotificationsView: View>: View {
     @Environment(\.octopusTheme) private var theme
     let profile: CurrentUserProfile
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
     let openEdition: () -> Void
     let openEditionWithBioFocused: () -> Void
     let openEditionWithPhotoPicker: () -> Void
     @ViewBuilder let postsView: PostsView
+    @ViewBuilder let notificationsView: NotificationsView
 
-    @State private var selectedTab = 0
+    @State private var selectedTab: Int
+    @State private var displayStickyHeader = false
+
+    private let scrollViewCoordinateSpace = "scrollViewCoordinateSpace"
+
+    init(profile: CurrentUserProfile,
+         zoomableImageInfo: Binding<ZoomableImageInfo?>,
+         hasInitialNotSeenNotifications: Bool,
+         refresh: @escaping @Sendable () async -> Void,
+         openEdition: @escaping () -> Void,
+         openEditionWithBioFocused: @escaping () -> Void,
+         openEditionWithPhotoPicker: @escaping () -> Void,
+         @ViewBuilder postsView: @escaping () -> PostsView,
+         @ViewBuilder notificationsView: @escaping () -> NotificationsView) {
+        self.profile = profile
+        self._zoomableImageInfo = zoomableImageInfo
+        self.refresh = refresh
+        self.openEdition = openEdition
+        self.openEditionWithBioFocused = openEditionWithBioFocused
+        self.openEditionWithPhotoPicker = openEditionWithPhotoPicker
+        self.postsView = postsView()
+        self.notificationsView = notificationsView()
+        self._selectedTab = State(wrappedValue: hasInitialNotSeenNotifications ? 1 : 0)
+    }
 
     var body: some View {
-        Compat.ScrollView(refreshAction: refresh) {
-            VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack(alignment: .top) {
-                        if case .defaultImage = avatar {
-                            Button(action: openEditionWithPhotoPicker) {
-                                AuthorAvatarView(avatar: avatar)
+        ZStack(alignment: .top) {
+            Compat.ScrollView(refreshAction: refresh) {
+                VStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack(alignment: .top) {
+                            if case .defaultImage = avatar {
+                                Button(action: openEditionWithPhotoPicker) {
+                                    AuthorAvatarView(avatar: avatar)
+                                        .frame(width: 71, height: 71)
+                                        .overlay(
+                                            Image(systemName: "plus")
+                                                .foregroundColor(theme.colors.onPrimary)
+                                                .padding(4)
+                                                .background(theme.colors.primary)
+                                                .clipShape(Circle())
+                                                .frame(width: 20, height: 20)
+                                                .offset(x: 26, y: 26)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                ZoomableAuthorAvatarView(avatar: avatar, zoomableImageInfo: $zoomableImageInfo)
                                     .frame(width: 71, height: 71)
-                                    .overlay(
-                                        Image(systemName: "plus")
-                                            .foregroundColor(theme.colors.onPrimary)
-                                            .padding(4)
-                                            .background(theme.colors.primary)
-                                            .clipShape(Circle())
-                                            .frame(width: 20, height: 20)
-                                            .offset(x: 26, y: 26)
-                                    )
+                            }
+                            Spacer()
+                            Button(action: openEdition) {
+                                Text("Profile.Edit.Button", bundle: .module)
+                                    .font(theme.fonts.body2)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(theme.colors.gray900)
+                                    .padding(.vertical, 10)
+                                    .padding(.horizontal, 12)
                             }
                             .buttonStyle(.plain)
-                        } else {
-                            AuthorAvatarView(avatar: avatar)
-                                .frame(width: 71, height: 71)
+                            .background(
+                                Capsule()
+                                    .stroke(theme.colors.gray300, lineWidth: 1)
+                            )
+                            .padding(1)
                         }
-                        Spacer()
-                        Button(action: openEdition) {
-                            Text("Profile.Edit.Button", bundle: .module)
-                                .font(theme.fonts.body2)
-                                .fontWeight(.medium)
-                                .foregroundColor(theme.colors.gray900)
-                                .padding(.vertical, 10)
-                                .padding(.horizontal, 12)
-                        }
-                        .buttonStyle(.plain)
-                        .background(
-                            Capsule()
-                                .stroke(theme.colors.gray300, lineWidth: 1)
-                        )
-                        .padding(1)
-                    }
-                    Spacer().frame(height: 20)
-                    Text(profile.nickname)
-                        .font(theme.fonts.title1)
-                        .fontWeight(.semibold)
-                        .foregroundColor(theme.colors.gray900)
-                        .modify {
-                            if #available(iOS 15.0, *) {
-                                $0.textSelection(.enabled)
-                            } else { $0 }
-                        }
-                    Spacer().frame(height: 10)
-                    if let bio = profile.bio?.nilIfEmpty {
-                        Text(bio.cleanedBio)
-                            .font(theme.fonts.body2)
+                        Spacer().frame(height: 20)
+                        Text(profile.nickname)
+                            .font(theme.fonts.title1)
+                            .fontWeight(.semibold)
                             .foregroundColor(theme.colors.gray900)
                             .modify {
                                 if #available(iOS 15.0, *) {
                                     $0.textSelection(.enabled)
                                 } else { $0 }
                             }
-                    } else {
-                        Button(action: openEditionWithBioFocused) {
-                            HStack {
-                                Text("Profile.Detail.EmptyBio.Button", bundle: .module)
-                                    .font(theme.fonts.body2)
-                                Image(.createPost)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 20, height: 20)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(
-                                Capsule()
-                                    .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2]))
+                        Spacer().frame(height: 10)
+                        if let bio = profile.bio?.nilIfEmpty {
+                            Text(bio.cleanedBio)
+                                .font(theme.fonts.body2)
+                                .foregroundColor(theme.colors.gray900)
+                                .modify {
+                                    if #available(iOS 15.0, *) {
+                                        $0.textSelection(.enabled)
+                                    } else { $0 }
+                                }
+                        } else {
+                            Button(action: openEditionWithBioFocused) {
+                                HStack {
+                                    Text("Profile.Detail.EmptyBio.Button", bundle: .module)
+                                        .font(theme.fonts.body2)
+                                    Image(.createPost)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 20, height: 20)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(
+                                    Capsule()
+                                        .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2]))
 
-                            )
-                            .foregroundColor(theme.colors.gray900)
+                                )
+                                .foregroundColor(theme.colors.gray900)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
-                    Spacer().frame(height: 20)
-                    CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)
+                    .padding(.horizontal, 20)
+                    CustomSegmentedControl(tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],
+                                           tabCount: 2, selectedTab: $selectedTab)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onValueChanged(of: geometry.frame(in: .named(scrollViewCoordinateSpace))) { frame in
+                                    if frame.minY <= 0, !displayStickyHeader {
+                                        displayStickyHeader = true
+                                    } else if frame.minY > 0, displayStickyHeader {
+                                        displayStickyHeader = false
+                                    }
+                                }
+                        }
+                    )
+                    theme.colors.gray300.frame(height: 1)
+                    if selectedTab == 0 {
+                        postsView
+                    } else {
+                        notificationsView
+                    }
+
                 }
-                .padding(.horizontal, 20)
-                theme.colors.gray300.frame(height: 1)
-                postsView
+            }
+            .coordinateSpace(name: scrollViewCoordinateSpace)
+
+            if displayStickyHeader {
+                CustomSegmentedControl(tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],
+                                       tabCount: 2, selectedTab: $selectedTab)
+                .background(Color(UIColor.systemBackground))
             }
         }
     }

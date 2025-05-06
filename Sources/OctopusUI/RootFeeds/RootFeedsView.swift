@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct RootFeedsView: View {
+    @Environment(\.presentationMode) private var presentationMode
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: RootFeedsViewModel
 
@@ -18,16 +19,26 @@ struct RootFeedsView: View {
     @State private var displayableError: DisplayableString?
     @State private var height: CGFloat = 0
 
-    init(octopus: OctopusSDK) {
+    private let mainFlowPath: MainFlowPath
+
+    @State private var zoomableImageInfo: ZoomableImageInfo?
+
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
         _viewModel = Compat.StateObject(wrappedValue: RootFeedsViewModel(octopus: octopus))
+        self.mainFlowPath = mainFlowPath
     }
 
     var body: some View {
         VStack(spacing: 0) {
             ContentView(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed,
                         showRootFeedPicker: $showRootFeedPicker)
-            PostListView(octopus: viewModel.octopus, selectedRootFeed: $viewModel.selectedRootFeed)
+            PostListView(octopus: viewModel.octopus, mainFlowPath: mainFlowPath,
+                         selectedRootFeed: $viewModel.selectedRootFeed,
+                         zoomableImageInfo: $zoomableImageInfo)
         }
+        .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
+                                defaultLeadingBarItem: leadingBarItem,
+                                defaultTrailingBarItem: trailingBarItem)
         .sheet(isPresented: $showRootFeedPicker) {
             if #available(iOS 16.0, *) {
                 RootFeedPicker(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed)
@@ -68,6 +79,26 @@ struct RootFeedsView: View {
             guard let error else { return }
             displayableError = error
             displayError = true
+        }
+    }
+
+    @ViewBuilder
+    private var leadingBarItem: some View {
+        Image(uiImage: theme.assets.logo)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(height: 28)
+    }
+
+    @ViewBuilder
+    private var trailingBarItem: some View {
+        if presentationMode.wrappedValue.isPresented {
+            Button(action: {
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                Text("Common.Close", bundle: .module)
+                    .font(theme.fonts.navBarItem)
+            }
         }
     }
 }

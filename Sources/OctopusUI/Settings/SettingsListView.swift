@@ -8,30 +8,23 @@ import Combine
 import Octopus
 
 struct SettingsListView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Compat.StateObject private var viewModel: SettingsListViewModel
-
-    @Binding private var popToRoot: Bool
-    @Binding private var preventAutoDismiss: Bool
 
     @State private var displayError = false
     @State private var error: Error?
 
-    @State private var openProfile = false
-    @State private var openAbout = false
-    @State private var openHelp = false
-
-    init(octopus: OctopusSDK, popToRoot: Binding<Bool>, preventAutoDismiss: Binding<Bool>) {
-        _viewModel = Compat.StateObject(wrappedValue: SettingsListViewModel(octopus: octopus))
-        _popToRoot = popToRoot
-        _preventAutoDismiss = preventAutoDismiss
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
+        _viewModel = Compat.StateObject(wrappedValue: SettingsListViewModel(
+            octopus: octopus, mainFlowPath: mainFlowPath))
     }
 
     var body: some View {
         ContentView(octopusOwnedProfile: viewModel.octopusOwnedProfile,
                     logoutInProgress: viewModel.logoutInProgress,
-                    openProfile: { openProfile = true },
-                    openAbout: { openAbout = true },
-                    openHelp: { openHelp = true },
+                    openProfile: { navigator.push(.settingsAccount) },
+                    openAbout: { navigator.push(.settingsAbout) },
+                    openHelp: { navigator.push(.settingsHelp) },
                     logout: viewModel.logout)
         .navigationBarTitle(Text("Settings.Community.Title", bundle: .module))
         .alert(
@@ -49,31 +42,14 @@ struct SettingsListView: View {
         }
         .onReceive(viewModel.$popToRoot) { shouldDismiss in
             guard shouldDismiss else { return }
-            popToRoot = true
+            navigator.popToRoot()
         }
-        .background(
-            Group {
-                NavigationLink(destination: SettingProfileView(octopus: viewModel.octopus, popToRoot: $popToRoot,
-                                                               preventAutoDismiss: $preventAutoDismiss),
-                               isActive: $openProfile) {
-                    EmptyView()
-                }.hidden()
-                NavigationLink(destination: SettingsAboutView(octopus: viewModel.octopus),
-                               isActive: $openAbout) {
-                    EmptyView()
-                }.hidden()
-                NavigationLink(destination: SettingsHelpView(octopus: viewModel.octopus),
-                               isActive: $openHelp) {
-                    EmptyView()
-                }.hidden()
-            }
-        )
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
                     Text("Settings.LogOut.Done.Title", bundle: .module),
                     isPresented: $viewModel.logoutDone, actions: {
-                        Button(action: { popToRoot = true }) {
+                        Button(action: { navigator.popToRoot() }) {
                             Text("Common.Ok", bundle: .module)
                         }
                     })
@@ -81,13 +57,10 @@ struct SettingsListView: View {
                 $0.alert(isPresented: $viewModel.logoutDone) {
                     Alert(title: Text("Settings.LogOut.Done.Title", bundle: .module),
                           dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        popToRoot = true
+                        navigator.popToRoot()
                     }))
                 }
             }
-        }
-        .onReceive(Publishers.CombineLatest(viewModel.$logoutInProgress, viewModel.$logoutDone)) {
-            preventAutoDismiss = $0.0 || $0.1
         }
     }
 }

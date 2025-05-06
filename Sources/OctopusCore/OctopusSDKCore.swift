@@ -17,6 +17,7 @@ public class OctopusSDKCore: ObservableObject {
     public let moderationRepository: ModerationRepository
     public let externalLinksRepository: ExternalLinksRepository
     public let trackingRepository: TrackingRepository
+    public let notificationsRepository: NotificationsRepository
 
     public let validators: Validators
 
@@ -99,6 +100,10 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { AppSessionMonitor(injector: $0) }
         injector.register { TrackingEventsSendingMonitor(injector: $0) }
 
+        // Notifications
+        injector.register { NotificationsDatabase(injector: $0) }
+        injector.register { NotificationsRepository(injector: $0) }
+
         // Start monitors
         injector.getInjected(identifiedBy: Injected.networkMonitor).start()
         injector.getInjected(identifiedBy: Injected.appStateMonitor).start()
@@ -126,6 +131,7 @@ public class OctopusSDKCore: ObservableObject {
         moderationRepository = injector.getInjected(identifiedBy: Injected.moderationRepository)
         externalLinksRepository = injector.getInjected(identifiedBy: Injected.externalLinksRepository)
         trackingRepository = injector.getInjected(identifiedBy: Injected.trackingRepository)
+        notificationsRepository = injector.getInjected(identifiedBy: Injected.notificationsRepository)
     }
 
     deinit {

@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 import Octopus
 import OctopusCore
 import UIKit
@@ -49,18 +50,12 @@ class PostDetailViewModel: ObservableObject {
     private var autoFetchLatestCommentsTask: Task<Void, Swift.Error>?
     private var autoFetchLatestCommentsCancellable: AnyCancellable?
 
-    @Published var openLogin = false
-    @Published var openCreateProfile = false
-    @Published var openUserProfile = false
-
     @Published var postDeletion: PostDeletion?
 
     @Published var isDeletingComment = false
     @Published var commentDeleted = false
 
     @Published var postNotAvailable = false
-
-    @Published private(set) var ssoError: DisplayableString? // TODO: Delete when router is fully used
 
     private var shouldFetchLatestComments = CurrentValueSubject<Bool, Never>(false)
     private var liveMeasures: [String: CurrentValueSubject<LiveMeasures, Never>] = [:]
@@ -69,8 +64,17 @@ class PostDetailViewModel: ObservableObject {
         octopus.core.profileRepository.profile?.id
     }
 
+    @Published var authenticationAction: ConnectedActionReplacement?
+    var authenticationActionBinding: Binding<ConnectedActionReplacement?> {
+        Binding(
+            get: { self.authenticationAction },
+            set: { self.authenticationAction = $0 }
+        )
+    }
+
     let octopus: OctopusSDK
     let postUuid: String
+    let connectedActionChecker: ConnectedActionChecker
     private var newestFirstCommentsFeed: Feed<Comment>?
     private var scrollToMostRecentComment: Bool
 
@@ -89,10 +93,11 @@ class PostDetailViewModel: ObservableObject {
         return relativeDateFormatter
     }()
 
-    init(octopus: OctopusSDK, postUuid: String, scrollToMostRecentComment: Bool) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, scrollToMostRecentComment: Bool) {
         self.octopus = octopus
         self.postUuid = postUuid
         self.scrollToMostRecentComment = scrollToMostRecentComment
+        connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         Publishers.CombineLatest3(
             octopus.core.postsRepository.getPost(uuid: postUuid).removeDuplicates().replaceError(with: nil),
@@ -243,14 +248,17 @@ class PostDetailViewModel: ObservableObject {
             fetchTopics()
         }.store(in: &storage)
 
-        $openUserProfile
-            .removeDuplicates()
-            .dropFirst()
-            .sink { [unowned self] in
-                // refresh automatically when the user profile is dismissed
-                guard !$0 else { return }
-                fetchPost()
-                fetchTopics()
+        mainFlowPath.$path
+            .prepend([])
+            .zip(mainFlowPath.$path)
+            .sink { [unowned self] previous, current in
+                if case .currentUserProfile = previous.last,
+                   case let .postDetail(postId, _) = current.last,
+                   postId == postUuid {
+                    // refresh automatically when the user profile is dismissed
+                    fetchPost()
+                    fetchTopics()
+                }
             }.store(in: &storage)
 
         /// Reload post when app moves to foreground
@@ -356,56 +364,8 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    func userProfileTapped() {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            openUserProfile = true
-        }
-    }
-
-    func createCommentTappedWithoutBeeingLoggedIn() {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            break
-        }
+    func ensureConnected() -> Bool {
+        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
     }
 
     func refresh() async {
@@ -523,58 +483,6 @@ class PostDetailViewModel: ObservableObject {
     private func fetchPost(incrementViewCount: Bool = false) {
         Task {
             try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
-        }
-    }
-
-    func ensureConnected() -> Bool {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            return true
-        }
-        return false
-    }
-
-    // TODO: Delete when router is fully used
-    func linkClientUserToOctopusUser() {
-        Task {
-            await linkClientUserToOctopusUser()
-        }
-    }
-
-    // TODO: Delete when router is fully used
-    private func linkClientUserToOctopusUser() async {
-        do {
-            try await octopus.core.connectionRepository.linkClientUserToOctopusUser()
-        } catch {
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
         }
     }
 

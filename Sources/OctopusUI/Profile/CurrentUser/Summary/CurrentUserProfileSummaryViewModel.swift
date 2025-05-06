@@ -21,12 +21,14 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     @Published var profile: CurrentUserProfile?
     @Published private(set) var dismiss = false
     @Published var error: DisplayableString?
-    // if true, no auto dismiss from this view model will be triggered
-    @Published var preventAutoDismiss = false
 
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
 
     @Published private var isFetchingProfile: Bool = false
+
+    let hasInitialNotSeenNotifications: Bool
+
+    let notifCenterViewModel: NotificationCenterViewModel
 
     let editConfig: EditConfig
 
@@ -34,8 +36,9 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
 
     private var storage = [AnyCancellable]()
 
-    init(octopus: OctopusSDK) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
         self.octopus = octopus
+        notifCenterViewModel = NotificationCenterViewModel(octopus: octopus)
         if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode,
            !configuration.appManagedFields.isEmpty {
             if configuration.appManagedFields.isStrictSubset(of: CoreProfileField.allCases) {
@@ -47,25 +50,20 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             editConfig = .editInOctopus
         }
 
+        hasInitialNotSeenNotifications = (octopus.core.profileRepository.profile?.notificationBadgeCount ?? 0) > 0
+
         Task {
-            isFetchingProfile = true
-            do {
-                try await octopus.core.profileRepository.fetchCurrentUserProfile()
-            } catch {
-                if let error = error as? AuthenticatedActionError, case .serverError(.notAuthenticated) = error {
-                    self.error = error.displayableMessage
-                }
-            }
-            isFetchingProfile = false
+            await fetchProfile()
         }
 
-        Publishers.CombineLatest3(
+        Publishers.CombineLatest4(
             octopus.core.profileRepository.$profile.removeDuplicates(),
             $error,
-            $isFetchingProfile
-        ).sink { [unowned self] profile, currentError, isFetchingProfile in
+            $isFetchingProfile,
+            mainFlowPath.$isLocked
+        ).sink { [unowned self] profile, currentError, isFetchingProfile, isLocked in
             guard let profile else {
-                if currentError == nil && !isFetchingProfile && !preventAutoDismiss {
+                if currentError == nil && !isFetchingProfile && !isLocked {
                     dismiss = true
                 }
                 return
@@ -82,13 +80,25 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     }
 
     func refresh() async {
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { [self] in await postFeedViewModel?.refresh() }
+            group.addTask { [self] in await notifCenterViewModel.refresh() }
+            group.addTask { [self] in await fetchProfile() }
+
+            await group.waitForAll()
+        }
+    }
+
+    private func fetchProfile(onlyCatchNotAuthenticatedError: Bool = false) async {
         isFetchingProfile = true
         do {
-            await postFeedViewModel?.refresh()
             try await octopus.core.profileRepository.fetchCurrentUserProfile()
         } catch {
-            self.error = error.displayableMessage
-
+            if !onlyCatchNotAuthenticatedError {
+                self.error = error.displayableMessage
+            } else if case .serverError(.notAuthenticated) = error {
+                self.error = error.displayableMessage
+            }
         }
         isFetchingProfile = false
     }
