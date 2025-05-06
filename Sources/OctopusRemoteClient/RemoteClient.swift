@@ -17,6 +17,7 @@ public protocol OctopusRemoteClient {
     var userService: UserService { get }
     var feedService: FeedService { get }
     var trackingService: TrackingService { get }
+    var notificationService: NotificationService { get }
 
     func set(appSessionId: String?)
     func set(octopusUISessionId: String?)
@@ -29,6 +30,7 @@ public class GrpcClient: OctopusRemoteClient {
     public var userService: UserService { _userService }
     public var feedService: FeedService { _feedService }
     public var trackingService: TrackingService { _trackingService }
+    public var notificationService: NotificationService { _notificationService }
 
     private let _octoService: OctoServiceClient
     private let _magicLinkService: MagicLinkServiceClient
@@ -36,6 +38,7 @@ public class GrpcClient: OctopusRemoteClient {
     private let _userService: UserServiceClient
     private let _feedService: FeedServiceClient
     private let _trackingService: TrackingServiceClient
+    private let _notificationService: NotificationServiceClient
 
     private let unaryChannel: GRPCChannel
     private let streamingChannel: GRPCChannel
@@ -78,6 +81,9 @@ public class GrpcClient: OctopusRemoteClient {
         _trackingService = TrackingServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
             updateTokenBlock: updateTokenBlock)
+        _notificationService = NotificationServiceClient(
+            unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            updateTokenBlock: updateTokenBlock)
     }
 
     public func set(appSessionId: String?) {
@@ -87,6 +93,7 @@ public class GrpcClient: OctopusRemoteClient {
         _userService.appSessionId = appSessionId
         _feedService.appSessionId = appSessionId
         _trackingService.appSessionId = appSessionId
+        _notificationService.appSessionId = appSessionId
     }
 
     public func set(octopusUISessionId: String?) {
@@ -96,6 +103,7 @@ public class GrpcClient: OctopusRemoteClient {
         _userService.octopusUISessionId = octopusUISessionId
         _feedService.octopusUISessionId = octopusUISessionId
         _trackingService.octopusUISessionId = octopusUISessionId
+        _notificationService.octopusUISessionId = octopusUISessionId
     }
 
     deinit {

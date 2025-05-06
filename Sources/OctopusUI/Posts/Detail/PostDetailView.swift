@@ -8,7 +8,7 @@ import os
 import Octopus
 
 struct PostDetailView: View {
-    @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
 
     @Compat.StateObject private var viewModel: PostDetailViewModel
@@ -21,28 +21,17 @@ struct PostDetailView: View {
     @State private var displayWillDeleteAlert = false
     @State private var displayPostDeletedAlert = false
 
-    @State private var displayProfileId: String?
-    @State private var displayProfile = false
-
-    @State private var displayCommentId: String?
-    @State private var answerToComment = true
-    @State private var displayCommentDetail = false
-
     @State private var commentTextFocused = false
     @State private var commentHasChanges = false
 
-    @State private var moderationContext: ReportView.Context?
-    @State private var displayContentModeration = false
-
-    // TODO: Delete when router is fully used
-    @State private var displaySSOError = false
-    @State private var displayableSSOError: DisplayableString?
-
     @State private var width: CGFloat = 0
 
-    init(octopus: OctopusSDK, postUuid: String, scrollToMostRecentComment: Bool) {
+    @State private var zoomableImageInfo: ZoomableImageInfo?
+
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, scrollToMostRecentComment: Bool = false) {
         _viewModel = Compat.StateObject(wrappedValue: PostDetailViewModel(
-            octopus: octopus, postUuid: postUuid, scrollToMostRecentComment: scrollToMostRecentComment))
+            octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postUuid,
+            scrollToMostRecentComment: scrollToMostRecentComment))
     }
 
     var body: some View {
@@ -54,24 +43,21 @@ struct PostDetailView: View {
                     hideLoadMoreCommentsLoader: viewModel.hideLoadMoreCommentsLoader,
                     width: width,
                     scrollToBottom: $viewModel.scrollToBottom,
+                    zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousComments: viewModel.loadPreviousComments,
                     refresh: viewModel.refresh,
                     displayCommentDetail: { commentId in
-                        displayCommentId = commentId
-                        answerToComment = false
-                        displayCommentDetail = true
+                        navigator.push(.commentDetail(commentId: commentId, reply: false, replyToScrollTo: nil))
                     },
                     replyToComment: { commentId in
-                        displayCommentId = commentId
-                        answerToComment = true
-                        displayCommentDetail = true
+                        guard viewModel.ensureConnected() else { return }
+                        navigator.push(.commentDetail(commentId: commentId, reply: true, replyToScrollTo: nil))
                     },
                     displayProfile: { profileId in
                         if profileId == viewModel.thisUserProfileId {
-                            viewModel.openUserProfile = true
+                            navigator.push(.currentUserProfile)
                         } else {
-                            displayProfileId = profileId
-                            displayProfile = true
+                            navigator.push(.publicProfile(profileId: profileId))
                         }
                     },
                     openCreateComment: { commentTextFocused = true },
@@ -82,8 +68,7 @@ struct PostDetailView: View {
                     toggleCommentLike: viewModel.toggleCommentLike,
                     displayContentModeration: {
                         guard viewModel.ensureConnected() else { return }
-                        moderationContext = .content(contentId: $0)
-                        displayContentModeration = true
+                        navigator.push(.reportContent(contentId: $0))
                     })
 
                 CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
@@ -92,7 +77,11 @@ struct PostDetailView: View {
                 .overlay(
                     Group {
                         if viewModel.thisUserProfileId == nil {
-                            Button(action: { viewModel.createCommentTappedWithoutBeeingLoggedIn() }) {
+                            Button(action: {
+                                if viewModel.ensureConnected() {
+                                    commentTextFocused = true
+                                }
+                            }) {
                                 Color.white.opacity(0.0001)
                             }
                             .buttonStyle(.plain)
@@ -101,38 +90,6 @@ struct PostDetailView: View {
                         }
                     }
                 )
-
-                NavigationLink(
-                    destination: Group {
-                        if let displayCommentId {
-                            CommentDetailView(octopus: viewModel.octopus, commentUuid: displayCommentId,
-                                              reply: answerToComment)
-                        } else { EmptyView() }
-                    },
-                    isActive: $displayCommentDetail) {
-                        EmptyView()
-                    }.hidden()
-
-                NavigationLink(destination:
-                                Group {
-                    if let displayProfileId {
-                        ProfileSummaryView(octopus: viewModel.octopus, profileId: displayProfileId)
-                    } else {
-                        EmptyView()
-                    }
-                }, isActive: $displayProfile) {
-                    EmptyView()
-                }.hidden()
-
-                NavigationLink(
-                    destination: Group {
-                        if let moderationContext {
-                            ReportView(octopus: viewModel.octopus, context: moderationContext)
-                        } else { EmptyView() }
-                    },
-                    isActive: $displayContentModeration) {
-                        EmptyView()
-                    }.hidden()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .readWidth($width)
@@ -152,6 +109,12 @@ struct PostDetailView: View {
                     )
             }
         }
+        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+        .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
+                                defaultLeadingBarItem: leadingBarItem,
+                                defaultTrailingBarItem: trailingBarItem,
+                                defaultNavigationBarTitle: Text(viewModel.post?.topic ?? ""),
+                                defaultNavigationBarBackButtonHidden: commentHasChanges)
         .alert(
             "Common.Error",
             isPresented: $displayError,
@@ -176,35 +139,13 @@ struct PostDetailView: View {
         .onDisappear() {
             viewModel.onDisappear()
         }
-        .background(
-            NavigationLink(destination: CurrentUserProfileSummaryView(octopus: viewModel.octopus, dismiss: !$viewModel.openUserProfile),
-                           isActive: $viewModel.openUserProfile) {
-                               EmptyView()
-                           }.hidden()
-        )
-        .fullScreenCover(isPresented: $viewModel.openLogin) {
-            MagicLinkView(octopus: viewModel.octopus, isLoggedIn: .constant(false))
-                .environment(\.dismissModal, $viewModel.openLogin)
-        }
-        .fullScreenCover(isPresented: $viewModel.openCreateProfile) {
-            NavigationView {
-                CreateProfileView(octopus: viewModel.octopus, isLoggedIn: .constant(false))
-                    .environment(\.dismissModal, $viewModel.openCreateProfile)
-            }
-            .navigationBarHidden(true)
-            .accentColor(theme.colors.primary)
-        }
-        .modify {
-            $0.navigationBarBackButtonHidden(commentHasChanges)
-                .navigationBarItems(leading: commentHasChanges ? leadingBarItem : nil)
-        }
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
                     Text("Common.CancelModifications", bundle: .module),
                     isPresented: $showChangesWillBeLostAlert) {
                         Button(L10n("Common.No"), role: .cancel, action: {})
-                        Button(L10n("Common.Yes"), role: .destructive, action: { presentationMode.wrappedValue.dismiss() })
+                        Button(L10n("Common.Yes"), role: .destructive, action: { navigator.pop() })
                     }
             } else {
                 $0.alert(isPresented: $showChangesWillBeLostAlert) {
@@ -212,7 +153,7 @@ struct PostDetailView: View {
                           primaryButton: .default(Text("Common.No", bundle: .module)),
                           secondaryButton: .destructive(
                             Text("Common.Yes", bundle: .module),
-                            action: { presentationMode.wrappedValue.dismiss() }
+                            action: { navigator.pop() }
                           )
                     )
                 }
@@ -223,7 +164,7 @@ struct PostDetailView: View {
                 $0.alert(
                     Text("Post.Delete.Done", bundle: .module),
                     isPresented: $displayPostDeletedAlert, actions: {
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Button(action: { navigator.pop() }) {
                             Text("Common.Ok", bundle: .module)
                         }
                     })
@@ -231,7 +172,7 @@ struct PostDetailView: View {
                 $0.alert(isPresented: $displayPostDeletedAlert) {
                     Alert(title: Text("Post.Delete.Done", bundle: .module),
                           dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        presentationMode.wrappedValue.dismiss()
+                        navigator.pop()
                     }))
                 }
             }
@@ -252,7 +193,7 @@ struct PostDetailView: View {
                 $0.alert(
                     Text("Content.Detail.NotAvailable", bundle: .module),
                     isPresented: $viewModel.postNotAvailable, actions: {
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Button(action: { navigator.pop() }) {
                             Text("Common.Ok", bundle: .module)
                         }
 
@@ -261,42 +202,33 @@ struct PostDetailView: View {
                 $0.alert(isPresented: $viewModel.postNotAvailable) {
                     Alert(title: Text("Content.Detail.NotAvailable", bundle: .module),
                           dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        presentationMode.wrappedValue.dismiss()
+                        navigator.pop()
                     }))
                 }
             }
         }
-        .alert(
-            "Common.Error",
-            isPresented: $displaySSOError,
-            presenting: displayableSSOError,
-            actions: { _ in
-                Button(action: viewModel.linkClientUserToOctopusUser) {
-                    Text("Common.Retry", bundle: .module)
-                }
-                Button(action: {}) {
-                    Text("Common.Cancel", bundle: .module)
-                }
-            },
-            message: { error in
-                error.textView
-            })
-        .onReceive(viewModel.$ssoError) { error in
-            guard let error else { return }
-            displayableSSOError = error
-            displaySSOError = true
+    }
+
+    @ViewBuilder
+    private var leadingBarItem: some View {
+        if commentHasChanges {
+            Button(action: {
+                showChangesWillBeLostAlert = true
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(theme.fonts.navBarItem.weight(.semibold))
+                    .contentShape(Rectangle())
+                    .padding(.trailing, 20)
+            }
+            .padding(.leading, -8)
+        } else {
+            EmptyView()
         }
     }
 
-    private var leadingBarItem: some View {
-        Button(action: {
-            showChangesWillBeLostAlert = true
-        }) {
-            Image(systemName: "chevron.left")
-                .font(theme.fonts.navBarItem.weight(.semibold))
-        }
-        .padding(.leading, -8)
-        .padding(.trailing, 16)
+    @ViewBuilder
+    private var trailingBarItem: some View {
+        EmptyView()
     }
 }
 
@@ -308,6 +240,7 @@ private struct ContentView: View {
     let hideLoadMoreCommentsLoader: Bool
     let width: CGFloat
     @Binding var scrollToBottom: Bool
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
     let refresh: @Sendable () async -> Void
     let displayCommentDetail: (String) -> Void
@@ -328,6 +261,7 @@ private struct ContentView: View {
                                       hasMoreComments: hasMoreComments,
                                       hideLoadMoreCommentsLoader: hideLoadMoreCommentsLoader,
                                       width: width,
+                                      zoomableImageInfo: $zoomableImageInfo,
                                       loadPreviousComments: loadPreviousComments,
                                       displayCommentDetail: displayCommentDetail,
                                       replyToComment: replyToComment,
@@ -339,7 +273,6 @@ private struct ContentView: View {
                                       voteOnPoll: voteOnPoll,
                                       toggleCommentLike: toggleCommentLike,
                                       displayContentModeration: displayContentModeration)
-                    .navigationBarTitle(Text(post.topic), displayMode: .inline)
             } else {
                 VStack {
                     Spacer().frame(height: 54)
@@ -347,8 +280,9 @@ private struct ContentView: View {
                     Text("Content.Detail.NotAvailable", bundle: .module)
                         .font(theme.fonts.body2)
                         .fontWeight(.medium)
-                        .foregroundColor(theme.colors.gray500)
+                        .multilineTextAlignment(.center)
                 }
+                .foregroundColor(theme.colors.gray500)
             }
         }
     }
@@ -362,6 +296,7 @@ private struct PostDetailContentView: View {
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
     let width: CGFloat
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
     let displayCommentDetail: (String) -> Void
     let replyToComment: (String) -> Void
@@ -434,7 +369,7 @@ private struct PostDetailContentView: View {
                         .font(theme.fonts.body2)
                         .lineSpacing(4)
                         .foregroundColor(theme.colors.gray900)
-                    
+
                     Spacer().frame(height: 10)
                 }.padding(.horizontal, horizontalPadding)
                 switch post.attachment {
@@ -448,10 +383,24 @@ private struct PostDetailContentView: View {
                                     contentMode: .fit)
                                 .clipped()
                         },
-                        content: { imageToDisplay in
-                            imageToDisplay
+                        content: { cachedImage in
+                            Image(uiImage: cachedImage.fullSizeImage)
                                 .resizable()
                                 .frame(idealWidth: width, idealHeight: image.size.height * width / image.size.width)
+                                .modify {
+                                    if zoomableImageInfo?.url != image.url {
+                                        $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
+                                    } else {
+                                        $0
+                                    }
+                                }
+                                .onTapGesture {
+                                    withAnimation {
+                                        zoomableImageInfo = .init(
+                                            url: image.url,
+                                            image: Image(uiImage: cachedImage.fullSizeImage))
+                                    }
+                                }
                         })
                 case let .poll(poll):
                     PollView(poll: poll,
@@ -469,7 +418,7 @@ private struct PostDetailContentView: View {
                                    minChildCount: comments?.count,
                                    childrenTapped: { openCreateComment() },
                                    likeTapped: togglePostLike)
-                    .padding(.horizontal, horizontalPadding)
+                .padding(.horizontal, horizontalPadding)
             }
             .padding(.bottom, 12)
 
@@ -479,6 +428,7 @@ private struct PostDetailContentView: View {
                 CommentsView(comments: comments,
                              hasMoreData: hasMoreComments,
                              hideLoader: hideLoadMoreCommentsLoader,
+                             zoomableImageInfo: $zoomableImageInfo,
                              loadPreviousComments: loadPreviousComments,
                              displayCommentDetail: displayCommentDetail,
                              replyToComment: replyToComment,
@@ -545,6 +495,7 @@ private struct CommentsView: View {
     let comments: [DisplayableFeedResponse]
     let hasMoreData: Bool
     let hideLoader: Bool
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
     let displayCommentDetail: (String) -> Void
     let replyToComment: (String) -> Void
@@ -558,23 +509,25 @@ private struct CommentsView: View {
         Compat.LazyVStack {
             if !comments.isEmpty {
                 ForEach(comments, id: \.uuid) { comment in
-                    ResponseFeedItemView(response: comment,
-                                displayResponseDetail: displayCommentDetail, replyToResponse: replyToComment,
-                                displayProfile: displayProfile, deleteResponse: deleteComment,
-                                toggleLike: toggleLike, displayContentModeration: displayContentModeration)
-                        .onAppear {
-                            comment.displayEvents.onAppear()
+                    ResponseFeedItemView(
+                        response: comment,
+                        zoomableImageInfo: $zoomableImageInfo,
+                        displayResponseDetail: displayCommentDetail, replyToResponse: replyToComment,
+                        displayProfile: displayProfile, deleteResponse: deleteComment,
+                        toggleLike: toggleLike, displayContentModeration: displayContentModeration)
+                    .onAppear {
+                        comment.displayEvents.onAppear()
+                    }
+                    .onDisappear() {
+                        comment.displayEvents.onDisappear()
+                    }
+                    .modify {
+                        if #available(iOS 17.0, *) {
+                            $0.geometryGroup()
+                        } else {
+                            $0
                         }
-                        .onDisappear() {
-                            comment.displayEvents.onDisappear()
-                        }
-                        .modify {
-                            if #available(iOS 17.0, *) {
-                                $0.geometryGroup()
-                            } else {
-                                $0
-                            }
-                        }
+                    }
                 }
                 if hasMoreData && !hideLoader {
                     Compat.ProgressView()
@@ -593,6 +546,7 @@ private struct CommentsView: View {
                         Text("Post.Detail.NoComments", bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
+                            .multilineTextAlignment(.center)
                     }
                     .foregroundColor(theme.colors.gray500)
                 }.buttonStyle(.plain)

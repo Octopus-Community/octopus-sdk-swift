@@ -9,11 +9,10 @@ import Octopus
 import OctopusCore
 
 struct DeleteAccountView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Compat.StateObject private var viewModel: DeleteAccountViewModel
     @Environment(\.octopusTheme) private var theme
 
-    @Binding private var popToRoot: Bool
-    @Binding private var preventAutoDismiss: Bool
     @State private var displayDeleteUserAlert = false
 
     @State private var displayError = false
@@ -21,10 +20,9 @@ struct DeleteAccountView: View {
 
     @State private var selectedReason: DeleteAccountReason?
 
-    init(octopus: OctopusSDK, popToRoot: Binding<Bool>, preventAutoDismiss: Binding<Bool>) {
-        _viewModel = Compat.StateObject(wrappedValue: DeleteAccountViewModel(octopus: octopus))
-        _popToRoot = popToRoot
-        _preventAutoDismiss = preventAutoDismiss
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
+        _viewModel = Compat.StateObject(wrappedValue: DeleteAccountViewModel(
+            octopus: octopus, mainFlowPath: mainFlowPath))
     }
 
     var body: some View {
@@ -140,7 +138,7 @@ struct DeleteAccountView: View {
                 $0.alert(
                     Text("Settings.Profile.DeleteAccount.Done.Title", bundle: .module),
                     isPresented: $viewModel.accountDeleted, actions: {
-                        Button(action: { popToRoot = true }) {
+                        Button(action: { navigator.popToRoot() }) {
                             Text("Common.Ok", bundle: .module)
                         }
                     }, message: {
@@ -151,13 +149,10 @@ struct DeleteAccountView: View {
                     Alert(title: Text("Settings.Profile.DeleteAccount.Done.Title", bundle: .module),
                           message: Text("Settings.Profile.DeleteAccount.Done.Message_contactEmail:\(viewModel.email)", bundle: .module),
                           dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        popToRoot = true
+                        navigator.popToRoot()
                     }))
                 }
             }
-        }
-        .onReceive(Publishers.CombineLatest(viewModel.$deleteAccountInProgress, viewModel.$accountDeleted)) {
-            preventAutoDismiss = $0.0 || $0.1
         }
     }
 }

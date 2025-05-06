@@ -280,7 +280,7 @@ class MagicLinkConnectionTests: XCTestCase {
         userDataStorage.store(userData: .init(id: "user_id", jwtToken: "fake_jwt"))
         try await userProfileDatabase.upsert(
             profile: .init(id: "profile_id", userId: "user_id",
-                           nickname: "Nickname", email: nil, bio: nil, pictureUrl: nil,
+                           nickname: "Nickname", email: nil, bio: nil, pictureUrl: nil, notificationBadgeCount: 0,
                            descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
 
         // precondition expectation

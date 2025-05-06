@@ -836,11 +836,22 @@ public struct Com_Octopuscommunity_GetPrivateProfileRequest: Sendable {
   /// Clears the value of `fetchUserBlockList`. Subsequent reads from it will return its default value.
   public mutating func clearFetchUserBlockList() {self._fetchUserBlockList = nil}
 
+  ///Default to false
+  public var fetchNotificationsBadge: Bool {
+    get {return _fetchNotificationsBadge ?? false}
+    set {_fetchNotificationsBadge = newValue}
+  }
+  /// Returns true if `fetchNotificationsBadge` has been explicitly set.
+  public var hasFetchNotificationsBadge: Bool {return self._fetchNotificationsBadge != nil}
+  /// Clears the value of `fetchNotificationsBadge`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchNotificationsBadge() {self._fetchNotificationsBadge = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _fetchUserBlockList: Bool? = nil
+  fileprivate var _fetchNotificationsBadge: Bool? = nil
 }
 
 ///May throw NOT_FOUND if the user does not exist, or you do not have the right to see the profile
@@ -912,6 +923,15 @@ public struct Com_Octopuscommunity_PrivateProfile: Sendable {
 
   public var ascPostFeedID: String = String()
 
+  public var notSeenNotificationsCount: UInt32 {
+    get {return _notSeenNotificationsCount ?? 0}
+    set {_notSeenNotificationsCount = newValue}
+  }
+  /// Returns true if `notSeenNotificationsCount` has been explicitly set.
+  public var hasNotSeenNotificationsCount: Bool {return self._notSeenNotificationsCount != nil}
+  /// Clears the value of `notSeenNotificationsCount`. Subsequent reads from it will return its default value.
+  public mutating func clearNotSeenNotificationsCount() {self._notSeenNotificationsCount = nil}
+
   public var usersBlockList: [String] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -922,6 +942,7 @@ public struct Com_Octopuscommunity_PrivateProfile: Sendable {
   fileprivate var _nickname: String? = nil
   fileprivate var _pictureURL: String? = nil
   fileprivate var _bio: String? = nil
+  fileprivate var _notSeenNotificationsCount: UInt32? = nil
 }
 
 public struct Com_Octopuscommunity_BanUserRequest: Sendable {
@@ -2545,6 +2566,7 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "userId"),
     2: .same(proto: "fetchUserBlockList"),
+    3: .same(proto: "fetchNotificationsBadge"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2555,6 +2577,7 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self._fetchUserBlockList) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self._fetchNotificationsBadge) }()
       default: break
       }
     }
@@ -2571,12 +2594,16 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
     try { if let v = self._fetchUserBlockList {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._fetchNotificationsBadge {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetPrivateProfileRequest, rhs: Com_Octopuscommunity_GetPrivateProfileRequest) -> Bool {
     if lhs.userID != rhs.userID {return false}
     if lhs._fetchUserBlockList != rhs._fetchUserBlockList {return false}
+    if lhs._fetchNotificationsBadge != rhs._fetchNotificationsBadge {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2628,6 +2655,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     5: .same(proto: "bio"),
     10: .same(proto: "descPostFeedId"),
     11: .same(proto: "ascPostFeedId"),
+    20: .same(proto: "notSeenNotificationsCount"),
     100: .same(proto: "usersBlockList"),
   ]
 
@@ -2644,6 +2672,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
       case 5: try { try decoder.decodeSingularStringField(value: &self._bio) }()
       case 10: try { try decoder.decodeSingularStringField(value: &self.descPostFeedID) }()
       case 11: try { try decoder.decodeSingularStringField(value: &self.ascPostFeedID) }()
+      case 20: try { try decoder.decodeSingularUInt32Field(value: &self._notSeenNotificationsCount) }()
       case 100: try { try decoder.decodeRepeatedStringField(value: &self.usersBlockList) }()
       default: break
       }
@@ -2676,6 +2705,9 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     if !self.ascPostFeedID.isEmpty {
       try visitor.visitSingularStringField(value: self.ascPostFeedID, fieldNumber: 11)
     }
+    try { if let v = self._notSeenNotificationsCount {
+      try visitor.visitSingularUInt32Field(value: v, fieldNumber: 20)
+    } }()
     if !self.usersBlockList.isEmpty {
       try visitor.visitRepeatedStringField(value: self.usersBlockList, fieldNumber: 100)
     }
@@ -2690,6 +2722,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     if lhs._bio != rhs._bio {return false}
     if lhs.descPostFeedID != rhs.descPostFeedID {return false}
     if lhs.ascPostFeedID != rhs.ascPostFeedID {return false}
+    if lhs._notSeenNotificationsCount != rhs._notSeenNotificationsCount {return false}
     if lhs.usersBlockList != rhs.usersBlockList {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

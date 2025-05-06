@@ -114,9 +114,10 @@ struct EditProfileView: View {
         }) {
             Image(systemName: "chevron.left")
                 .font(theme.fonts.navBarItem.weight(.semibold))
+                .contentShape(Rectangle())
+                .padding(.trailing, 20)
         }
         .padding(.leading, -8)
-        .padding(.trailing, 16)
     }
 }
 

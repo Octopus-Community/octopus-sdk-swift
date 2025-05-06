@@ -14,6 +14,8 @@ struct PostFeedView<EmptyPostView: View>: View {
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: PostFeedViewModel
 
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
+
     let displayPostDetail: (String, Bool) -> Void
     let displayProfile: (String) -> Void
     let displayContentModeration: (String) -> Void
@@ -24,11 +26,13 @@ struct PostFeedView<EmptyPostView: View>: View {
     @State private var displayableError: DisplayableString?
 
     init(viewModel: PostFeedViewModel,
+         zoomableImageInfo: Binding<ZoomableImageInfo?>,
          displayPostDetail: @escaping (String, Bool) -> Void,
          displayProfile: @escaping (String) -> Void,
          displayContentModeration: @escaping (String) -> Void,
          @ViewBuilder _ emptyPostView: () -> EmptyPostView){
         _viewModel = Compat.StateObject(wrappedValue: viewModel)
+        _zoomableImageInfo = zoomableImageInfo
         self.displayPostDetail = displayPostDetail
         self.displayProfile = displayProfile
         self.displayContentModeration = displayContentModeration
@@ -39,6 +43,7 @@ struct PostFeedView<EmptyPostView: View>: View {
         ZStack {
             ContentView(
                 posts: viewModel.posts, hasMoreData: viewModel.hasMoreData,
+                zoomableImageInfo: $zoomableImageInfo,
                 loadPreviousItems: viewModel.loadPreviousItems,
                 displayPostDetail: displayPostDetail,
                 displayProfile: displayProfile,
@@ -98,6 +103,7 @@ struct PostFeedView<EmptyPostView: View>: View {
 private struct ContentView<EmptyPostView: View>: View {
     let posts: [DisplayablePost]?
     let hasMoreData: Bool
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
     let displayPostDetail: (String, Bool) -> Void
     let displayProfile: (String) -> Void
@@ -111,6 +117,7 @@ private struct ContentView<EmptyPostView: View>: View {
         Group {
             if let posts {
                 PostsView(posts: posts, hasMoreData: hasMoreData,
+                          zoomableImageInfo: $zoomableImageInfo,
                           loadPreviousItems: loadPreviousItems,
                           displayPostDetail: displayPostDetail,
                           displayProfile: displayProfile,
@@ -129,6 +136,7 @@ private struct ContentView<EmptyPostView: View>: View {
 private struct PostsView<EmptyPostView: View>: View {
     let posts: [DisplayablePost]
     let hasMoreData: Bool
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
     let displayPostDetail: (String, Bool) -> Void
     let displayProfile: (String) -> Void
@@ -144,7 +152,9 @@ private struct PostsView<EmptyPostView: View>: View {
         if !posts.isEmpty {
             Compat.LazyVStack {
                 ForEach(posts, id: \.uuid) { post in
-                    PostSummaryView(post: post, width: width, displayPostDetail: displayPostDetail,
+                    PostSummaryView(post: post, width: width,
+                                    zoomableImageInfo: $zoomableImageInfo,
+                                    displayPostDetail: displayPostDetail,
                                     displayProfile: displayProfile, deletePost: deletePost,
                                     toggleLike: toggleLike, voteOnPoll: voteOnPoll,
                                     displayContentModeration: displayContentModeration)
@@ -158,8 +168,6 @@ private struct PostsView<EmptyPostView: View>: View {
                                 $0
                             }
                         }
-                        .disableAnimation()
-
                 }
                 if hasMoreData {
                     Compat.ProgressView()

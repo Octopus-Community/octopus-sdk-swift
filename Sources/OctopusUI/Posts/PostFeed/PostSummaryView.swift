@@ -9,6 +9,7 @@ struct PostSummaryView: View {
 
     let post: DisplayablePost
     let width: CGFloat
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let displayPostDetail: (String, Bool) -> Void
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
@@ -93,6 +94,7 @@ struct PostSummaryView: View {
                 case let .published(postContent):
                     OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
                         PublishedContentView(content: postContent, width: width,
+                                             zoomableImageInfo: $zoomableImageInfo,
                                              childrenTapped: { displayPostDetail(post.uuid, true) },
                                              likeTapped: { toggleLike(post.uuid) },
                                              voteOnPoll: { voteOnPoll($0, post.uuid) })
@@ -158,6 +160,7 @@ private struct PublishedContentView: View {
     let content: DisplayablePost.PostContent
 
     let width: CGFloat
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let childrenTapped: () -> Void
     let likeTapped: () -> Void
     let voteOnPoll: (String) -> Bool
@@ -183,12 +186,14 @@ private struct PublishedContentView: View {
                         .foregroundColor(theme.colors.gray900)
                 }
             }
+            .contentShape(Rectangle())
             .padding(.horizontal, 20)
 
             switch content.attachment {
             case let .image(image):
                 AsyncCachedImage(
                     url: image.url, cache: .content,
+                    croppingRatio: minAspectRatio,
                     placeholder: {
                         theme.colors.gray200
                             .aspectRatio(
@@ -196,13 +201,43 @@ private struct PublishedContentView: View {
                                 contentMode: .fit)
                             .clipped()
                     },
-                    content: { imageToDisplay in
-                        imageToDisplay
+                    content: { cachedImage in
+                        Image(uiImage: cachedImage.ratioImage)
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxHeight: width / minAspectRatio)
-                            .clipped()
-                            .allowsHitTesting(false) // weird bug on iOS 17 where it prevents opening the menu (...)
+                            .modify {
+                                if zoomableImageInfo?.url != image.url {
+                                    $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
+                                } else {
+                                    $0
+                                }
+                            }
+                            .aspectRatio(contentMode: .fit)
+                            .modify {
+                                if #available(iOS 15.0, *) {
+                                    // put the tap in an overlay because it seems that the image touch area is not
+                                    // clipped. Hence, it takes the tap over the text. When put in an overlay, it seems
+                                    // to work correctly
+                                    $0.overlay {
+                                        Color.white.opacity(0.0001)
+                                            .onTapGesture {
+                                                withAnimation {
+                                                    zoomableImageInfo = .init(
+                                                        url: image.url,
+                                                        image: Image(uiImage: cachedImage.fullSizeImage),
+                                                        transitionImage: Image(uiImage: cachedImage.ratioImage))
+                                                }
+                                            }
+                                    }
+                                } else {
+                                    $0.onTapGesture {
+                                        withAnimation {
+                                            zoomableImageInfo = .init(
+                                                url: image.url,
+                                                image: Image(uiImage: cachedImage.fullSizeImage))
+                                        }
+                                    }
+                                }
+                            }
                     })
             case let .poll(poll):
                 PollView(poll: poll,
@@ -214,9 +249,11 @@ private struct PublishedContentView: View {
                 EmptyView()
             }
 
-            AggregatedInfoView(aggregatedInfo: liveMeasures.aggregatedInfo, userInteractions: liveMeasures.userInteractions,
+            AggregatedInfoView(aggregatedInfo: liveMeasures.aggregatedInfo,
+                               userInteractions: liveMeasures.userInteractions,
                                childrenTapped: childrenTapped, likeTapped: likeTapped)
-                .padding(.horizontal, 20)
+            .disableAnimation()
+            .padding(.horizontal, 20)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .multilineTextAlignment(.leading)

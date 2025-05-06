@@ -8,27 +8,36 @@ import Combine
 import UIKit
 import os
 
+struct CachedImage {
+    /// The image at the asked ratio
+    let ratioImage: UIImage
+    /// The full size image
+    let fullSizeImage: UIImage
+}
+
 private final class Loader: ObservableObject, @unchecked Sendable {
     static let verbose: Bool = false
 
-    @Published var image: UIImage? = nil
+    @Published var image: CachedImage? = nil
     private let url: URL
     private let session: URLSession
     private let cache: ImageCache
+    private let croppingRatio: Double?
     private var storage = [AnyCancellable]()
 
-    init(_ url: URL, cache: ImageCache) {
+    init(_ url: URL, cache: ImageCache, croppingRatio: Double?) {
         self.url = url
         let configuration = URLSessionConfiguration.default
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         session =  URLSession(configuration: configuration)
         self.cache = cache
+        self.croppingRatio = croppingRatio
 
         loadImage()
     }
 
     func loadImage() {
-        cache.getFile(url: url) { [weak self] cachedImage in
+        cache.getFile(url: url, croppingRatio: croppingRatio) { [weak self] cachedImage in
             guard let self else { return }
             guard let cachedImage else {
                 if #available(iOS 14, *) {
@@ -63,7 +72,9 @@ private final class Loader: ObservableObject, @unchecked Sendable {
                     }
                 }
                 try? cache.store(ImageAndData(imageData: result.data, image: image), url: url)
-                self.image = image
+                cache.getFile(url: url, croppingRatio: croppingRatio) { cachedImage in
+                    self.image = cachedImage
+                }
             }
             .store(in: &storage)
     }
@@ -72,14 +83,15 @@ private final class Loader: ObservableObject, @unchecked Sendable {
 struct AsyncCachedImage<Content: View, Placeholder: View>: View {
     let url: URL
     let placeholder: () -> Placeholder
-    let content: (Image) -> Content
+    let content: (CachedImage) -> Content
     @ObservedObject private var imageLoader: Loader
 
     init(url: URL, cache: ImageCache,
+         croppingRatio: Double? = nil,
          @ViewBuilder placeholder: @escaping () -> Placeholder = { EmptyView() },
-         @ViewBuilder content: @escaping (Image) -> Content) {
+         @ViewBuilder content: @escaping (CachedImage) -> Content) {
         self.url = url
-        self.imageLoader = Loader(url, cache: cache)
+        self.imageLoader = Loader(url, cache: cache, croppingRatio: croppingRatio)
         self.placeholder = placeholder
         self.content = content
     }
@@ -93,7 +105,7 @@ struct AsyncCachedImage<Content: View, Placeholder: View>: View {
 //                .opacity(0.5)
 //        }
         if let image = imageLoader.image {
-            content(Image(uiImage: image))
+            content(image)
         } else {
             placeholder()
         }

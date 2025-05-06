@@ -8,28 +8,32 @@ import OctopusCore
 
 struct ConnectionRouter: ViewModifier {
     @Environment(\.octopusTheme) private var theme
+    let octopus: OctopusSDK
+    @Binding var noConnectedReplacementAction: ConnectedActionReplacement?
+
     @Compat.StateObject private var viewModel: ConnectionRouterViewModel
 
-    @Binding var loggedInDone: Bool
-
+    @State private var openLogin = false
+    @State private var openCreateProfile = false
     @State private var displaySSOError = false
     @State private var displayableSSOError: DisplayableString?
 
-    init(viewModel: ConnectionRouterViewModel, loggedInDone: Binding<Bool>) {
-        _viewModel = Compat.StateObject(wrappedValue: viewModel)
-        _loggedInDone = loggedInDone
+    init(octopus: OctopusSDK, noConnectedReplacementAction: Binding<ConnectedActionReplacement?>) {
+        self.octopus = octopus
+        _viewModel = Compat.StateObject(wrappedValue: ConnectionRouterViewModel(octopus: octopus))
+        _noConnectedReplacementAction = noConnectedReplacementAction
     }
 
     func body(content: Content) -> some View {
         content
-            .fullScreenCover(isPresented: $viewModel.openLogin) {
-                MagicLinkView(octopus: viewModel.octopus, isLoggedIn: $loggedInDone)
-                    .environment(\.dismissModal, $viewModel.openLogin)
+            .fullScreenCover(isPresented: $openLogin) {
+                MagicLinkView(octopus: octopus)
+                    .environment(\.dismissModal, $openLogin)
             }
-            .fullScreenCover(isPresented: $viewModel.openCreateProfile) {
+            .fullScreenCover(isPresented: $openCreateProfile) {
                 NavigationView {
-                    CreateProfileView(octopus: viewModel.octopus, isLoggedIn: $loggedInDone)
-                        .environment(\.dismissModal, $viewModel.openCreateProfile)
+                    CreateProfileView(octopus: octopus)
+                        .environment(\.dismissModal, $openCreateProfile)
                 }
                 .navigationBarHidden(true)
                 .accentColor(theme.colors.primary)
@@ -54,12 +58,23 @@ struct ConnectionRouter: ViewModifier {
                 displayableSSOError = error
                 displaySSOError = true
             }
+            .onValueChanged(of: noConnectedReplacementAction) {
+                defer { noConnectedReplacementAction = nil }
+                switch $0 {
+                case .login: openLogin = true
+                case .createProfile: openCreateProfile = true
+                case let .ssoError(error):
+                    displayableSSOError = error
+                    displaySSOError = true
+                case .none: break
+                }
+            }
     }
 }
 
 extension View {
-    func connectionRouter(viewModel: ConnectionRouterViewModel, loggedInDone: Binding<Bool>) -> some View {
-        modifier(ConnectionRouter(viewModel: viewModel, loggedInDone: loggedInDone))
+    func connectionRouter(octopus: OctopusSDK, noConnectedReplacementAction: Binding<ConnectedActionReplacement?>) -> some View {
+        modifier(ConnectionRouter(octopus: octopus, noConnectedReplacementAction: noConnectedReplacementAction))
     }
 }
 
@@ -73,33 +88,6 @@ class ConnectionRouterViewModel: ObservableObject {
     let octopus: OctopusSDK
     init(octopus: OctopusSDK) {
         self.octopus = octopus
-    }
-
-    func ensureConnected() -> Bool {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            return true
-        }
-        return false
     }
 
     func linkClientUserToOctopusUser() {

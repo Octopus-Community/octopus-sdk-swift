@@ -7,6 +7,7 @@ import SwiftUI
 import Octopus
 
 struct CreateCommentView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
@@ -14,8 +15,6 @@ struct CreateCommentView: View {
 
     @Binding var textFocused: Bool
     @Binding var hasChanges: Bool
-
-    @State private var openUserProfile = false
 
     init(octopus: OctopusSDK, postId: String, textFocused: Binding<Bool>, hasChanges: Binding<Bool>) {
         _viewModel = Compat.StateObject(wrappedValue: CreateCommentViewModel(octopus: octopus, postId: postId))
@@ -36,17 +35,10 @@ struct CreateCommentView: View {
             textError: viewModel.textError,
             pictureError: viewModel.pictureError,
             send: viewModel.send,
-            userProfileTapped: { openUserProfile = true },
+            userProfileTapped: { navigator.push(.currentUserProfile) },
             resetAlertError: { viewModel.alertError = nil })
         .onReceive(viewModel.$hasChanges) {
             hasChanges = $0
         }
-        .background(
-            NavigationLink(destination: CurrentUserProfileSummaryView(octopus: viewModel.octopus,
-                                                                      dismiss: !$openUserProfile),
-                           isActive: $openUserProfile) {
-                               EmptyView()
-                           }.hidden()
-        )
     }
 }

@@ -53,7 +53,7 @@ class ProfileTests: XCTestCase {
         // Precondition: user is logged in and a profile is in db
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
-                                                email: nil, bio: nil, pictureUrl: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, notificationBadgeCount: 0,
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 
@@ -141,7 +141,7 @@ class ProfileTests: XCTestCase {
         // start with a connected user
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
-                                                email: nil, bio: nil, pictureUrl: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, notificationBadgeCount: 0,
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 
@@ -200,7 +200,7 @@ class ProfileTests: XCTestCase {
         // Precondition: user is logged in and a profile is in db
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
-                                                email: nil, bio: nil, pictureUrl: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, notificationBadgeCount: 0,
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 

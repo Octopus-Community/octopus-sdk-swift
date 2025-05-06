@@ -8,7 +8,7 @@ import os
 import Octopus
 
 struct CommentDetailView: View {
-    @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
 
     @Compat.StateObject private var viewModel: CommentDetailViewModel
@@ -21,24 +21,16 @@ struct CommentDetailView: View {
     @State private var displayWillDeleteAlert = false
     @State private var displayPostDeletedAlert = false
 
-    @State private var displayProfileId: String?
-    @State private var displayProfile = false
-
     @State private var replyTextFocused: Bool
     @State private var replyHasChanges = false
 
-    @State private var moderationContext: ReportView.Context?
-    @State private var displayContentModeration = false
-
-    // TODO: Delete when router is fully used
-    @State private var displaySSOError = false
-    @State private var displayableSSOError: DisplayableString?
-
     @State private var width: CGFloat = 0
 
-    init(octopus: OctopusSDK, commentUuid: String, reply: Bool) {
+    @State private var zoomableImageInfo: ZoomableImageInfo?
+
+    init(octopus: OctopusSDK, commentUuid: String, reply: Bool = false, replyToScrollTo: String? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: CommentDetailViewModel(
-            octopus: octopus, commentUuid: commentUuid, reply: reply))
+            octopus: octopus, commentUuid: commentUuid, reply: reply, replyToScrollTo: replyToScrollTo))
         _replyTextFocused = .init(initialValue: reply)
     }
 
@@ -51,25 +43,29 @@ struct CommentDetailView: View {
                     hideLoadMoreRepliesLoader: viewModel.hideLoadMoreRepliesLoader,
                     width: width,
                     scrollToBottom: $viewModel.scrollToBottom,
+                    scrollToId: $viewModel.scrollToId,
+                    zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousReplies: viewModel.loadPreviousReplies,
                     refresh: viewModel.refresh,
                     displayProfile: { profileId in
                         if profileId == viewModel.thisUserProfileId {
-                            viewModel.openUserProfile = true
+                            navigator.push(.currentUserProfile)
                         } else {
-                            displayProfileId = profileId
-                            displayProfile = true
+                            navigator.push(.publicProfile(profileId: profileId))
                         }
                     },
-                    openCreateReply: { replyTextFocused = true },
+                    openCreateReply: {
+                        if viewModel.ensureConnected() {
+                            replyTextFocused = true
+                        }
+                    },
                     deleteComment: viewModel.deleteComment,
                     deleteReply: viewModel.deleteReply,
                     toggleCommentLike: viewModel.toggleCommentLike,
                     toggleReplyLike: viewModel.toggleReplyLike,
                     displayContentModeration: {
                         guard viewModel.ensureConnected() else { return }
-                        moderationContext = .content(contentId: $0)
-                        displayContentModeration = true
+                        navigator.push(.reportContent(contentId: $0))
                     })
 
                 CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
@@ -78,7 +74,11 @@ struct CommentDetailView: View {
                 .overlay(
                     Group {
                         if viewModel.thisUserProfileId == nil {
-                            Button(action: { viewModel.createReplyTappedWithoutBeeingLoggedIn() }) {
+                            Button(action: {
+                                if viewModel.ensureConnected() {
+                                    replyTextFocused = true
+                                }
+                            }) {
                                 Color.white.opacity(0.0001)
                             }
                             .buttonStyle(.plain)
@@ -87,26 +87,6 @@ struct CommentDetailView: View {
                         }
                     }
                 )
-                NavigationLink(destination:
-                                Group {
-                    if let displayProfileId {
-                        ProfileSummaryView(octopus: viewModel.octopus, profileId: displayProfileId)
-                    } else {
-                        EmptyView()
-                    }
-                }, isActive: $displayProfile) {
-                    EmptyView()
-                }.hidden()
-
-                NavigationLink(
-                    destination: Group {
-                        if let moderationContext {
-                            ReportView(octopus: viewModel.octopus, context: moderationContext)
-                        } else { EmptyView() }
-                    },
-                    isActive: $displayContentModeration) {
-                        EmptyView()
-                    }.hidden()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .readWidth($width)
@@ -126,7 +106,12 @@ struct CommentDetailView: View {
                     )
             }
         }
-        .navigationBarTitle(Text("Comment.Detail.Title", bundle: .module), displayMode: .inline)
+        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+        .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
+                                defaultLeadingBarItem: leadingBarItem,
+                                defaultTrailingBarItem: trailingBarItem,
+                                defaultNavigationBarTitle: Text("Comment.Detail.Title", bundle: .module),
+                                defaultNavigationBarBackButtonHidden: replyHasChanges)
         .alert(
             "Common.Error",
             isPresented: $displayError,
@@ -151,35 +136,13 @@ struct CommentDetailView: View {
         .onDisappear() {
             viewModel.onDisappear()
         }
-        .background(
-            NavigationLink(destination: CurrentUserProfileSummaryView(octopus: viewModel.octopus, dismiss: !$viewModel.openUserProfile),
-                           isActive: $viewModel.openUserProfile) {
-                               EmptyView()
-                           }.hidden()
-        )
-        .fullScreenCover(isPresented: $viewModel.openLogin) {
-            MagicLinkView(octopus: viewModel.octopus, isLoggedIn: .constant(false))
-                .environment(\.dismissModal, $viewModel.openLogin)
-        }
-        .fullScreenCover(isPresented: $viewModel.openCreateProfile) {
-            NavigationView {
-                CreateProfileView(octopus: viewModel.octopus, isLoggedIn: .constant(false))
-                    .environment(\.dismissModal, $viewModel.openCreateProfile)
-            }
-            .navigationBarHidden(true)
-            .accentColor(theme.colors.primary)
-        }
-        .modify {
-            $0.navigationBarBackButtonHidden(replyHasChanges)
-                .navigationBarItems(leading: replyHasChanges ? leadingBarItem : nil)
-        }
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
                     Text("Common.CancelModifications", bundle: .module),
                     isPresented: $showChangesWillBeLostAlert) {
                         Button(L10n("Common.No"), role: .cancel, action: {})
-                        Button(L10n("Common.Yes"), role: .destructive, action: { presentationMode.wrappedValue.dismiss() })
+                        Button(L10n("Common.Yes"), role: .destructive, action: { navigator.pop() })
                     }
             } else {
                 $0.alert(isPresented: $showChangesWillBeLostAlert) {
@@ -187,7 +150,7 @@ struct CommentDetailView: View {
                           primaryButton: .default(Text("Common.No", bundle: .module)),
                           secondaryButton: .destructive(
                             Text("Common.Yes", bundle: .module),
-                            action: { presentationMode.wrappedValue.dismiss() }
+                            action: { navigator.pop() }
                           )
                     )
                 }
@@ -198,7 +161,7 @@ struct CommentDetailView: View {
                 $0.alert(
                     Text("Comment.Delete.Done", bundle: .module),
                     isPresented: $displayPostDeletedAlert, actions: {
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Button(action: { navigator.pop() }) {
                             Text("Common.Ok", bundle: .module)
                         }
                     })
@@ -206,7 +169,7 @@ struct CommentDetailView: View {
                 $0.alert(isPresented: $displayPostDeletedAlert) {
                     Alert(title: Text("Comment.Delete.Done", bundle: .module),
                           dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        presentationMode.wrappedValue.dismiss()
+                        navigator.pop()
                     }))
                 }
             }
@@ -227,7 +190,7 @@ struct CommentDetailView: View {
                 $0.alert(
                     Text("Content.Detail.NotAvailable", bundle: .module),
                     isPresented: $viewModel.commentNotAvailable, actions: {
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                        Button(action: { navigator.pop() }) {
                             Text("Common.Ok", bundle: .module)
                         }
 
@@ -236,42 +199,33 @@ struct CommentDetailView: View {
                 $0.alert(isPresented: $viewModel.commentNotAvailable) {
                     Alert(title: Text("Content.Detail.NotAvailable", bundle: .module),
                           dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        presentationMode.wrappedValue.dismiss()
+                        navigator.pop()
                     }))
                 }
             }
         }
-        .alert(
-            "Common.Error",
-            isPresented: $displaySSOError,
-            presenting: displayableSSOError,
-            actions: { _ in
-                Button(action: viewModel.linkClientUserToOctopusUser) {
-                    Text("Common.Retry", bundle: .module)
-                }
-                Button(action: {}) {
-                    Text("Common.Cancel", bundle: .module)
-                }
-            },
-            message: { error in
-                error.textView
-            })
-        .onReceive(viewModel.$ssoError) { error in
-            guard let error else { return }
-            displayableSSOError = error
-            displaySSOError = true
+    }
+
+    @ViewBuilder
+    private var leadingBarItem: some View {
+        if replyHasChanges {
+            Button(action: {
+                showChangesWillBeLostAlert = true
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(theme.fonts.navBarItem.weight(.semibold))
+                    .contentShape(Rectangle())
+                    .padding(.trailing, 20)
+            }
+            .padding(.leading, -8)
+        } else {
+            EmptyView()
         }
     }
 
-    private var leadingBarItem: some View {
-        Button(action: {
-            showChangesWillBeLostAlert = true
-        }) {
-            Image(systemName: "chevron.left")
-                .font(theme.fonts.navBarItem.weight(.semibold))
-        }
-        .padding(.leading, -8)
-        .padding(.trailing, 16)
+    @ViewBuilder
+    private var trailingBarItem: some View {
+        EmptyView()
     }
 }
 
@@ -283,6 +237,8 @@ private struct ContentView: View {
     let hideLoadMoreRepliesLoader: Bool
     let width: CGFloat
     @Binding var scrollToBottom: Bool
+    @Binding var scrollToId: String?
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
     let refresh: @Sendable () async -> Void
     let displayProfile: (String) -> Void
@@ -294,31 +250,36 @@ private struct ContentView: View {
     let displayContentModeration: (String) -> Void
 
     var body: some View {
-        Compat.ScrollView(scrollToBottom: $scrollToBottom, refreshAction: refresh) {
-            if let comment {
-                CommentDetailContentView(comment: comment, replies: replies,
-                                         hasMoreReplies: hasMoreReplies,
-                                         hideLoadMoreRepliesLoader: hideLoadMoreRepliesLoader,
-                                         width: width,
-                                         loadPreviousReplies: loadPreviousReplies,
-                                         displayProfile: displayProfile,
-                                         openCreateReply: openCreateReply,
-                                         deleteComment: deleteComment,
-                                         deleteReply: deleteReply,
-                                         toggleCommentLike: toggleCommentLike,
-                                         toggleReplyLike: toggleReplyLike,
-                                         displayContentModeration: displayContentModeration)
-            } else {
-                VStack {
-                    Spacer().frame(height: 54)
-                    Image(.postDetailMissing)
-                    Text("Content.Detail.NotAvailable", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(theme.colors.gray500)
+        Compat.ScrollView(
+            scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
+            refreshAction: refresh) {
+                if let comment {
+                    CommentDetailContentView(comment: comment, replies: replies,
+                                             hasMoreReplies: hasMoreReplies,
+                                             hideLoadMoreRepliesLoader: hideLoadMoreRepliesLoader,
+                                             width: width,
+                                             zoomableImageInfo: $zoomableImageInfo,
+                                             loadPreviousReplies: loadPreviousReplies,
+                                             displayProfile: displayProfile,
+                                             openCreateReply: openCreateReply,
+                                             deleteComment: deleteComment,
+                                             deleteReply: deleteReply,
+                                             toggleCommentLike: toggleCommentLike,
+                                             toggleReplyLike: toggleReplyLike,
+                                             displayContentModeration: displayContentModeration)
+                } else {
+                    VStack {
+                        Spacer().frame(height: 54)
+                        Image(.postDetailMissing)
+                        Text("Content.Detail.NotAvailable", bundle: .module)
+                            .font(theme.fonts.body2)
+                            .fontWeight(.medium)
+                            .multilineTextAlignment(.center)
+                    }
+                    .foregroundColor(theme.colors.gray500)
                 }
             }
-        }
+            .clipped()
     }
 }
 
@@ -330,6 +291,7 @@ private struct CommentDetailContentView: View {
     let hasMoreReplies: Bool
     let hideLoadMoreRepliesLoader: Bool
     let width: CGFloat
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
     let displayProfile: (String) -> Void
     let openCreateReply: () -> Void
@@ -406,11 +368,25 @@ private struct CommentDetailContentView: View {
                                             contentMode: .fit)
                                         .clipped()
                                 },
-                                content: { image in
-                                    image
+                                content: { cachedImage in
+                                    Image(uiImage: cachedImage.fullSizeImage)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .cornerRadius(12)
+                                        .modify {
+                                            if zoomableImageInfo?.url != image.url {
+                                                $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
+                                            } else {
+                                                $0
+                                            }
+                                        }
+                                        .onTapGesture {
+                                            withAnimation {
+                                                zoomableImageInfo = .init(
+                                                    url: image.url,
+                                                    image: Image(uiImage: cachedImage.fullSizeImage))
+                                            }
+                                        }
                                 })
                         }
                     }
@@ -450,6 +426,7 @@ private struct CommentDetailContentView: View {
                 RepliesView(replies: replies,
                             hasMoreData: hasMoreReplies,
                             hideLoader: hideLoadMoreRepliesLoader,
+                            zoomableImageInfo: $zoomableImageInfo,
                             loadPreviousReplies: loadPreviousReplies,
                             displayProfile: displayProfile,
                             deleteReply: deleteReply,
@@ -513,6 +490,7 @@ private struct RepliesView: View {
     let replies: [DisplayableFeedResponse]
     let hasMoreData: Bool
     let hideLoader: Bool
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
     let displayProfile: (String) -> Void
     let deleteReply: (String) -> Void
@@ -526,6 +504,7 @@ private struct RepliesView: View {
                 ForEach(replies, id: \.uuid) { reply in
                     ResponseFeedItemView(
                         response: reply,
+                        zoomableImageInfo: $zoomableImageInfo,
                         displayResponseDetail: { _ in }, replyToResponse: { _ in },
                         displayProfile: displayProfile, deleteResponse: deleteReply,
                         toggleLike: toggleLike, displayContentModeration: displayContentModeration)

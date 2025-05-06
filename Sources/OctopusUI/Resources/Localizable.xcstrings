@@ -1364,6 +1364,22 @@
         }
       }
     },
+    "Notifications.List.Empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have no new notifications."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous n’avez pas de nouvelles notifications."
+          }
+        }
+      }
+    },
     "Picture.Selection.Error_maxRatio:%@_minSize:%lld" : {
       "localizations" : {
         "en" : {
@@ -2146,6 +2162,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Votre pseudo"
+          }
+        }
+      }
+    },
+    "Profile.Tabs.Notifications" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
           }
         }
       }

@@ -12,6 +12,7 @@ public struct CurrentUserProfile: Equatable, Sendable {
     public let email: String?
     public let bio: String?
     public let pictureUrl: URL?
+    public let notificationBadgeCount: Int
 
     public let blockedProfileIds: [String]
 
@@ -26,6 +27,7 @@ extension CurrentUserProfile {
         email = storableProfile.email
         bio = storableProfile.bio
         pictureUrl = storableProfile.pictureUrl
+        notificationBadgeCount = storableProfile.notificationBadgeCount ?? 0
         blockedProfileIds = storableProfile.blockedProfileIds
         newestFirstPostsFeed = postFeedsStore.getOrCreate(feedId: storableProfile.descPostFeedId)
     }

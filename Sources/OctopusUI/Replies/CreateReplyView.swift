@@ -7,6 +7,7 @@ import SwiftUI
 import Octopus
 
 struct CreateReplyView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
@@ -36,17 +37,10 @@ struct CreateReplyView: View {
             textError: viewModel.textError,
             pictureError: viewModel.pictureError,
             send: viewModel.send,
-            userProfileTapped: { openUserProfile = true },
+            userProfileTapped: { navigator.push(.currentUserProfile) },
             resetAlertError: { viewModel.alertError = nil })
         .onReceive(viewModel.$hasChanges) {
             hasChanges = $0
         }
-        .background(
-            NavigationLink(destination: CurrentUserProfileSummaryView(octopus: viewModel.octopus,
-                                                                      dismiss: !$openUserProfile),
-                           isActive: $openUserProfile) {
-                               EmptyView()
-                           }.hidden()
-        )
     }
 }

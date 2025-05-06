@@ -181,7 +181,9 @@ private struct OptionView: View {
                     Image(systemName: "xmark")
                         .font(theme.fonts.body2)
                         .foregroundColor(canDelete ? theme.colors.gray900 : theme.colors.gray200)
-                }.disabled(!canDelete)
+                }
+                .disabled(!canDelete)
+                .buttonStyle(.plain)
             }
             if let error = option.error {
                 error.textView

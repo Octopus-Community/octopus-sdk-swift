@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 import Octopus
 import OctopusCore
 
@@ -14,23 +15,28 @@ class ProfileSummaryViewModel: ObservableObject {
     @Published private(set) var error: DisplayableString?
     @Published private(set) var isLoading: Bool = false
 
-    @Published var openLogin = false
-    @Published var openCreateProfile = false
+    @Published var authenticationAction: ConnectedActionReplacement?
+    var authenticationActionBinding: Binding<ConnectedActionReplacement?> {
+        Binding(
+            get: { self.authenticationAction },
+            set: { self.authenticationAction = $0 }
+        )
+    }
 
     @Published var blockUserDone = false
 
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
 
-    @Published private(set) var ssoError: DisplayableString? // TODO: Delete when router is fully used
-
     let octopus: OctopusSDK
     let profileId: String
+    let connectedActionChecker: ConnectedActionChecker
 
     private var storage = [AnyCancellable]()
 
     init(octopus: OctopusSDK, profileId: String) {
         self.octopus = octopus
         self.profileId = profileId
+        self.connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         octopus.core.profileRepository.getProfile(profileId: profileId)
             .replaceError(with: nil)
@@ -79,55 +85,7 @@ class ProfileSummaryViewModel: ObservableObject {
     }
 
     func ensureConnected() -> Bool {
-        switch octopus.core.connectionRepository.connectionState {
-        case .notConnected, .magicLinkSent:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                config.loginRequired()
-            } else {
-                openLogin = true
-            }
-        case let .clientConnected(_, error):
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        case .profileCreationRequired:
-            openCreateProfile = true
-        case .connected:
-            return true
-        }
-        return false
-    }
-
-    // TODO: Delete when router is fully used
-    func linkClientUserToOctopusUser() {
-        Task {
-            await linkClientUserToOctopusUser()
-        }
-    }
-
-    // TODO: Delete when router is fully used
-    private func linkClientUserToOctopusUser() async {
-        do {
-            try await octopus.core.connectionRepository.linkClientUserToOctopusUser()
-        } catch {
-            switch error {
-            case let .detailedErrors(errors):
-                if let error = errors.first(where: { $0.reason == .userBanned }) {
-                    ssoError = .localizedString(error.message)
-                } else {
-                    fallthrough
-                }
-            default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
-            }
-        }
+        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
     }
 
     private func blockUser() async {

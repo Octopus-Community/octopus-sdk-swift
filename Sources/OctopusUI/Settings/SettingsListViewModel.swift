@@ -18,7 +18,7 @@ class SettingsListViewModel: ObservableObject {
 
     private var storage = [AnyCancellable]()
 
-    init(octopus: OctopusSDK) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
         self.octopus = octopus
         switch octopus.core.connectionRepository.connectionMode {
         case .octopus:
@@ -26,6 +26,15 @@ class SettingsListViewModel: ObservableObject {
         case .sso:
             octopusOwnedProfile = false
         }
+
+        Publishers.CombineLatest(
+            $logoutInProgress,
+            $logoutDone
+        ).sink {
+            let shouldBeLocked = $0 || $1
+            guard shouldBeLocked != mainFlowPath.isLocked else { return }
+            mainFlowPath.isLocked = shouldBeLocked
+        }.store(in: &storage)
     }
 
     func logout() {

@@ -21,7 +21,8 @@ public struct OctopusHomeScreen: View {
     private let octopus: OctopusSDK
     private let bottomSafeAreaInset: CGFloat
 
-    
+    @Compat.StateObject private var mainFlowPath = MainFlowPath()
+
     /// Constructor of the `OctopusHomeScreen`.
     /// - Parameter:
     ///    - octopus: The Octopus SDK
@@ -48,26 +49,9 @@ public struct OctopusHomeScreen: View {
     }
 
     public var body: some View {
-        NavigationView {
+        MainFlowNavigationStack(octopus: octopus, mainFlowPath: mainFlowPath) {
             if #available(iOS 14.0, *) {
-                RootFeedsView(octopus: octopus)
-                    .navigationBarItems(
-                        leading: Image(uiImage: theme.assets.logo)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(height: 28),
-                        trailing:
-                            Group {
-                                if presentationMode.wrappedValue.isPresented {
-                                    Button(action: {
-                                        presentationMode.wrappedValue.dismiss()
-                                    }) {
-                                        Text("Common.Close", bundle: .module)
-                                            .font(theme.fonts.navBarItem)
-                                    }
-                                }
-                            }
-                    )
+                RootFeedsView(octopus: octopus, mainFlowPath: mainFlowPath)
                     .onAppear {
                         if presentationMode.wrappedValue.isPresented && !isPresentedModally {
                             Logger.general.warning(

@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct SettingsHelpView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: LinksProviderViewModel
 
@@ -24,7 +25,7 @@ struct SettingsHelpView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     SettingLinkItem(text: "Settings.Help.FAQ.Title", url: viewModel.faq)
 
-                    NavigationLink(destination: SignalExplanationView(octopus: viewModel.octopus)) {
+                    Button(action: { navigator.push(.reportExplanation) }) {
                         SettingItem(text: "Settings.Help.ReportContent")
                     }.buttonStyle(.plain)
 

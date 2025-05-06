@@ -7,17 +7,14 @@ import SwiftUI
 import Octopus
 
 struct SettingProfileView: View {
+    @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Compat.StateObject private var viewModel: SettingProfileViewModel
     @Environment(\.octopusTheme) private var theme
 
-    @Binding private var popToRoot: Bool
-    @Binding private var preventAutoDismiss: Bool
     @State private var displayDeleteUserAlert = false
 
-    init(octopus: OctopusSDK, popToRoot: Binding<Bool>, preventAutoDismiss: Binding<Bool>) {
+    init(octopus: OctopusSDK) {
         _viewModel = Compat.StateObject(wrappedValue: SettingProfileViewModel(octopus: octopus))
-        _popToRoot = popToRoot
-        _preventAutoDismiss = preventAutoDismiss
     }
 
     var body: some View {
@@ -52,8 +49,7 @@ struct SettingProfileView: View {
                         Spacer()
                     }
 
-                    NavigationLink(destination: DeleteAccountView(
-                        octopus: viewModel.octopus, popToRoot: $popToRoot, preventAutoDismiss: $preventAutoDismiss)) {
+                    Button(action: { navigator.push(.deleteAccount) }) {
                         HStack(alignment: .top, spacing: 12) {
                             Image(.Settings.logout)
                                 .resizable()

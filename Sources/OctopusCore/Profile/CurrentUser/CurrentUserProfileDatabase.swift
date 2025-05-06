@@ -49,6 +49,10 @@ class CurrentUserProfileDatabase: InjectableObject {
             profileEntity.email = profile.email
             profileEntity.bio = profile.bio
             profileEntity.pictureUrl = profile.pictureUrl
+            // if the notificationBadgeCount, keep the previous value
+            if let notificationBadgeCount = profile.notificationBadgeCount {
+                profileEntity.notificationBadgeCount = notificationBadgeCount
+            }
             profileEntity.blocking = NSOrderedSet(array: profile.blockedProfileIds.map {
                 let blockUserEntity = BlockedUserEntity(context: context)
                 blockUserEntity.profileId = $0
@@ -57,6 +61,17 @@ class CurrentUserProfileDatabase: InjectableObject {
             profileEntity.descPostFeedId = profile.descPostFeedId
             profileEntity.ascPostFeedId = profile.ascPostFeedId
 
+            try context.save()
+        }
+    }
+
+    func resetNotificationBadgeCount(on profileId: String) async throws {
+        try await context.performAsync { [context] in
+            guard let existingProfile = try context.fetch(PrivateProfileEntity.fetchById(id:profileId)).first else {
+                if #available(iOS 14, *) { Logger.profile.debug("Dev error: resetting notification badge count without existing profile") }
+                return
+            }
+            existingProfile.notificationBadgeCount = 0
             try context.save()
         }
     }

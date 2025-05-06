@@ -32,11 +32,15 @@ final class ImageCache: @unchecked Sendable {
         }
     }
 
-    func getFile(url: URL, completion: @escaping @Sendable (UIImage?) -> Void) {
+    func getFile(url: URL, croppingRatio: Double?, completion: @escaping @Sendable (CachedImage?) -> Void) {
+        @Sendable func createCachedImage(_ fullSizeImage: UIImage) -> CachedImage {
+            CachedImage(ratioImage: getCroppedImageIfNeeded(fullSizeImage, croppingRatio: croppingRatio, url: url),
+                        fullSizeImage: fullSizeImage)
+        }
         let fileName = url.imageIdentifier
         // look in ram first
         if let image = ramCache.object(forKey: fileName as NSString) {
-            completion(image)
+            completion(createCachedImage(image))
             return
         }
 
@@ -49,8 +53,9 @@ final class ImageCache: @unchecked Sendable {
                 return
             }
             self?.ramCache.setObject(image, forKey: fileName as NSString, cost: data.count)
+            let cachedImage = createCachedImage(image)
             DispatchQueue.main.async {
-                completion(image)
+                completion(cachedImage)
             }
         }
     }
@@ -87,6 +92,43 @@ final class ImageCache: @unchecked Sendable {
             try fileManager.removeItem(at: file.url)
             totalSize -= file.size
         }
+    }
+
+    private func getCroppedImageIfNeeded(_ image: UIImage, croppingRatio: Double?, url: URL) -> UIImage {
+        guard let croppingRatio, croppingRatio > 0 else { return image }
+        let croppedImageCacheId = "\(url.imageIdentifier)-\(croppingRatio)" as NSString
+        // look in ram first
+        if let image = ramCache.object(forKey: croppedImageCacheId) {
+            return image
+        }
+
+        let originalSize = image.size
+        let originalRatio = originalSize.width / originalSize.height
+
+        // If the aspect ratio is already close enough, no need to crop
+        if abs(originalRatio - croppingRatio) < 0.01 {
+            return image
+        }
+
+        var cropRect = CGRect.zero
+
+        if originalRatio < croppingRatio {
+            // Image is too tall, crop vertically
+            let newHeight = originalSize.width / CGFloat(croppingRatio)
+            let originY = (originalSize.height - newHeight) / 2.0
+            cropRect = CGRect(x: 0, y: originY, width: originalSize.width, height: newHeight)
+        } else {
+            // do not crop the image horizontally
+            return image
+        }
+
+        guard let cgImage = image.cgImage?.cropping(to: cropRect) else {
+            return image
+        }
+
+        let croppedImage = UIImage(cgImage: cgImage, scale: image.scale, orientation: image.imageOrientation)
+        ramCache.setObject(croppedImage, forKey: croppedImageCacheId)
+        return croppedImage
     }
 }
 

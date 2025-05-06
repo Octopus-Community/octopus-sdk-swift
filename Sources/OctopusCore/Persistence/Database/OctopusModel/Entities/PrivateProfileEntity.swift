@@ -15,6 +15,7 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var pictureUrl: URL?
     @NSManaged public var descPostFeedId: String
     @NSManaged public var ascPostFeedId: String
+    @NSManaged public var notificationBadgeCount: Int
     @NSManaged public var blocking: NSOrderedSet
 
     var blockedProfileIds: [String] {

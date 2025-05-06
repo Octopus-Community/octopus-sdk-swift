@@ -8,6 +8,7 @@ import SwiftUI
 struct ResponseFeedItemView: View {
     @Environment(\.octopusTheme) private var theme
     let response: DisplayableFeedResponse
+    @Binding var zoomableImageInfo: ZoomableImageInfo?
     let displayResponseDetail: (String) -> Void
     let replyToResponse: (String) -> Void
     let displayProfile: (String) -> Void
@@ -85,11 +86,25 @@ struct ResponseFeedItemView: View {
                                         contentMode: .fit)
                                     .clipped()
                             },
-                            content: { image in
-                                image
+                            content: { cachedImage in
+                                Image(uiImage: cachedImage.fullSizeImage)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .cornerRadius(12)
+                                    .modify {
+                                        if zoomableImageInfo?.url != image.url {
+                                            $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
+                                        } else {
+                                            $0
+                                        }
+                                    }
+                                    .onTapGesture {
+                                        withAnimation {
+                                            zoomableImageInfo = .init(
+                                                url: image.url,
+                                                image: Image(uiImage: cachedImage.fullSizeImage))
+                                        }
+                                    }
                             })
                     }
                 }

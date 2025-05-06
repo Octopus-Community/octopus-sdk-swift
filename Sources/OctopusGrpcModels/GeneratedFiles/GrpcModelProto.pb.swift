@@ -882,6 +882,151 @@ public struct Com_Octopuscommunity_Reply: Sendable {
   fileprivate var _media: Com_Octopuscommunity_StrictMedia? = nil
 }
 
+public struct Com_Octopuscommunity_Notification: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var id: String = String()
+
+  public var notificationThumbnails: [Com_Octopuscommunity_Notification.NotificationThumbnail] = []
+
+  public var text: Com_Octopuscommunity_Notification.OneOf_Text? = nil
+
+  public var md: String {
+    get {
+      if case .md(let v)? = text {return v}
+      return String()
+    }
+    set {text = .md(newValue)}
+  }
+
+  public var raw: String {
+    get {
+      if case .raw(let v)? = text {return v}
+      return String()
+    }
+    set {text = .raw(newValue)}
+  }
+
+  public var action: Com_Octopuscommunity_Notification.Action {
+    get {return _action ?? Com_Octopuscommunity_Notification.Action()}
+    set {_action = newValue}
+  }
+  /// Returns true if `action` has been explicitly set.
+  public var hasAction: Bool {return self._action != nil}
+  /// Clears the value of `action`. Subsequent reads from it will return its default value.
+  public mutating func clearAction() {self._action = nil}
+
+  public var read: Bool = false
+
+  public var updatedAt: UInt64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum OneOf_Text: Equatable, Sendable {
+    case md(String)
+    case raw(String)
+
+  }
+
+  public struct Action: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    /// order by display order
+    public var link: [Com_Octopuscommunity_Notification.Action.LinkToOctoObject] = []
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public enum ContentEntity: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+      case undefined // = 0
+
+      ///      TOPIC = 1;
+      case post // = 2
+      case comment // = 3
+      case reply // = 4
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .undefined
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .undefined
+        case 2: self = .post
+        case 3: self = .comment
+        case 4: self = .reply
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .undefined: return 0
+        case .post: return 2
+        case .comment: return 3
+        case .reply: return 4
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [Com_Octopuscommunity_Notification.Action.ContentEntity] = [
+        .undefined,
+        .post,
+        .comment,
+        .reply,
+      ]
+
+    }
+
+    public struct LinkToOctoObject: Sendable {
+      // SwiftProtobuf.Message conformance is added in an extension below. See the
+      // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+      // methods supported on all messages.
+
+      public var octoObjectID: String = String()
+
+      public var content: Com_Octopuscommunity_Notification.Action.ContentEntity = .undefined
+
+      public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+      public init() {}
+    }
+
+    public init() {}
+  }
+
+  public struct NotificationThumbnail: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var profile: Com_Octopuscommunity_MinimalProfile {
+      get {return _profile ?? Com_Octopuscommunity_MinimalProfile()}
+      set {_profile = newValue}
+    }
+    /// Returns true if `profile` has been explicitly set.
+    public var hasProfile: Bool {return self._profile != nil}
+    /// Clears the value of `profile`. Subsequent reads from it will return its default value.
+    public mutating func clearProfile() {self._profile = nil}
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _profile: Com_Octopuscommunity_MinimalProfile? = nil
+  }
+
+  public init() {}
+
+  fileprivate var _action: Com_Octopuscommunity_Notification.Action? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "com.octopuscommunity"
@@ -1948,6 +2093,211 @@ extension Com_Octopuscommunity_Reply: SwiftProtobuf.Message, SwiftProtobuf._Mess
   public static func ==(lhs: Com_Octopuscommunity_Reply, rhs: Com_Octopuscommunity_Reply) -> Bool {
     if lhs.text != rhs.text {return false}
     if lhs._media != rhs._media {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_Notification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Notification"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "id"),
+    2: .same(proto: "notificationThumbnails"),
+    3: .same(proto: "md"),
+    4: .same(proto: "raw"),
+    5: .same(proto: "action"),
+    6: .same(proto: "read"),
+    7: .same(proto: "updatedAt"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
+      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.notificationThumbnails) }()
+      case 3: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.text != nil {try decoder.handleConflictingOneOf()}
+          self.text = .md(v)
+        }
+      }()
+      case 4: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.text != nil {try decoder.handleConflictingOneOf()}
+          self.text = .raw(v)
+        }
+      }()
+      case 5: try { try decoder.decodeSingularMessageField(value: &self._action) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.read) }()
+      case 7: try { try decoder.decodeSingularUInt64Field(value: &self.updatedAt) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.id.isEmpty {
+      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
+    }
+    if !self.notificationThumbnails.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.notificationThumbnails, fieldNumber: 2)
+    }
+    switch self.text {
+    case .md?: try {
+      guard case .md(let v)? = self.text else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    }()
+    case .raw?: try {
+      guard case .raw(let v)? = self.text else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+    }()
+    case nil: break
+    }
+    try { if let v = self._action {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    } }()
+    if self.read != false {
+      try visitor.visitSingularBoolField(value: self.read, fieldNumber: 6)
+    }
+    if self.updatedAt != 0 {
+      try visitor.visitSingularUInt64Field(value: self.updatedAt, fieldNumber: 7)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_Notification, rhs: Com_Octopuscommunity_Notification) -> Bool {
+    if lhs.id != rhs.id {return false}
+    if lhs.notificationThumbnails != rhs.notificationThumbnails {return false}
+    if lhs.text != rhs.text {return false}
+    if lhs._action != rhs._action {return false}
+    if lhs.read != rhs.read {return false}
+    if lhs.updatedAt != rhs.updatedAt {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_Notification.Action: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_Notification.protoMessageName + ".Action"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "link"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.link) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.link.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.link, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_Notification.Action, rhs: Com_Octopuscommunity_Notification.Action) -> Bool {
+    if lhs.link != rhs.link {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_Notification.Action.ContentEntity: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNDEFINED"),
+    2: .same(proto: "POST"),
+    3: .same(proto: "COMMENT"),
+    4: .same(proto: "REPLY"),
+  ]
+}
+
+extension Com_Octopuscommunity_Notification.Action.LinkToOctoObject: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_Notification.Action.protoMessageName + ".LinkToOctoObject"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "octoObjectId"),
+    2: .same(proto: "content"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.octoObjectID) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.content) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.octoObjectID.isEmpty {
+      try visitor.visitSingularStringField(value: self.octoObjectID, fieldNumber: 1)
+    }
+    if self.content != .undefined {
+      try visitor.visitSingularEnumField(value: self.content, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_Notification.Action.LinkToOctoObject, rhs: Com_Octopuscommunity_Notification.Action.LinkToOctoObject) -> Bool {
+    if lhs.octoObjectID != rhs.octoObjectID {return false}
+    if lhs.content != rhs.content {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_Notification.NotificationThumbnail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_Notification.protoMessageName + ".NotificationThumbnail"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "profile"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._profile) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._profile {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_Notification.NotificationThumbnail, rhs: Com_Octopuscommunity_Notification.NotificationThumbnail) -> Bool {
+    if lhs._profile != rhs._profile {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

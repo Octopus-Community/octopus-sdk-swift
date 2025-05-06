@@ -115,6 +115,29 @@ public class Feed<Item: FeedItem> {
             }
         }
     }
+    
+    /// Fetches all feed item until having fetched the item with the provided id
+    public func fetchAll(until id: String) async throws {
+        if #available(iOS 14, *) { Logger.feed.trace("Fetch all until \(id) called") }
+        // If a fetch is currently happening, wait for its end
+        while isFetching {
+            try await Task.sleep(nanoseconds: 1)
+        }
+        // if the searched item is not already here and the last call has not returned any results,
+        // re-do it in case their are new ones
+        if !(items?.contains(where: { $0.id == id }) ?? false) && !hasMoreData {
+            nextPageCursor = currentPageCursor
+            hasMoreData = true
+        }
+        while !(items?.contains(where: { $0.id == id }) ?? false) && hasMoreData {
+            if nextPageCursor == nil {
+                try await refresh(pageSize: 100)
+            } else {
+                try await loadPreviousItems(pageSize: 100)
+            }
+        }
+    }
+
 
     private func listenForItems(publisher: AnyPublisher<[Item], Error>) {
         feedItemsCancellable = publisher.sink(receiveCompletion: { _ in },
