@@ -25,3 +25,10 @@ Here is a quick explanation of what they do, just so you can get a better unders
 - `Monitors` are objects that are observing a state and reacts accordingly. They are private to the SDK. They can be `NetworkMonitor` that monitors the network connectivity or `MagicLinkMonitor` that listen for app states (whether in foreground, with a magic link pending…) to query and update the magic link state. `Monitors` are generally objects that lives on their own and their only API is `start` and `stop`.
 - `Database interfaces` are objects that can do CRUD operations on a CoreDatabase stack
 - `Server interfaces` are part of another private target: `OctopusRemoteClient`. They are the interface to call the GRPC services.
+
+## Architecture of the Samples
+
+Due to the fact that the samples can handle multiple ways of initializing the SDK (due to the support of different connection mode), we are using the OctopusSDKProvider to be sure that there is only one instance of the SDK at a time.
+
+You might notice a weird way of displaying modal SDK UI in `SampleRootView`. Because SwiftUI is behaving weirdly when having a TabView, a NavigationStack and a fullScreenCover, we are opening the fullScreenCover outside of the TabView and the NavigationStack (or NavigationView).
+Not doing so will result in weird behaviors when putting the app in background. Some views might be dismissed and some ViewModels are re-created.

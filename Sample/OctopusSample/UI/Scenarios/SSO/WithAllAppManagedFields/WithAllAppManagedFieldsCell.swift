@@ -9,6 +9,8 @@ import SwiftUI
 /// This means that all `ConnectionMode.SSOConfiguration.ProfileField` are managed by your app (i.e. moderation if any
 /// should be handled by you, unicity of the nickname too).
 struct WithAllAppManagedFieldsCell: View {
+    let showFullScreen: (@escaping () -> any View) -> Void
+    
     var body: some View {
         // Since this scenario is a bit complex, opens it in a new screen (`SSOWithAllAppManagedFieldsView`)
         NavigationLink(destination: SSOWithAllAppManagedFieldsView()) {

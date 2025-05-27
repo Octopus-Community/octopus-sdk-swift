@@ -357,18 +357,18 @@
         }
       }
     },
-    "Common.PoweredByOctopus" : {
+    "Common.PoweredBy" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Powered by Octopus Community"
+            "value" : "Powered by "
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Powered by Octopus Community"
+            "value" : "Powered by "
           }
         }
       }
@@ -1859,39 +1859,6 @@
         }
       }
     },
-    "Profile.Create.ContactUs.Link" : {
-      "comment" : "Please put the linkable part between [] and keep the (https://) next to it, without any space.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Any issue? [Contact us](https://)."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un soucis ? [Nous contacter](https://)."
-          }
-        }
-      }
-    },
-    "Profile.Create.ContactUs.NoLink" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Any issue? Contact us."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un soucis ? Nous contacter."
-          }
-        }
-      }
-    },
     "Profile.Create.Error.Nickname_minLength:%lld_maxLength:%lld" : {
       "localizations" : {
         "en" : {
@@ -2522,22 +2489,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aide"
-          }
-        }
-      }
-    },
-    "Settings.Help.ContactUs" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contact us"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nous contacter"
           }
         }
       }

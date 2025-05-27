@@ -166,26 +166,22 @@ private struct PublishedContentView: View {
     let voteOnPoll: (String) -> Bool
     private let minAspectRatio: CGFloat = 4 / 5
 
-    @State private var liveMeasures: LiveMeasures = .init(aggregatedInfo: .empty, userInteractions: .empty)
+    @State private var liveMeasures: LiveMeasures?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Group {
                 if content.textIsEllipsized {
                     Text(verbatim: "\(content.text)... ")
-                        .font(theme.fonts.body2)
-                        .foregroundColor(theme.colors.gray900)
                     +
                     Text("Post.List.ReadMore", bundle: .module)
-                        .font(theme.fonts.body2)
                         .bold()
-                        .foregroundColor(theme.colors.gray900)
                 } else {
                     Text(content.text)
-                        .font(theme.fonts.body2)
-                        .foregroundColor(theme.colors.gray900)
                 }
             }
+            .font(theme.fonts.body2)
+            .foregroundColor(theme.colors.gray900)
             .contentShape(Rectangle())
             .padding(.horizontal, 20)
 
@@ -241,23 +237,24 @@ private struct PublishedContentView: View {
                     })
             case let .poll(poll):
                 PollView(poll: poll,
-                         aggregatedInfo: liveMeasures.aggregatedInfo,
-                         userInteractions: liveMeasures.userInteractions,
+                         aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
+                         userInteractions: liveMeasures?.userInteractions ?? content.liveMeasuresValue.userInteractions,
                          vote: voteOnPoll)
                 .padding(.horizontal, 20)
             case .none:
                 EmptyView()
             }
 
-            AggregatedInfoView(aggregatedInfo: liveMeasures.aggregatedInfo,
-                               userInteractions: liveMeasures.userInteractions,
-                               childrenTapped: childrenTapped, likeTapped: likeTapped)
-            .disableAnimation()
+            AggregatedInfoView(
+                aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
+                userInteractions: liveMeasures?.userInteractions ?? content.liveMeasuresValue.userInteractions,
+                childrenTapped: childrenTapped, likeTapped: likeTapped)
             .padding(.horizontal, 20)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .multilineTextAlignment(.leading)
         .onReceive(content.liveMeasures) { newLiveMeasures in
+            guard newLiveMeasures != liveMeasures else { return }
             withAnimation {
                 liveMeasures = newLiveMeasures
             }
@@ -277,8 +274,9 @@ private struct ModeratedPostContentView: View {
                     .fontWeight(.semibold)
                     .multilineTextAlignment(.leading)
 
-                Text("Post.List.ModeratedPost.Reason", bundle: .module).font(theme.fonts.caption1) + reasons.textView
-                    .font(theme.fonts.caption1)
+                Group {
+                    Text("Post.List.ModeratedPost.Reason", bundle: .module) + reasons.textView
+                }.font(theme.fonts.caption1)
             }
             .padding(.horizontal, 20)
         }

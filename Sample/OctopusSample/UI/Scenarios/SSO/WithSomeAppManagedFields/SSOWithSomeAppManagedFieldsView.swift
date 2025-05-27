@@ -16,15 +16,11 @@ import OctopusUI
 /// Whenever the app user changes, the view model informs the SDK about this change and you should do that in your app
 /// too.
 struct SSOWithSomeAppManagedFieldsView: View {
-    @StateObjectCompat private var viewModel: SSOWithSomeAppManagedFieldsViewModel
+    @StateObjectCompat private var viewModel = SSOWithSomeAppManagedFieldsViewModel()
 
     @State private var showModal = false
     @State private var showLogin = false
     @State private var showEditProfileWithAge = false
-
-    init() {
-        self._viewModel = StateObjectCompat(wrappedValue: SSOWithSomeAppManagedFieldsViewModel())
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {

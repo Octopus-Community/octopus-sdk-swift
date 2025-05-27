@@ -29,4 +29,6 @@ class MockRemoteClient: OctopusRemoteClient, InjectableObject {
     func set(appSessionId: String?) { }
 
     func set(octopusUISessionId: String?) { }
+
+    func set(hasAccessToCommunity: Bool?) { }
 }

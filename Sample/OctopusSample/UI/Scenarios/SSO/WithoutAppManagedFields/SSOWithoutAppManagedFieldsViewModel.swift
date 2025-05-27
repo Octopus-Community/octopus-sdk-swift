@@ -31,6 +31,11 @@ class SSOWithoutAppManagedFieldsViewModel: ObservableObject {
 
         appUser = appUserStore.user
 
+        OctopusSDKProvider.instance.$octopus
+            .sink { [unowned self] in
+                octopus = $0
+            }.store(in: &storage)
+
         Publishers.CombineLatest(
             $isDisplayed, // delay the reception to have the time to configure the sdk
             $appUser
@@ -44,7 +49,7 @@ class SSOWithoutAppManagedFieldsViewModel: ObservableObject {
 
     func onAppear() {
         // For this scenario, we need the SDK to be on a different connection mode
-        octopus = try! OctopusSDK(apiKey: APIKeys.ssoNoManagedFields, connectionMode: .sso(
+        OctopusSDKProvider.instance.createSDK(connectionMode: .sso(
             .init(
                 loginRequired: { [weak self] in
                     guard let self else { return }
@@ -56,7 +61,6 @@ class SSOWithoutAppManagedFieldsViewModel: ObservableObject {
 
     func onDisappear() {
         isDisplayed = false
-        octopus = nil
     }
 
     /// Whenever your user is modified, inform the SDK as soon as possible.

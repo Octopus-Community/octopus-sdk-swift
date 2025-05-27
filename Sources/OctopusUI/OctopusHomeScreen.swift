@@ -49,7 +49,7 @@ public struct OctopusHomeScreen: View {
     }
 
     public var body: some View {
-        MainFlowNavigationStack(octopus: octopus, mainFlowPath: mainFlowPath) {
+        MainFlowNavigationStack(octopus: octopus, mainFlowPath: mainFlowPath, bottomSafeAreaInset: bottomSafeAreaInset) {
             if #available(iOS 14.0, *) {
                 RootFeedsView(octopus: octopus, mainFlowPath: mainFlowPath)
                     .onAppear {
@@ -58,12 +58,8 @@ public struct OctopusHomeScreen: View {
                                 "⚠️ You are trying to push the OctopusHomeScreen from a screen that already has a navigation bar.")
                         }
                     }
-                    .modify {
-                        if #available(iOS 15.0, *) {
-                            $0.safeAreaInset(edge: .bottom) {
-                                Spacer().frame(height: bottomSafeAreaInset)
-                            }
-                        } else { $0 }
+                    .safeAreaInsetCompat(edge: .bottom) {
+                        Spacer().frame(height: bottomSafeAreaInset)
                     }
             } else {
                 UnsupportedOSVersionView()

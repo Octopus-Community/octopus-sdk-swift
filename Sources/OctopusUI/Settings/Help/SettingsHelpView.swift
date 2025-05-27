@@ -28,10 +28,9 @@ struct SettingsHelpView: View {
                     Button(action: { navigator.push(.reportExplanation) }) {
                         SettingItem(text: "Settings.Help.ReportContent")
                     }.buttonStyle(.plain)
-
-                    SettingLinkItem(text: "Settings.Help.ContactUs", url: viewModel.contactUs)
                 }
             }
+            PoweredByOctopusView()
         }
         .navigationBarTitle(Text("Settings.Help", bundle: .module), displayMode: .inline)
     }

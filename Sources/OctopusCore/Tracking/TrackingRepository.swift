@@ -113,6 +113,10 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         octopusUISessionManager.sessionEnded()
     }
 
+    public func set(hasAccessToCommunity: Bool) {
+        remoteClient.set(hasAccessToCommunity: hasAccessToCommunity)
+    }
+
     func appSessionStarted() {
         appSessionManager.sessionStarted()
         if octopusUIIsDisplayed {

@@ -105,6 +105,7 @@ struct PollOptionView: View {
         HStack {
             HStack {
                 Text(pollOption.text)
+                    .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)
                     .lineLimit(nil)
                     .foregroundColor(state.displayResult ? theme.colors.gray900 : theme.colors.primary)
@@ -156,14 +157,12 @@ struct PollOptionView: View {
             if case let .displayResult(percent, _) = state {
                 ZStack {
                     Text(verbatim: "100%") // biggest possible string
-                        .font(theme.fonts.body2)
                         .foregroundColor(Color.clear)
 
                     Text(verbatim: "\(percent)%")
-                        .font(theme.fonts.body2)
                         .foregroundColor(theme.colors.gray900)
                 }
-
+                .font(theme.fonts.body2)
             }
         }
     }

@@ -21,6 +21,7 @@ public protocol OctopusRemoteClient {
 
     func set(appSessionId: String?)
     func set(octopusUISessionId: String?)
+    func set(hasAccessToCommunity: Bool?)
 }
 
 public class GrpcClient: OctopusRemoteClient {
@@ -43,6 +44,8 @@ public class GrpcClient: OctopusRemoteClient {
     private let unaryChannel: GRPCChannel
     private let streamingChannel: GRPCChannel
     private let group = PlatformSupport.makeEventLoopGroup(loopCount: 1, networkPreference: .best)
+
+    private let serviceClients: [ServiceClient]
 
     public init(apiKey: String, sdkVersion: String, installId: String, updateTokenBlock: @escaping (String) -> Void) throws {
         // base URL can be overriden by env vars. This is used for the internal demo app for example
@@ -84,26 +87,21 @@ public class GrpcClient: OctopusRemoteClient {
         _notificationService = NotificationServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
             updateTokenBlock: updateTokenBlock)
+
+        serviceClients = [_octoService, _magicLinkService, _magicLinkStreamService, _userService, _feedService,
+                          _trackingService, _notificationService]
     }
 
     public func set(appSessionId: String?) {
-        _octoService.appSessionId = appSessionId
-        _magicLinkService.appSessionId = appSessionId
-        _magicLinkStreamService.appSessionId = appSessionId
-        _userService.appSessionId = appSessionId
-        _feedService.appSessionId = appSessionId
-        _trackingService.appSessionId = appSessionId
-        _notificationService.appSessionId = appSessionId
+        serviceClients.forEach { $0.appSessionId = appSessionId }
     }
 
     public func set(octopusUISessionId: String?) {
-        _octoService.octopusUISessionId = octopusUISessionId
-        _magicLinkService.octopusUISessionId = octopusUISessionId
-        _magicLinkStreamService.octopusUISessionId = octopusUISessionId
-        _userService.octopusUISessionId = octopusUISessionId
-        _feedService.octopusUISessionId = octopusUISessionId
-        _trackingService.octopusUISessionId = octopusUISessionId
-        _notificationService.octopusUISessionId = octopusUISessionId
+        serviceClients.forEach { $0.octopusUISessionId = octopusUISessionId }
+    }
+
+    public func set(hasAccessToCommunity: Bool?) {
+        serviceClients.forEach { $0.hasAccessToCommunity = hasAccessToCommunity }
     }
 
     deinit {

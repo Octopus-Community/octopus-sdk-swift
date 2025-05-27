@@ -20,7 +20,21 @@ struct DisplayablePost: Equatable {
         let text: String
         let attachment: Attachment?
         let textIsEllipsized: Bool
-        let liveMeasures: AnyPublisher<LiveMeasures, Never>
+        fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
+        var liveMeasures: AnyPublisher<LiveMeasures, Never> {
+            _liveMeasuresPublisher.removeDuplicates().eraseToAnyPublisher()
+        }
+        var liveMeasuresValue: LiveMeasures {
+            _liveMeasuresPublisher.value
+        }
+
+        init(text: String, attachment: Attachment?, textIsEllipsized: Bool,
+             liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
+            self.text = text
+            self.attachment = attachment
+            self.textIsEllipsized = textIsEllipsized
+            self._liveMeasuresPublisher = liveMeasuresPublisher
+        }
 
         static func == (lhs: DisplayablePost.PostContent, rhs: DisplayablePost.PostContent) -> Bool {
             return lhs.text == rhs.text &&
@@ -41,7 +55,7 @@ struct DisplayablePost: Equatable {
 }
 
 extension DisplayablePost {
-    init(from post: Post, liveMeasurePublisher: AnyPublisher<LiveMeasures, Never>,
+    init(from post: Post, liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>,
          thisUserProfileId: String?, topic: Topic?, dateFormatter: RelativeDateTimeFormatter,
          onAppear: @escaping () -> Void, onDisappear: @escaping () -> Void) {
         uuid = post.uuid
@@ -60,7 +74,7 @@ extension DisplayablePost {
                 text: displayableText,
                 attachment: PostContent.Attachment(from: post),
                 textIsEllipsized: post.text != displayableText,
-                liveMeasures: liveMeasurePublisher)
+                liveMeasuresPublisher: liveMeasuresPublisher)
             )
             canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
             canBeModerated = post.author?.uuid != thisUserProfileId

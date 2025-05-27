@@ -9,7 +9,9 @@ import OctopusUI
 
 /// Scenario that shows how to open the Octopus SDK on a sheet.
 struct SheetCell: View {
-    @State private var showModal = false
+    let showInSheet: (@escaping () -> any View) -> Void
+
+    @StateObjectCompat private var viewModel = OctopusAuthSDKViewModel()
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -18,13 +20,17 @@ struct SheetCell: View {
                 .font(.caption)
         }
         .onTapGesture {
-            showModal = true
+            // Display the SDK in a sheet but outside the navigation view (see Architecture.md for more info)
+            showInSheet {
+                if let octopus = viewModel.octopus {
+                    OctopusHomeScreen(octopus: octopus)
+                } else {
+                    EmptyView()
+                }
+            }
         }
-        .sheet(isPresented: $showModal) {
-            // Init of OctopusSDK should be done as soon as possible in your app (in your AppDelegate for example)
-            // This is not what we do here because this sample showcases multiple way of initializing the SDK.
-            let octopus = try! OctopusSDK(apiKey: APIKeys.octopusAuth)
-            OctopusHomeScreen(octopus: octopus)
+        .onAppear {
+            viewModel.createSDK()
         }
     }
 }

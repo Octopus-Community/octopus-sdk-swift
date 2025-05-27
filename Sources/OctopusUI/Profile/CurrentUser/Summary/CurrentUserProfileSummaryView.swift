@@ -173,14 +173,17 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
 
     var body: some View {
         if let profile {
-            ProfileContentView(profile: profile,
-                               zoomableImageInfo: $zoomableImageInfo,
-                               hasInitialNotSeenNotifications: hasInitialNotSeenNotifications,
-                               refresh: refresh, openEdition: openEdition,
-                               openEditionWithBioFocused: openEditionWithBioFocused,
-                               openEditionWithPhotoPicker: openEditionWithPhotoPicker,
-                               postsView: { postsView },
-                               notificationsView: { notificationsView })
+            VStack(spacing: 0) {
+                ProfileContentView(profile: profile,
+                                   zoomableImageInfo: $zoomableImageInfo,
+                                   hasInitialNotSeenNotifications: hasInitialNotSeenNotifications,
+                                   refresh: refresh, openEdition: openEdition,
+                                   openEditionWithBioFocused: openEditionWithBioFocused,
+                                   openEditionWithPhotoPicker: openEditionWithPhotoPicker,
+                                   postsView: { postsView },
+                                   notificationsView: { notificationsView })
+                PoweredByOctopusView()
+            }
         } else {
             Compat.ProgressView()
                 .frame(width: 60)

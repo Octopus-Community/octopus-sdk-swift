@@ -56,6 +56,13 @@ class APITests {
         octopus.disconnectUser()
     }
 
+    @Test func testNotSeenNotificationCount() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        _ = octopus.notSeenNotificationsCount
+        _ = octopus.$notSeenNotificationsCount
+        try await octopus.updateNotSeenNotificationsCount()
+    }
+
     @Test func testClientUserProfileInit() async throws {
         _ = ClientUser.Profile()
         _ = ClientUser.Profile(nickname: "")

@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import OctopusCore
 import OctopusDependencyInjection
 import os
@@ -6,10 +7,17 @@ import os
 /// Octopus Community main model object.
 /// This object holds a reference on all the repositories.
 public class OctopusSDK: ObservableObject {
+    
+    /// Number of notifications from the notification center (i.e. internal notifications) that have not been seen yet.
+    /// Always 0 if the user is not connected to Octopus Community.
+    @Published public private(set) var notSeenNotificationsCount: Int = 0
+
     /// Core interface. This object should not be used by external devs, it is only used by the UI lib
     public let core: OctopusSDKCore
     private let injector: Injector
-    
+
+    private var storage = [AnyCancellable]()
+
     /// Constructor of the `OctopusSDK`.
     ///  
     /// It is recommended to start this object as soon as possible.
@@ -20,6 +28,26 @@ public class OctopusSDK: ObservableObject {
     public init(apiKey: String, connectionMode: ConnectionMode = .octopus(deepLink: nil)) throws {
         self.injector = Injector()
         core = try OctopusSDKCore(apiKey: apiKey, connectionMode: connectionMode.coreValue, injector: injector)
+
+        core.profileRepository.$profile
+            .sink { [unowned self] in
+                let newNotSeenNotificationsCount = $0?.notificationBadgeCount ?? 0
+                guard notSeenNotificationsCount != newNotSeenNotificationsCount else { return }
+                notSeenNotificationsCount = newNotSeenNotificationsCount
+            }.store(in: &storage)
+    }
+
+    /// Sets whether the access to the Octopus community is enabled or not.
+    /// 
+    /// This method indicates whether the app should have access to community features,
+    /// typically used in A/B testing scenarios where some users may be excluded from the community
+    /// experience. This information is used internally for analytics and tracking purposes to
+    /// understand user engagement patterns.
+    ///
+    /// - Parameter hasAccessToCommunity: True if the app has access to the community features, false if it
+    ///                                   should be excluded (e.g., in A/B testing control groups)
+    public func set(hasAccessToCommunity: Bool) {
+        core.trackingRepository.set(hasAccessToCommunity: hasAccessToCommunity)
     }
 
     /// Connect a user.
@@ -69,5 +97,15 @@ public class OctopusSDK: ObservableObject {
                 if #available(iOS 14, *) { Logger.connection.debug("Error while trying to disconnect client user token: \(error)") }
             }
         }
+    }
+}
+
+// MARK: - Notification Center
+extension OctopusSDK {
+    /// Asks to update the `notSeenNotificationsCount`. This will fetch the information from the server.
+    /// Shortly after the function finishes, the `notSeenNotificationsCount` will publish an update if there is a new
+    /// value.
+    public func updateNotSeenNotificationsCount() async throws {
+        try await core.profileRepository.fetchCurrentUserProfile()
     }
 }

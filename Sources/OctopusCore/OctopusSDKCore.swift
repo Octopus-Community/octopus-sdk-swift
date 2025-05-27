@@ -89,6 +89,7 @@ public class OctopusSDKCore: ObservableObject {
             appManagedFields = config.appManagedFields
         }
         injector.register { ProfileRepository(appManagedFields: appManagedFields, injector: $0) }
+        injector.register { UserDataCleanerMonitor(injector: $0) }
 
         // Validators
         injector.register { _ in Validators(appManagedFields: appManagedFields) }
@@ -118,6 +119,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).start()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).start()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).start()
+        injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).start()
 
         // Set vars
         connectionRepository = injector.getInjected(identifiedBy: Injected.connectionRepository)
@@ -135,6 +137,7 @@ public class OctopusSDKCore: ObservableObject {
     }
 
     deinit {
+        injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).stop()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).stop()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).stop()
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).stop()

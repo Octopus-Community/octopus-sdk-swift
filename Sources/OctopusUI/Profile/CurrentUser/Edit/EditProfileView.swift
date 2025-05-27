@@ -143,14 +143,18 @@ private struct ContentView: View {
     let photoPickerFocused: Bool
 
     var body: some View {
-        EditProfileFormView(
-            nicknameEditConfig: nicknameEditConfig,
-            bioEditConfig: bioEditConfig,
-            pictureEditConfig: pictureEditConfig,
-            nickname: $nickname, bio: $bio, picture: $picture, nicknameForAvatar: nicknameForAvatar,
-            nicknameError: nicknameError, bioError: bioError, pictureError: pictureError,
-            bioFocused: bioFocused, bioMaxLength: bioMaxLength, photoPickerFocused: photoPickerFocused)
-        .disabled(isLoading)
+        VStack(spacing: 0) {
+            EditProfileFormView(
+                nicknameEditConfig: nicknameEditConfig,
+                bioEditConfig: bioEditConfig,
+                pictureEditConfig: pictureEditConfig,
+                nickname: $nickname, bio: $bio, picture: $picture, nicknameForAvatar: nicknameForAvatar,
+                nicknameError: nicknameError, bioError: bioError, pictureError: pictureError,
+                bioFocused: bioFocused, bioMaxLength: bioMaxLength, photoPickerFocused: photoPickerFocused)
+            .disabled(isLoading)
+
+            PoweredByOctopusView()
+        }
     }
 }
 

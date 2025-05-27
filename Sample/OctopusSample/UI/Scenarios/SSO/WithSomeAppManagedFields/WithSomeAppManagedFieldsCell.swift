@@ -9,9 +9,10 @@ import SwiftUI
 /// This means that only some `ConnectionMode.SSOConfiguration.ProfileField` are managed by Octopus, the others are
 /// managed in your app (i.e. moderation if any should be handled by you, unicity of the nickname too).
 struct WithSomeAppManagedFieldsCell: View {
+    let showFullScreen: (@escaping () -> any View) -> Void
 
     var body: some View {
-        // Since this scenario is a bit complex, opens it in a new screen (`SSOWithoutAppManagedFieldsView`)
+        // Since this scenario is a bit complex, opens it in a new screen (`SSOWithSomeAppManagedFieldsView`)
         NavigationLink(destination: SSOWithSomeAppManagedFieldsView()) {
             VStack(alignment: .leading) {
                 Text("Some App Managed Fields")

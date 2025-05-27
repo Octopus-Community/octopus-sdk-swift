@@ -17,5 +17,17 @@ extension View {
                 return sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
             }
         }
+
+    @_disfavoredOverload
+    func fullScreenCover<Item, Content>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Content) -> some View where Item : Identifiable, Content : View {
+            if #available(iOS 14.0, *) {
+                return fullScreenCover(item: item, onDismiss: onDismiss, content: content)
+            } else {
+                return sheet(item: item, onDismiss: onDismiss, content: content)
+            }
+        }
 }
 

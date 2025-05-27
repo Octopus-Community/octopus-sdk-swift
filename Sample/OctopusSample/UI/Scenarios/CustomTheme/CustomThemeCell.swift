@@ -9,6 +9,10 @@ import OctopusUI
 
 /// Scenario that shows how to pass a custom theme to the Octopus SDK.
 struct CustomThemeCell: View {
+    let showFullScreen: (@escaping () -> any View) -> Void
+
+    @StateObjectCompat private var viewModel = OctopusAuthSDKViewModel()
+
     /// Create a custom theme
     let appTheme = OctopusTheme(
         colors: .init(
@@ -27,8 +31,6 @@ struct CustomThemeCell: View {
         ),
         assets: .init(logo: UIImage(resource: .Scenarios.CustomTheme.appLogo)))
 
-    @State private var showModal = false
-
     var body: some View {
         VStack(alignment: .leading) {
             Text("Custom theme")
@@ -36,15 +38,19 @@ struct CustomThemeCell: View {
                 .font(.caption)
         }
         .onTapGesture {
-            showModal = true
+            // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
+            showFullScreen {
+                if let octopus = viewModel.octopus {
+                    OctopusHomeScreen(octopus: octopus)
+                    /// Pass the custom theme
+                        .environment(\.octopusTheme, appTheme)
+                } else {
+                    EmptyView()
+                }
+            }
         }
-        .fullScreenCover(isPresented: $showModal) {
-            // Init of OctopusSDK should be done as soon as possible in your app (in your AppDelegate for example)
-            // This is not what we do here because this sample showcases multiple way of initializing the SDK.
-            let octopus = try! OctopusSDK(apiKey: APIKeys.octopusAuth)
-            OctopusHomeScreen(octopus: octopus)
-                /// Pass the custom theme
-                .environment(\.octopusTheme, appTheme)
+        .onAppear {
+            viewModel.createSDK()
         }
     }
 }

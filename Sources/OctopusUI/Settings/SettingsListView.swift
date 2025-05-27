@@ -97,6 +97,7 @@ private struct ContentView: View {
                     }
                 }
             }
+            PoweredByOctopusView()
         }
     }
 }

@@ -10,6 +10,9 @@
     ">= 16" : {
 
     },
+    "A/B Tests" : {
+
+    },
     "All App Managed Fields" : {
 
     },
@@ -47,6 +50,9 @@
     "Bio:" : {
 
     },
+    "Can access the community" : {
+
+    },
     "Client User Config:" : {
 
     },
@@ -77,9 +83,6 @@
     "Information about the age" : {
 
     },
-    "Loading" : {
-
-    },
     "Login" : {
 
     },
@@ -107,10 +110,16 @@
     "Not checked" : {
 
     },
+    "Notification Badge" : {
+
+    },
     "Octo Tab" : {
 
     },
     "Open Octopus" : {
+
+    },
+    "Open Octopus Home Screen" : {
 
     },
     "Open Octopus Home Screen as full screen modal" : {
@@ -137,10 +146,19 @@
     "SSO Scenarios" : {
 
     },
+    "The following switch simulates an A/B test.\nWhen off, the community is hidden to the user." : {
+
+    },
     "This is your app's content" : {
 
     },
     "This is your app's login flow" : {
+
+    },
+    "To improve the analytics data we provide, inform the SDK if the user cannot access the community UI (during A/B tests for example)." : {
+
+    },
+    "To increase user engagement, let your users know that they have not seen internal notifications" : {
 
     },
     "Use your login system to let your user interact with the community" : {

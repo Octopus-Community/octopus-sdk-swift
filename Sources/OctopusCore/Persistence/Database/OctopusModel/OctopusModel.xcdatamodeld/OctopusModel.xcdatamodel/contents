@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D81" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24E263" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BlockedUser" representedClassName="BlockedUserEntity" syncable="YES">
         <attribute name="profileId" optional="YES" attributeType="String"/>
         <relationship name="blockedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PrivateProfile" inverseName="blocking" inverseEntity="PrivateProfile"/>
@@ -17,7 +17,7 @@
     </entity>
     <entity name="Comment" representedClassName="CommentEntity" parentEntity="OctoObject" syncable="YES">
         <attribute name="text" optional="YES" attributeType="String"/>
-        <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="commentMedia" inverseEntity="Media"/>
+        <relationship name="mediasRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="commentMedia" inverseEntity="Media"/>
     </entity>
     <entity name="FeedItemInfo" representedClassName="FeedItemInfoEntity" syncable="YES">
         <attribute name="feedId" optional="YES" attributeType="String"/>
@@ -85,7 +85,7 @@
     </entity>
     <entity name="Post" representedClassName="PostEntity" parentEntity="OctoObject" syncable="YES">
         <attribute name="text" attributeType="String"/>
-        <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="postMedia" inverseEntity="Media"/>
+        <relationship name="mediasRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="postMedia" inverseEntity="Media"/>
         <relationship name="pollOptionsRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PollOption" inverseName="poll" inverseEntity="PollOption"/>
     </entity>
     <entity name="PrivateProfile" representedClassName="PrivateProfileEntity" syncable="YES">
@@ -113,7 +113,7 @@
     </entity>
     <entity name="Reply" representedClassName="ReplyEntity" parentEntity="OctoObject" syncable="YES">
         <attribute name="text" optional="YES" attributeType="String"/>
-        <relationship name="mediasRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="replyMedia" inverseEntity="Media"/>
+        <relationship name="mediasRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="replyMedia" inverseEntity="Media"/>
     </entity>
     <entity name="RootFeed" representedClassName="RootFeedEntity" syncable="YES">
         <attribute name="label" attributeType="String"/>
