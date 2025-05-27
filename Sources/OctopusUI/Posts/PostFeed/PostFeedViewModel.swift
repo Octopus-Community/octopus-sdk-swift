@@ -104,19 +104,20 @@ class PostFeedViewModel: ObservableObject {
                     self?.visiblePostIds.remove(post.uuid)
                 }
 
-                let liveMeasurePublisher: CurrentValueSubject<LiveMeasures, Never>
+                let liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
                 if let existingPublisher = liveMeasures[post.uuid] {
-                    liveMeasurePublisher = existingPublisher
+                    liveMeasuresPublisher = existingPublisher
                 } else {
                     let newPublisher = CurrentValueSubject<LiveMeasures, Never>(
                         LiveMeasures(aggregatedInfo: .empty, userInteractions: .empty))
-                    liveMeasurePublisher = newPublisher
+                    liveMeasuresPublisher = newPublisher
                     liveMeasures[post.uuid] = newPublisher
                 }
-                liveMeasurePublisher.send(LiveMeasures(aggregatedInfo: post.aggregatedInfo, userInteractions: post.userInteractions))
+                liveMeasuresPublisher.send(LiveMeasures(aggregatedInfo: post.aggregatedInfo,
+                                                        userInteractions: post.userInteractions))
 
 
-                return DisplayablePost(from: post, liveMeasurePublisher: liveMeasurePublisher.eraseToAnyPublisher(),
+                return DisplayablePost(from: post, liveMeasuresPublisher: liveMeasuresPublisher,
                                        thisUserProfileId: profile?.id, topic: topic,
                                        dateFormatter: relativeDateFormatter,
                                        onAppear: onAppear, onDisappear: onDisappear)

@@ -28,7 +28,7 @@ struct CreateProfileView: View {
                         nicknameError: viewModel.nicknameError, birthDateError: viewModel.birthDateError,
                         birthDateFormatter: viewModel.birthDateFormatter,
                         termsOfUseUrl: viewModel.termsOfUse, privacyPolicyUrl: viewModel.privacyPolicy,
-                        communityGuidelinesUrl: viewModel.communityGuidelines, contactUsUrl: viewModel.contactUs,
+                        communityGuidelinesUrl: viewModel.communityGuidelines,
                         createProfile: viewModel.createProfile)
             Button(action: {
                 dismissModal.wrappedValue = false
@@ -79,7 +79,6 @@ private struct ContentView: View {
     let termsOfUseUrl: URL
     let privacyPolicyUrl: URL
     let communityGuidelinesUrl: URL
-    let contactUsUrl: URL
     let createProfile: () -> Void
 
     @State private var displayableBirthDate: Date?
@@ -280,37 +279,12 @@ private struct ContentView: View {
             }
             Spacer().frame(height: 8)
 
-            if #available(iOS 15.0, *) {
-                Text("Profile.Create.ContactUs.Link", bundle: .module)
-                    .font(theme.fonts.caption1)
-                    .foregroundColor(theme.colors.gray700)
-                    .tint(theme.colors.link)
-                    .environment(\.openURL, OpenURLAction { url in
-                        UIApplication.shared.open(contactUsUrl)
-                        return .handled
-                    })
-            } else {
-                Compat.Link(destination: contactUsUrl) {
-                    Text("Profile.Create.ContactUs.NoLink", bundle: .module)
-                        .font(theme.fonts.caption1)
-                        .foregroundColor(theme.colors.gray700)
-                        .multilineTextAlignment(.leading)
-                }
-            }
-            if !(nicknameFocused || birthdateFocused) {
+            if !((nicknameFocused && canEditNickname) || birthdateFocused) {
                 Spacer().frame(height: 6)
                 theme.colors.gray300.frame(height: 1)
                 Spacer().frame(height: 10)
 
-                HStack {
-                    Image(.octopusLogo)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 17, height: 16)
-                    Text("Common.PoweredByOctopus", bundle: .module)
-                        .font(theme.fonts.caption2)
-                        .foregroundColor(theme.colors.gray700)
-                }.frame(maxWidth: .infinity)
+                PoweredByOctopusView()
             }
         }
         .padding(.top)

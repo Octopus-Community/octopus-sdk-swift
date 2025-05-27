@@ -36,10 +36,8 @@ class NotificationsDatabase: InjectableObject {
         try await context.performAsync { [context] in
 
             // first delete all existing root feeds
-            let deleteRequest: NSFetchRequest<NSFetchRequestResult> = NotificationEntity.fetchAll() as! NSFetchRequest<NSFetchRequestResult>
-            deleteRequest.includesPropertyValues = false
-            let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: deleteRequest)
-            try context.execute(batchDeleteRequest)
+            let existingNotifs = try context.fetch(NotificationEntity.fetchAll())
+            existingNotifs.forEach { context.delete($0) }
 
             for (index, notification) in notifications.enumerated() {
                 let notifEntity = NotificationEntity(context: context)

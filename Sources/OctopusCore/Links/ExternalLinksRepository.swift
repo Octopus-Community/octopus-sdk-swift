@@ -17,7 +17,6 @@ public class ExternalLinksRepository: InjectableObject {
     public let privacyPolicy: URL
     public let termsOfUse: URL
     public let faq: URL
-    public let contactUs: URL
 
     init(injector: Injector, apiKey: String) {
         let hash: String
@@ -35,6 +34,5 @@ public class ExternalLinksRepository: InjectableObject {
         privacyPolicy = baseUrl.appendingPathComponent("privacy").appendingPathComponent(hash)
         termsOfUse = baseUrl.appendingPathComponent("tos").appendingPathComponent(hash)
         faq = baseUrl.appendingPathComponent("faq").appendingPathComponent(hash)
-        contactUs = baseUrl.appendingPathComponent("contact").appendingPathComponent(hash)
     }
 }

@@ -14,7 +14,6 @@ class LinksProviderViewModel: ObservableObject {
     let privacyPolicy: URL
     let termsOfUse: URL
     let faq: URL
-    let contactUs: URL
 
     private var storage = [AnyCancellable]()
 
@@ -25,6 +24,5 @@ class LinksProviderViewModel: ObservableObject {
         privacyPolicy = externalLinksRepository.privacyPolicy
         termsOfUse = externalLinksRepository.termsOfUse
         faq = externalLinksRepository.faq
-        contactUs = externalLinksRepository.contactUs
     }
 }

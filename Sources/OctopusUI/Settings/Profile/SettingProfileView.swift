@@ -69,6 +69,7 @@ struct SettingProfileView: View {
                 .buttonStyle(.plain)
                 .padding(.horizontal, 20)
             }
+            PoweredByOctopusView()
         }
         .navigationBarTitle(Text("Settings.Profile", bundle: .module), displayMode: .inline)
     }

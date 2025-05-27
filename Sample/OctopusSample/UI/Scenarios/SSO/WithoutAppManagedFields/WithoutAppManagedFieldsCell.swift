@@ -8,6 +8,8 @@ import SwiftUI
 /// Scenario that shows how configure Octopus SDK in SSO mode without any app managed fields.
 /// This means that all `ConnectionMode.SSOConfiguration.ProfileField` are managed by Octopus.
 struct WithoutAppManagedFieldsCell: View {
+    let showFullScreen: (@escaping () -> any View) -> Void
+    
     var body: some View {
         // Since this scenario is a bit complex, opens it in a new screen (`SSOWithoutAppManagedFieldsView`)
         NavigationLink(destination: SSOWithoutAppManagedFieldsView()) {

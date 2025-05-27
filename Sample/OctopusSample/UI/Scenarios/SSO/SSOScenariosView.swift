@@ -6,13 +6,14 @@ import Foundation
 import SwiftUI
 
 struct SSOScenariosView: View {
-   
+    let showFullScreen: (@escaping () -> any View) -> Void
+
     var body: some View {
         VStack(alignment: .leading) {
             List {
-                WithoutAppManagedFieldsCell()
-                WithAllAppManagedFieldsCell()
-                WithSomeAppManagedFieldsCell()
+                WithoutAppManagedFieldsCell(showFullScreen: showFullScreen)
+                WithAllAppManagedFieldsCell(showFullScreen: showFullScreen)
+                WithSomeAppManagedFieldsCell(showFullScreen: showFullScreen)
             }
             Text("In order to test these scenarios, your community should be configured to use SSO authentication.")
                 .font(.caption)

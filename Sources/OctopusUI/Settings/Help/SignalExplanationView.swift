@@ -64,6 +64,7 @@ struct SignalExplanationView: View {
                 }
                 .padding(.horizontal, 20)
             }
+            PoweredByOctopusView()
         }
         .navigationBarTitle(Text("Settings.Help.ReportContent", bundle: .module), displayMode: .inline)
     }

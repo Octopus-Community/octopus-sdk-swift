@@ -70,6 +70,19 @@ class ContentsDatabase<Content: FetchableContentEntity> {
         }
     }
 
+    func resetUserInteractions() async throws {
+        try await context.performAsync { [context] in
+            let context = context
+            let request = Content.fetchAll()
+            let existingContents = try context.fetch(request)
+
+            for existingContent in existingContents {
+                existingContent.fill(aggregatedInfo: nil, userInteractions: .empty, context: context)
+            }
+            try context.save()
+        }
+    }
+
     func delete(contentId: String) async throws {
         try await context.performAsync { [context] in
             let context = context

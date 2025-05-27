@@ -79,6 +79,8 @@ struct AggregateView: View {
     let count: Int
     let nullDisplayValue: LocalizedStringKey
 
+    @State private var animate = false
+
     private var monospacedFont: Font {
         if #available(iOS 15.0, *) {
             normalFont.monospaced()
@@ -109,6 +111,9 @@ struct AggregateView: View {
                         .aspectRatio(contentMode: .fill)
                         .foregroundColor(imageForegroundColor ?? theme.colors.gray700)
                         .padding(-2) // make it slightly bigger
+                        .scaleEffect(animate ? 1.4 : 1.0)
+                        .opacity(animate ? 0.9 : 1.0)
+                        .animation(.spring(response: 0.2, dampingFraction: 0.3), value: animate)
                 )
             ZStack(alignment: .leading) {
                 Text(verbatim: "0000") // biggest possible string
@@ -123,6 +128,15 @@ struct AggregateView: View {
                     Text(verbatim: "\(count)")
                         .font(monospacedFont)
                         .fontWeight(.medium)
+                        .modify {
+                            if #available(iOS 16.0, *) {
+                                $0.contentTransition(.numericText())
+                            } else {
+                                $0
+                            }
+                        }
+                        .animation(.default, value: count)
+
                 } else {
                     Text(nullDisplayValue, bundle: .module)
                         .font(normalFont)
@@ -130,6 +144,12 @@ struct AggregateView: View {
                 }
             }
             .foregroundColor(theme.colors.gray700)
+        }
+        .onValueChanged(of: image) { newValue in
+            animate = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                animate = false
+            }
         }
     }
 }

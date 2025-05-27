@@ -7,15 +7,20 @@ import SwiftUI
 import Octopus
 
 struct ScenariosView: View {
-    @State var isDisplayed = false
+    let showFullScreen: (@escaping () -> any View) -> Void
+    let showInSheet: (@escaping () -> any View) -> Void
 
     var body: some View {
-        List {
-            SheetCell()
-            CustomThemeCell()
-            SSOCell()
+        NavigationView {
+            List {
+                SheetCell(showInSheet: showInSheet)
+                CustomThemeCell(showFullScreen: showFullScreen)
+                NotSeenNotificationsCell(showFullScreen: showFullScreen)
+                ABTestsCell(showFullScreen: showFullScreen)
+                SSOCell(showFullScreen: showFullScreen)
+            }
+            .listStyle(.plain)
+            .navigationBarTitle(Text("Scenarios"), displayMode: .inline)
         }
-        .listStyle(.plain)
-        .navigationBarTitle(Text("Scenarios"), displayMode: .inline)
     }
 }

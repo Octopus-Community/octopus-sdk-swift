@@ -33,6 +33,7 @@ struct SettingsAboutView: View {
                                     url: viewModel.termsOfUse)
                 }
             }
+            PoweredByOctopusView()
         }
         .navigationBarTitle(Text("Settings.About", bundle: .module), displayMode: .inline)
     }

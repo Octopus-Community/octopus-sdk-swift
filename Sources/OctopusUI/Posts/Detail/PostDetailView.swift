@@ -369,6 +369,7 @@ private struct PostDetailContentView: View {
                         .font(theme.fonts.body2)
                         .lineSpacing(4)
                         .foregroundColor(theme.colors.gray900)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Spacer().frame(height: 10)
                 }.padding(.horizontal, horizontalPadding)

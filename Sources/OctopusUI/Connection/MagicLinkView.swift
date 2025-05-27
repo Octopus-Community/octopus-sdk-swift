@@ -183,6 +183,8 @@ private struct EnterEmailView: View {
 
             )
             Spacer()
+            PoweredByOctopusView()
+            Spacer().frame(height: 8)
             switch state {
             case .emailNeeded:
                 Button(action: sendMagicLink) {

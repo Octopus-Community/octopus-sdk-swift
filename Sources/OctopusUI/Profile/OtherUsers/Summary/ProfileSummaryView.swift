@@ -179,8 +179,11 @@ private struct ContentView<PostsView: View>: View {
 
     var body: some View {
         if let profile {
-            ProfileContentView(profile: profile, zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
-                postsView
+            VStack(spacing: 0) {
+                ProfileContentView(profile: profile, zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
+                    postsView
+                }
+                PoweredByOctopusView()
             }
         } else {
             Compat.ProgressView()

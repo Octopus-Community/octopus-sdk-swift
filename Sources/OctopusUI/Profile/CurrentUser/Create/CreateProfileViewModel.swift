@@ -30,7 +30,6 @@ class CreateProfileViewModel: ObservableObject {
     let communityGuidelines: URL
     let privacyPolicy: URL
     let termsOfUse: URL
-    let contactUs: URL
 
     private var nicknameHasBeenValidOnce = false
 
@@ -59,7 +58,6 @@ class CreateProfileViewModel: ObservableObject {
         communityGuidelines = externalLinksRepository.communityGuidelines
         privacyPolicy = externalLinksRepository.privacyPolicy
         termsOfUse = externalLinksRepository.termsOfUse
-        contactUs = externalLinksRepository.contactUs
 
         octopus.core.connectionRepository.connectionStatePublisher.sink { [unowned self] in
             switch $0 {
