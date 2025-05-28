@@ -668,7 +668,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nous tentons de récupérer vos données. Veillez reessayer dans quelques instants. "
+            "value" : "Nous tentons de récupérer vos données. Veuillez réessayer dans quelques instants."
           }
         }
       }

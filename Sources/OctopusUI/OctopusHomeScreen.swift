@@ -37,15 +37,6 @@ public struct OctopusHomeScreen: View {
     public init(octopus: OctopusSDK, bottomSafeAreaInset: CGFloat = 0) {
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
-
-        let coloredAppearance = UINavigationBarAppearance()
-        coloredAppearance.configureWithTransparentBackground()
-        coloredAppearance.backgroundColor = .systemBackground
-        coloredAppearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear]
-
-        UINavigationBar.appearance().standardAppearance = coloredAppearance
-        UINavigationBar.appearance().compactAppearance = coloredAppearance
-        UINavigationBar.appearance().scrollEdgeAppearance = coloredAppearance
     }
 
     public var body: some View {
