@@ -136,6 +136,16 @@ private struct ContentView: View {
                         $0.scrollIndicators(.hidden)
                     } else { $0 }
                 }
+                .modify {
+                    if #available(iOS 15.0, *) {
+                        // fixed a weird bug where the horizontal scrollview of RootFeedsView view is refreshable
+                        if let keyPath = \EnvironmentValues.refresh as? WritableKeyPath<EnvironmentValues, RefreshAction?> {
+                            $0.environment(keyPath, nil)
+                        }
+                    } else {
+                        $0
+                    }
+                }
             }
         }
         .onValueChanged(of: selectedRootFeed) {
