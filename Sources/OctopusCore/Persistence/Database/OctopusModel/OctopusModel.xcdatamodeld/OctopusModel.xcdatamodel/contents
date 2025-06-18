@@ -49,6 +49,9 @@
         <attribute name="uuid" attributeType="String"/>
         <relationship name="thumbnailsRelationship" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="MinimalProfile" inverseName="producedNotif" inverseEntity="MinimalProfile"/>
     </entity>
+    <entity name="NotificationSettings" representedClassName="NotificationSettingsEntity" syncable="YES">
+        <attribute name="pushNotificationsEnabled" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
     <entity name="OctoObject" representedClassName="OctoObjectEntity" isAbstract="YES" syncable="YES">
         <attribute name="ascChildrenFeedId" optional="YES" attributeType="String"/>
         <attribute name="authorAvatarUrl" optional="YES" attributeType="URI"/>

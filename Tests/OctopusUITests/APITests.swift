@@ -15,6 +15,11 @@ class APITests {
     @Test func testHomeScreen() async throws {
         let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
         _ = OctopusHomeScreen(octopus: octopusSdk)
+        _ = OctopusHomeScreen(octopus: octopusSdk, bottomSafeAreaInset: 5)
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .logo)
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .text(.init(text: "")))
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarPrimaryColor: true)
+        _ = OctopusHomeScreen(octopus: octopusSdk, notificationResponse: .constant(nil))
     }
 
     @Test func testOctopusThemeApi() async throws {

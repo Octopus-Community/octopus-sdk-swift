@@ -24,6 +24,12 @@
     },
     "App Version: %@" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App version: %@"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37,6 +43,9 @@
           }
         }
       }
+    },
+    "Ask for notification permission" : {
+
     },
     "Avatar 1" : {
 
@@ -54,6 +63,9 @@
 
     },
     "Client User Config:" : {
+
+    },
+    "Custom events" : {
 
     },
     "Custom theme" : {
@@ -81,6 +93,9 @@
 
     },
     "Information about the age" : {
+
+    },
+    "Integrate some of your custom events to the analytics we provide to you." : {
 
     },
     "Login" : {
@@ -113,6 +128,12 @@
     "Notification Badge" : {
 
     },
+    "Notification permission granted. Tap here to go to the system settings to change it." : {
+
+    },
+    "Notification permission is denied. Tap here to go to the system settings to enable it." : {
+
+    },
     "Octo Tab" : {
 
     },
@@ -137,6 +158,12 @@
     "Scenarios" : {
 
     },
+    "Send CustomEvent1" : {
+
+    },
+    "Send Purchase event" : {
+
+    },
     "Some App Managed Fields" : {
 
     },
@@ -159,6 +186,12 @@
 
     },
     "To increase user engagement, let your users know that they have not seen internal notifications" : {
+
+    },
+    "Use logo on Octopus Home Screen nav bar" : {
+
+    },
+    "Use primary color on Octopus Home Screen nav bar" : {
 
     },
     "Use your login system to let your user interact with the community" : {

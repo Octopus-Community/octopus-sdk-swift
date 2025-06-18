@@ -20,7 +20,7 @@ class OpenUserProfileBubbleViewModel: ObservableObject {
     init(octopus: OctopusSDK) {
         self.octopus = octopus
 
-        octopus.core.profileRepository.$profile.sink { [unowned self] in
+        octopus.core.profileRepository.profilePublisher.sink { [unowned self] in
             guard let profile = $0 else {
                 avatar = .notConnected
                 badgeCount = nil

@@ -50,12 +50,12 @@ class PostsTests: XCTestCase {
             }.store(in: &storage)
 
         injectPutPost(StorablePost(
-            uuid: "newPost", text: "My Post", medias: [], poll: nil,
+            uuid: "newPost", text: "My Post with long text", medias: [], poll: nil,
             author: .init(uuid: "me", nickname: "Me", avatarUrl: nil), creationDate: Date(), updateDate: Date(),
             status: .published, statusReasons: [],
             parentId: "topicId",
             descCommentFeedId: nil, ascCommentFeedId: nil, aggregatedInfo: .empty, userInteractions: .empty))
-        let post = WritablePost(topicId: "topicId", text: "My Post", attachment: nil)
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
         try await postsRepository.send(post)
 
         await fulfillment(of: [sendExpectation], timeout: 0.5)

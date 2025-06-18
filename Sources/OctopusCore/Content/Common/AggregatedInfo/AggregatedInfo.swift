@@ -18,7 +18,7 @@ public struct PollResult: Equatable, Sendable {
     public let percentageResultsByOption: [String: Int]
 
     init(totalVoteCount: Int, votes: [OptionVote]) {
-        self.votes = votes
+        self.votes = votes.removingDuplicates(by: \.optionId)
         self.totalVoteCount = totalVoteCount
         self.resultsByOption = Dictionary(votes.map { ($0.optionId, Int($0.voteCount)) },
                                           uniquingKeysWith: { first, _ in first })
@@ -98,7 +98,8 @@ extension AggregatedInfo {
         childCount = entity.childCount
         viewCount = entity.viewCount
         if let pollResults = entity.pollResults {
-            pollResult = .init(totalVoteCount: entity.pollTotalVoteCount, votes: pollResults.map { .init(from: $0) })
+            pollResult = .init(totalVoteCount: entity.pollTotalVoteCount,
+                               votes: pollResults.map { .init(from: $0) })
         } else {
             pollResult = nil
         }

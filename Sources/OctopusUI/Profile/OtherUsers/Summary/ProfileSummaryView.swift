@@ -37,7 +37,8 @@ struct ProfileSummaryView: View {
                         viewModel: postFeedViewModel,
                         zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
-                            navigator.push(.postDetail(postId: $0, scrollToMostRecentComment: $1))
+                            navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: nil,
+                                                       scrollToMostRecentComment: $2))
                         },
                         displayProfile: { _ in },
                         displayContentModeration: {

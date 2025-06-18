@@ -41,7 +41,7 @@ class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObj
                 if #available(iOS 14, *) { Logger.connection.debug("Authentication error received from server, logging out the user") }
                 let connectionRepository = self.connectionRepository
                 Task {
-                    try await connectionRepository.logout()
+                    try await connectionRepository.onAuthenticatedCallFailed()
                 }
             })
     }
@@ -57,7 +57,7 @@ class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObj
                 if #available(iOS 14, *) { Logger.connection.debug("Authentication error received from server, logging out the user") }
                 let connectionRepository = self.connectionRepository
                 Task {
-                    try await connectionRepository.logout()
+                    try await connectionRepository.onAuthenticatedCallFailed()
                 }
             })
     }

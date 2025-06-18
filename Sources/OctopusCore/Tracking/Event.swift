@@ -30,6 +30,8 @@ struct Event {
         case enteringUI(firstSession: Bool)
         /// Triggered when the Octopus UI is displayed not displayed anymore
         case leavingUI(startDate: Date, endDate: Date, firstSession: Bool)
+        /// Custom event, set by the client
+        case custom(CustomEvent)
     }
 
     init(date: Date, appSessionId: String?, uiSessionId: String?, content: Content) {
@@ -74,6 +76,10 @@ extension Event.Content: CustomStringConvertible {
             extra = "        startDate: \(startDate)\n" +
                     "        endDate: \(endDate)\n" +
                     "        firstSession: \(firstSession)"
+        case let .custom(customEvent):
+            name = "custom"
+            extra = "        name: \(customEvent.name)\n" +
+                    "        properties: \(customEvent.properties.mapValues { $0.value })"
         }
         let kind = "        kind:\(name)"
         if let extra = extra {
@@ -104,6 +110,12 @@ extension Event {
                 .leavingUI(startDate: Date(timeIntervalSince1970: evt.startTimestamp),
                            endDate: Date(timeIntervalSince1970: evt.endTimestamp),
                            firstSession: evt.firstSession)
+        case let evt as CustomEventEntity:
+                .custom(CustomEvent(
+                    name: evt.name,
+                    properties: Dictionary(evt.properties.map { ($0.name, CustomEvent.PropertyValue(value: $0.value)) },
+                                           uniquingKeysWith: { first, _ in first }))
+                )
         default: nil
         }
         guard let optionalContent else {

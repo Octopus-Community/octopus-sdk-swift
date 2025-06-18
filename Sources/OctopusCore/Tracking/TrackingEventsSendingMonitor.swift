@@ -191,6 +191,13 @@ private extension Event {
                             $0.firstSession = firstSession
                         }
                     })
+            case let .custom(customEvent):
+                    .customEvent(.with {
+                        $0.name = customEvent.name
+                        $0.properties = customEvent.properties.mapValues { value in
+                                .with { $0.value = value.value }
+                        }
+                    })
             }
         }
     }

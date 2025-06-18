@@ -9,15 +9,44 @@ import os
 import OctopusDependencyInjection
 import OctopusGrpcModels
 
+public protocol ProfileRepository: Sendable {
+    var profile: CurrentUserProfile? { get }
+    var profilePublisher: AnyPublisher<CurrentUserProfile?, Never> { get }
+
+    var hasLoadedProfile: Bool { get }
+    var hasLoadedProfilePublisher: AnyPublisher<Bool, Never> { get }
+
+    var onCurrentUserProfileUpdated: AnyPublisher<Void, Never> { get }
+
+    func fetchCurrentUserProfile() async throws(AuthenticatedActionError)
+
+    @discardableResult
+    func createCurrentUserProfile(with profile: EditableProfile) async throws(UpdateProfile.Error)
+    -> (CurrentUserProfile, Data?)
+
+    @discardableResult
+    func updateCurrentUserProfile(with profile: EditableProfile) async throws(UpdateProfile.Error)
+    -> (CurrentUserProfile, Data?)
+
+    func deleteCurrentUserProfile(profileId: String) async throws
+    func resetNotificationBadgeCount() async throws
+
+    func getProfile(profileId: String) -> AnyPublisher<Profile?, Error>
+    func fetchProfile(profileId: String) async throws(ServerCallError)
+    func blockUser(profileId: String) async throws(AuthenticatedActionError)
+}
+
 extension Injected {
     static let profileRepository = Injector.InjectedIdentifier<ProfileRepository>()
 }
 
-public class ProfileRepository: InjectableObject, @unchecked Sendable {
-    public static let injectedIdentifier = Injected.profileRepository
+class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked Sendable {
+    static let injectedIdentifier = Injected.profileRepository
 
     @Published public private(set) var profile: CurrentUserProfile?
+    var profilePublisher: AnyPublisher<CurrentUserProfile?, Never> { $profile.eraseToAnyPublisher() }
     @Published private(set) var hasLoadedProfile: Bool = false
+    var hasLoadedProfilePublisher: AnyPublisher<Bool, Never> { $hasLoadedProfile.eraseToAnyPublisher() }
 
     public var onCurrentUserProfileUpdated: AnyPublisher<Void, Never> {
         _onCurrentUserProfileUpdated.receive(on: DispatchQueue.main).eraseToAnyPublisher()
@@ -75,10 +104,10 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
 
         userProfileFetchMonitor.userProfileResponsePublisher
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] response in
+            .sink { [unowned self] response, userId in
                 Task {
                     do {
-                        try await processCurrentUserProfileResponse(response)
+                        try await processCurrentUserProfileResponse(response, userId: userId)
                     } catch {
                         if #available(iOS 14, *) { Logger.profile.debug("Error while processing user profile response: \(error)") }
                     }
@@ -143,13 +172,14 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
     // MARK: Current User APIs
 
     public func fetchCurrentUserProfile() async throws(AuthenticatedActionError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
         guard let userData = userDataStorage.userData else {
             throw .userNotAuthenticated
         }
         do {
             let profileResponse = try await remoteClient.userService.getPrivateProfile(
                 userId: userData.id, authenticationMethod: try authCallProvider.authenticatedMethod())
-            try await processCurrentUserProfileResponse(profileResponse)
+            try await processCurrentUserProfileResponse(profileResponse, userId: userData.id)
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error
@@ -194,6 +224,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
     }
 
     public func fetchProfile(profileId: String) async throws(ServerCallError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             let profileResponse = try await remoteClient.userService.getPublicProfile(
                 profileId: profileId,
@@ -232,7 +263,7 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
     }
 
     @discardableResult
-    public func createOrUpdateUserProfile(with profile: EditableProfile, isCreation: Bool)
+    func createOrUpdateUserProfile(with profile: EditableProfile, isCreation: Bool)
     async throws(UpdateProfile.Error) -> (CurrentUserProfile, Data?) {
         guard validator.validate(profile: profile) else {
             throw .serverCall(.other(InternalError.objectMalformed))
@@ -286,8 +317,8 @@ public class ProfileRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    private func processCurrentUserProfileResponse(_ response: Com_Octopuscommunity_GetPrivateProfileResponse) async throws {
-        guard let userId = userDataStorage.userData?.id else { return }
+    private func processCurrentUserProfileResponse(_ response: Com_Octopuscommunity_GetPrivateProfileResponse,
+                                                   userId: String) async throws {
         guard response.hasProfile,
               let profile = StorableCurrentUserProfile(from: response.profile, userId: userId) else {
             throw InternalError.objectMalformed

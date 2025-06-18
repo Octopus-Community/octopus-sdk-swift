@@ -11,32 +11,24 @@ struct NotificationCenterView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Compat.StateObject private var viewModel: NotificationCenterViewModel
 
+    @State private var displayError = false
+    @State private var displayableError: DisplayableString?
+
     init(viewModel: NotificationCenterViewModel) {
         _viewModel = Compat.StateObject(wrappedValue: viewModel)
     }
 
     var body: some View {
         ContentView(
+            showPushNotificationSetting: viewModel.showPushNotificationSetting,
+            pushNotificationEnabled: $viewModel.pushNotificationEnabled,
             notifications: viewModel.notifications,
             action: { notification in
                 viewModel.markNotificationAsRead(notifId: notification.uuid)
                 if let action = notification.action {
                     switch action {
                     case let .open(contentsToOpen):
-                        guard let lastContentToOpen = contentsToOpen.last else { break }
-                        switch lastContentToOpen.kind {
-                        case .post:
-                            navigator.push(.postDetail(postId: lastContentToOpen.contentId,
-                                                       scrollToMostRecentComment: false))
-                        case .comment:
-                            navigator.push(.commentDetail(commentId: lastContentToOpen.contentId, reply: false,
-                                                         replyToScrollTo: nil))
-                        case .reply:
-                            // we need to know which is the parent comment for the reply
-                            guard let comment = contentsToOpen.last(where: { $0.kind == .comment }) else { break }
-                            navigator.push(.commentDetail(commentId: comment.contentId, reply: false,
-                                                          replyToScrollTo: lastContentToOpen.contentId))
-                        }
+                        navigator.path.append(contentsOf: contentsToOpen.map { $0.mainFlowScreen })
                     }
                 }
             })
@@ -46,19 +38,61 @@ struct NotificationCenterView: View {
         .onDisappear {
             viewModel.viewDidDisappear()
         }
+        .alert(
+            "Common.Error",
+            isPresented: $displayError,
+            presenting: displayableError,
+            actions: { _ in },
+            message: { error in
+                error.textView
+            })
+        .onReceive(viewModel.$displayableError) { error in
+            guard let error else { return }
+            displayableError = error
+            displayError = true
+        }
     }
 }
 
 private struct ContentView: View {
+    @Environment(\.octopusTheme) private var theme
+
+    let showPushNotificationSetting: Bool
+    @Binding var pushNotificationEnabled: Bool
     let notifications: [DisplayableNotification]
     let action: (DisplayableNotification) -> Void
 
     var body: some View {
-        if !notifications.isEmpty {
-            NotificationListView(notifications: notifications, action: action)
-        } else {
-            NoNotificationView()
+        VStack(spacing: 0) {
+            if showPushNotificationSetting {
+                PushNotificationSettingView(pushNotificationEnabled: $pushNotificationEnabled)
+                theme.colors.gray300.frame(height: 1)
+            }
+            if !notifications.isEmpty {
+                NotificationListView(notifications: notifications, action: action)
+            } else {
+                NoNotificationView()
+            }
         }
+    }
+}
+
+private struct PushNotificationSettingView: View {
+    @Environment(\.octopusTheme) private var theme
+    @Binding var pushNotificationEnabled: Bool
+
+    var body: some View {
+        HStack {
+            Toggle(isOn: $pushNotificationEnabled) {
+                Text("Notifications.Settings.Push.Enable", bundle: .module)
+                    .font(theme.fonts.body2)
+                    .fontWeight(.medium)
+                    .foregroundColor(theme.colors.gray900)
+            }
+            .toggleStyle(.octopus)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
     }
 }
 

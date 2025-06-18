@@ -19,7 +19,7 @@ extension ModerationReason {
         case .violentInstigation:
                 .localizationKey("Moderation.Reason.ViolentInstigation")
         case .sexuallySuggestive:
-                .localizationKey("Moderation.Reason.SexuallySuggestive")
+                .localizationKey("Moderation.Reason.SexualSuggestivity")
         case .adultNudityOrSexualActivity:
                 .localizationKey("Moderation.Reason.AdultNudityOrSexualActivity")
         case .sexualSolicitationOrExplicitLanguage:

@@ -7,11 +7,13 @@ import OctopusDependencyInjection
 
 public extension Validators {
     class Post {
-        public enum TextResult {
-            case valid
+        public enum TextError: Error {
+            case empty
+            case tooShort
             case tooLong
         }
 
+        public let minTextLength = 10
         public let maxTextLength = 3000
 
         public var minSize: CGFloat { pictureValidator.minSize }
@@ -42,15 +44,26 @@ public extension Validators {
             }
         }
 
-        public func validate(text: String) -> Bool {
-            return !text.isEmpty && text.count <= maxTextLength
+        public func validate(text: String, attachment: WritablePost.Attachment?,
+                             ignoreTooShort: Bool = false) -> Result<Void, TextError> {
+            guard !text.isEmpty else { return .failure(.empty) }
+            if !ignoreTooShort {
+                switch attachment {
+                case .poll: break // do not force min text length when a poll is attached
+                default:
+                    guard text.count >= minTextLength else { return .failure(.tooShort) }
+                }
+            }
+            guard text.count <= maxTextLength else { return .failure(.tooLong) }
+            return .success(Void())
         }
 
         public func validate(post: WritablePost) -> Bool {
             // Note that we can't check picture because we only have the data here
-            return validate(text: post.text) &&
+            return validate(text: post.text, attachment: post.attachment).isSuccess &&
                 validate(attachment: post.attachment) &&
                 !post.parentId.isEmpty
         }
     }
 }
+

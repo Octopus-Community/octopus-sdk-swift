@@ -20,12 +20,17 @@ struct RootFeedsView: View {
     @State private var height: CGFloat = 0
 
     private let mainFlowPath: MainFlowPath
+    private let navBarLeadingItem: OctopusHomeScreen.NavBarLeadingItemKind
+    private let navBarPrimaryColor: Bool
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, navBarLeadingItem: OctopusHomeScreen.NavBarLeadingItemKind,
+         navBarPrimaryColor: Bool) {
         _viewModel = Compat.StateObject(wrappedValue: RootFeedsViewModel(octopus: octopus))
         self.mainFlowPath = mainFlowPath
+        self.navBarLeadingItem = navBarLeadingItem
+        self.navBarPrimaryColor = navBarPrimaryColor
     }
 
     var body: some View {
@@ -38,7 +43,8 @@ struct RootFeedsView: View {
         }
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
-                                defaultTrailingBarItem: trailingBarItem)
+                                defaultTrailingBarItem: trailingBarItem,
+                                defaultNavigationBarPrimaryColor: navBarPrimaryColor)
         .sheet(isPresented: $showRootFeedPicker) {
             if #available(iOS 16.0, *) {
                 RootFeedPicker(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed)
@@ -84,10 +90,18 @@ struct RootFeedsView: View {
 
     @ViewBuilder
     private var leadingBarItem: some View {
-        Image(uiImage: theme.assets.logo)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(height: 28)
+        switch navBarLeadingItem {
+        case .logo:
+            Image(uiImage: theme.assets.logo)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: 28)
+        case let .text(title):
+            Text(title.text)
+                .font(theme.fonts.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(navBarPrimaryColor ? theme.colors.onPrimary : theme.colors.gray900)
+        }
     }
 
     @ViewBuilder
@@ -98,6 +112,7 @@ struct RootFeedsView: View {
             }) {
                 Text("Common.Close", bundle: .module)
                     .font(theme.fonts.navBarItem)
+                    .foregroundColor(navBarPrimaryColor ? theme.colors.onPrimary : theme.colors.primary)
             }
         }
     }

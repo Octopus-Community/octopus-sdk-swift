@@ -11,7 +11,7 @@ struct DisplayableNotification: Equatable {
     let isRead: Bool
     let text: String
     let thumbnails: [OctoNotification.Thumbnail]
-    let action: OctoNotification.Action?
+    let action: NotifAction?
 }
 
 extension DisplayableNotification {

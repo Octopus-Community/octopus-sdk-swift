@@ -49,11 +49,12 @@ class CreatePostViewModel: ObservableObject {
 
     var sendButtonAvailable: Bool {
         !isLoading &&
-        validator.validate(text: text) &&
+        validator.validate(text: text, attachment: .init(from: attachment), ignoreTooShort: true).isSuccess &&
         validator.validate(attachment: .init(from: attachment))
     }
 
     var textMaxLength: Int { validator.maxTextLength }
+    var textMinLength: Int { validator.minTextLength }
 
     let octopus: OctopusSDK
     private let validator: Validators.Post
@@ -67,7 +68,7 @@ class CreatePostViewModel: ObservableObject {
         pollValidator = octopus.core.validators.poll
 
         Publishers.CombineLatest3(
-            octopus.core.profileRepository.$profile,
+            octopus.core.profileRepository.profilePublisher,
             $alertError,
             $isLoading
         ).sink { [unowned self] profile, currentError, isLoading in
@@ -133,6 +134,13 @@ class CreatePostViewModel: ObservableObject {
     func send() {
         guard let topic = selectedTopic else { return }
         let post = WritablePost(topicId: topic.topicId, text: text, attachment: .init(from: attachment))
+        switch validator.validate(text: post.text, attachment: post.attachment) {
+        case let .failure(error):
+            if error == .tooShort {
+                textError = .localizationKey("Error.Text.TooShort_minLength:\(textMinLength)")
+            }
+        default: break
+        }
         guard validator.validate(post: post) else { return }
 
         isLoading = true

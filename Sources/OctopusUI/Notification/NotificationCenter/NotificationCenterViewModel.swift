@@ -11,11 +11,17 @@ import os
 
 @MainActor
 class NotificationCenterViewModel: ObservableObject {
+    @Published private(set) var showPushNotificationSetting = false
+    @Published var pushNotificationEnabled = false
     @Published private(set) var notifications: [DisplayableNotification] = []
+
+    // for errors that are caused by an action inside the view (i.e. not refreshs)
+    @Published var displayableError: DisplayableString?
 
     let octopus: OctopusSDK
     private var storage = [AnyCancellable]()
     private var viewIsDisplayed = false
+    private var modelPushNotificationEnabled = false
 
     private var relativeDateFormatter: RelativeDateTimeFormatter = {
         let relativeDateFormatter = RelativeDateTimeFormatter()
@@ -35,12 +41,33 @@ class NotificationCenterViewModel: ObservableObject {
                     DisplayableNotification(notification: $0, dateFormatter: relativeDateFormatter)
                 }
             }.store(in: &storage)
+
+        octopus.core.notificationsRepository.$canHandlePushNotifications
+            .sink { [unowned self] in
+                showPushNotificationSetting = $0
+            }.store(in: &storage)
+
+        octopus.core.notificationsRepository.getSettings()
+            .replaceError(with: .defaultValue)
+            .sink { [unowned self] in
+                modelPushNotificationEnabled = $0.pushNotificationsEnabled
+                pushNotificationEnabled = $0.pushNotificationsEnabled
+            }.store(in: &storage)
+
+        $pushNotificationEnabled.sink { [unowned self] in
+            guard $0 != modelPushNotificationEnabled else { return }
+            setPushNotificationEnabled($0)
+        }.store(in: &storage)
+
+        Task {
+            try? await fetchNotificationSettings()
+        }
     }
 
     func viewDidAppear() {
         viewIsDisplayed = true
         Task {
-            await fetchNotifications()
+            try? await fetchNotifications()
         }
     }
 
@@ -49,9 +76,23 @@ class NotificationCenterViewModel: ObservableObject {
         markAllNotifWithoutActionAsRead()
     }
 
-    func refresh() async {
-        guard viewIsDisplayed else { return }
-        await fetchNotifications()
+    func refresh() async throws(ServerCallError) {
+        do {
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask { [self] in try await fetchNotificationSettings() }
+                if viewIsDisplayed {
+                    group.addTask { [self] in try await fetchNotifications() }
+                }
+
+                try await group.waitForAll()
+            }
+        } catch {
+            if let error = error as? ServerCallError {
+                throw error
+            } else {
+                throw .other(error)
+            }
+        }
     }
 
     func markNotificationAsRead(notifId: String) {
@@ -70,11 +111,12 @@ class NotificationCenterViewModel: ObservableObject {
         }
     }
 
-    private func fetchNotifications() async {
+    private func fetchNotifications() async throws(ServerCallError) {
         do {
             try await octopus.core.notificationsRepository.fetchNotifications()
         } catch {
             if #available(iOS 14, *) { Logger.notifs.debug("Error while trying to fetch notifications: \(error)") }
+            throw error
         }
     }
 
@@ -83,6 +125,32 @@ class NotificationCenterViewModel: ObservableObject {
             try await octopus.core.notificationsRepository.markNotificationsAsRead(notifIds: ids)
         } catch {
             if #available(iOS 14, *) { Logger.notifs.debug("Error while marking notifications as read: \(error)") }
+        }
+    }
+
+    private func fetchNotificationSettings() async throws(ServerCallError) {
+        do {
+            try await octopus.core.notificationsRepository.fetchSetting()
+        } catch {
+            if #available(iOS 14, *) { Logger.notifs.debug("Error while trying to fetch settings: \(error)") }
+            throw error
+        }
+    }
+
+    private func setPushNotificationEnabled(_ enabled: Bool) {
+        Task {
+            await setPushNotificationEnabled(enabled)
+        }
+    }
+
+    private func setPushNotificationEnabled(_ enabled: Bool) async {
+        do {
+            try await octopus.core.notificationsRepository.set(
+                settings: NotificationSettings(pushNotificationsEnabled: enabled))
+        } catch {
+            pushNotificationEnabled = modelPushNotificationEnabled
+            try? await fetchNotificationSettings() // fetch the latest value from the server
+            self.displayableError = error.displayableMessage
         }
     }
 

@@ -10,7 +10,7 @@ struct PostSummaryView: View {
     let post: DisplayablePost
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let displayPostDetail: (String, Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let toggleLike: (String) -> Void
@@ -34,12 +34,14 @@ struct PostSummaryView: View {
                             AuthorAndDateHeaderView(author: post.author, relativeDate: post.relativeDate,
                                                     displayProfile: displayProfile)
                             HStack(spacing: 4) {
-                                OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
-                                    HStack {
-                                        TopicCapsule(topic: post.topic)
-                                        Spacer()
+                                OpenDetailButton(
+                                    post: post,
+                                    displayPostDetail: { displayPostDetail($0, false, false) }) {
+                                        HStack {
+                                            TopicCapsule(topic: post.topic)
+                                            Spacer()
+                                        }
                                     }
-                                }
                                 if case .moderated = post.content {
                                     Text("Post.Status.Moderated", bundle: .module)
                                         .font(theme.fonts.caption2)
@@ -92,12 +94,15 @@ struct PostSummaryView: View {
 
                 switch post.content {
                 case let .published(postContent):
-                    OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false) }) {
-                        PublishedContentView(content: postContent, width: width,
-                                             zoomableImageInfo: $zoomableImageInfo,
-                                             childrenTapped: { displayPostDetail(post.uuid, true) },
-                                             likeTapped: { toggleLike(post.uuid) },
-                                             voteOnPoll: { voteOnPoll($0, post.uuid) })
+                    OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false, false) }) {
+                        PublishedContentView(
+                            content: postContent, width: width,
+                            zoomableImageInfo: $zoomableImageInfo,
+                            childrenTapped: {
+                                let comment = postContent.liveMeasuresValue.aggregatedInfo.childCount == 0
+                                displayPostDetail(post.uuid, comment, true) },
+                            likeTapped: { toggleLike(post.uuid) },
+                            voteOnPoll: { voteOnPoll($0, post.uuid) })
                     }
                 case let .moderated(reasons):
                     ModeratedPostContentView(reasons: reasons)

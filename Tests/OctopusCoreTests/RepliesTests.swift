@@ -16,7 +16,6 @@ class RepliesTests: XCTestCase {
     private var repliesRepository: RepliesRepository!
 
     private var repliesDatabase: RepliesDatabase!
-    private var connectionRepository: ConnectionRepository!
     private var mockOctoService: MockOctoService!
     private var storage = [AnyCancellable]()
 

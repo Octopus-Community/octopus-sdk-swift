@@ -17,7 +17,7 @@ class SettingProfileViewModel: ObservableObject {
 
     init(octopus: OctopusSDK) {
         self.octopus = octopus
-        octopus.core.profileRepository.$profile
+        octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] profile in
                 email = profile?.email
             }.store(in: &storage)

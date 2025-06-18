@@ -95,6 +95,14 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .leavingOctopus(newValue)}
     }
 
+    public var customEvent: Com_Octopuscommunity_TrackRequest.CustomEvent {
+      get {
+        if case .customEvent(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.CustomEvent()
+      }
+      set {eventType = .customEvent(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_EventType: Equatable, Sendable {
@@ -102,6 +110,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case leavingApp(Com_Octopuscommunity_TrackRequest.LeavingApp)
       case enteringOctopus(Com_Octopuscommunity_TrackRequest.EnteringOctopus)
       case leavingOctopus(Com_Octopuscommunity_TrackRequest.LeavingOctopus)
+      case customEvent(Com_Octopuscommunity_TrackRequest.CustomEvent)
 
     }
 
@@ -109,6 +118,32 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     fileprivate var _appSessionID: String? = nil
     fileprivate var _octoSessionID: String? = nil
+  }
+
+  public struct CustomEvent: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var name: String = String()
+
+    public var properties: Dictionary<String,Com_Octopuscommunity_TrackRequest.PropertyValue> = [:]
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct PropertyValue: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var value: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
   }
 
   public struct EnteringApp: Sendable {
@@ -284,6 +319,7 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     13: .same(proto: "leavingApp"),
     14: .same(proto: "enteringOctopus"),
     15: .same(proto: "leavingOctopus"),
+    16: .same(proto: "customEvent"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -347,6 +383,19 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .leavingOctopus(v)
         }
       }()
+      case 16: try {
+        var v: Com_Octopuscommunity_TrackRequest.CustomEvent?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .customEvent(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .customEvent(v)
+        }
+      }()
       default: break
       }
     }
@@ -383,6 +432,10 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
       guard case .leavingOctopus(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
     }()
+    case .customEvent?: try {
+      guard case .customEvent(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+    }()
     case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -393,6 +446,76 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     if lhs._appSessionID != rhs._appSessionID {return false}
     if lhs._octoSessionID != rhs._octoSessionID {return false}
     if lhs.eventType != rhs.eventType {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.CustomEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".CustomEvent"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "name"),
+    2: .same(proto: "properties"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 2: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMessageMap<SwiftProtobuf.ProtobufString,Com_Octopuscommunity_TrackRequest.PropertyValue>.self, value: &self.properties) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 1)
+    }
+    if !self.properties.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMessageMap<SwiftProtobuf.ProtobufString,Com_Octopuscommunity_TrackRequest.PropertyValue>.self, value: self.properties, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.CustomEvent, rhs: Com_Octopuscommunity_TrackRequest.CustomEvent) -> Bool {
+    if lhs.name != rhs.name {return false}
+    if lhs.properties != rhs.properties {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.PropertyValue: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".PropertyValue"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "value"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.value) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.value.isEmpty {
+      try visitor.visitSingularStringField(value: self.value, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.PropertyValue, rhs: Com_Octopuscommunity_TrackRequest.PropertyValue) -> Bool {
+    if lhs.value != rhs.value {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

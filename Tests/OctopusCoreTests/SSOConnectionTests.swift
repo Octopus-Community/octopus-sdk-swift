@@ -28,7 +28,7 @@ class SSOConnectionTests: XCTestCase {
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { ClientUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
-        injector.register { ProfileRepository(appManagedFields: [], injector: $0) }
+        injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
                                .userProfileFetchMonitor, .blockedUserIdsProvider)
         injector.register { UserDataStorage(injector: $0) }
@@ -156,5 +156,88 @@ class SSOConnectionTests: XCTestCase {
             })
 
         await fulfillment(of: [errorExpectation], timeout: 0.5)
+    }
+
+    func testOnUnauthenticatedAskForNewToken() async throws {
+        // Precondition: user is connected
+        let precondLoggedInExpectation = XCTestExpectation(description: "User is logged in")
+
+        // Simulate a long lasting call from the client to get the client user token
+        var simulateGetClientTokenFinished = false
+        var clientUserTokenAsked = false
+
+        var preconditionCancellable: AnyCancellable? = connectionRepository.connectionStatePublisher
+            .sink { connectionState in
+            switch connectionState {
+            case .notConnected: break
+            case .connected:
+                precondLoggedInExpectation.fulfill()
+            default: break
+            }
+        }
+        try await connectionRepository.connectUser(
+            .init(userId: "clientUserId", profile: .empty),
+            tokenProvider: {
+                clientUserTokenAsked = true
+                // If a fetch is currently happening, wait for its end
+                while !simulateGetClientTokenFinished {
+                    try? await Task.sleep(nanoseconds: 10)
+                }
+                return "fake_client_token"
+            })
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "fake_jwt"
+                $0.userID = "userId"
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "nickname"
+                }
+            })
+        })
+        simulateGetClientTokenFinished = true
+
+        await fulfillment(of: [precondLoggedInExpectation], timeout: 0.5)
+        XCTAssert(clientUserTokenAsked)
+        try await delay()
+        clientUserTokenAsked = false
+        if preconditionCancellable != nil { // only put the if to avoid lint warning about variable never read
+            preconditionCancellable = nil
+        }
+
+        // Now that the user is connected, the test can begin
+        let clientConnectedExpectation = XCTestExpectation(description: "Client is connected")
+        let loggedInExpectation = XCTestExpectation(description: "User is logged in")
+
+        connectionRepository.connectionStatePublisher.sink { connectionState in
+            switch connectionState {
+            case .notConnected: break
+            case let .clientConnected(_, error):
+                guard error == nil else { return }
+                clientConnectedExpectation.fulfill()
+            case .connected:
+                loggedInExpectation.fulfill()
+            default: break
+            }
+        }.store(in: &storage)
+
+        // When receiving an authentication failure expect the repository to logout and try another jwt exchange
+        // to connect again the user
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "fake_jwt"
+                $0.userID = "userId"
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "nickname"
+                }
+            })
+        })
+        try await connectionRepository.onAuthenticatedCallFailed()
+
+        // Logging out should set the state to clientConnected, immediatly after that, the token exchange is expected
+        await fulfillment(of: [clientConnectedExpectation], timeout: 0.5)
+        await fulfillment(of: [loggedInExpectation], timeout: 0.5)
+        XCTAssert(clientUserTokenAsked)
     }
 }

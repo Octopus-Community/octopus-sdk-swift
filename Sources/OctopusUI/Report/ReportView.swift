@@ -120,14 +120,14 @@ private struct ContentView: View {
                 }
                 Button(action: { report(selectedReasons) }) {
                     Text("Common.Continue", bundle: .module)
-                        .foregroundColor(theme.colors.onPrimary)
+                        .font(theme.fonts.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(!selectedReasons.isEmpty ? theme.colors.onPrimary : theme.colors.disabled)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(!selectedReasons.isEmpty ?
-                                      theme.colors.primary :
-                                        theme.colors.primary.opacity(0.3))
+                            Capsule()
+                                .fill(!selectedReasons.isEmpty ? theme.colors.primary : theme.colors.gray300)
                         )
                 }
                 .buttonStyle(.plain)

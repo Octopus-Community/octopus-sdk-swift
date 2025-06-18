@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D81" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24E263" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CustomEvent" representedClassName="CustomEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="name" attributeType="String"/>
+        <relationship name="hasProperties" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CustomEventProperty" inverseName="isPropertyOf" inverseEntity="CustomEventProperty"/>
+    </entity>
+    <entity name="CustomEventProperty" representedClassName="CustomEventPropertyEntity" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="value" optional="YES" attributeType="String"/>
+        <relationship name="isPropertyOf" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CustomEvent" inverseName="hasProperties" inverseEntity="CustomEvent"/>
+    </entity>
     <entity name="EnteringAppEvent" representedClassName="EnteringAppEventEntity" parentEntity="Event" syncable="YES">
         <attribute name="firstSession" attributeType="Boolean" usesScalarValueType="YES"/>
     </entity>

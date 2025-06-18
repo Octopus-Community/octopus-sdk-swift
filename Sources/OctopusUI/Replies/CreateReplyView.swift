@@ -15,13 +15,14 @@ struct CreateReplyView: View {
 
     @Binding var textFocused: Bool
     @Binding var hasChanges: Bool
+    let ensureConnected: () -> Bool
 
-    @State private var openUserProfile = false
-
-    init(octopus: OctopusSDK, commentId: String, textFocused: Binding<Bool>, hasChanges: Binding<Bool>) {
+    init(octopus: OctopusSDK, commentId: String, textFocused: Binding<Bool>, hasChanges: Binding<Bool>,
+         ensureConnected: @escaping () -> Bool) {
         _viewModel = Compat.StateObject(wrappedValue: CreateReplyViewModel(octopus: octopus, commentId: commentId))
         self._textFocused = textFocused
         self._hasChanges = hasChanges
+        self.ensureConnected = ensureConnected
     }
 
     var body: some View {
@@ -38,7 +39,8 @@ struct CreateReplyView: View {
             pictureError: viewModel.pictureError,
             send: viewModel.send,
             userProfileTapped: { navigator.push(.currentUserProfile) },
-            resetAlertError: { viewModel.alertError = nil })
+            resetAlertError: { viewModel.alertError = nil },
+            ensureConnected: ensureConnected)
         .onReceive(viewModel.$hasChanges) {
             hasChanges = $0
         }

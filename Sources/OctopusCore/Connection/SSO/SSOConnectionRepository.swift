@@ -31,6 +31,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
 
     private var receivedProfile: CurrentUserProfile?
     private var latestDisconnectionReason: String?
+    private var isLinkingClientUserAfterUnauthenticatedError = false
 
     private var clientUserTokenProvider: (() async throws -> String)?
 
@@ -56,8 +57,8 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
             // ensure that profile value is not the initial one
             Publishers.CombineLatest(
-                profileRepository.$profile,
-                profileRepository.$hasLoadedProfile.filter { $0 }
+                profileRepository.profilePublisher,
+                profileRepository.hasLoadedProfilePublisher.filter { $0 }
             ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main)
         )
         .receive(on: DispatchQueue.main)
@@ -227,6 +228,20 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         if let profileId {
             try await profileRepository.deleteCurrentUserProfile(profileId: profileId)
         }
+    }
+
+    func onAuthenticatedCallFailed() async throws {
+        try await logout()
+        guard !isLinkingClientUserAfterUnauthenticatedError else { return }
+        isLinkingClientUserAfterUnauthenticatedError = true
+        defer { isLinkingClientUserAfterUnauthenticatedError = false }
+        // Wait to be in the correct state to try to re-connect the user
+        try? await TaskUtils.wait(for: {
+            if case .clientConnected = connectionState { return true }
+            return false
+        }())
+
+        try await linkClientUserToOctopusUser()
     }
 
     public func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError) {

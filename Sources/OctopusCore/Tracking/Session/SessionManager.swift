@@ -19,14 +19,15 @@ class SessionManager: @unchecked Sendable {
 
     private let kind: SessionKind
 
-    private var isFirstSession: Bool
     private var timer: Timer?
 
-    init(kind: SessionKind, isFirstSession: Bool) {
+    private let firstSessionHasBeenRecordedKey: String
+
+    init(kind: SessionKind) {
         self.kind = kind
-        self.isFirstSession = isFirstSession
         currentSessionStore = SessionStore(prefix: "\(kind.storePrefix).current")
         previousSessionStore = SessionStore(prefix: "\(kind.storePrefix).previous")
+        firstSessionHasBeenRecordedKey = "\(kind.storePrefix).firstSessionHasBeenRecordedKey"
 
         currentSessionStore.$session.sink { [unowned self] in
             currentSession = Session(from: $0)
@@ -48,6 +49,7 @@ class SessionManager: @unchecked Sendable {
             sessionEnded()
         }
 
+        let isFirstSession = !UserDefaults.standard.bool(forKey: firstSessionHasBeenRecordedKey)
         currentSessionStore.store(session: StorableSession(
             uuid: UUID().uuidString,
             startTimestamp: Date().timeIntervalSince1970,
@@ -56,7 +58,7 @@ class SessionManager: @unchecked Sendable {
         ))
 
         if isFirstSession {
-            isFirstSession = false
+            UserDefaults.standard.set(true, forKey: firstSessionHasBeenRecordedKey)
         }
 
         timer?.invalidate()

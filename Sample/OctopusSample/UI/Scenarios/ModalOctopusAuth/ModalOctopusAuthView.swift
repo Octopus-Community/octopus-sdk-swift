@@ -21,6 +21,20 @@ struct ModalOctopusAuthView: View {
             Button("Open Octopus Home Screen as full screen modal") {
                 openOctopusAsModal = true
             }
+            switch viewModel.authorizationStatus {
+            case .notDetermined:
+                Button(action: viewModel.askForNotificationPermission) {
+                    Text("Ask for notification permission")
+                }
+            case .denied:
+                Button(action: { UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!) }) {
+                    Text("Notification permission is denied. Tap here to go to the system settings to enable it.")
+                }
+            default:
+                Button(action: { UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!) }) {
+                    Text("Notification permission granted. Tap here to go to the system settings to change it.")
+                }
+            }
             Spacer()
             Text("App Version: \(versionStr)")
                 .bold()
@@ -28,7 +42,7 @@ struct ModalOctopusAuthView: View {
         }
         .fullScreenCover(isPresented: $openOctopusAsModal) {
             if let octopus = viewModel.octopus {
-                OctopusHomeScreen(octopus: octopus)
+                OctopusHomeScreen(octopus: octopus, notificationResponse: $octopusNotification)
                 // only for used for internal purpose, you can ignore this for the easiest way to use Octopus
                 // If you want to override the theme, please have a look to Scenarios/CustomTheme
                     .modify {
@@ -42,6 +56,9 @@ struct ModalOctopusAuthView: View {
         }
         .onAppear {
             viewModel.createSDK()
+        }
+        .onReceive(NotificationManager.instance.$handleOctopusNotification) {
+            octopusNotification = $0
         }
     }
 

@@ -15,7 +15,8 @@ extension Injected {
 }
 
 protocol UserProfileFetchMonitor {
-    var userProfileResponsePublisher: AnyPublisher<Com_Octopuscommunity_GetPrivateProfileResponse, Never> { get }
+    /// Publisher of request response associated with the user id that triggered the request.
+    var userProfileResponsePublisher: AnyPublisher<(Com_Octopuscommunity_GetPrivateProfileResponse, String), Never> { get }
 
     func start()
     func stop()
@@ -24,13 +25,13 @@ protocol UserProfileFetchMonitor {
 class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.userProfileFetchMonitor
 
-    var userProfileResponsePublisher: AnyPublisher<Com_Octopuscommunity_GetPrivateProfileResponse, Never> {
+    var userProfileResponsePublisher: AnyPublisher<(Com_Octopuscommunity_GetPrivateProfileResponse, String), Never> {
         $userProfileResponse
             .filter { $0 != nil }
             .map { $0! }
             .eraseToAnyPublisher()
     }
-    @Published private var userProfileResponse: Com_Octopuscommunity_GetPrivateProfileResponse?
+    @Published private var userProfileResponse: (Com_Octopuscommunity_GetPrivateProfileResponse, String)?
 
     private let injector: Injector
     private let remoteClient: OctopusRemoteClient
@@ -69,7 +70,8 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
                         .getPrivateProfile(
                             userId: userData.id,
                             authenticationMethod: try authCallProvider.authenticatedMethod())
-                    userProfileResponse = response
+                    // Pass the user id that triggered the response to be sure to have consistent data.
+                    userProfileResponse = (response, userData.id)
                 } catch {
                     if let error = error as? RemoteClientError {
                         if case .notFound = error {

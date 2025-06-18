@@ -25,6 +25,21 @@ public protocol Com_Octopuscommunity_NotificationServiceClientProtocol: GRPCClie
     _ request: Com_Octopuscommunity_MarkNotificationsAsReadRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_MarkNotificationsAsReadRequest, Com_Octopuscommunity_MarkNotificationsAsReadResponse>
+
+  func registerPushToken(
+    _ request: Com_Octopuscommunity_RegisterPushTokenRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_RegisterPushTokenRequest, Com_Octopuscommunity_RegisterPushTokenResponse>
+
+  func setNotificationSettings(
+    _ request: Com_Octopuscommunity_SetNotificationSettingsRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_SetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>
+
+  func getNotificationSettings(
+    _ request: Com_Octopuscommunity_GetNotificationSettingsRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>
 }
 
 extension Com_Octopuscommunity_NotificationServiceClientProtocol {
@@ -65,6 +80,60 @@ extension Com_Octopuscommunity_NotificationServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeMarkNotificationsAsReadInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to RegisterPushToken
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to RegisterPushToken.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func registerPushToken(
+    _ request: Com_Octopuscommunity_RegisterPushTokenRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_RegisterPushTokenRequest, Com_Octopuscommunity_RegisterPushTokenResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.registerPushToken.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeRegisterPushTokenInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to SetNotificationSettings
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to SetNotificationSettings.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func setNotificationSettings(
+    _ request: Com_Octopuscommunity_SetNotificationSettingsRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_SetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.setNotificationSettings.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetNotificationSettingsInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to GetNotificationSettings
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetNotificationSettings.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func getNotificationSettings(
+    _ request: Com_Octopuscommunity_GetNotificationSettingsRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.getNotificationSettings.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? []
     )
   }
 }
@@ -140,6 +209,21 @@ public protocol Com_Octopuscommunity_NotificationServiceAsyncClientProtocol: GRP
     _ request: Com_Octopuscommunity_MarkNotificationsAsReadRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_MarkNotificationsAsReadRequest, Com_Octopuscommunity_MarkNotificationsAsReadResponse>
+
+  func makeRegisterPushTokenCall(
+    _ request: Com_Octopuscommunity_RegisterPushTokenRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_RegisterPushTokenRequest, Com_Octopuscommunity_RegisterPushTokenResponse>
+
+  func makeSetNotificationSettingsCall(
+    _ request: Com_Octopuscommunity_SetNotificationSettingsRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>
+
+  func makeGetNotificationSettingsCall(
+    _ request: Com_Octopuscommunity_GetNotificationSettingsRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -175,6 +259,42 @@ extension Com_Octopuscommunity_NotificationServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeMarkNotificationsAsReadInterceptors() ?? []
     )
   }
+
+  public func makeRegisterPushTokenCall(
+    _ request: Com_Octopuscommunity_RegisterPushTokenRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_RegisterPushTokenRequest, Com_Octopuscommunity_RegisterPushTokenResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.registerPushToken.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeRegisterPushTokenInterceptors() ?? []
+    )
+  }
+
+  public func makeSetNotificationSettingsCall(
+    _ request: Com_Octopuscommunity_SetNotificationSettingsRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.setNotificationSettings.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetNotificationSettingsInterceptors() ?? []
+    )
+  }
+
+  public func makeGetNotificationSettingsCall(
+    _ request: Com_Octopuscommunity_GetNotificationSettingsRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.getNotificationSettings.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -200,6 +320,42 @@ extension Com_Octopuscommunity_NotificationServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeMarkNotificationsAsReadInterceptors() ?? []
+    )
+  }
+
+  public func registerPushToken(
+    _ request: Com_Octopuscommunity_RegisterPushTokenRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_RegisterPushTokenResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.registerPushToken.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeRegisterPushTokenInterceptors() ?? []
+    )
+  }
+
+  public func setNotificationSettings(
+    _ request: Com_Octopuscommunity_SetNotificationSettingsRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_NotificationSettingsResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.setNotificationSettings.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetNotificationSettingsInterceptors() ?? []
+    )
+  }
+
+  public func getNotificationSettings(
+    _ request: Com_Octopuscommunity_GetNotificationSettingsRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_NotificationSettingsResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.getNotificationSettings.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? []
     )
   }
 }
@@ -228,6 +384,15 @@ public protocol Com_Octopuscommunity_NotificationServiceClientInterceptorFactory
 
   /// - Returns: Interceptors to use when invoking 'markNotificationsAsRead'.
   func makeMarkNotificationsAsReadInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_MarkNotificationsAsReadRequest, Com_Octopuscommunity_MarkNotificationsAsReadResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'registerPushToken'.
+  func makeRegisterPushTokenInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_RegisterPushTokenRequest, Com_Octopuscommunity_RegisterPushTokenResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'setNotificationSettings'.
+  func makeSetNotificationSettingsInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_SetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getNotificationSettings'.
+  func makeGetNotificationSettingsInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>]
 }
 
 public enum Com_Octopuscommunity_NotificationServiceClientMetadata {
@@ -237,6 +402,9 @@ public enum Com_Octopuscommunity_NotificationServiceClientMetadata {
     methods: [
       Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.getUserNotifications,
       Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.markNotificationsAsRead,
+      Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.registerPushToken,
+      Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.setNotificationSettings,
+      Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.getNotificationSettings,
     ]
   )
 
@@ -252,6 +420,24 @@ public enum Com_Octopuscommunity_NotificationServiceClientMetadata {
       path: "/com.octopuscommunity.NotificationService/MarkNotificationsAsRead",
       type: GRPCCallType.unary
     )
+
+    public static let registerPushToken = GRPCMethodDescriptor(
+      name: "RegisterPushToken",
+      path: "/com.octopuscommunity.NotificationService/RegisterPushToken",
+      type: GRPCCallType.unary
+    )
+
+    public static let setNotificationSettings = GRPCMethodDescriptor(
+      name: "SetNotificationSettings",
+      path: "/com.octopuscommunity.NotificationService/SetNotificationSettings",
+      type: GRPCCallType.unary
+    )
+
+    public static let getNotificationSettings = GRPCMethodDescriptor(
+      name: "GetNotificationSettings",
+      path: "/com.octopuscommunity.NotificationService/GetNotificationSettings",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -262,6 +448,12 @@ public protocol Com_Octopuscommunity_NotificationServiceProvider: CallHandlerPro
   func getUserNotifications(request: Com_Octopuscommunity_GetUserNotificationsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetUserNotificationsResponse>
 
   func markNotificationsAsRead(request: Com_Octopuscommunity_MarkNotificationsAsReadRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_MarkNotificationsAsReadResponse>
+
+  func registerPushToken(request: Com_Octopuscommunity_RegisterPushTokenRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_RegisterPushTokenResponse>
+
+  func setNotificationSettings(request: Com_Octopuscommunity_SetNotificationSettingsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_NotificationSettingsResponse>
+
+  func getNotificationSettings(request: Com_Octopuscommunity_GetNotificationSettingsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_NotificationSettingsResponse>
 }
 
 extension Com_Octopuscommunity_NotificationServiceProvider {
@@ -294,6 +486,33 @@ extension Com_Octopuscommunity_NotificationServiceProvider {
         userFunction: self.markNotificationsAsRead(request:context:)
       )
 
+    case "RegisterPushToken":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_RegisterPushTokenRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_RegisterPushTokenResponse>(),
+        interceptors: self.interceptors?.makeRegisterPushTokenInterceptors() ?? [],
+        userFunction: self.registerPushToken(request:context:)
+      )
+
+    case "SetNotificationSettings":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SetNotificationSettingsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_NotificationSettingsResponse>(),
+        interceptors: self.interceptors?.makeSetNotificationSettingsInterceptors() ?? [],
+        userFunction: self.setNotificationSettings(request:context:)
+      )
+
+    case "GetNotificationSettings":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetNotificationSettingsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_NotificationSettingsResponse>(),
+        interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? [],
+        userFunction: self.getNotificationSettings(request:context:)
+      )
+
     default:
       return nil
     }
@@ -315,6 +534,21 @@ public protocol Com_Octopuscommunity_NotificationServiceAsyncProvider: CallHandl
     request: Com_Octopuscommunity_MarkNotificationsAsReadRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_MarkNotificationsAsReadResponse
+
+  func registerPushToken(
+    request: Com_Octopuscommunity_RegisterPushTokenRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_RegisterPushTokenResponse
+
+  func setNotificationSettings(
+    request: Com_Octopuscommunity_SetNotificationSettingsRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_NotificationSettingsResponse
+
+  func getNotificationSettings(
+    request: Com_Octopuscommunity_GetNotificationSettingsRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_NotificationSettingsResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -354,6 +588,33 @@ extension Com_Octopuscommunity_NotificationServiceAsyncProvider {
         wrapping: { try await self.markNotificationsAsRead(request: $0, context: $1) }
       )
 
+    case "RegisterPushToken":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_RegisterPushTokenRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_RegisterPushTokenResponse>(),
+        interceptors: self.interceptors?.makeRegisterPushTokenInterceptors() ?? [],
+        wrapping: { try await self.registerPushToken(request: $0, context: $1) }
+      )
+
+    case "SetNotificationSettings":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SetNotificationSettingsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_NotificationSettingsResponse>(),
+        interceptors: self.interceptors?.makeSetNotificationSettingsInterceptors() ?? [],
+        wrapping: { try await self.setNotificationSettings(request: $0, context: $1) }
+      )
+
+    case "GetNotificationSettings":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetNotificationSettingsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_NotificationSettingsResponse>(),
+        interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? [],
+        wrapping: { try await self.getNotificationSettings(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -369,6 +630,18 @@ public protocol Com_Octopuscommunity_NotificationServiceServerInterceptorFactory
   /// - Returns: Interceptors to use when handling 'markNotificationsAsRead'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeMarkNotificationsAsReadInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_MarkNotificationsAsReadRequest, Com_Octopuscommunity_MarkNotificationsAsReadResponse>]
+
+  /// - Returns: Interceptors to use when handling 'registerPushToken'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeRegisterPushTokenInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_RegisterPushTokenRequest, Com_Octopuscommunity_RegisterPushTokenResponse>]
+
+  /// - Returns: Interceptors to use when handling 'setNotificationSettings'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSetNotificationSettingsInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_SetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getNotificationSettings'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetNotificationSettingsInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>]
 }
 
 public enum Com_Octopuscommunity_NotificationServiceServerMetadata {
@@ -378,6 +651,9 @@ public enum Com_Octopuscommunity_NotificationServiceServerMetadata {
     methods: [
       Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.getUserNotifications,
       Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.markNotificationsAsRead,
+      Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.registerPushToken,
+      Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.setNotificationSettings,
+      Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.getNotificationSettings,
     ]
   )
 
@@ -391,6 +667,24 @@ public enum Com_Octopuscommunity_NotificationServiceServerMetadata {
     public static let markNotificationsAsRead = GRPCMethodDescriptor(
       name: "MarkNotificationsAsRead",
       path: "/com.octopuscommunity.NotificationService/MarkNotificationsAsRead",
+      type: GRPCCallType.unary
+    )
+
+    public static let registerPushToken = GRPCMethodDescriptor(
+      name: "RegisterPushToken",
+      path: "/com.octopuscommunity.NotificationService/RegisterPushToken",
+      type: GRPCCallType.unary
+    )
+
+    public static let setNotificationSettings = GRPCMethodDescriptor(
+      name: "SetNotificationSettings",
+      path: "/com.octopuscommunity.NotificationService/SetNotificationSettings",
+      type: GRPCCallType.unary
+    )
+
+    public static let getNotificationSettings = GRPCMethodDescriptor(
+      name: "GetNotificationSettings",
+      path: "/com.octopuscommunity.NotificationService/GetNotificationSettings",
       type: GRPCCallType.unary
     )
   }

@@ -19,7 +19,7 @@ class PostEntity: OctoObjectEntity {
         guard let pollOptions = pollOptionsRelationship?.array as? [PollOptionEntity], !pollOptions.isEmpty else {
             return nil
         }
-        return pollOptions
+        return pollOptions.removingDuplicates(by: \.uuid)
     }
 
     func fill(with post: StorablePost, context: NSManagedObjectContext) {

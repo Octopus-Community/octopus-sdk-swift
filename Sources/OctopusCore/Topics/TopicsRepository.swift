@@ -25,12 +25,14 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
     @Published public private(set) var topics: [Topic] = []
 
     private let topicsDatabase: TopicsDatabase
+    private let networkMonitor: NetworkMonitor
     private let remoteClient: OctopusRemoteClient
     private var storage: Set<AnyCancellable> = []
 
     init(injector: Injector) {
         topicsDatabase = injector.getInjected(identifiedBy: Injected.topicsDatabase)
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
+        networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
 
         topicsDatabase.topicsPublisher()
             .replaceError(with: [])
@@ -41,6 +43,7 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
     }
 
     public func fetchTopics() async throws {
+        guard networkMonitor.connectionAvailable else { throw ServerCallError.noNetwork }
         let response = try await remoteClient.octoService.getTopics(authenticationMethod: .notAuthenticated)
         let topics = response.topics.compactMap { Topic(from: $0) }
         try await topicsDatabase.deleteAll()
