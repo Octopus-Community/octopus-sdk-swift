@@ -69,6 +69,12 @@ struct SampleRootView: View {
         .sheet(item: $sheetScreenItem) {
             AnyView($0.builder())
         }
+        .onReceive(NotificationManager.instance.$handleOctopusNotification) {
+            guard $0 != nil else { return }
+            // when a notification is received, we display the Octopus UI
+            selectedTab = .modal
+            openOctopusAsModal = true
+        }
     }
 }
 

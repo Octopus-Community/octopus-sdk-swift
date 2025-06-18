@@ -76,7 +76,7 @@ class PostFeedViewModel: ObservableObject {
         Publishers.CombineLatest3(
             feed.$items.removeDuplicates(),
             octopus.core.topicsRepository.$topics,
-            octopus.core.profileRepository.$profile.removeDuplicates()
+            octopus.core.profileRepository.profilePublisher.removeDuplicates()
         )
         .sink { [unowned self] posts, topics, profile in
             guard let posts else { return }

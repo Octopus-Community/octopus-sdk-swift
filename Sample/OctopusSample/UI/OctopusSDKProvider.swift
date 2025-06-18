@@ -20,7 +20,18 @@ class OctopusSDKProvider {
     private var lastApiKeyUsed: String?
 
     private var storage = [AnyCancellable]()
-    
+
+    private init() {
+        Publishers.CombineLatest(
+            $octopus,
+            NotificationManager.instance.$notificationDeviceToken
+        ).sink { octopus, notificationDeviceToken in
+            guard let octopus, let notificationDeviceToken else { return }
+            print("Setting notification device token to octopus SDK")
+            octopus.set(notificationDeviceToken: notificationDeviceToken)
+        }.store(in: &storage)
+    }
+
     /// Creates a new SDK instance, if needed.
     /// - Parameters:
     ///   - connectionMode: the connection mode

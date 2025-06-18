@@ -34,7 +34,7 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
         guard let pollOptions = pollOptionResultsRelationship?.array as? [PollOptionResultEntity] else {
             return nil
         }
-        return pollOptions
+        return pollOptions.removingDuplicates(by: \.optionId)
     }
 
     func fill(with content: StorableContent, context: NSManagedObjectContext) {

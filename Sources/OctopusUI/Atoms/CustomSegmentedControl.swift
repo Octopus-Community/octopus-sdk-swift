@@ -51,18 +51,10 @@ struct CustomSegmentedControl: View {
         .background(GeometryReader { geometry in
             Color.clear
                 .onValueChanged(of: geometry.size.width) { width in
-                    let window = UIApplication.shared.windows.first
-                    let leftPadding = window?.safeAreaInsets.left ?? 0
-                    let rightPadding = window?.safeAreaInsets.right ?? 0
-                    let horizontalPadding = leftPadding + rightPadding
-                    self.width = min(width, UIScreen.main.bounds.width - horizontalPadding)
+                    updateWidth(computedWidth: width, screenWidth: UIScreen.main.bounds.width)
                 }
                 .onAppear {
-                    let window = UIApplication.shared.windows.first
-                    let leftPadding = window?.safeAreaInsets.left ?? 0
-                    let rightPadding = window?.safeAreaInsets.right ?? 0
-                    let horizontalPadding = leftPadding + rightPadding
-                    self.width = min(geometry.size.width, UIScreen.main.bounds.width - horizontalPadding)
+                    updateWidth(computedWidth: geometry.size.width, screenWidth: UIScreen.main.bounds.width)
                 }
         })
         .onAppear {
@@ -74,6 +66,16 @@ struct CustomSegmentedControl: View {
             }
         }
         .padding(.top, 16)
+    }
+
+    private func updateWidth(computedWidth: CGFloat, screenWidth: CGFloat) {
+        let window = UIApplication.shared.windows.first
+        let leftPadding = window?.safeAreaInsets.left ?? 0
+        let rightPadding = window?.safeAreaInsets.right ?? 0
+        // +1 to avoid a bug when going from portrait to landscape and back to portrait where the width was still
+        // very large (the size of the landscape).
+        let horizontalPadding = leftPadding + rightPadding + 1
+        self.width = min(computedWidth, screenWidth - horizontalPadding)
     }
 
     private var tabCountForSizing: Int {

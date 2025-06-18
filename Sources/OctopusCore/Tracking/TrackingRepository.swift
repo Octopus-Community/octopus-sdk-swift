@@ -26,13 +26,13 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     /// Whether the Octopus UI is currently displayed. Used to end the UI session when the app session is ended
     private var octopusUIIsDisplayed = false
 
-    init(injector: Injector, isFirstSession: Bool) {
+    init(injector: Injector) {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         database = injector.getInjected(identifiedBy: Injected.eventsDatabase)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
 
-        octopusUISessionManager = SessionManager(kind: .octopusUI, isFirstSession: isFirstSession)
-        appSessionManager = SessionManager(kind: .app, isFirstSession: isFirstSession)
+        octopusUISessionManager = SessionManager(kind: .octopusUI)
+        appSessionManager = SessionManager(kind: .app)
 
         // listen to current UI session in order to create `enteringUI` event
         octopusUISessionManager.$currentSession
@@ -115,6 +115,14 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
 
     public func set(hasAccessToCommunity: Bool) {
         remoteClient.set(hasAccessToCommunity: hasAccessToCommunity)
+    }
+
+    public func track(customEvent: CustomEvent) async throws {
+        try await database.upsert(event: Event(
+            date: Date(),
+            appSessionId: appSessionManager.currentSession?.uuid,
+            uiSessionId: octopusUISessionManager.currentSession?.uuid,
+            content: .custom(customEvent)))
     }
 
     func appSessionStarted() {

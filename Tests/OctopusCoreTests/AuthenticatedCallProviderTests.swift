@@ -162,6 +162,10 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
         userDataStorage.store(userData: nil)
     }
 
+    func onAuthenticatedCallFailed() async throws {
+        try await logout()
+    }
+
     func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) { }
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws { }

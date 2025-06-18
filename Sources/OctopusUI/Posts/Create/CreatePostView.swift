@@ -359,43 +359,69 @@ private struct WritingPostForm: View {
                 }
 
                 if !(attachment?.hasPoll ?? false) {
-                    theme.colors.gray300.frame(height: 1)
-                }
 
-                HStack {
-                    if !(attachment?.hasPoll ?? false) {
-                        Button(action: { openPhotosPicker = true }) {
-                            HStack(spacing: 4) {
-                                Image(.addMedia)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                Text("Content.Create.AddPicture", bundle: .module)
-                                    .font(theme.fonts.body2)
-                                    .fontWeight(.medium)
+                    HStack(spacing: 0) {
+                        if !(attachment?.hasPoll ?? false) {
+                            Button(action: { openPhotosPicker = true }) {
+                                HStack(spacing: 4) {
+                                    Image(.addMedia)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 24, height: 24)
+                                    Text("Content.Create.AddPicture", bundle: .module)
+                                        .font(theme.fonts.body2)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundColor(theme.colors.gray900)
+                                .padding(.leading, 6)
+                                .padding(.trailing, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule().stroke(theme.colors.gray300, lineWidth: 1)
+                                )
+                                .padding(.leading, 12)
+                                .padding(.trailing, 6)
                             }
-                            .foregroundColor(theme.colors.gray900)
-                            .padding()
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
-                    }
-                    if attachment == nil {
-                        Button(action: createPoll) {
-                            HStack(spacing: 4) {
-                                Image(.poll)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                Text("Content.Create.AddPoll", bundle: .module)
-                                    .font(theme.fonts.body2)
-                                    .fontWeight(.medium)
+                        if attachment == nil {
+                            Button(action: createPoll) {
+                                HStack(spacing: 4) {
+                                    Image(.poll)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 24, height: 24)
+                                    Text("Content.Create.AddPoll", bundle: .module)
+                                        .font(theme.fonts.body2)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundColor(theme.colors.gray900)
+                                .padding(.leading, 6)
+                                .padding(.trailing, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule().stroke(theme.colors.gray300, lineWidth: 1)
+                                )
+                                .padding(.leading, 6)
+                                .padding(.trailing, 12)
                             }
-                            .foregroundColor(theme.colors.gray900)
-                            .padding()
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
+                        Spacer()
                     }
-                    Spacer()
+                    .padding(.top, 12)
+                    .padding(.bottom, textFocused ? 10 : 0)
+                    .background(RoundedRectangle(cornerRadius: 24)
+                        .stroke(theme.colors.gray300, lineWidth: 1)
+                        .padding(.horizontal, -1)
+                        .foregroundColor(Color(.systemBackground))
+                        .overlay(
+                            Rectangle()
+                                .padding(.top, 24)
+                                .padding(.bottom, -1)
+                                .foregroundColor(Color(.systemBackground))
+                        )
+                    )
                 }
             }
         }

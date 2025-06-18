@@ -12,6 +12,7 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
     let defaultTrailingBarItem: TrailingBarItem
     let defaultNavigationBarTitle: Text
     let defaultNavigationBarBackButtonHidden: Bool
+    let defaultNavigationBarPrimaryColor: Bool
 
     @State private var usableZoomableImageInfo: ZoomableImageInfo?
     private let zoomAnimationDuration = 0.2
@@ -63,6 +64,15 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
             usableZoomableImageInfo == nil ? defaultNavigationBarTitle : Text(verbatim: ""),
             displayMode: .inline)
         .navigationBarBackButtonHidden(defaultNavigationBarBackButtonHidden || usableZoomableImageInfo != nil)
+        .modify {
+            if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
+                $0
+                    .toolbarBackground(theme.colors.primary, for: .navigationBar)
+                    .toolbarBackground(zoomableImageInfo == nil ? .visible : .hidden, for: .navigationBar)
+            } else {
+                $0
+            }
+        }
     }
 
     @ViewBuilder
@@ -100,14 +110,16 @@ extension View {
         defaultLeadingBarItem: LeadingBarItem,
         defaultTrailingBarItem: TrailingBarItem,
         defaultNavigationBarTitle: Text = Text(verbatim: ""),
-        defaultNavigationBarBackButtonHidden: Bool = false) -> some View {
+        defaultNavigationBarBackButtonHidden: Bool = false,
+        defaultNavigationBarPrimaryColor: Bool = false) -> some View {
         self.modifier(
             ZoomableImageContainer(
                 zoomableImageInfo: zoomableImageInfo,
                 defaultLeadingBarItem: defaultLeadingBarItem,
                 defaultTrailingBarItem: defaultTrailingBarItem,
                 defaultNavigationBarTitle: defaultNavigationBarTitle,
-                defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden
+                defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
+                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor
             )
         )
     }

@@ -190,14 +190,13 @@ private struct EnterEmailView: View {
                 Button(action: sendMagicLink) {
                     Text("Connection.MagicLink.Send.Button", bundle: .module)
                         .font(theme.fonts.body2)
-                        .foregroundColor(theme.colors.onPrimary)
+                        .fontWeight(.medium)
+                        .foregroundColor(sendEmailButtonAvailable ? theme.colors.onPrimary : theme.colors.disabled)
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(sendEmailButtonAvailable ?
-                                        theme.colors.primary :
-                                        theme.colors.primary.opacity(0.3))
+                            Capsule()
+                                .fill(sendEmailButtonAvailable ? theme.colors.primary : theme.colors.gray300)
                         )
                 }
                 .buttonStyle(.plain)

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UserNotifications
 import OctopusCore
 import OctopusDependencyInjection
 import os
@@ -19,9 +20,9 @@ public class OctopusSDK: ObservableObject {
     private var storage = [AnyCancellable]()
 
     /// Constructor of the `OctopusSDK`.
-    ///  
+    ///
     /// It is recommended to start this object as soon as possible.
-    ///  
+    ///
     /// - Parameters:
     ///   - apiKey: the API key that identifies your community
     ///   - connectionMode: the kind of connection to handle the user
@@ -29,27 +30,17 @@ public class OctopusSDK: ObservableObject {
         self.injector = Injector()
         core = try OctopusSDKCore(apiKey: apiKey, connectionMode: connectionMode.coreValue, injector: injector)
 
-        core.profileRepository.$profile
+        core.profileRepository.profilePublisher
             .sink { [unowned self] in
                 let newNotSeenNotificationsCount = $0?.notificationBadgeCount ?? 0
                 guard notSeenNotificationsCount != newNotSeenNotificationsCount else { return }
                 notSeenNotificationsCount = newNotSeenNotificationsCount
             }.store(in: &storage)
     }
+}
 
-    /// Sets whether the access to the Octopus community is enabled or not.
-    /// 
-    /// This method indicates whether the app should have access to community features,
-    /// typically used in A/B testing scenarios where some users may be excluded from the community
-    /// experience. This information is used internally for analytics and tracking purposes to
-    /// understand user engagement patterns.
-    ///
-    /// - Parameter hasAccessToCommunity: True if the app has access to the community features, false if it
-    ///                                   should be excluded (e.g., in A/B testing control groups)
-    public func set(hasAccessToCommunity: Bool) {
-        core.trackingRepository.set(hasAccessToCommunity: hasAccessToCommunity)
-    }
-
+// MARK: - SSO User Connection
+extension OctopusSDK {
     /// Connect a user.
     ///
     /// This will make your user connected to the community. If your user does not have a community account, it will be
@@ -82,7 +73,7 @@ public class OctopusSDK: ObservableObject {
             }
         }
     }
-    
+
     /// Disconnect the current user.
     ///
     /// Call this function when your user is disconnected.
@@ -107,5 +98,54 @@ extension OctopusSDK {
     /// value.
     public func updateNotSeenNotificationsCount() async throws {
         try await core.profileRepository.fetchCurrentUserProfile()
+    }
+}
+
+// MARK: - Push Notifications
+extension OctopusSDK {
+    /// Pass the notification device token to the SDK.
+    /// As soon as the system gives you the device token in the
+    /// `UNUserNotificationCenterDelegate.application(_:didRegisterForRemoteNotificationsWithDeviceToken:)` function,
+    /// you should pass it to the Octopus SDK.
+    /// - Parameter notificationDeviceToken: the received device token
+    public func set(notificationDeviceToken: String) {
+        core.notificationsRepository.set(notificationDeviceToken: notificationDeviceToken)
+    }
+
+    /// Gets whether this notification has been triggered by an Octopus Community content.
+    /// If this function returns true, it means that your app should display the Octopus UI and pass the
+    /// NotificationResponse to the Octopus SDK UI.
+    /// - Parameter notification: the notification to test
+    /// - Returns: true if the notification is an Octopus Community one
+    public static func isAnOctopusNotification(notification: UNNotification) -> Bool {
+        NotificationsRepository.isAnOctopusNotification(notification: notification)
+    }
+}
+
+// MARK: - A/B Testing
+extension OctopusSDK {
+    /// Sets whether the access to the Octopus community is enabled or not.
+    ///
+    /// This method indicates whether the app should have access to community features,
+    /// typically used in A/B testing scenarios where some users may be excluded from the community
+    /// experience. This information is used internally for analytics and tracking purposes to
+    /// understand user engagement patterns.
+    ///
+    /// - Parameter hasAccessToCommunity: True if the app has access to the community features, false if it
+    ///                                   should be excluded (e.g., in A/B testing control groups)
+    public func set(hasAccessToCommunity: Bool) {
+        core.trackingRepository.set(hasAccessToCommunity: hasAccessToCommunity)
+    }
+}
+
+// MARK: - Analytics
+extension OctopusSDK {    
+    /// Add a custom event.
+    ///
+    /// This event can be integrated to the analytics reports we can deliver to you.
+    ///
+    /// - Parameter customEvent: the custom event
+    public func track(customEvent: CustomEvent) async throws {
+        try await core.trackingRepository.track(customEvent: customEvent.coreValue)
     }
 }

@@ -39,7 +39,7 @@ class ProfileTests: XCTestCase {
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ClientUserProvider(connectionMode: .octopus(deepLink: nil), injector: $0) }
 
-        profileRepository = ProfileRepository(appManagedFields: [], injector: injector)
+        profileRepository = ProfileRepositoryDefault(appManagedFields: [], injector: injector)
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
             .userService as! MockUserService)
         mockUserProfileFetchMonitor = (injector.getInjected(
@@ -60,7 +60,7 @@ class ProfileTests: XCTestCase {
         let userProfilePublishedExpectation = XCTestExpectation(description: "User published")
 
         var profile: CurrentUserProfile?
-        profileRepository.$profile.sink {
+        profileRepository.profilePublisher.sink {
             profile = $0
             guard profile?.id == "profileId" else { return }
             userProfilePublishedExpectation.fulfill()
@@ -77,7 +77,7 @@ class ProfileTests: XCTestCase {
         let userProfilePublishedExpectation = XCTestExpectation(description: "User published")
 
         var profile: CurrentUserProfile?
-        profileRepository.$profile.sink {
+        profileRepository.profilePublisher.sink {
             profile = $0
             guard profile?.id == "profileId" else { return }
             userProfilePublishedExpectation.fulfill()
@@ -100,7 +100,7 @@ class ProfileTests: XCTestCase {
 
     func testProfileCreated() async throws {
         var profile: CurrentUserProfile?
-        profileRepository.$profile.sink {
+        profileRepository.profilePublisher.sink {
             profile = $0
         }.store(in: &storage)
 
@@ -134,7 +134,7 @@ class ProfileTests: XCTestCase {
 
     func testProfileUpdate() async throws {
         var profile: CurrentUserProfile?
-        profileRepository.$profile.sink {
+        profileRepository.profilePublisher.sink {
             profile = $0
         }.store(in: &storage)
 
@@ -208,7 +208,7 @@ class ProfileTests: XCTestCase {
         let blockedListEmptyExpectation = XCTestExpectation(description: "Blocked user list is empty")
         let blockedListNonEmptyExpectation = XCTestExpectation(description: "Blocked user list contains the blocked user")
 
-        profileRepository.$profile.sink {
+        profileRepository.profilePublisher.sink {
             guard let profile = $0 else { return }
             if profile.blockedProfileIds.isEmpty {
                 blockedListEmptyExpectation.fulfill()

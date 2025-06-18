@@ -58,7 +58,7 @@ public class RootFeedsRepository: InjectableObject, @unchecked Sendable {
             .map { [weak self] rootFeeds in
                 guard let self else { return [] }
                 return rootFeeds.map {
-                    RootFeed(label: $0.label, feedId: $0.feedId, postFeedsStore: postFeedsStore)
+                    RootFeed(label: $0.label, feedId: $0.feedId, postFeedsStore: self.postFeedsStore)
                 }
             }
             .eraseToAnyPublisher()

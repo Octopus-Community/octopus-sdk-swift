@@ -141,6 +141,7 @@ private struct SettingItemView: View {
                 Spacer()
             }
             .padding(.horizontal, 20)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

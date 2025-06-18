@@ -17,6 +17,18 @@ public protocol NotificationService {
         notificationIds: [String],
         authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_MarkNotificationsAsReadResponse
+
+    func registerPushToken(
+        deviceToken: String, isSandbox: Bool,
+        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_RegisterPushTokenResponse
+
+    func getNotificationsSettings(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_NotificationSettingsResponse
+
+    func setNotificationsSettings(enablePushNotification: Bool, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError)
+    -> Com_Octopuscommunity_NotificationSettingsResponse
 }
 
 class NotificationServiceClient: ServiceClient, NotificationService {
@@ -40,7 +52,6 @@ class NotificationServiceClient: ServiceClient, NotificationService {
         return try await callRemote(authenticationMethod) {
             try await client.getUserNotifications(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
-
         }
     }
 
@@ -54,7 +65,43 @@ class NotificationServiceClient: ServiceClient, NotificationService {
         return try await callRemote(authenticationMethod) {
             try await client.markNotificationsAsRead(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
 
+    func registerPushToken(
+        deviceToken: String, isSandbox: Bool,
+        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_RegisterPushTokenResponse {
+        let request = Com_Octopuscommunity_RegisterPushTokenRequest.with {
+            $0.pushToken = deviceToken
+            $0.isSandbox = isSandbox
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.registerPushToken(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func getNotificationsSettings(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_NotificationSettingsResponse {
+        let request = Com_Octopuscommunity_GetNotificationSettingsRequest()
+        return try await callRemote(authenticationMethod) {
+            try await client.getNotificationSettings(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func setNotificationsSettings(enablePushNotification: Bool, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError)
+    -> Com_Octopuscommunity_NotificationSettingsResponse {
+        let request = Com_Octopuscommunity_SetNotificationSettingsRequest.with {
+            $0.settings = .with {
+                $0.pushNotificationEnabled = enablePushNotification
+            }
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.setNotificationSettings(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }
 }

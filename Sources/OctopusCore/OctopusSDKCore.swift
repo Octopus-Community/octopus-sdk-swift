@@ -88,8 +88,8 @@ public class OctopusSDKCore: ObservableObject {
             injector.register { ClientUserProfileDatabase(injector: $0) }
             appManagedFields = config.appManagedFields
         }
-        injector.register { ProfileRepository(appManagedFields: appManagedFields, injector: $0) }
         injector.register { UserDataCleanerMonitor(injector: $0) }
+        injector.register { ProfileRepositoryDefault(appManagedFields: appManagedFields, injector: $0) }
 
         // Validators
         injector.register { _ in Validators(appManagedFields: appManagedFields) }
@@ -97,12 +97,14 @@ public class OctopusSDKCore: ObservableObject {
         // Tracking
         injector.register { _ in trackingCoreDataStack }
         injector.register { EventsDatabase(injector: $0) }
-        injector.register { TrackingRepository(injector: $0, isFirstSession: installIdProvider.isNewInstall) }
+        injector.register { TrackingRepository(injector: $0) }
         injector.register { AppSessionMonitor(injector: $0) }
         injector.register { TrackingEventsSendingMonitor(injector: $0) }
 
         // Notifications
+        injector.register { _ in UserNotificationCenterProviderDefault() }
         injector.register { NotificationsDatabase(injector: $0) }
+        injector.register { NotificationSettingsDatabase(injector: $0) }
         injector.register { NotificationsRepository(injector: $0) }
 
         // Start monitors

@@ -45,7 +45,7 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
         Publishers.CombineLatest3(
             userDataStorage.$magicLinkData.removeDuplicates().receive(on: DispatchQueue.main),
             userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
-            profileRepository.$profile.removeDuplicates().receive(on: DispatchQueue.main)
+            profileRepository.profilePublisher.removeDuplicates().receive(on: DispatchQueue.main)
         )
         .sink { [unowned self] magicLinkData, userData, profile in
             let newConnectionState: ConnectionState
@@ -208,6 +208,10 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
                 throw error
             }
         }
+
+    func onAuthenticatedCallFailed() async throws {
+        try await logout()
+    }
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws {
         preconditionFailure("Dev error: the sdk is not configured to handle SSO")

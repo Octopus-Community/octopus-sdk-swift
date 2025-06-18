@@ -44,6 +44,7 @@ class PostDetailViewModel: ObservableObject {
 
     @Published private(set) var comments: [DisplayableFeedResponse]?
     @Published var scrollToBottom = false
+    @Published var scrollToId: String?
     @Published private(set) var hasMoreData = false
     @Published private(set) var hideLoadMoreCommentsLoader = false
     @Published private var modelComments: [Comment]?
@@ -76,6 +77,7 @@ class PostDetailViewModel: ObservableObject {
     let postUuid: String
     let connectedActionChecker: ConnectedActionChecker
     private var newestFirstCommentsFeed: Feed<Comment>?
+    private var commentToScrollTo: String?
     private var scrollToMostRecentComment: Bool
 
     private var internalPost: OctopusCore.Post?
@@ -93,16 +95,18 @@ class PostDetailViewModel: ObservableObject {
         return relativeDateFormatter
     }()
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, scrollToMostRecentComment: Bool) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, commentToScrollTo: String?,
+         scrollToMostRecentComment: Bool) {
         self.octopus = octopus
         self.postUuid = postUuid
+        self.commentToScrollTo = commentToScrollTo
         self.scrollToMostRecentComment = scrollToMostRecentComment
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         Publishers.CombineLatest3(
             octopus.core.postsRepository.getPost(uuid: postUuid).removeDuplicates().replaceError(with: nil),
             octopus.core.topicsRepository.$topics.removeDuplicates(),
-            octopus.core.profileRepository.$profile.removeDuplicates())
+            octopus.core.profileRepository.profilePublisher.removeDuplicates())
         .sink { [unowned self] post, topics, profile in
             self.internalPost = post
             guard postDeletion == nil else { return }
@@ -141,7 +145,7 @@ class PostDetailViewModel: ObservableObject {
 
         Publishers.CombineLatest(
             $modelComments.removeDuplicates(),
-            octopus.core.profileRepository.$profile.removeDuplicates()
+            octopus.core.profileRepository.profilePublisher.removeDuplicates()
         )
         .sink { [unowned self] comments, profile in
             guard let comments else {
@@ -226,6 +230,11 @@ class PostDetailViewModel: ObservableObject {
             }
             if self.comments != newComments {
                 self.comments = newComments
+                if let commentToScrollTo = self.commentToScrollTo,
+                   self.comments?.contains(where: { $0.uuid == commentToScrollTo }) ?? false {
+                    self.scrollToId = "Comment-\(commentToScrollTo)"
+                    self.commentToScrollTo = nil
+                }
                 if #available(iOS 14, *) { Logger.comments.trace("Comments list updated done") }
             }
         }.store(in: &storage)
@@ -253,7 +262,7 @@ class PostDetailViewModel: ObservableObject {
             .zip(mainFlowPath.$path)
             .sink { [unowned self] previous, current in
                 if case .currentUserProfile = previous.last,
-                   case let .postDetail(postId, _) = current.last,
+                   case let .postDetail(postId, _, _, _) = current.last,
                    postId == postUuid {
                     // refresh automatically when the user profile is dismissed
                     fetchPost()
@@ -356,7 +365,9 @@ class PostDetailViewModel: ObservableObject {
             await feed.populateWithLocalData(pageSize: 10)
         }
 
-        if scrollToMostRecentComment {
+        if let commentToScrollTo {
+            loadAllComments(until: commentToScrollTo)
+        } else if scrollToMostRecentComment {
             loadAllComments(scrollToBottom: true)
             scrollToMostRecentComment = false
         } else {
@@ -429,6 +440,17 @@ class PostDetailViewModel: ObservableObject {
                     self.hideLoadMoreCommentsLoader = true
                     self.scrollToBottom = true
                 }
+            }
+        }
+    }
+
+    private func loadAllComments(until id: String) {
+        guard let feed else { return }
+        Task {
+            do {
+                try await feed.fetchAll(until: id)
+            } catch {
+                if #available(iOS 14, *) { Logger.replies.debug("Error: \(error)") }
             }
         }
     }

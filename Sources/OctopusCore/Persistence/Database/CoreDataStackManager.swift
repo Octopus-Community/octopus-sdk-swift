@@ -11,7 +11,9 @@ import os
 class CoreDataStackManager: @unchecked Sendable {
     private let persistentContainer: NSPersistentContainer
     lazy var saveContext: NSManagedObjectContext = {
-        persistentContainer.newBackgroundContext()
+        let context = persistentContainer.newBackgroundContext()
+        context.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
+        return context
     }()
 
     // use only one model even in the Unit Tests.

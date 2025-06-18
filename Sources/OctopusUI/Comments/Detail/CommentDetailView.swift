@@ -28,11 +28,18 @@ struct CommentDetailView: View {
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, commentUuid: String, reply: Bool = false, replyToScrollTo: String? = nil) {
-        _viewModel = Compat.StateObject(wrappedValue: CommentDetailViewModel(
-            octopus: octopus, commentUuid: commentUuid, reply: reply, replyToScrollTo: replyToScrollTo))
-        _replyTextFocused = .init(initialValue: reply)
-    }
+    let displayGoToParentButton: Bool
+
+    init(
+        octopus: OctopusSDK,
+        commentUuid: String, displayGoToParentButton: Bool,
+        reply: Bool = false,
+        replyToScrollTo: String? = nil) {
+            _viewModel = Compat.StateObject(wrappedValue: CommentDetailViewModel(
+                octopus: octopus, commentUuid: commentUuid, reply: reply, replyToScrollTo: replyToScrollTo))
+            _replyTextFocused = .init(initialValue: reply)
+            self.displayGoToParentButton = displayGoToParentButton
+        }
 
     var body: some View {
         ZStack {
@@ -42,6 +49,7 @@ struct CommentDetailView: View {
                     hasMoreReplies: viewModel.hasMoreData,
                     hideLoadMoreRepliesLoader: viewModel.hideLoadMoreRepliesLoader,
                     width: width,
+                    displayGoToParentButton: displayGoToParentButton,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
                     zoomableImageInfo: $zoomableImageInfo,
@@ -55,9 +63,7 @@ struct CommentDetailView: View {
                         }
                     },
                     openCreateReply: {
-                        if viewModel.ensureConnected() {
-                            replyTextFocused = true
-                        }
+                        replyTextFocused = true
                     },
                     deleteComment: viewModel.deleteComment,
                     deleteReply: viewModel.deleteReply,
@@ -66,27 +72,16 @@ struct CommentDetailView: View {
                     displayContentModeration: {
                         guard viewModel.ensureConnected() else { return }
                         navigator.push(.reportContent(contentId: $0))
+                    },
+                    displayParentPost: {
+                        navigator.push(.postDetail(postId: $0, comment: false, commentToScrollTo: $1,
+                                                   scrollToMostRecentComment: false))
                     })
 
                 CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
                                 textFocused: $replyTextFocused,
-                                hasChanges: $replyHasChanges)
-                .overlay(
-                    Group {
-                        if viewModel.thisUserProfileId == nil {
-                            Button(action: {
-                                if viewModel.ensureConnected() {
-                                    replyTextFocused = true
-                                }
-                            }) {
-                                Color.white.opacity(0.0001)
-                            }
-                            .buttonStyle(.plain)
-                        } else {
-                            EmptyView()
-                        }
-                    }
-                )
+                                hasChanges: $replyHasChanges,
+                                ensureConnected: viewModel.ensureConnected)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .readWidth($width)
@@ -215,7 +210,7 @@ struct CommentDetailView: View {
                 Image(systemName: "chevron.left")
                     .font(theme.fonts.navBarItem.weight(.semibold))
                     .contentShape(Rectangle())
-                    .padding(.trailing, 20)
+                    .padding(.trailing, 40)
             }
             .padding(.leading, -8)
         } else {
@@ -236,6 +231,7 @@ private struct ContentView: View {
     let hasMoreReplies: Bool
     let hideLoadMoreRepliesLoader: Bool
     let width: CGFloat
+    let displayGoToParentButton: Bool
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
@@ -248,6 +244,7 @@ private struct ContentView: View {
     let toggleCommentLike: () -> Void
     let toggleReplyLike: (String) -> Void
     let displayContentModeration: (String) -> Void
+    let displayParentPost: (String, String) -> Void
 
     var body: some View {
         Compat.ScrollView(
@@ -258,6 +255,7 @@ private struct ContentView: View {
                                              hasMoreReplies: hasMoreReplies,
                                              hideLoadMoreRepliesLoader: hideLoadMoreRepliesLoader,
                                              width: width,
+                                             displayGoToParentButton: displayGoToParentButton,
                                              zoomableImageInfo: $zoomableImageInfo,
                                              loadPreviousReplies: loadPreviousReplies,
                                              displayProfile: displayProfile,
@@ -266,7 +264,8 @@ private struct ContentView: View {
                                              deleteReply: deleteReply,
                                              toggleCommentLike: toggleCommentLike,
                                              toggleReplyLike: toggleReplyLike,
-                                             displayContentModeration: displayContentModeration)
+                                             displayContentModeration: displayContentModeration,
+                                             displayParentPost: displayParentPost)
                 } else {
                     VStack {
                         Spacer().frame(height: 54)
@@ -291,6 +290,7 @@ private struct CommentDetailContentView: View {
     let hasMoreReplies: Bool
     let hideLoadMoreRepliesLoader: Bool
     let width: CGFloat
+    let displayGoToParentButton: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
     let displayProfile: (String) -> Void
@@ -300,12 +300,29 @@ private struct CommentDetailContentView: View {
     let toggleCommentLike: () -> Void
     let toggleReplyLike: (String) -> Void
     let displayContentModeration: (String) -> Void
+    let displayParentPost: (String, String) -> Void
 
     @State private var displayWillDeleteAlert = false
     @State private var openActions = false
 
     var body: some View {
         VStack {
+            if displayGoToParentButton {
+                Button(action: { displayParentPost(comment.parentId, comment.uuid) }) {
+                    Text("Comment.SeeParent", bundle: .module)
+                        .font(theme.fonts.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(theme.colors.gray900)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal)
+                        .background(
+                            Capsule()
+                                .stroke(theme.colors.gray300, lineWidth: 1)
+                        )
+                }
+                .padding(.vertical, 8)
+                .buttonStyle(.plain)
+            }
             HStack(alignment: .top) {
                 OpenProfileButton(author: comment.author, displayProfile: displayProfile) {
                     AuthorAvatarView(avatar: comment.author.avatar)

@@ -21,7 +21,7 @@ class TopicsTests: XCTestCase {
         let injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { TopicsDatabase(injector: $0) }
-        injector.registerMocks(.remoteClient)
+        injector.registerMocks(.remoteClient, .networkMonitor)
 
         topicsRepository = TopicsRepository(injector: injector)
         mockOctoService = (injector.getInjected(identifiedBy: Injected.remoteClient).octoService as! MockOctoService)

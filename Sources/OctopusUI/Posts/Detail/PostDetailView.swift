@@ -21,17 +21,22 @@ struct PostDetailView: View {
     @State private var displayWillDeleteAlert = false
     @State private var displayPostDeletedAlert = false
 
-    @State private var commentTextFocused = false
+    @State private var commentTextFocused: Bool
     @State private var commentHasChanges = false
 
     @State private var width: CGFloat = 0
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, scrollToMostRecentComment: Bool = false) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String,
+         comment: Bool,
+         commentToScrollTo: String?,
+         scrollToMostRecentComment: Bool = false) {
         _viewModel = Compat.StateObject(wrappedValue: PostDetailViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postUuid,
+            commentToScrollTo: commentToScrollTo,
             scrollToMostRecentComment: scrollToMostRecentComment))
+        _commentTextFocused = .init(initialValue: comment)
     }
 
     var body: some View {
@@ -43,15 +48,17 @@ struct PostDetailView: View {
                     hideLoadMoreCommentsLoader: viewModel.hideLoadMoreCommentsLoader,
                     width: width,
                     scrollToBottom: $viewModel.scrollToBottom,
+                    scrollToId: $viewModel.scrollToId,
                     zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousComments: viewModel.loadPreviousComments,
                     refresh: viewModel.refresh,
                     displayCommentDetail: { commentId in
-                        navigator.push(.commentDetail(commentId: commentId, reply: false, replyToScrollTo: nil))
+                        navigator.push(.commentDetail(commentId: commentId, displayGoToParentButton: false,
+                                                      reply: false, replyToScrollTo: nil))
                     },
                     replyToComment: { commentId in
-                        guard viewModel.ensureConnected() else { return }
-                        navigator.push(.commentDetail(commentId: commentId, reply: true, replyToScrollTo: nil))
+                        navigator.push(.commentDetail(commentId: commentId, displayGoToParentButton: false,
+                                                      reply: true, replyToScrollTo: nil))
                     },
                     displayProfile: { profileId in
                         if profileId == viewModel.thisUserProfileId {
@@ -73,23 +80,8 @@ struct PostDetailView: View {
 
                 CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
                                   textFocused: $commentTextFocused,
-                                  hasChanges: $commentHasChanges)
-                .overlay(
-                    Group {
-                        if viewModel.thisUserProfileId == nil {
-                            Button(action: {
-                                if viewModel.ensureConnected() {
-                                    commentTextFocused = true
-                                }
-                            }) {
-                                Color.white.opacity(0.0001)
-                            }
-                            .buttonStyle(.plain)
-                        } else {
-                            EmptyView()
-                        }
-                    }
-                )
+                                  hasChanges: $commentHasChanges,
+                                  ensureConnected: viewModel.ensureConnected)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .readWidth($width)
@@ -218,7 +210,7 @@ struct PostDetailView: View {
                 Image(systemName: "chevron.left")
                     .font(theme.fonts.navBarItem.weight(.semibold))
                     .contentShape(Rectangle())
-                    .padding(.trailing, 20)
+                    .padding(.trailing, 40)
             }
             .padding(.leading, -8)
         } else {
@@ -240,6 +232,7 @@ private struct ContentView: View {
     let hideLoadMoreCommentsLoader: Bool
     let width: CGFloat
     @Binding var scrollToBottom: Bool
+    @Binding var scrollToId: String?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
     let refresh: @Sendable () async -> Void
@@ -255,7 +248,8 @@ private struct ContentView: View {
     let displayContentModeration: (String) -> Void
 
     var body: some View {
-        Compat.ScrollView(scrollToBottom: $scrollToBottom, refreshAction: refresh) {
+        Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
+                          refreshAction: refresh) {
             if let post {
                 PostDetailContentView(post: post, comments: comments,
                                       hasMoreComments: hasMoreComments,

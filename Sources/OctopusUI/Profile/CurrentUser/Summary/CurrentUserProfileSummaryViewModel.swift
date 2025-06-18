@@ -57,7 +57,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
         }
 
         Publishers.CombineLatest4(
-            octopus.core.profileRepository.$profile.removeDuplicates(),
+            octopus.core.profileRepository.profilePublisher.removeDuplicates(),
             $error,
             $isFetchingProfile,
             mainFlowPath.$isLocked
@@ -82,7 +82,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     func refresh() async {
         await withTaskGroup(of: Void.self) { group in
             group.addTask { [self] in await postFeedViewModel?.refresh() }
-            group.addTask { [self] in await notifCenterViewModel.refresh() }
+            group.addTask { [self] in await refreshNotifCenter() }
             group.addTask { [self] in await fetchProfile() }
 
             await group.waitForAll()
@@ -101,5 +101,13 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             }
         }
         isFetchingProfile = false
+    }
+
+    private func refreshNotifCenter() async {
+        do {
+            try await notifCenterViewModel.refresh()
+        } catch {
+            self.error = error.displayableMessage
+        }
     }
 }

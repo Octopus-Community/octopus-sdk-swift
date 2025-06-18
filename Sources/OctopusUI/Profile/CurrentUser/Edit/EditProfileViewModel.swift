@@ -102,7 +102,7 @@ class EditProfileViewModel: ObservableObject {
                 .editInOctopus
 
             // update app managed fields
-            octopus.core.profileRepository.$profile
+            octopus.core.profileRepository.profilePublisher
                 .compactMap { $0 }
                 .sink { [unowned self] profile in
                     savedProfile = profile
@@ -124,7 +124,7 @@ class EditProfileViewModel: ObservableObject {
         }
 
         // feed the values with the first profile we get
-        octopus.core.profileRepository.$profile
+        octopus.core.profileRepository.profilePublisher
             .compactMap { $0 }
             .first()
             .sink { [unowned self] profile in
@@ -136,7 +136,7 @@ class EditProfileViewModel: ObservableObject {
             }.store(in: &storage)
 
         // observe connection state to dismiss screen if incorrect state
-        octopus.core.profileRepository.$profile
+        octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] in
                 if $0 == nil {
                     dismiss = true

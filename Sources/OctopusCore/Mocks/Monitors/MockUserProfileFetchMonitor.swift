@@ -10,13 +10,13 @@ import OctopusGrpcModels
 class MockUserProfileFetchMonitor: UserProfileFetchMonitor, InjectableObject {
     static let injectedIdentifier = Injected.userProfileFetchMonitor
 
-    var userProfileResponsePublisher: AnyPublisher<Com_Octopuscommunity_GetPrivateProfileResponse, Never> {
+    var userProfileResponsePublisher: AnyPublisher<(Com_Octopuscommunity_GetPrivateProfileResponse, String), Never> {
         $userProfileResponse
             .filter { $0 != nil }
             .map { $0! }
             .eraseToAnyPublisher()
     }
-    @Published var userProfileResponse: Com_Octopuscommunity_GetPrivateProfileResponse?
+    @Published var userProfileResponse: (Com_Octopuscommunity_GetPrivateProfileResponse, String)?
 
     func start() { }
 

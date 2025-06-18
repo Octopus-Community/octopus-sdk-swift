@@ -28,7 +28,7 @@ class MagicLinkConnectionTests: XCTestCase {
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
-        injector.register { ProfileRepository(appManagedFields: [], injector: $0) }
+        injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .magicLinkMonitor,
                                .userProfileFetchMonitor, .blockedUserIdsProvider)
         injector.register { UserDataStorage(injector: $0) }

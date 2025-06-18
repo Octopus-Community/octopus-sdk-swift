@@ -15,6 +15,7 @@ class CommentDetailViewModel: ObservableObject {
 
     struct CommentDetail: Equatable {
         let uuid: String
+        let parentId: String
         let text: String?
         let image: ImageMedia?
         let author: Author
@@ -71,6 +72,7 @@ class CommentDetailViewModel: ObservableObject {
     let octopus: OctopusSDK
     let commentUuid: String
     let connectedActionChecker: ConnectedActionChecker
+
     private var newestFirstRepliesFeed: Feed<Reply>?
     private var reply: Bool
     private var replyToScrollTo: String?
@@ -99,7 +101,7 @@ class CommentDetailViewModel: ObservableObject {
 
         Publishers.CombineLatest(
             octopus.core.commentsRepository.getComment(uuid: commentUuid).removeDuplicates().replaceError(with: nil),
-            octopus.core.profileRepository.$profile.removeDuplicates())
+            octopus.core.profileRepository.profilePublisher.removeDuplicates())
         .sink { [unowned self] comment, profile in
             self.internalComment = comment
             guard commentDeletion == nil else { return }
@@ -133,7 +135,7 @@ class CommentDetailViewModel: ObservableObject {
 
         Publishers.CombineLatest(
             $modelReplies.removeDuplicates(),
-            octopus.core.profileRepository.$profile.removeDuplicates()
+            octopus.core.profileRepository.profilePublisher.removeDuplicates()
         )
         .sink { [unowned self] reply, profile in
             guard let reply else {
@@ -631,6 +633,7 @@ class CommentDetailViewModel: ObservableObject {
 extension CommentDetailViewModel.CommentDetail {
     init(from comment: Comment, thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter) {
         uuid = comment.uuid
+        parentId = comment.parentId
         text = comment.text
         image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
         author = .init(profile: comment.author)

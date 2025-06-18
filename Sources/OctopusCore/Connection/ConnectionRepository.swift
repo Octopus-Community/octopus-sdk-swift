@@ -45,6 +45,7 @@ public protocol ConnectionRepository: Sendable {
     func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError)
     func cancelMagicLink()
     func checkMagicLinkConfirmed() async throws(MagicLinkConfirmationError) -> Bool
+    func onAuthenticatedCallFailed() async throws
     func logout() async throws
     func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError)
 

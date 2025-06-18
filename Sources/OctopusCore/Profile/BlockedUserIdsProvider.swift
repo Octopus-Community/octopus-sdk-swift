@@ -38,7 +38,7 @@ class BlockedUserIdsProviderDefault: BlockedUserIdsProvider, InjectableObject {
 
     func start() {
         injector.getInjected(identifiedBy: Injected.profileRepository)
-            .$profile
+            .profilePublisher
             .map {
                 guard let profile = $0 else { return [] }
                 return profile.blockedProfileIds

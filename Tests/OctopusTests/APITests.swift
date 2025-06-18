@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import UserNotifications
 import Testing
 import Octopus
 
@@ -61,6 +62,32 @@ class APITests {
         _ = octopus.notSeenNotificationsCount
         _ = octopus.$notSeenNotificationsCount
         try await octopus.updateNotSeenNotificationsCount()
+    }
+
+    @Test func testSetPushNotifToken() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        octopus.set(notificationDeviceToken: "")
+    }
+
+    @Test func testIsAnOctopusNotification() async throws {
+        // Can force unwrap because we only need the test to compile, not to run
+        _ = OctopusSDK.isAnOctopusNotification(notification: UNNotification(coder: NSCoder())!) != false
+    }
+
+    @Test func testHasCommunityAccess() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        octopus.set(hasAccessToCommunity: true)
+    }
+
+    @Test func testTrackCustomEvent() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        try await octopus.track(customEvent: CustomEvent(name: "evt1"))
+        try await octopus.track(customEvent: CustomEvent(
+            name: "evt1",
+            properties: [
+                "p1": CustomEvent.PropertyValue(value: "v1"),
+                "p2": .init(value: "v2")
+            ]))
     }
 
     @Test func testClientUserProfileInit() async throws {

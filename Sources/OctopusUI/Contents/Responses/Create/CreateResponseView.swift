@@ -21,15 +21,26 @@ struct CreateResponseView: View {
     let send: () -> Void
     let userProfileTapped: () -> Void
     let resetAlertError: () -> Void
+    let ensureConnected: () -> Bool
 
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
 
     var body: some View {
-        ContentView(responseKind: responseKind, avatar: avatar, isLoading: isLoading, sendAvailable: sendAvailable,
-                    text: $text, picture: $picture, textFocused: $textFocused,
-                    textError: textError, pictureError: pictureError, send: send,
-                    userProfileTapped: userProfileTapped)
+        ContentView(
+            responseKind: responseKind, avatar: avatar, isLoading: isLoading, sendAvailable: sendAvailable,
+            text: $text, picture: $picture, textFocused: $textFocused,
+            textError: textError, pictureError: pictureError,
+            send: {
+                if ensureConnected() {
+                    send()
+                }
+            },
+            userProfileTapped: {
+                if ensureConnected() {
+                    userProfileTapped()
+                }
+            })
         .disabled(isLoading)
         .alert(
             "Common.Error",
@@ -175,14 +186,28 @@ private struct ContentView: View {
             }.padding(.horizontal, 16)
 
             if textFocused || text != "" || picture != nil {
+
+                theme.colors.gray300.frame(height: 1)
+                    .padding(.top, 16)
+
                 HStack {
                     Button(action: { openPhotosPicker = true }) {
-                        Image(.addMedia)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
-                            .padding(.vertical, 8)
-                            .foregroundColor(theme.colors.gray900)
+                        HStack(spacing: 4) {
+                            Image(.addMedia)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                            Text("Content.Create.AddPicture", bundle: .module)
+                                .font(theme.fonts.caption1)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(theme.colors.gray900)
+                        .padding(.leading, 6)
+                        .padding(.trailing, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule().stroke(theme.colors.gray300, lineWidth: 1)
+                        )
                     }
                     .buttonStyle(.plain)
                     Spacer()
@@ -199,6 +224,7 @@ private struct ContentView: View {
                                 .font(theme.fonts.body2)
                                 .fontWeight(.medium)
                                 .foregroundColor(theme.colors.onPrimary)
+                                .frame(minHeight: 24)
                         }
                         .padding(.horizontal, 20)
                         .padding(.vertical, 6)
@@ -218,6 +244,8 @@ private struct ContentView: View {
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, textFocused ? 7 : 0)
             }
         }
         .background(RoundedRectangle(cornerRadius: 24)

@@ -17,6 +17,7 @@ struct ScenariosView: View {
                 CustomThemeCell(showFullScreen: showFullScreen)
                 NotSeenNotificationsCell(showFullScreen: showFullScreen)
                 ABTestsCell(showFullScreen: showFullScreen)
+                CustomEventsCell()
                 SSOCell(showFullScreen: showFullScreen)
             }
             .listStyle(.plain)

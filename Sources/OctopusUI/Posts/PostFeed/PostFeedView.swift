@@ -16,7 +16,7 @@ struct PostFeedView<EmptyPostView: View>: View {
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
-    let displayPostDetail: (String, Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
     let displayProfile: (String) -> Void
     let displayContentModeration: (String) -> Void
 
@@ -27,7 +27,7 @@ struct PostFeedView<EmptyPostView: View>: View {
 
     init(viewModel: PostFeedViewModel,
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
-         displayPostDetail: @escaping (String, Bool) -> Void,
+         displayPostDetail: @escaping (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void,
          displayProfile: @escaping (String) -> Void,
          displayContentModeration: @escaping (String) -> Void,
          @ViewBuilder _ emptyPostView: () -> EmptyPostView){
@@ -105,7 +105,7 @@ private struct ContentView<EmptyPostView: View>: View {
     let hasMoreData: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
-    let displayPostDetail: (String, Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let toggleLike: (String) -> Void
@@ -138,7 +138,7 @@ private struct PostsView<EmptyPostView: View>: View {
     let hasMoreData: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
-    let displayPostDetail: (String, Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let toggleLike: (String) -> Void

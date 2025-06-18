@@ -44,7 +44,7 @@ public struct OctopusTheme: Sendable {
         public let onPrimary: Color
 
         // Non editable values
-        public let gray100: Color = Color.Theme.gray300
+        public let gray100: Color = Color.Theme.gray100
         public let gray200: Color = Color.Theme.gray200
         public let gray300: Color = Color.Theme.gray300
         public let gray500: Color = Color.Theme.gray500
