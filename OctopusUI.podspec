@@ -1,3 +1,5 @@
+require_relative 'SharedPodSpecConfig'
+
 Pod::Spec.new do |spec|
   spec.name         = 'OctopusUI'
   spec.summary      = 'UI part of the Octopus Community SDK'

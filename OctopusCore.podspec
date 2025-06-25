@@ -1,3 +1,5 @@
+require_relative 'SharedPodSpecConfig'
+
 Pod::Spec.new do |spec|
   spec.name         = 'OctopusCore'
   spec.summary      = 'Octopus core model objects. You should not use directly this pod. You should use Octopus and OctopusUI.'

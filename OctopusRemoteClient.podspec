@@ -1,3 +1,5 @@
+require_relative 'SharedPodSpecConfig'
+
 Pod::Spec.new do |spec|
   spec.name         = 'OctopusRemoteClient'
   spec.summary      = 'Remote client for the Octopus Community SDK'
