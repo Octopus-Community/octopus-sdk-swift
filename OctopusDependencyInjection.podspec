@@ -1,3 +1,5 @@
+require_relative 'SharedPodSpecConfig'
+
 Pod::Spec.new do |spec|
   spec.name         = 'OctopusDependencyInjection'
   spec.summary      = 'Dependency injection part of Octopus Community SDK'

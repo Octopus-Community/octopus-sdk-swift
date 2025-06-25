@@ -1,3 +1,5 @@
+require_relative 'SharedPodSpecConfig'
+
 Pod::Spec.new do |spec|
   spec.name         = 'OctopusGrpcModels'
   spec.summary      = 'Grpc models of the Octopus Community SDK.'

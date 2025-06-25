@@ -4,7 +4,7 @@ target 'CocoaPodsValidationApp' do
   use_frameworks!
 
   git_url = 'git@github.com:Octopus-Community/octopus-sdk-swift.git'
-  branch = 'dev/cocoapods'
+  branch = 'main'
 
   # Reference your SDK from the parent directory
   # You can replace :branch with :tag if you prefer to target a tag, or :path if you want to use a local version
