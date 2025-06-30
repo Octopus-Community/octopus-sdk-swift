@@ -111,7 +111,7 @@ struct DeleteAccountView: View {
                 secondaryButton: .cancel()
             )
         }
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

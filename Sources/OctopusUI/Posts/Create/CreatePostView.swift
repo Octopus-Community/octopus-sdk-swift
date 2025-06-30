@@ -66,7 +66,7 @@ struct CreatePostView: View {
                     }.pickerStyle(.wheel)
                 }
             }
-            .alert(
+            .compatAlert(
                 "Common.Error",
                 isPresented: $displayError,
                 presenting: displayableError,

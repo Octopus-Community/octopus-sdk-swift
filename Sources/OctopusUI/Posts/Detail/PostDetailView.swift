@@ -111,7 +111,7 @@ struct PostDetailView: View {
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarTitle: Text(viewModel.post?.topic ?? ""),
                                 defaultNavigationBarBackButtonHidden: commentHasChanges)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

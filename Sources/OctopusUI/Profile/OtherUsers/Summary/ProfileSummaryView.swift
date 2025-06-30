@@ -54,7 +54,7 @@ struct ProfileSummaryView: View {
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

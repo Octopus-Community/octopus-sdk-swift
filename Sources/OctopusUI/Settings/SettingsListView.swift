@@ -27,7 +27,7 @@ struct SettingsListView: View {
                     openHelp: { navigator.push(.settingsHelp) },
                     logout: viewModel.logout)
         .navigationBarTitle(Text("Settings.Community.Title", bundle: .module))
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: error,

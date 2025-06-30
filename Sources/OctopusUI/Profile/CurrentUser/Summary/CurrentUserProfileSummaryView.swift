@@ -69,7 +69,7 @@ struct CurrentUserProfileSummaryView: View {
         .fullScreenCover(isPresented: $openCreatePost) {
             CreatePostView(octopus: viewModel.octopus)
         }
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,
@@ -77,7 +77,7 @@ struct CurrentUserProfileSummaryView: View {
             message: { error in
                 error.textView
             })
-        .alert(
+        .compatAlert(
             "Profile.Edit.ClientApp.Alert.Title",
             isPresented: $displayOpenEditProfileInApp,
             presenting: openEditProfileInApp,

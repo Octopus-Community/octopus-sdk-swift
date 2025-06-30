@@ -38,7 +38,7 @@ struct NotificationCenterView: View {
         .onDisappear {
             viewModel.viewDidDisappear()
         }
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

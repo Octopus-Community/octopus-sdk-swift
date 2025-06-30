@@ -41,7 +41,7 @@ struct CreateResponseView: View {
                 }
             })
         .disabled(isLoading)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

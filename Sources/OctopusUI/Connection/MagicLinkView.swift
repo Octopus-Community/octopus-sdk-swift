@@ -42,7 +42,7 @@ struct MagicLinkView: View {
                     EmptyView()
                 }.hidden()
             }
-            .alert(
+            .compatAlert(
                 "Common.Error",
                 isPresented: $displayMagicLinkConfirmationError,
                 presenting: magicLinkConfirmationError,
@@ -50,7 +50,7 @@ struct MagicLinkView: View {
                 message: { error in
                     error.displayMessage.textView
                 })
-            .alert(
+            .compatAlert(
                 "Common.Error",
                 isPresented: $displayEmailEntryError,
                 presenting: emailEntryError,

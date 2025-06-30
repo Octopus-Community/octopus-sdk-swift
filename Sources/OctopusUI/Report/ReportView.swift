@@ -39,7 +39,7 @@ struct ReportView: View {
             Text(viewModel.context.isContent ? "Moderation.Content.Title" : "Moderation.Profile.Title",
                  bundle: .module),
             displayMode: .inline)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

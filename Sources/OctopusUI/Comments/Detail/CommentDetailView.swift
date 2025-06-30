@@ -107,7 +107,7 @@ struct CommentDetailView: View {
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarTitle: Text("Comment.Detail.Title", bundle: .module),
                                 defaultNavigationBarBackButtonHidden: replyHasChanges)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

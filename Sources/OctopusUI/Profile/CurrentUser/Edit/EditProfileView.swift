@@ -39,7 +39,7 @@ struct EditProfileView: View {
         .navigationBarBackButtonHidden(viewModel.hasChanges)
         .navigationBarTitle(Text("Common.Edit", bundle: .module), displayMode: .inline)
         .navigationBarItems(leading: leadingBarItem, trailing: trailingBarItem)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,
@@ -314,7 +314,7 @@ private struct EditProfileFormView: View {
             }
             .padding(.top)
             .padding(.horizontal, 20)
-            .alert(
+            .compatAlert(
                 "Profile.Edit.ClientApp.Alert.Title",
                 isPresented: $displayOpenEditProfileInApp,
                 presenting: openEditProfileInApp,
