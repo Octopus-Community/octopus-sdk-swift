@@ -52,6 +52,17 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
             .eraseToAnyPublisher()
     }
 
+    func getClientObjectRelatedPost(objectId: String) async throws -> StorablePost? {
+        return try await context.performAsync { [context] in
+            let posts = try context.fetch(PostEntity.fetchByClientObjectId(id: objectId))
+            let mostRecentPost = posts.max { $0.updateTimestamp < $1.updateTimestamp }
+            guard let mostRecentPost else {
+                return nil
+            }
+            return StorablePost(from: mostRecentPost)
+        }
+    }
+
     func getMissingPosts(infos: [FeedItemInfo]) async throws -> [String] {
         let dict = Dictionary(infos.map { ($0.itemId, $0.updateDate) }, uniquingKeysWith: { (first, _) in first })
         return try await context.performAsync { [context] in

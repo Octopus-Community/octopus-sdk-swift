@@ -46,6 +46,9 @@ class MockOctoService: OctoService {
     /// Fifo of the responses to `reportContent(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var reportContentResponses = [Com_Octopuscommunity_ReportContentResponse]()
+    /// Fifo of the responses to `getOrCreateBridgePost(:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var getOrCreateBridgePostResponse = [Com_Octopuscommunity_GetOrCreateBridgePostResponse]()
 
     init() { }
 
@@ -156,6 +159,15 @@ class MockOctoService: OctoService {
         }
         return response
     }
+
+    func getOrCreateBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
+                               authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        guard let response = getOrCreateBridgePostResponse.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextGetOrCreateBridgePostResponse must be called before"))
+        }
+        return response
+    }
 }
 
 extension MockOctoService {
@@ -209,5 +221,9 @@ extension MockOctoService {
 
     func injectNextReportContentResponse(_ response: Com_Octopuscommunity_ReportContentResponse) {
         reportContentResponses.insert(response, at: 0)
+    }
+
+    func injectNextGetOrCreateBridgePostResponse(_ response: Com_Octopuscommunity_GetOrCreateBridgePostResponse) {
+        getOrCreateBridgePostResponse.insert(response, at: 0)
     }
 }

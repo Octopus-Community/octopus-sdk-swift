@@ -87,9 +87,15 @@
         <relationship name="resultFor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="OctoObject" inverseName="pollOptionResultsRelationship" inverseEntity="OctoObject"/>
     </entity>
     <entity name="Post" representedClassName="PostEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="catchPhrase" optional="YES" attributeType="String"/>
+        <attribute name="clientObjectId" optional="YES" attributeType="String"/>
+        <attribute name="ctaText" optional="YES" attributeType="String"/>
         <attribute name="text" attributeType="String"/>
         <relationship name="mediasRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="postMedia" inverseEntity="Media"/>
         <relationship name="pollOptionsRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PollOption" inverseName="poll" inverseEntity="PollOption"/>
+        <fetchIndex name="byClientObjectId">
+            <fetchIndexElement property="clientObjectId" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="PrivateProfile" representedClassName="PrivateProfileEntity" syncable="YES">
         <attribute name="ascPostFeedId" attributeType="String"/>

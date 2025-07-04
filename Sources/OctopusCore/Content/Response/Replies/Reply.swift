@@ -44,7 +44,7 @@ extension Reply {
         innerStatusReasons = storableComment.statusReasons
         parentId = storableComment.parentId
 
-        aggregatedInfo = storableComment.aggregatedInfo
-        userInteractions = storableComment.userInteractions
+        aggregatedInfo = storableComment.aggregatedInfo ?? .empty
+        userInteractions = storableComment.userInteractions ?? .empty
     }
 }

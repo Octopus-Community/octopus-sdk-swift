@@ -269,7 +269,7 @@ private struct ContentView: View {
                 } else {
                     VStack {
                         Spacer().frame(height: 54)
-                        Image(.postDetailMissing)
+                        Image(.contentNotAvailable)
                         Text("Content.Detail.NotAvailable", bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
@@ -305,8 +305,10 @@ private struct CommentDetailContentView: View {
     @State private var displayWillDeleteAlert = false
     @State private var openActions = false
 
+    private let minAspectRatio: CGFloat = 4 / 5
+
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             if displayGoToParentButton {
                 Button(action: { displayParentPost(comment.parentId, comment.uuid) }) {
                     Text("Comment.SeeParent", bundle: .module)
@@ -320,7 +322,8 @@ private struct CommentDetailContentView: View {
                                 .stroke(theme.colors.gray300, lineWidth: 1)
                         )
                 }
-                .padding(.vertical, 8)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
                 .buttonStyle(.plain)
             }
             HStack(alignment: .top) {
@@ -378,18 +381,18 @@ private struct CommentDetailContentView: View {
                         if let image = comment.image {
                             AsyncCachedImage(
                                 url: image.url, cache: .content,
+                                croppingRatio: minAspectRatio,
                                 placeholder: {
                                     theme.colors.gray200
                                         .aspectRatio(
-                                            image.size.width/image.size.height,
+                                            max(image.size.width/image.size.height, minAspectRatio),
                                             contentMode: .fit)
                                         .clipped()
                                 },
                                 content: { cachedImage in
-                                    Image(uiImage: cachedImage.fullSizeImage)
+                                    Image(uiImage: cachedImage.ratioImage)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                        .cornerRadius(12)
                                         .modify {
                                             if zoomableImageInfo?.url != image.url {
                                                 $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
@@ -405,6 +408,8 @@ private struct CommentDetailContentView: View {
                                             }
                                         }
                                 })
+                            .fixedSize(horizontal: false, vertical: true)
+                            .cornerRadius(12)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -434,7 +439,7 @@ private struct CommentDetailContentView: View {
                     .fixedSize()
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 8)
-                    .padding(.top, 6)
+                    .padding(.top, 8)
                 }
             }
             .id("commentDetail-\(comment.uuid)")
@@ -515,7 +520,7 @@ private struct RepliesView: View {
     let displayContentModeration: (String) -> Void
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(alignment: .top, spacing: 0) {
             Spacer().frame(width: 40)
             Compat.LazyVStack {
                 ForEach(replies, id: \.uuid) { reply in
@@ -550,7 +555,7 @@ private struct RepliesView: View {
                 }
             }
         }
-        .padding(.top, 20)
+        .padding(.top, 16)
         .frame(maxHeight: .infinity)
     }
 }

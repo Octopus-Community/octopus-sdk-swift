@@ -76,17 +76,9 @@ struct DeleteAccountView: View {
                 }
                 Button(action: { displayDeleteUserAlert = true }) {
                     Text("Common.Continue", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(selectedReason != nil ? theme.colors.onPrimary : theme.colors.disabled)
-                        .padding()
                         .frame(maxWidth: .infinity)
-                        .background(
-                            Capsule()
-                                .fill(selectedReason != nil ? theme.colors.primary : theme.colors.gray300)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusButtonStyle(.main, enabled: !(selectedReason == nil || viewModel.deleteAccountInProgress)))
                 .padding(.horizontal, 20)
                 .padding(.bottom, 10)
                 .disabled(selectedReason == nil || viewModel.deleteAccountInProgress)

@@ -108,55 +108,24 @@ private struct ContentView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                     Spacer().frame(height: 18)
 
-                    Text("Profile.Create.Nickname.Description", bundle: .module)
-                        .font(theme.fonts.caption2)
-                        .fontWeight(.bold)
-                        .foregroundColor(theme.colors.gray700)
-                        .multilineTextAlignment(.leading)
-
-                    Spacer().frame(height: 10)
-
-                    TextField(L10n("Profile.Nickname.Placeholder"), text: $nickname) {
-                        birthdateFocused = true
-                    }
-                    .font(theme.fonts.body2)
-                    .foregroundColor(theme.colors.gray900)
+                    OctopusTextInput(
+                        text: $nickname, label: "Profile.Create.Nickname.Description",
+                        placeholder: "Profile.Nickname.Placeholder",
+                        hint: "Profile.Create.Nickname.Explanation",
+                        error: nicknameError,
+                        isFocused: nicknameFocused,
+                        isDisabled: !canEditNickname
+                    )
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
+                    .focused($nicknameFocused)
+                    .disabled(!canEditNickname)
                     .modify {
                         if #available(iOS 15.0, *) {
                             $0.submitLabel(.next)
                         } else {
                             $0
                         }
-                    }
-                    .padding(.vertical, 14)
-                    .padding(.horizontal, 8)
-                    .focused($nicknameFocused)
-                    .background(canEditNickname ? Color.clear : theme.colors.gray300)
-                    .cornerRadius(16)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(nicknameFocused && canEditNickname ? theme.colors.gray900 : theme.colors.gray300,
-                                    lineWidth: nicknameFocused && canEditNickname ? 2 : 1)
-                    )
-                    .disabled(!canEditNickname)
-                    .padding(.horizontal, 2)
-                    Spacer().frame(height: 6)
-                    Text("Profile.Create.Nickname.Explanation", bundle: .module)
-                        .font(theme.fonts.caption2)
-                        .foregroundColor(theme.colors.gray700)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if let nicknameError {
-                        Spacer().frame(height: 4)
-                        nicknameError.textView
-                            .font(theme.fonts.caption2)
-                            .bold()
-                            .foregroundColor(theme.colors.error)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
                     Spacer().frame(minHeight: 10, idealHeight: 22, maxHeight: 22)
@@ -167,55 +136,25 @@ private struct ContentView: View {
                     case .underaged:
                         Text("Profile.Create.BirthDate.Underaged", bundle: .module)
                             .font(theme.fonts.caption2)
-                            .fontWeight(.bold)
+                            .fontWeight(.regular)
                             .foregroundColor(theme.colors.error)
                             .multilineTextAlignment(.leading)
                     case .none:
-                        Text("Profile.Create.BirthDate.Description", bundle: .module)
-                            .font(theme.fonts.caption2)
-                            .fontWeight(.bold)
-                            .foregroundColor(theme.colors.gray900)
-                            .multilineTextAlignment(.leading)
-
-                        Spacer().frame(height: 10)
-
-                        DateTextField(date: $birthDate,
-                                      text: displayableBirthDate.map { birthDateFormatter.string(from: $0) } ?? " ",
-                                      doneAction: { birthdateFocused = false })
-                        .focused($birthdateFocused)
-                        .placeholder(when: displayableBirthDate == nil) {
-                            Text("Profile.Create.BirthDate.Placeholder", bundle: .module)
-                                .multilineTextAlignment(.leading)
-                                .foregroundColor(theme.colors.gray500)
-                        }
-                        .font(theme.fonts.body2)
-                        .foregroundColor(theme.colors.gray900)
-                        .padding(.vertical, 14)
-                        .padding(.horizontal, 8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(birthdateFocused ? theme.colors.gray900 : theme.colors.gray300,
-                                        lineWidth: birthdateFocused ? 2 : 1)
-
-                        )
-                        .padding(.horizontal, 2)
-
-                        Spacer().frame(height: 6)
-                        Text("Profile.Create.BirthDate.Explanation", bundle: .module)
-                            .font(theme.fonts.caption2)
-                            .foregroundColor(theme.colors.gray700)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if let birthDateError {
-                            Spacer().frame(height: 4)
-                            birthDateError.textView
-                                .font(theme.fonts.caption2)
-                                .bold()
-                                .foregroundColor(theme.colors.error)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                        OctopusInput(
+                            label: "Profile.Create.BirthDate.Description",
+                            hint: "Profile.Create.BirthDate.Explanation",
+                            error: birthDateError,
+                            isFocused: birthdateFocused) {
+                                DateTextField(date: $birthDate,
+                                              text: displayableBirthDate.map { birthDateFormatter.string(from: $0) } ?? " ",
+                                              doneAction: { birthdateFocused = false })
+                                .placeholder(when: displayableBirthDate == nil) {
+                                    Text("Profile.Create.BirthDate.Placeholder", bundle: .module)
+                                        .multilineTextAlignment(.leading)
+                                        .foregroundColor(theme.colors.gray500)
+                                }
+                            }
+                            .focused($birthdateFocused)
                     }
 
                     Spacer().frame(height: 30)
@@ -261,17 +200,9 @@ private struct ContentView: View {
             if !isLoading {
                 Button(action: createProfile) {
                     Text("Profile.Create.Button", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(continueButtonAvailable ? theme.colors.onPrimary : theme.colors.disabled)
-                        .padding()
                         .frame(maxWidth: .infinity)
-                        .background(
-                            Capsule()
-                                .fill(continueButtonAvailable ? theme.colors.primary : theme.colors.gray300)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusButtonStyle(.main, enabled: continueButtonAvailable))
                 .disabled(!continueButtonAvailable)
             } else {
                 HStack {

@@ -21,7 +21,7 @@ public protocol UserService {
     func updateProfile(userId: String,
                        nickname: FieldUpdate<String>,
                        bio: FieldUpdate<String?>,
-                       picture: FieldUpdate<Data?>,
+                       picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?>,
                        isProfileCreation: Bool,
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse
@@ -91,7 +91,7 @@ class UserServiceClient: ServiceClient, UserService {
     public func updateProfile(userId: String,
                               nickname: FieldUpdate<String>,
                               bio: FieldUpdate<String?>,
-                              picture: FieldUpdate<Data?>,
+                              picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?>,
                               isProfileCreation: Bool,
                               authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {
@@ -104,10 +104,13 @@ class UserServiceClient: ServiceClient, UserService {
                 if case let .updated(bio) = bio {
                     $0.bio = bio ?? ""
                 }
-                if case let .updated(pictureData) = picture {
+                if case let .updated(pictureInfo) = picture {
                     $0.picture = .with {
-                        $0.request = if let pictureData {
-                            .new(.with { $0.file = pictureData })
+                        $0.request = if let pictureInfo {
+                            .new(.with {
+                                $0.file = pictureInfo.imgData
+                                $0.isOptimized = pictureInfo.isCompressed
+                            })
                         } else {
                             .delete(Com_Octopuscommunity_PictureDeleteRequest())
                         }

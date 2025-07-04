@@ -159,29 +159,18 @@ private struct EnterEmailView: View {
                 .font(theme.fonts.body2)
                 .multilineTextAlignment(.center)
             Spacer().frame(height: 52)
-            HStack {
-                Text("Connection.MagicLink.Email.Description", bundle: .module)
-                    .foregroundColor(theme.colors.gray500)
-                    .font(theme.fonts.body2)
-                    .multilineTextAlignment(.leading)
-                Spacer()
-            }
-            Spacer().frame(height: 12)
-            TextField(L10n("Connection.MagicLink.Email.Placeholder"), text: $email) {
-                sendMagicLink()
-            }
-            .font(theme.fonts.body2)
+            OctopusTextInput(
+                text: $email, label: "Connection.MagicLink.Email.Description",
+                placeholder: "Connection.MagicLink.Email.Placeholder",
+                hint: nil, error: nil, isFocused: emailFocused, isDisabled: false) {
+                    sendMagicLink()
+                }
             .autocapitalization(.none)
             .disableAutocorrection(true)
             .textContentType(.emailAddress)
             .keyboardType(.emailAddress)
             .focused($emailFocused)
-            .padding()
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(theme.colors.gray300, lineWidth: 1)
 
-            )
             Spacer()
             PoweredByOctopusView()
             Spacer().frame(height: 8)
@@ -189,17 +178,9 @@ private struct EnterEmailView: View {
             case .emailNeeded:
                 Button(action: sendMagicLink) {
                     Text("Connection.MagicLink.Send.Button", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(sendEmailButtonAvailable ? theme.colors.onPrimary : theme.colors.disabled)
-                        .padding()
                         .frame(maxWidth: .infinity)
-                        .background(
-                            Capsule()
-                                .fill(sendEmailButtonAvailable ? theme.colors.primary : theme.colors.gray300)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusButtonStyle(.main, enabled: sendEmailButtonAvailable))
                 .disabled(!sendEmailButtonAvailable)
 
             case .emailSending:
@@ -253,15 +234,9 @@ private struct MagicLinkConfirmationPendingView: View {
                     checkMagicLinkConfirmed()
                 }) {
                     Text("Connection.MagicLink.Sent.Refresh.Button", bundle: .module)
-                        .foregroundColor(theme.colors.onPrimary)
-                        .padding()
                         .frame(maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(theme.colors.primary)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusButtonStyle(.main))
             case .checkingMagicLink:
                 Compat.ProgressView()
                     .frame(width: 60)

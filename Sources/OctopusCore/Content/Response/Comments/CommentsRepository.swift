@@ -96,7 +96,9 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         do {
             var comment = comment
             if let imageData = comment.imageData {
-                comment.imageData = ImageResizer.resizeIfNeeded(imageData: imageData)
+                let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                comment.imageData = resizedImgData
+                comment.isImageCompressed = isCompressed
             }
             let response = try await remoteClient.octoService.put(
                 comment: comment.rwOctoObject(),

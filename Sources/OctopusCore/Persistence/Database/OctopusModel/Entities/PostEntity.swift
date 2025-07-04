@@ -8,6 +8,9 @@ import CoreData
 @objc(PostEntity)
 class PostEntity: OctoObjectEntity {
     @NSManaged public var text: String
+    @NSManaged public var clientObjectId: String?
+    @NSManaged public var catchPhrase: String?
+    @NSManaged public var ctaText: String?
     @NSManaged public var mediasRelationship: NSOrderedSet
     @NSManaged public var pollOptionsRelationship: NSOrderedSet?
 
@@ -45,6 +48,10 @@ class PostEntity: OctoObjectEntity {
             pollOptionsRelationship = nil
         }
 
+        clientObjectId = post.clientObjectId
+        catchPhrase = post.catchPhrase
+        ctaText = post.ctaText
+
         if descChildrenFeedId?.nilIfEmpty == nil || post.descCommentFeedId?.nilIfEmpty != nil {
             descChildrenFeedId = post.descCommentFeedId
         }
@@ -69,9 +76,19 @@ extension PostEntity: FetchableContentEntity {
         return request
     }
 
+    @nonobjc public class func fetchByClientObjectId(id: String) -> NSFetchRequest<PostEntity> {
+        let request = fetchAll()
+        request.predicate = NSPredicate(format: "%K LIKE %@", #keyPath(PostEntity.clientObjectId), id)
+        return request
+    }
+
     @nonobjc public class func fetchAllExcept(ids: [String]) -> NSFetchRequest<PostEntity> {
         let request = fetchAll()
-        request.predicate = NSPredicate(format: "NOT (%K IN %@)", #keyPath(PostEntity.uuid), ids)
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "NOT (%K IN %@)", #keyPath(PostEntity.uuid), ids),
+            // Special case for bridge posts. To avoid deleting them too often, we do not clean them
+            NSPredicate(format: "%K = nil", #keyPath(PostEntity.clientObjectId))
+        ])
         return request
     }
 

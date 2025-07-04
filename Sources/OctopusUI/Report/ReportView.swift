@@ -120,17 +120,9 @@ private struct ContentView: View {
                 }
                 Button(action: { report(selectedReasons) }) {
                     Text("Common.Continue", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(!selectedReasons.isEmpty ? theme.colors.onPrimary : theme.colors.disabled)
-                        .padding()
                         .frame(maxWidth: .infinity)
-                        .background(
-                            Capsule()
-                                .fill(!selectedReasons.isEmpty ? theme.colors.primary : theme.colors.gray300)
-                        )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusButtonStyle(.main, enabled: !(selectedReasons.isEmpty || moderationInProgress)))
                 .padding(.horizontal, 20)
                 .padding(.bottom, 10)
                 .disabled(selectedReasons.isEmpty || moderationInProgress)

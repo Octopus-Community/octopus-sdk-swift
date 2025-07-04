@@ -191,6 +191,12 @@ private extension Event {
                             $0.firstSession = firstSession
                         }
                     })
+            case let .bridgePostOpened(success):
+                    .bridgePostOpened(.with {
+                        $0.success = success
+                    })
+            case .openClientObjectFromBridge:
+                    .openClientObjectFromBridge(Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge())
             case let .custom(customEvent):
                     .customEvent(.with {
                         $0.name = customEvent.name

@@ -11,7 +11,6 @@ import UIKit
 @MainActor
 class CreateCommentViewModel: ObservableObject {
 
-    @Published private(set) var avatar: Author.Avatar = .notConnected
     @Published private(set) var isLoading = false
     @Published var alertError: DisplayableString?
     @Published var text: String = ""
@@ -36,18 +35,6 @@ class CreateCommentViewModel: ObservableObject {
         self.octopus = octopus
         self.postId = postId
         validator = self.octopus.core.validators.comment
-
-        octopus.core.profileRepository.profilePublisher.sink { [unowned self] in
-            guard let profile = $0 else {
-                avatar = .notConnected
-                return
-            }
-            if let pictureUrl = profile.pictureUrl {
-                avatar = .image(url: pictureUrl, name: profile.nickname)
-            } else {
-                avatar = .defaultImage(name: profile.nickname)
-            }
-        }.store(in: &storage)
 
         $text
             .removeDuplicates()

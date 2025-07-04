@@ -30,17 +30,9 @@ struct CreateButton: View {
                     .frame(width: 20, height: 20)
 
                 Text(kind.text, bundle: .module)
-                    .font(theme.fonts.body2)
                 Spacer()
             }
-            .foregroundColor(theme.colors.onPrimary)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal)
-            .padding(.vertical, 14)
-            .background(
-                Capsule().foregroundColor(theme.colors.primary)
-            )
-        }.buttonStyle(.plain)
+        }.buttonStyle(OctopusButtonStyle(.main, hasLeadingIcon: true))
     }
 }
 

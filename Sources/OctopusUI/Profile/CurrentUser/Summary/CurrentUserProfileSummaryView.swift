@@ -256,18 +256,8 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                             Spacer()
                             Button(action: openEdition) {
                                 Text("Profile.Edit.Button", bundle: .module)
-                                    .font(theme.fonts.body2)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(theme.colors.gray900)
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 12)
                             }
-                            .buttonStyle(.plain)
-                            .background(
-                                Capsule()
-                                    .stroke(theme.colors.gray300, lineWidth: 1)
-                            )
-                            .padding(1)
+                            .buttonStyle(OctopusButtonStyle(.mid(.outline)))
                         }
                         Spacer().frame(height: 20)
                         Text(profile.nickname)
@@ -291,24 +281,12 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                                 }
                         } else {
                             Button(action: openEditionWithBioFocused) {
-                                HStack {
+                                HStack(spacing: 2) {
+//                                    Image(systemName: "plus")
                                     Text("Profile.Detail.EmptyBio.Button", bundle: .module)
-                                        .font(theme.fonts.body2)
-                                    Image(.createPost)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 20, height: 20)
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                .background(
-                                    Capsule()
-                                        .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2]))
-
-                                )
-                                .foregroundColor(theme.colors.gray900)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(OctopusButtonStyle(.mid(.outline), hasLeadingIcon: false))
                         }
                     }
                     .padding(.horizontal, 20)

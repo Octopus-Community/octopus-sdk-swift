@@ -23,8 +23,8 @@ class RootFeedsViewModel: ObservableObject {
         octopus.core.rootFeedsRepository.getRootFeeds()
             .replaceError(with: [])
             .sink { [unowned self] in
-                // the first time, select the first root feed
-                if selectedRootFeed == nil {
+                // the first time or if selected feed does not exist anymore, select the first root feed
+                if selectedRootFeed == nil || !$0.contains(where: { $0.feedId == selectedRootFeed!.feedId }) {
                     selectedRootFeed = $0.first
                 }
                 rootFeeds = $0

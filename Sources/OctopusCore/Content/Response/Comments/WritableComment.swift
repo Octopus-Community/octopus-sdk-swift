@@ -10,6 +10,8 @@ public struct WritableComment: Sendable {
     public let postId: String
     public let text: String?
     public internal(set) var imageData: Data?
+    /// Whether the image is compressed or not. Only used internally after the ImgeResizer has been used.
+    var isImageCompressed = false
 
     public init(postId: String, text: String?, imageData: Data?) {
         self.postId = postId
@@ -31,7 +33,10 @@ extension WritableComment {
                     if let imageData {
                         $0.media = .with {
                             $0.images = [
-                                .with { $0.file = .bytes(imageData) }
+                                .with {
+                                    $0.file = .bytes(imageData)
+                                    $0.isOptimized = isImageCompressed
+                                }
                             ]
                         }
                     }

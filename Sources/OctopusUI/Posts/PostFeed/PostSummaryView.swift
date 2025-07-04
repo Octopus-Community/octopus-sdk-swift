@@ -16,6 +16,7 @@ struct PostSummaryView: View {
     let toggleLike: (String) -> Void
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
+    let displayClientObject: ((String) -> Void)?
 
     @State private var openActions = false
     @State private var displayDeleteAlert = false
@@ -38,7 +39,8 @@ struct PostSummaryView: View {
                                     post: post,
                                     displayPostDetail: { displayPostDetail($0, false, false) }) {
                                         HStack {
-                                            TopicCapsule(topic: post.topic)
+                                            Text(post.topic)
+                                                .octopusBadgeStyle(.small, status: .off)
                                             Spacer()
                                         }
                                     }
@@ -102,7 +104,8 @@ struct PostSummaryView: View {
                                 let comment = postContent.liveMeasuresValue.aggregatedInfo.childCount == 0
                                 displayPostDetail(post.uuid, comment, true) },
                             likeTapped: { toggleLike(post.uuid) },
-                            voteOnPoll: { voteOnPoll($0, post.uuid) })
+                            voteOnPoll: { voteOnPoll($0, post.uuid) },
+                            displayClientObject: displayClientObject)
                     }
                 case let .moderated(reasons):
                     ModeratedPostContentView(reasons: reasons)
@@ -169,6 +172,7 @@ private struct PublishedContentView: View {
     let childrenTapped: () -> Void
     let likeTapped: () -> Void
     let voteOnPoll: (String) -> Bool
+    let displayClientObject: ((String) -> Void)?
     private let minAspectRatio: CGFloat = 4 / 5
 
     @State private var liveMeasures: LiveMeasures?
@@ -205,6 +209,7 @@ private struct PublishedContentView: View {
                     content: { cachedImage in
                         Image(uiImage: cachedImage.ratioImage)
                             .resizable()
+                            .aspectRatio(contentMode: .fit)
                             .modify {
                                 if zoomableImageInfo?.url != image.url {
                                     $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
@@ -212,7 +217,6 @@ private struct PublishedContentView: View {
                                     $0
                                 }
                             }
-                            .aspectRatio(contentMode: .fit)
                             .modify {
                                 if #available(iOS 15.0, *) {
                                     // put the tap in an overlay because it seems that the image touch area is not
@@ -250,10 +254,22 @@ private struct PublishedContentView: View {
                 EmptyView()
             }
 
-            AggregatedInfoView(
-                aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
-                userInteractions: liveMeasures?.userInteractions ?? content.liveMeasuresValue.userInteractions,
-                childrenTapped: childrenTapped, likeTapped: likeTapped)
+            HStack {
+                AggregatedInfoView(
+                    aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
+                    userInteractions: liveMeasures?.userInteractions ?? content.liveMeasuresValue.userInteractions,
+                    displayLabels: content.bridgeCTA == nil || displayClientObject == nil,
+                    childrenTapped: childrenTapped, likeTapped: likeTapped)
+                .layoutPriority(1)
+                Spacer()
+                if let bridgeCTA = content.bridgeCTA, let displayClientObject {
+                    Button(action: { displayClientObject(bridgeCTA.clientObjectId) }) {
+                        Text(bridgeCTA.text)
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(OctopusButtonStyle(.mid(.main)))
+                }
+            }
             .padding(.horizontal, 20)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

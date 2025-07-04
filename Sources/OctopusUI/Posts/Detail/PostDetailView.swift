@@ -31,11 +31,13 @@ struct PostDetailView: View {
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String,
          comment: Bool,
          commentToScrollTo: String?,
-         scrollToMostRecentComment: Bool = false) {
+         scrollToMostRecentComment: Bool = false,
+         shouldTrackEventBridgeOpened: Bool = false) {
         _viewModel = Compat.StateObject(wrappedValue: PostDetailViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postUuid,
             commentToScrollTo: commentToScrollTo,
-            scrollToMostRecentComment: scrollToMostRecentComment))
+            scrollToMostRecentComment: scrollToMostRecentComment,
+            shouldTrackEventBridgeOpened: shouldTrackEventBridgeOpened))
         _commentTextFocused = .init(initialValue: comment)
     }
 
@@ -76,7 +78,9 @@ struct PostDetailView: View {
                     displayContentModeration: {
                         guard viewModel.ensureConnected() else { return }
                         navigator.push(.reportContent(contentId: $0))
-                    })
+                    },
+                    displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId:$0) } : nil)
+                )
 
                 CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
                                   textFocused: $commentTextFocused,
@@ -246,6 +250,7 @@ private struct ContentView: View {
     let voteOnPoll: (String) -> Bool
     let toggleCommentLike: (String) -> Void
     let displayContentModeration: (String) -> Void
+    let displayClientObject: ((String) -> Void)?
 
     var body: some View {
         Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
@@ -266,11 +271,12 @@ private struct ContentView: View {
                                       togglePostLike: togglePostLike,
                                       voteOnPoll: voteOnPoll,
                                       toggleCommentLike: toggleCommentLike,
-                                      displayContentModeration: displayContentModeration)
+                                      displayContentModeration: displayContentModeration,
+                                      displayClientObject: displayClientObject)
             } else {
                 VStack {
                     Spacer().frame(height: 54)
-                    Image(.postDetailMissing)
+                    Image(.contentNotAvailable)
                     Text("Content.Detail.NotAvailable", bundle: .module)
                         .font(theme.fonts.body2)
                         .fontWeight(.medium)
@@ -302,14 +308,16 @@ private struct PostDetailContentView: View {
     let voteOnPoll: (String) -> Bool
     let toggleCommentLike: (String) -> Void
     let displayContentModeration: (String) -> Void
+    let displayClientObject: ((String) -> Void)?
 
     @State private var displayWillDeleteAlert = false
     @State private var openActions = false
 
     private let horizontalPadding = CGFloat(16)
+    private let minAspectRatio: CGFloat = 4 / 5
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Group { // group views to have the same horizontal padding
                     HStack {
@@ -321,7 +329,8 @@ private struct PostDetailContentView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             AuthorAndDateHeaderView(author: post.author, relativeDate: post.relativeDate,
                                                     displayProfile: displayProfile)
-                            TopicCapsule(topic: post.topic)
+                            Text(post.topic)
+                                .octopusBadgeStyle(.small, status: .off)
                         }
                         Spacer()
 
@@ -364,6 +373,13 @@ private struct PostDetailContentView: View {
                         .lineSpacing(4)
                         .foregroundColor(theme.colors.gray900)
                         .fixedSize(horizontal: false, vertical: true)
+                    if let catchPhrase = post.catchPhrase {
+                        Spacer().frame(height: 4)
+                        Text(catchPhrase)
+                            .font(theme.fonts.body2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(theme.colors.gray900)
+                    }
 
                     Spacer().frame(height: 10)
                 }.padding(.horizontal, horizontalPadding)
@@ -371,17 +387,18 @@ private struct PostDetailContentView: View {
                 case let .image(image):
                     AsyncCachedImage(
                         url: image.url, cache: .content,
+                        croppingRatio: minAspectRatio,
                         placeholder: {
                             theme.colors.gray200
                                 .aspectRatio(
-                                    image.size.width/image.size.height,
+                                    max(image.size.width/image.size.height, minAspectRatio),
                                     contentMode: .fit)
                                 .clipped()
                         },
                         content: { cachedImage in
-                            Image(uiImage: cachedImage.fullSizeImage)
+                            Image(uiImage: cachedImage.ratioImage)
                                 .resizable()
-                                .frame(idealWidth: width, idealHeight: image.size.height * width / image.size.width)
+                                .aspectRatio(contentMode: .fit)
                                 .modify {
                                     if zoomableImageInfo?.url != image.url {
                                         $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
@@ -397,6 +414,7 @@ private struct PostDetailContentView: View {
                                     }
                                 }
                         })
+                    .frame(maxWidth: .infinity)
                 case let .poll(poll):
                     PollView(poll: poll,
                              aggregatedInfo: post.aggregatedInfo,
@@ -407,15 +425,28 @@ private struct PostDetailContentView: View {
                     EmptyView()
                 }
 
-                Spacer().frame(height: 10)
+                Spacer().frame(height: post.bridgeCTA == nil || displayClientObject == nil ? 8 : 4)
 
-                AggregatedInfoView(aggregatedInfo: post.aggregatedInfo, userInteractions: post.userInteractions,
-                                   minChildCount: comments?.count,
-                                   childrenTapped: { openCreateComment() },
-                                   likeTapped: togglePostLike)
+                HStack {
+                    AggregatedInfoView(
+                        aggregatedInfo: post.aggregatedInfo, userInteractions: post.userInteractions,
+                        displayLabels: post.bridgeCTA == nil || displayClientObject == nil,
+                        minChildCount: comments?.count,
+                        childrenTapped: { openCreateComment() },
+                        likeTapped: togglePostLike)
+                    .layoutPriority(1)
+                    Spacer()
+                    if let bridgeCTA = post.bridgeCTA, let displayClientObject {
+                        Button(action: { displayClientObject(bridgeCTA.clientObjectId) }) {
+                            Text(bridgeCTA.text)
+                                .lineLimit(1)
+                        }
+                        .buttonStyle(OctopusButtonStyle(.mid(.main)))
+                    }
+                }
                 .padding(.horizontal, horizontalPadding)
             }
-            .padding(.bottom, 12)
+            .padding(.bottom, post.bridgeCTA == nil || displayClientObject == nil ? 8 : 4)
 
             theme.colors.gray300.frame(height: 1)
 
@@ -537,7 +568,7 @@ private struct CommentsView: View {
                 Button(action: openCreateComment) {
                     VStack {
                         Spacer().frame(height: 54)
-                        Image(.postDetailMissing)
+                        Image(.contentNotAvailable)
                         Text("Post.Detail.NoComments", bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
@@ -547,7 +578,7 @@ private struct CommentsView: View {
                 }.buttonStyle(.plain)
             }
         }
-        .padding(.top, 20)
+        .padding(.top, 8)
         .frame(maxHeight: .infinity)
     }
 }

@@ -49,7 +49,6 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
         statusReasonMessages = content.statusReasons.storableMessages
         parentId = content.parentId
 
-        viewCount = content.aggregatedInfo.viewCount
         fill(aggregatedInfo: content.aggregatedInfo, userInteractions: content.userInteractions, context: context)
     }
 

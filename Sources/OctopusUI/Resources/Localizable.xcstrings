@@ -133,28 +133,6 @@
         }
       }
     },
-    "Comment.Create.Button" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Antworten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reply"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Répondre"
-          }
-        }
-      }
-    },
     "Comment.Create.Text.Placeholder" : {
       "localizations" : {
         "de" : {
@@ -3031,28 +3009,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Publications"
-          }
-        }
-      }
-    },
-    "Reply.Create.Button" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Veröffentlichen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Post"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Publier"
           }
         }
       }

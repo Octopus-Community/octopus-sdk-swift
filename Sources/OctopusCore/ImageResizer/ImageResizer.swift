@@ -6,7 +6,8 @@ import Foundation
 import UIKit
 
 enum ImageResizer {
-    private static let maxSizeAllowed: CGFloat = 4000
+    private static let maxSizeAllowed: CGFloat = 1500
+    private static let compressionQuality: CGFloat = 0.8
 
     static func resize(originalSize: CGSize) -> CGSize {
         // If both width and height are already less than or equal to maxSizeAllowed, return original size
@@ -31,9 +32,9 @@ enum ImageResizer {
         return CGSize(width: newWidth, height: newHeight)
     }
 
-    static func resizeIfNeeded(imageData: Data) -> Data {
+    static func resizeIfNeeded(imageData: Data) -> (imgData: Data, isCompressed: Bool) {
         guard let image = UIImage(data: imageData) else {
-            return imageData
+            return (imgData: imageData, isCompressed: false)
         }
 
         let newSize = resize(originalSize: image.size)
@@ -44,9 +45,12 @@ enum ImageResizer {
             image.draw(in: rect)
         }
         if image.imageRendererFormat.opaque {
-            return renderer.jpegData(withCompressionQuality: 1.0, actions: actionBlock)
+            let resizedImageData = renderer.jpegData(withCompressionQuality: compressionQuality, actions: actionBlock)
+            return (imgData: resizedImageData, isCompressed: true)
         } else {
-            return renderer.pngData(actions: actionBlock)
+            let resizedImageData = renderer.pngData(actions: actionBlock)
+            return (imgData: resizedImageData, isCompressed: false)
         }
+
     }
 }

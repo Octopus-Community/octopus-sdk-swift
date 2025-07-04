@@ -93,25 +93,9 @@ private struct TopicsGridView: View {
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text(topic.name)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(
-                            selectedTopic == topic ?
-                                theme.colors.onPrimary :
-                                theme.colors.primary
-                        )
-                        .padding(10)
-                        .background(
-                            Capsule()
-                                .foregroundColor(
-                                    selectedTopic == topic ?
-                                        theme.colors.primary :
-                                        theme.colors.primaryLowContrast
-                                )
-                        )
-                        .padding(6)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedTopic == topic ? .on : .off))
+                .padding(4)
             }
         }
         .padding(.horizontal)

@@ -19,9 +19,12 @@ struct StorablePost: StorableContent, Equatable {
     let parentId: String
     let descCommentFeedId: String?
     let ascCommentFeedId: String?
+    let clientObjectId: String?
+    let catchPhrase: String?
+    let ctaText: String?
 
-    let aggregatedInfo: AggregatedInfo
-    let userInteractions: UserInteractions
+    let aggregatedInfo: AggregatedInfo?
+    let userInteractions: UserInteractions?
 }
 
 extension StorablePost {
@@ -36,6 +39,9 @@ extension StorablePost {
         status = StorableStatus(rawValue: entity.statusValue)
         statusReasons = .init(storableCodes: entity.statusReasonCodes, storableMessages: entity.statusReasonMessages)
         parentId = entity.parentId
+        clientObjectId = entity.clientObjectId
+        catchPhrase = entity.catchPhrase
+        ctaText = entity.ctaText
         descCommentFeedId = entity.descChildrenFeedId
         ascCommentFeedId = entity.ascChildrenFeedId
         aggregatedInfo = AggregatedInfo(from: entity)
@@ -79,17 +85,13 @@ extension StorablePost {
         descCommentFeedId = octoPost.descChildrenFeedID
         ascCommentFeedId = octoPost.ascChildrenFeedID
 
-        if let aggregate {
-            aggregatedInfo = AggregatedInfo(from: aggregate)
-        } else {
-            aggregatedInfo = .empty
-        }
+        let bridgeInfo = post.hasBridgeToClientObject ? post.bridgeToClientObject : nil
+        clientObjectId = bridgeInfo?.clientObjectID
+        catchPhrase = (bridgeInfo?.hasCatchPhrase ?? false) ? bridgeInfo?.catchPhrase : nil
+        ctaText = (bridgeInfo?.hasCta ?? false) ? bridgeInfo?.cta.text : nil
 
-        if let userInteraction {
-            userInteractions = .init(from: userInteraction)
-        } else {
-            userInteractions = .empty
-        }
+        self.aggregatedInfo = aggregate.map { .init(from: $0) }
+        self.userInteractions = userInteraction.map { .init(from: $0) }
     }
 
     init(from post: Post) {
@@ -103,6 +105,9 @@ extension StorablePost {
         status = post.innerStatus
         statusReasons = post.innerStatusReasons
         parentId = post.parentId
+        clientObjectId = post.clientObjectBridgeInfo?.objectId
+        catchPhrase = post.clientObjectBridgeInfo?.catchPhrase
+        ctaText = post.clientObjectBridgeInfo?.ctaText
         descCommentFeedId = post.newestFirstCommentsFeed?.id
         ascCommentFeedId = post.oldestFirstCommentsFeed?.id
 

@@ -11,13 +11,15 @@ struct DefaultEmptyPostsView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(.postDetailMissing)
+            Image(.noPosts)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 64, height: 64)
             Text("Post.List.Default.Empty", bundle: .module)
                 .font(theme.fonts.body2)
-                .fontWeight(.medium)
                 .multilineTextAlignment(.center)
         }
-        .foregroundColor(theme.colors.gray500)
+        .foregroundColor(theme.colors.gray700)
         .padding(.horizontal)
     }
 }
@@ -30,24 +32,20 @@ struct CreatePostEmptyPostView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(.postDetailMissing)
-                .foregroundColor(theme.colors.gray500)
+            Image(.noPosts)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .foregroundColor(theme.colors.gray700)
+                .frame(width: 64, height: 64)
             Text("Post.Create.Incentive.Explanation", bundle: .module)
                 .font(theme.fonts.body2)
-                .fontWeight(.medium)
-                .foregroundColor(theme.colors.gray500)
+                .foregroundColor(theme.colors.gray700)
                 .multilineTextAlignment(.center)
-            Spacer().frame(height: 54)
+            Spacer().frame(height: 24)
             Button(action: createPost) {
                 Text("Post.Create.Incentive.Button", bundle: .module)
-                    .font(theme.fonts.body2)
-                    .foregroundColor(theme.colors.onPrimary)
-                    .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(theme.colors.primary)
-                    )
-            }.buttonStyle(.plain)
+            }
+            .buttonStyle(OctopusButtonStyle(.main))
         }
     }
 }
@@ -58,7 +56,7 @@ struct OtherUserEmptyPostView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(.postDetailMissing)
+            Image(.noPosts)
             Text("Post.List.OtherUser.Empty", bundle: .module)
                 .font(theme.fonts.body2)
                 .fontWeight(.medium)

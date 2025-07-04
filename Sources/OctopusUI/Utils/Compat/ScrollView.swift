@@ -13,6 +13,7 @@ extension Compat {
         @Binding var scrollToBottom: Bool
         @Binding var scrollToId: String?
         let idAnchor: UnitPoint?
+        let preventScrollIfContentFits: Bool
         @State private var refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
 
@@ -22,6 +23,7 @@ extension Compat {
              scrollToBottom: Binding<Bool> = .constant(false),
              scrollToId: Binding<String?> = .constant(nil),
              idAnchor: UnitPoint? = nil,
+             preventScrollIfContentFits: Bool = true,
              refreshAction: (@Sendable () async -> Void)? = nil,
              minTime: TimeInterval = 0.75,
              @ViewBuilder content: () -> Content) {
@@ -31,6 +33,7 @@ extension Compat {
             self._scrollToBottom = scrollToBottom
             self._scrollToId = scrollToId
             self.idAnchor = idAnchor
+            self.preventScrollIfContentFits = preventScrollIfContentFits
             if let refreshAction {
                 self._refreshAction = State(initialValue: {
                     let refreshTask = Task { await refreshAction() }
@@ -49,15 +52,23 @@ extension Compat {
 
         var body: some View {
             if #available(iOS 15.0, *) {
-                ScrollViewIOS15(axes: axes,
-                                showIndicators: showIndicators,
-                                scrollToTop: $scrollToTop,
-                                scrollToBottom: $scrollToBottom,
-                                scrollToId: $scrollToId,
-                                idAnchor: idAnchor,
-                                refreshAction: refreshAction) {
-                    content
-                }
+                ScrollViewIOS15(
+                    axes: axes,
+                    showIndicators: showIndicators,
+                    scrollToTop: $scrollToTop,
+                    scrollToBottom: $scrollToBottom,
+                    scrollToId: $scrollToId,
+                    idAnchor: idAnchor,
+                    refreshAction: refreshAction) {
+                        content
+                    }
+                    .modify {
+                        if #available(iOS 16.4, *), preventScrollIfContentFits {
+                            $0.scrollBounceBehavior(.basedOnSize)
+                        } else {
+                            $0
+                        }
+                    }
             } else if #available(iOS 14.0, *) {
                 ScrollViewIOS14(axes: axes,
                                 showIndicators: showIndicators,

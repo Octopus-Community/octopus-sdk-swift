@@ -98,4 +98,32 @@ class APITests {
         _ = ClientUser.Profile(nickname: "", bio: "", picture: nil, ageInformation: .legalAgeReached)
         _ = ClientUser.Profile(ageInformation: .underaged)
     }
+
+    @Test func testGetOrCreateClientObjectRelatedPostId() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
+                                    signature: nil)
+        let _: String = try await octopus.getOrCreateClientObjectRelatedPostId(content: clientPost)
+    }
+
+    @Test func testSetDisplayClientObjectCallback() throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        octopus.set(displayClientObjectCallback: { objectId in })
+    }
+
+    @Test func testTopics() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let _: [Topic] = octopus.topics
+        _ = octopus.$topics
+        try await octopus.fetchTopics()
+    }
+
+    @Test func testClientPostInit() async throws {
+        _ = ClientPost(clientObjectId: "", text: "", attachment: .distantImage(URL(string: "")!),
+                       viewClientObjectButtonText: nil, signature: nil)
+        _ = ClientPost(clientObjectId: "", topicId: "", text: "", catchPhrase: "", attachment: .localImage(Data()),
+                       viewClientObjectButtonText: nil, signature: nil)
+    }
+
+
 }

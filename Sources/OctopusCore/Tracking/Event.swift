@@ -30,6 +30,10 @@ struct Event {
         case enteringUI(firstSession: Bool)
         /// Triggered when the Octopus UI is displayed not displayed anymore
         case leavingUI(startDate: Date, endDate: Date, firstSession: Bool)
+        /// Triggered when a bridge post has been opened. Success is the result of the first getObject
+        case bridgePostOpened(success: Bool)
+        /// Triggered when a user opens the client object from a bridge post
+        case openClientObjectFromBridge
         /// Custom event, set by the client
         case custom(CustomEvent)
     }
@@ -76,6 +80,12 @@ extension Event.Content: CustomStringConvertible {
             extra = "        startDate: \(startDate)\n" +
                     "        endDate: \(endDate)\n" +
                     "        firstSession: \(firstSession)"
+        case let .bridgePostOpened(success):
+            name = "bridgePostOpened"
+            extra = "        success: \(success)"
+        case .openClientObjectFromBridge:
+            name = "openClientObjectFromBridge"
+            extra = nil
         case let .custom(customEvent):
             name = "custom"
             extra = "        name: \(customEvent.name)\n" +
@@ -110,6 +120,10 @@ extension Event {
                 .leavingUI(startDate: Date(timeIntervalSince1970: evt.startTimestamp),
                            endDate: Date(timeIntervalSince1970: evt.endTimestamp),
                            firstSession: evt.firstSession)
+        case let evt as BridgePostOpenedEventEntity:
+                .bridgePostOpened(success: evt.success)
+        case is OpenClientObjectFromBridgeEventEntity:
+                .openClientObjectFromBridge
         case let evt as CustomEventEntity:
                 .custom(CustomEvent(
                     name: evt.name,

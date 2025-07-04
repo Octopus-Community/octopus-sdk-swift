@@ -11,16 +11,19 @@ struct AggregatedInfoView: View {
 
     let aggregatedInfo: AggregatedInfo
     let userInteractions: UserInteractions
+    let displayLabels: Bool
     let minChildCount: Int?
     let childrenTapped: () -> Void
     let likeTapped: () -> Void
 
     @State private var isShowingPopover = false
 
-    init(aggregatedInfo: AggregatedInfo, userInteractions: UserInteractions, minChildCount: Int? = nil,
+    init(aggregatedInfo: AggregatedInfo, userInteractions: UserInteractions, displayLabels: Bool,
+         minChildCount: Int? = nil,
          childrenTapped: @escaping () -> Void, likeTapped: @escaping () -> Void) {
         self.aggregatedInfo = aggregatedInfo
         self.userInteractions = userInteractions
+        self.displayLabels = displayLabels
         self.minChildCount = minChildCount
         self.childrenTapped = childrenTapped
         self.likeTapped = likeTapped
@@ -31,10 +34,10 @@ struct AggregatedInfoView: View {
     }
 
     var body: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: 16) {
             Button(action: { isShowingPopover = true }) {
                 AggregateView(image: .AggregatedInfo.view, count: aggregatedInfo.viewCount,
-                              nullDisplayValue: "Content.AggregatedInfo.View")
+                              nullDisplayValue: displayLabels ? "Content.AggregatedInfo.View" : nil)
             }
             .buttonStyle(.plain)
             .modify {
@@ -47,7 +50,7 @@ struct AggregatedInfoView: View {
                             .presentationCompactAdaptation((.popover))
                     }
                 } else {
-                    $0.disabled(true)
+                    $0.allowsHitTesting(false)
                 }
             }
 
@@ -56,18 +59,16 @@ struct AggregatedInfoView: View {
                               imageForegroundColor: userInteractions.hasLiked ?
                               theme.colors.like : theme.colors.gray700,
                               count: aggregatedInfo.likeCount,
-                              nullDisplayValue: "Content.AggregatedInfo.Like")
+                              nullDisplayValue: displayLabels ? "Content.AggregatedInfo.Like" : nil)
             }
             .buttonStyle(.plain)
 
             Button(action: childrenTapped) {
                 AggregateView(image: .AggregatedInfo.comment, count: childCount,
-                              nullDisplayValue: "Content.AggregatedInfo.Comment")
+                              nullDisplayValue: displayLabels ? "Content.AggregatedInfo.Comment" : nil)
             }
             .buttonStyle(.plain)
         }
-        .fixedSize()
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -77,7 +78,7 @@ struct AggregateView: View {
     let image: ImageResource
     let imageForegroundColor: Color?
     let count: Int
-    let nullDisplayValue: LocalizedStringKey
+    let nullDisplayValue: LocalizedStringKey?
 
     @State private var animate = false
 
@@ -91,7 +92,7 @@ struct AggregateView: View {
 
     private var normalFont: Font { theme.fonts.caption1 }
 
-    init(image: ImageResource, imageForegroundColor: Color? = nil, count: Int, nullDisplayValue: LocalizedStringKey) {
+    init(image: ImageResource, imageForegroundColor: Color? = nil, count: Int, nullDisplayValue: LocalizedStringKey?) {
         self.image = image
         self.imageForegroundColor = imageForegroundColor
         self.count = count
@@ -99,7 +100,7 @@ struct AggregateView: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 4) {
             // make sure the image has the same height as the text. To do that, use a squared font size based
             // transparent image and put our image on overlay of this transparent image
             Image(systemName: "square")
@@ -117,16 +118,12 @@ struct AggregateView: View {
                 )
             ZStack(alignment: .leading) {
                 Text(verbatim: "0000") // biggest possible string
-                    .font(monospacedFont)
-                    .fontWeight(.medium)
-                    .foregroundColor(Color.clear)
-                Text(nullDisplayValue, bundle: .module) // biggest possible string
                     .font(normalFont)
                     .fontWeight(.medium)
                     .foregroundColor(Color.clear)
-                if count > 0 {
+                if count > 0 || nullDisplayValue == nil {
                     Text(verbatim: "\(count)")
-                        .font(monospacedFont)
+                        .font(normalFont)
                         .fontWeight(.medium)
                         .modify {
                             if #available(iOS 16.0, *) {
@@ -137,7 +134,7 @@ struct AggregateView: View {
                         }
                         .animation(.default, value: count)
 
-                } else {
+                } else if let nullDisplayValue {
                     Text(nullDisplayValue, bundle: .module)
                         .font(normalFont)
                         .fontWeight(.medium)

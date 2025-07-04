@@ -94,25 +94,9 @@ private struct RootFeedsGridView: View {
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text(rootFeed.label)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(
-                            selectedRootFeed == rootFeed ?
-                            theme.colors.onPrimary :
-                                theme.colors.primary
-                        )
-                        .padding(10)
-                        .background(
-                            Capsule()
-                                .foregroundColor(
-                                    selectedRootFeed == rootFeed ?
-                                    theme.colors.primary :
-                                        theme.colors.primaryLowContrast
-                                )
-                        )
-                        .padding(6)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedRootFeed == rootFeed ? .on : .off))
+                .padding(4)
             }
         }
         .padding(.horizontal)

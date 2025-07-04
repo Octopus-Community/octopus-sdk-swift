@@ -55,6 +55,7 @@ struct PostFeedView<EmptyPostView: View>: View {
                         displayContentModeration($0)
                     }
                 },
+                displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId:$0) } : nil),
                 emptyPostView: { emptyPostView }
             )
             if viewModel.isDeletingPost {
@@ -111,6 +112,7 @@ private struct ContentView<EmptyPostView: View>: View {
     let toggleLike: (String) -> Void
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
+    let displayClientObject: ((String) -> Void)?
     @ViewBuilder var emptyPostView: EmptyPostView
 
     var body: some View {
@@ -123,6 +125,7 @@ private struct ContentView<EmptyPostView: View>: View {
                           displayProfile: displayProfile,
                           deletePost: deletePost, toggleLike: toggleLike, voteOnPoll: voteOnPoll,
                           displayContentModeration: displayContentModeration,
+                          displayClientObject: displayClientObject,
                           emptyPostView: { emptyPostView })
             } else {
                 Compat.ProgressView()
@@ -144,6 +147,7 @@ private struct PostsView<EmptyPostView: View>: View {
     let toggleLike: (String) -> Void
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
+    let displayClientObject: ((String) -> Void)?
     @ViewBuilder var emptyPostView: EmptyPostView
 
     @State private var width: CGFloat = 0
@@ -157,7 +161,8 @@ private struct PostsView<EmptyPostView: View>: View {
                                     displayPostDetail: displayPostDetail,
                                     displayProfile: displayProfile, deletePost: deletePost,
                                     toggleLike: toggleLike, voteOnPoll: voteOnPoll,
-                                    displayContentModeration: displayContentModeration)
+                                    displayContentModeration: displayContentModeration,
+                                    displayClientObject: displayClientObject)
                         .contentShape(Rectangle())
                         .onAppear { post.displayEvents.onAppear() }
                         .onDisappear() { post.displayEvents.onDisappear() }

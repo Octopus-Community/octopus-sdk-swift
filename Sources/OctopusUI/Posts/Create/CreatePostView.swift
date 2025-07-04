@@ -121,7 +121,8 @@ struct CreatePostView: View {
                 presentationMode.wrappedValue.dismiss()
             }
         }) {
-            Text("Common.Cancel", bundle: .module)
+            Image(systemName: "xmark")
+                .resizable()
                 .font(theme.fonts.navBarItem)
         }
         .buttonStyle(.plain)
@@ -138,11 +139,8 @@ struct CreatePostView: View {
                 }
             }) {
                 Text("Post.Create.Button", bundle: .module)
-                    .font(theme.fonts.navBarItem)
-                    .fontWeight(.semibold)
-                    .foregroundColor(viewModel.sendButtonAvailable ? theme.colors.primary : theme.colors.disabled)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: viewModel.sendButtonAvailable))
             .disabled(!viewModel.sendButtonAvailable)
         } else {
             if #available(iOS 14.0, *) {
@@ -150,11 +148,8 @@ struct CreatePostView: View {
             } else {
                 Button(action: { }) {
                     Text("Post.Create.Button", bundle: .module)
-                        .font(theme.fonts.navBarItem)
-                        .fontWeight(.semibold)
-                        .foregroundColor(theme.colors.disabled)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: true))
                 .disabled(true)
             }
         }
@@ -177,14 +172,12 @@ private struct ContentView: View {
     let createPoll: () -> Void
 
     var body: some View {
-        ZStack {
-            WritingPostForm(text: $text, attachment: $attachment,
-                            textError: textError, pictureError: pictureError, pollError: pollError,
-                            userAvatar: userAvatar, selectedTopic: selectedTopic,
-                            showTopicPicker: $showTopicPicker,
-                            createPoll: createPoll)
-            .disabled(isLoading)
-        }
+        WritingPostForm(text: $text, attachment: $attachment,
+                        textError: textError, pictureError: pictureError, pollError: pollError,
+                        userAvatar: userAvatar, selectedTopic: selectedTopic,
+                        showTopicPicker: $showTopicPicker,
+                        createPoll: createPoll)
+        .disabled(isLoading)
     }
 }
 
@@ -208,10 +201,9 @@ private struct WritingPostForm: View {
     @State private var openPhotosPicker = false
     @State private var scrollToBottomOfId: String?
 
-
     var body: some View {
         VStack {
-            theme.colors.gray300
+            Color.white.opacity(0.0001)
                 .frame(maxWidth: .infinity)
                 .frame(height: 1)
             Compat.ScrollView(scrollToId: $scrollToBottomOfId, idAnchor: .bottom) {
@@ -224,9 +216,16 @@ private struct WritingPostForm: View {
                                 showTopicPicker = true
                                 textFocused = false
                             }) {
-                                TopicSelectionCapsule(topic: selectedTopic?.name)
+                                HStack(spacing: 8) {
+                                    if let topic = selectedTopic?.name {
+                                        Text(topic)
+                                    } else {
+                                        Text("Post.Create.Topic.Selection.Button", bundle: .module)
+                                    }
+                                    Image(systemName: "chevron.down")
+                                }
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(OctopusButtonStyle(.mid(.secondary), hasTrailingIcon: true))
                         }
                         Spacer()
                             .frame(height: 24)
@@ -360,7 +359,7 @@ private struct WritingPostForm: View {
 
                 if !(attachment?.hasPoll ?? false) {
 
-                    HStack(spacing: 0) {
+                    HStack(spacing: 8) {
                         if !(attachment?.hasPoll ?? false) {
                             Button(action: { openPhotosPicker = true }) {
                                 HStack(spacing: 4) {
@@ -369,48 +368,31 @@ private struct WritingPostForm: View {
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 24, height: 24)
                                     Text("Content.Create.AddPicture", bundle: .module)
-                                        .font(theme.fonts.body2)
-                                        .fontWeight(.medium)
                                 }
-                                .foregroundColor(theme.colors.gray900)
-                                .padding(.leading, 6)
-                                .padding(.trailing, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule().stroke(theme.colors.gray300, lineWidth: 1)
-                                )
-                                .padding(.leading, 12)
-                                .padding(.trailing, 6)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(OctopusButtonStyle(.mid(.outline), hasLeadingIcon: true))
                         }
                         if attachment == nil {
-                            Button(action: createPoll) {
+                            Button(action: {
+                                withAnimation {
+                                    createPoll()
+                                }
+                            }) {
                                 HStack(spacing: 4) {
                                     Image(.poll)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 24, height: 24)
                                     Text("Content.Create.AddPoll", bundle: .module)
-                                        .font(theme.fonts.body2)
-                                        .fontWeight(.medium)
                                 }
-                                .foregroundColor(theme.colors.gray900)
-                                .padding(.leading, 6)
-                                .padding(.trailing, 12)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule().stroke(theme.colors.gray300, lineWidth: 1)
-                                )
-                                .padding(.leading, 6)
-                                .padding(.trailing, 12)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(OctopusButtonStyle(.mid(.outline), hasLeadingIcon: true))
                         }
                         Spacer()
                     }
-                    .padding(.top, 12)
-                    .padding(.bottom, textFocused ? 10 : 0)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, textFocused ? 16 : 0)
                     .background(RoundedRectangle(cornerRadius: 24)
                         .stroke(theme.colors.gray300, lineWidth: 1)
                         .padding(.horizontal, -1)

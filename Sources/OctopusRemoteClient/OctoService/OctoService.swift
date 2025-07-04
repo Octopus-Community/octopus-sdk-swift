@@ -50,6 +50,10 @@ public protocol OctoService {
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportContentResponse
 
+    func getOrCreateBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
+                               authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
+
 }
 
 class OctoServiceClient: ServiceClient, OctoService {
@@ -232,6 +236,25 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.reportContent(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func getOrCreateBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
+                               authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        let request = Com_Octopuscommunity_GetOrCreateBridgePostRequest.with {
+            $0.postBridge = post
+            if let topicId {
+                $0.topicID = topicId
+            }
+            if let clientToken {
+                $0.clientToken = clientToken
+            }
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.getOrCreateBridgePost(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

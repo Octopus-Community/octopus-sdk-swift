@@ -100,6 +100,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     _ request: Com_Octopuscommunity_ReportContentRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_ReportContentRequest, Com_Octopuscommunity_ReportContentResponse>
+
+  func getOrCreateBridgePost(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
 }
 
 extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
@@ -412,6 +417,24 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       interceptors: self.interceptors?.makeReportContentInterceptors() ?? []
     )
   }
+
+  /// Unary call to GetOrCreateBridgePost
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetOrCreateBridgePost.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func getOrCreateBridgePost(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOrCreateBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
 }
 
 @available(*, deprecated)
@@ -560,6 +583,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     _ request: Com_Octopuscommunity_ReportContentRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ReportContentRequest, Com_Octopuscommunity_ReportContentResponse>
+
+  func makeGetOrCreateBridgePostCall(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -775,6 +803,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeReportContentInterceptors() ?? []
     )
   }
+
+  public func makeGetOrCreateBridgePostCall(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOrCreateBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -982,6 +1022,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeReportContentInterceptors() ?? []
     )
   }
+
+  public func getOrCreateBridgePost(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOrCreateBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1053,6 +1105,9 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
 
   /// - Returns: Interceptors to use when invoking 'reportContent'.
   func makeReportContentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ReportContentRequest, Com_Octopuscommunity_ReportContentResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getOrCreateBridgePost'.
+  func makeGetOrCreateBridgePostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
 }
 
 public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
@@ -1077,6 +1132,7 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deletePost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderatePost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.reportContent,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOrCreateBridgePost,
     ]
   )
 
@@ -1182,6 +1238,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       path: "/com.octopuscommunity.OctoObjectService/ReportContent",
       type: GRPCCallType.unary
     )
+
+    public static let getOrCreateBridgePost = GRPCMethodDescriptor(
+      name: "GetOrCreateBridgePost",
+      path: "/com.octopuscommunity.OctoObjectService/GetOrCreateBridgePost",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -1225,6 +1287,8 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
 
   ///Do nothing if moderation mod is off
   func reportContent(request: Com_Octopuscommunity_ReportContentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ReportContentResponse>
+
+  func getOrCreateBridgePost(request: Com_Octopuscommunity_GetOrCreateBridgePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetOrCreateBridgePostResponse>
 }
 
 extension Com_Octopuscommunity_OctoObjectServiceProvider {
@@ -1392,6 +1456,15 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         userFunction: self.reportContent(request:context:)
       )
 
+    case "GetOrCreateBridgePost":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetOrCreateBridgePostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
+        interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? [],
+        userFunction: self.getOrCreateBridgePost(request:context:)
+      )
+
     default:
       return nil
     }
@@ -1491,6 +1564,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     request: Com_Octopuscommunity_ReportContentRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_ReportContentResponse
+
+  func getOrCreateBridgePost(
+    request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1665,6 +1743,15 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         wrapping: { try await self.reportContent(request: $0, context: $1) }
       )
 
+    case "GetOrCreateBridgePost":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetOrCreateBridgePostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
+        interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? [],
+        wrapping: { try await self.getOrCreateBridgePost(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -1740,6 +1827,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   /// - Returns: Interceptors to use when handling 'reportContent'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeReportContentInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ReportContentRequest, Com_Octopuscommunity_ReportContentResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getOrCreateBridgePost'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetOrCreateBridgePostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
 }
 
 public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
@@ -1764,6 +1855,7 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deletePost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderatePost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.reportContent,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getOrCreateBridgePost,
     ]
   )
 
@@ -1867,6 +1959,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
     public static let reportContent = GRPCMethodDescriptor(
       name: "ReportContent",
       path: "/com.octopuscommunity.OctoObjectService/ReportContent",
+      type: GRPCCallType.unary
+    )
+
+    public static let getOrCreateBridgePost = GRPCMethodDescriptor(
+      name: "GetOrCreateBridgePost",
+      path: "/com.octopuscommunity.OctoObjectService/GetOrCreateBridgePost",
       type: GRPCCallType.unary
     )
   }
