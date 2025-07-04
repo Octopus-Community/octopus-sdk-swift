@@ -363,7 +363,7 @@ private struct WritingPostForm: View {
                         if !(attachment?.hasPoll ?? false) {
                             Button(action: { openPhotosPicker = true }) {
                                 HStack(spacing: 4) {
-                                    Image(.addMedia)
+                                    Image(res: .addMedia)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 24, height: 24)
@@ -379,7 +379,7 @@ private struct WritingPostForm: View {
                                 }
                             }) {
                                 HStack(spacing: 4) {
-                                    Image(.poll)
+                                    Image(res: .poll)
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 24, height: 24)

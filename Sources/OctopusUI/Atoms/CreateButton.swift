@@ -24,7 +24,7 @@ struct CreateButton: View {
     var body: some View {
         Button(action: actionTapped) {
             HStack {
-                Image(.createPost)
+                Image(res: .createPost)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)

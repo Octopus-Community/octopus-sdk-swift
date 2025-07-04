@@ -269,7 +269,7 @@ private struct ContentView: View {
                 } else {
                     VStack {
                         Spacer().frame(height: 54)
-                        Image(.contentNotAvailable)
+                        Image(res: .contentNotAvailable)
                         Text("Content.Detail.NotAvailable", bundle: .module)
                             .font(theme.fonts.body2)
                             .fontWeight(.medium)
@@ -354,7 +354,7 @@ private struct CommentDetailContentView: View {
                                                 .buttonStyle(.plain)
                                             }
                                         }, label: {
-                                            Image(.more)
+                                            Image(res: .more)
                                                 .resizable()
                                                 .frame(width: 24, height: 24)
                                                 .foregroundColor(theme.colors.gray500)
@@ -362,7 +362,7 @@ private struct CommentDetailContentView: View {
                                         .buttonStyle(.plain)
                                     } else {
                                         Button(action: { openActions = true }) {
-                                            Image(.more)
+                                            Image(res: .more)
                                                 .resizable()
                                                 .frame(width: 24, height: 24)
                                                 .foregroundColor(theme.colors.gray500)

@@ -52,7 +52,7 @@ struct ResponseFeedItemView: View {
                                             .buttonStyle(.plain)
                                         }
                                     }, label: {
-                                        Image(.more)
+                                        Image(res: .more)
                                             .resizable()
                                             .frame(width: 24, height: 24)
                                             .foregroundColor(theme.colors.gray500)
@@ -60,7 +60,7 @@ struct ResponseFeedItemView: View {
                                     .buttonStyle(.plain)
                                 } else {
                                     Button(action: { openActions = true }) {
-                                        Image(.more)
+                                        Image(res: .more)
                                             .resizable()
                                             .frame(width: 24, height: 24)
                                             .foregroundColor(theme.colors.gray500)

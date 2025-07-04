@@ -162,7 +162,7 @@ private struct ReasonCell: View {
             }
         }) {
             HStack {
-                Image(selectedReasons.contains(reason) ? .CheckBox.on : .CheckBox.off)
+                Image(res: selectedReasons.contains(reason) ? .CheckBox.on : .CheckBox.off)
                 reason.displayableString.textView
                     .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)

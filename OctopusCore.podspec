@@ -14,10 +14,9 @@ Pod::Spec.new do |spec|
   
   spec.source_files = 'Sources/OctopusCore/**/*.swift'
 
-  spec.resources = [
-      'Sources/OctopusCore/Persistence/Database/OctopusModel/OctopusModel.xcdatamodeld',
-      'Sources/OctopusCore/Persistence/Database/OctopusTracking/OctopusTracking.xcdatamodeld'
-  ]
+  spec.resource_bundles = {
+      'OctopusCore' => ['Sources/OctopusCore/Persistence/**/*.{xcdatamodeld}']
+  }
 
   spec.dependency 'KeychainAccess'
   spec.dependency 'OctopusRemoteClient', SharedPodSpecConfig::VERSION

@@ -19,7 +19,7 @@ struct PoweredByOctopusView: View {
                     .fontWeight(.medium)
                     .readHeight($textHeight)
                 
-                Image(.poweredByOctopus)
+                Image(res: .poweredByOctopus)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     // *1.4 because the image is bigger than its text (due to the word Community around)

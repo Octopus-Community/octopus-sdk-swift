@@ -105,13 +105,13 @@ private struct ContentView: View {
 private struct SettingItemView: View {
     @Environment(\.octopusTheme) private var theme
 
-    let imageResource: ImageResource
+    let imageResource: GenImageResource
     let titleKey: LocalizedStringKey
     let color: Color
     let isLoading: Bool
     let action: () -> Void
 
-    init(imageResource: ImageResource, titleKey: LocalizedStringKey, color: Color, isLoading: Bool = false,
+    init(imageResource: GenImageResource, titleKey: LocalizedStringKey, color: Color, isLoading: Bool = false,
          action: @escaping () -> Void) {
         self.imageResource = imageResource
         self.titleKey = titleKey
@@ -123,7 +123,7 @@ private struct SettingItemView: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(imageResource)
+                Image(res: imageResource)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)

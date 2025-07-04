@@ -14,10 +14,9 @@ Pod::Spec.new do |spec|
 
   spec.source_files = 'Sources/OctopusUI/**/*.swift'
 
-  spec.resources = [
-    'Sources/OctopusUI/Resources/Assets.xcassets',
-    'Sources/OctopusUI/Resources/Localizable.xcstrings'
-  ]
+  spec.resource_bundles = {
+    'OctopusUI' => ['Sources/OctopusUI/Resources/**/*.{xcassets,xcstrings}']
+  }
 
   spec.dependency 'Octopus', SharedPodSpecConfig::VERSION
   spec.dependency 'OctopusCore', SharedPodSpecConfig::VERSION

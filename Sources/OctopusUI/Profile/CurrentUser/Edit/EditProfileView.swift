@@ -359,7 +359,7 @@ private struct PictureView: View {
             }) {
                 AuthorAvatarView(avatar: authorAvatar)
                     .overlay(
-                        Image(.editPicture)
+                        Image(res: .editPicture)
                             .foregroundColor(theme.colors.onPrimary)
                             .padding(8)
                             .background(theme.colors.primary)
