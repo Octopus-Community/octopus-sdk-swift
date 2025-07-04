@@ -13,6 +13,14 @@ public class OctopusSDK: ObservableObject {
     /// Always 0 if the user is not connected to Octopus Community.
     @Published public private(set) var notSeenNotificationsCount: Int = 0
 
+    /// List of topics. You can use that list to match a given topic name with a topic id.
+    /// You can update the list with the latest backend values by calling `fetchTopics()`.
+    /// Even if you do not call `fetchTopics()`, the update might be done internally by the SDK at any time.
+    @Published public private(set) var topics: [Topic] = []
+
+    /// The block that will be called when a user taps on the bridge post button to display the client object
+    public private(set) var displayClientObjectCallback: ((String) throws -> Void)?
+
     /// Core interface. This object should not be used by external devs, it is only used by the UI lib
     public let core: OctopusSDKCore
     private let injector: Injector
@@ -36,6 +44,12 @@ public class OctopusSDK: ObservableObject {
                 guard notSeenNotificationsCount != newNotSeenNotificationsCount else { return }
                 notSeenNotificationsCount = newNotSeenNotificationsCount
             }.store(in: &storage)
+
+        core.topicsRepository.$topics
+            .sink { [unowned self] in
+                topics = $0.map { Topic(from: $0) }
+            }
+            .store(in: &storage)
     }
 }
 
@@ -147,5 +161,43 @@ extension OctopusSDK {
     /// - Parameter customEvent: the custom event
     public func track(customEvent: CustomEvent) async throws {
         try await core.trackingRepository.track(customEvent: customEvent.coreValue)
+    }
+}
+
+// MARK: Bridge
+extension OctopusSDK {
+    /// Gets the Octopus post id related to the given object id.
+    ///
+    /// If the Octopus post does not exist yet, it will be created. The content will only be used if the post does not
+    /// exist yet.
+    ///
+    /// This function is asynchrounous and may take some time, if it is called after a user interaction, you should
+    /// display a loader.
+    /// - Parameter content: the content of the post
+    /// - Returns: the Octopus post id
+    /// - Note: You can use the returned id to display the post using `OctopusHomeScreen(octopus:postId:)`
+    public func getOrCreateClientObjectRelatedPostId(content: ClientPost) async throws(ClientPostError) -> String {
+        do {
+            return try await core.postsRepository.getOrCreateClientObjectRelatedPostId(content: content.coreValue)
+        } catch {
+            throw ClientPostError(from: error)
+        }
+    }
+    
+    /// Set the callback that will be called when a user taps on the `backToObjectButton` that is displayed on a post
+    /// related to an client object (article, product...).
+    /// - Parameters:
+    ///   - displayClientObjectCallback: the callback that will be called when a user taps on the `backToObjectButton`
+    ///   that is displayed on a post related to an client object (article, product...). The parameter of the callback
+    ///   is the object id you set when creating the post. If the block throws an error, the SDK will display an alert
+    ///   to the user.
+    public func set(displayClientObjectCallback: @escaping (String) throws -> Void) {
+        self.displayClientObjectCallback = displayClientObjectCallback
+    }
+    
+    /// Fetches the topics from the backend values
+    /// - Note: Even if you do not call `fetchTopics()`, the update might be done internally by the SDK at any time.
+    public func fetchTopics() async throws {
+        try await core.topicsRepository.fetchTopics()
     }
 }

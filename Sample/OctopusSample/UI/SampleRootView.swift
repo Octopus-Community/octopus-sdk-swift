@@ -60,8 +60,13 @@ struct SampleRootView: View {
             UITabBar.appearance().barTintColor = UIColor.systemGroupedBackground
             UITabBar.appearance().backgroundColor = UIColor.systemGroupedBackground
         }
-        .onValueChanged(of: selectedTab) {
+        .onValueChanged(of: selectedTab) { [oldValue = selectedTab] in
             UserDefaults.standard.set($0.rawValue, forKey: savedSelectedTabKey)
+            if oldValue == .more {
+                // Since scenario might set some functions on the SDK, reset it when coming from the more tab
+                OctopusSDKProvider.instance.createSDK(
+                    connectionMode: .octopus(deepLink: "com.octopuscommunity.sample://magic-link"), forceNew: true)
+            }
         }
         .fullScreenCover(item: $fullScreenItem) {
             AnyView($0.builder())

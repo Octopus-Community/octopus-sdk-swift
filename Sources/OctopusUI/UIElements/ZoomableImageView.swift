@@ -53,7 +53,7 @@ struct ZoomableImageView: View {
 
                 image
                     .resizable()
-                    .scaledToFit()
+                    .aspectRatio(contentMode: .fit)
                     .background(
                         GeometryReader { imageGeo in
                             Color.clear
@@ -71,7 +71,7 @@ struct ZoomableImageView: View {
                     .offset(offset)
                     .namespacedMatchedGeometryEffect(id: identifier, isSource: false)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity)
         }
         .modify {
             if #available(iOS 18.0, *) {

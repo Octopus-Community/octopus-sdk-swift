@@ -748,6 +748,16 @@ public struct Com_Octopuscommunity_Media: @unchecked Sendable {
   /// Clears the value of `height`. Subsequent reads from it will return its default value.
   public mutating func clearHeight() {self._height = nil}
 
+  ///True if sdk resized the file before uploading it. Skip backend resize process if true
+  public var isOptimized: Bool {
+    get {return _isOptimized ?? false}
+    set {_isOptimized = newValue}
+  }
+  /// Returns true if `isOptimized` has been explicitly set.
+  public var hasIsOptimized: Bool {return self._isOptimized != nil}
+  /// Clears the value of `isOptimized`. Subsequent reads from it will return its default value.
+  public mutating func clearIsOptimized() {self._isOptimized = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_File: Equatable, @unchecked Sendable {
@@ -760,6 +770,7 @@ public struct Com_Octopuscommunity_Media: @unchecked Sendable {
 
   fileprivate var _width: Int32? = nil
   fileprivate var _height: Int32? = nil
+  fileprivate var _isOptimized: Bool? = nil
 }
 
 public struct Com_Octopuscommunity_Poll: Sendable {
@@ -769,6 +780,51 @@ public struct Com_Octopuscommunity_Poll: Sendable {
 
   /// Maximum 7
   public var answers: [Com_Octopuscommunity_PollAnswer] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_BridgeToClientObject: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var clientObjectID: String = String()
+
+  public var catchPhrase: String {
+    get {return _catchPhrase ?? String()}
+    set {_catchPhrase = newValue}
+  }
+  /// Returns true if `catchPhrase` has been explicitly set.
+  public var hasCatchPhrase: Bool {return self._catchPhrase != nil}
+  /// Clears the value of `catchPhrase`. Subsequent reads from it will return its default value.
+  public mutating func clearCatchPhrase() {self._catchPhrase = nil}
+
+  public var cta: Com_Octopuscommunity_CTA {
+    get {return _cta ?? Com_Octopuscommunity_CTA()}
+    set {_cta = newValue}
+  }
+  /// Returns true if `cta` has been explicitly set.
+  public var hasCta: Bool {return self._cta != nil}
+  /// Clears the value of `cta`. Subsequent reads from it will return its default value.
+  public mutating func clearCta() {self._cta = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _catchPhrase: String? = nil
+  fileprivate var _cta: Com_Octopuscommunity_CTA? = nil
+}
+
+public struct Com_Octopuscommunity_CTA: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var text: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -827,12 +883,22 @@ public struct Com_Octopuscommunity_Post: Sendable {
   /// Clears the value of `poll`. Subsequent reads from it will return its default value.
   public mutating func clearPoll() {self._poll = nil}
 
+  public var bridgeToClientObject: Com_Octopuscommunity_BridgeToClientObject {
+    get {return _bridgeToClientObject ?? Com_Octopuscommunity_BridgeToClientObject()}
+    set {_bridgeToClientObject = newValue}
+  }
+  /// Returns true if `bridgeToClientObject` has been explicitly set.
+  public var hasBridgeToClientObject: Bool {return self._bridgeToClientObject != nil}
+  /// Clears the value of `bridgeToClientObject`. Subsequent reads from it will return its default value.
+  public mutating func clearBridgeToClientObject() {self._bridgeToClientObject = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _media: Com_Octopuscommunity_StrictMedia? = nil
   fileprivate var _poll: Com_Octopuscommunity_Poll? = nil
+  fileprivate var _bridgeToClientObject: Com_Octopuscommunity_BridgeToClientObject? = nil
 }
 
 public struct Com_Octopuscommunity_Comment: Sendable {
@@ -1822,6 +1888,7 @@ extension Com_Octopuscommunity_Media: SwiftProtobuf.Message, SwiftProtobuf._Mess
     3: .same(proto: "contentType"),
     5: .same(proto: "width"),
     6: .same(proto: "height"),
+    7: .same(proto: "isOptimized"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1850,6 +1917,7 @@ extension Com_Octopuscommunity_Media: SwiftProtobuf.Message, SwiftProtobuf._Mess
       }()
       case 5: try { try decoder.decodeSingularInt32Field(value: &self._width) }()
       case 6: try { try decoder.decodeSingularInt32Field(value: &self._height) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self._isOptimized) }()
       default: break
       }
     }
@@ -1878,6 +1946,9 @@ extension Com_Octopuscommunity_Media: SwiftProtobuf.Message, SwiftProtobuf._Mess
     try { if let v = self._height {
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 6)
     } }()
+    try { if let v = self._isOptimized {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 7)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1887,6 +1958,7 @@ extension Com_Octopuscommunity_Media: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if lhs.contentType != rhs.contentType {return false}
     if lhs._width != rhs._width {return false}
     if lhs._height != rhs._height {return false}
+    if lhs._isOptimized != rhs._isOptimized {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1919,6 +1991,86 @@ extension Com_Octopuscommunity_Poll: SwiftProtobuf.Message, SwiftProtobuf._Messa
 
   public static func ==(lhs: Com_Octopuscommunity_Poll, rhs: Com_Octopuscommunity_Poll) -> Bool {
     if lhs.answers != rhs.answers {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_BridgeToClientObject: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".BridgeToClientObject"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "clientObjectId"),
+    2: .same(proto: "catchPhrase"),
+    3: .same(proto: "cta"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.clientObjectID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._catchPhrase) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._cta) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.clientObjectID.isEmpty {
+      try visitor.visitSingularStringField(value: self.clientObjectID, fieldNumber: 1)
+    }
+    try { if let v = self._catchPhrase {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._cta {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_BridgeToClientObject, rhs: Com_Octopuscommunity_BridgeToClientObject) -> Bool {
+    if lhs.clientObjectID != rhs.clientObjectID {return false}
+    if lhs._catchPhrase != rhs._catchPhrase {return false}
+    if lhs._cta != rhs._cta {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_CTA: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CTA"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "text"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.text.isEmpty {
+      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CTA, rhs: Com_Octopuscommunity_CTA) -> Bool {
+    if lhs.text != rhs.text {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1972,6 +2124,7 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
     1: .same(proto: "text"),
     3: .same(proto: "media"),
     4: .same(proto: "poll"),
+    5: .same(proto: "bridgeToClientObject"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1983,6 +2136,7 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
       case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._media) }()
       case 4: try { try decoder.decodeSingularMessageField(value: &self._poll) }()
+      case 5: try { try decoder.decodeSingularMessageField(value: &self._bridgeToClientObject) }()
       default: break
       }
     }
@@ -2002,6 +2156,9 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
     try { if let v = self._poll {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     } }()
+    try { if let v = self._bridgeToClientObject {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2009,6 +2166,7 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
     if lhs.text != rhs.text {return false}
     if lhs._media != rhs._media {return false}
     if lhs._poll != rhs._poll {return false}
+    if lhs._bridgeToClientObject != rhs._bridgeToClientObject {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -16,8 +16,8 @@ struct StorableReply: StorableResponse, Equatable, Sendable {
     let statusReasons: [StorableStatusReason]
     let parentId: String
 
-    let aggregatedInfo: AggregatedInfo
-    let userInteractions: UserInteractions
+    let aggregatedInfo: AggregatedInfo?
+    let userInteractions: UserInteractions?
 }
 
 extension StorableReply {
@@ -63,17 +63,8 @@ extension StorableReply {
         statusReasons = .init(from: octoReply.status.reasons)
         parentId = octoReply.parentID
 
-        if let aggregate {
-            aggregatedInfo = AggregatedInfo(from: aggregate)
-        } else {
-            aggregatedInfo = .empty
-        }
-
-        if let userInteraction {
-            userInteractions = .init(from: userInteraction)
-        } else {
-            userInteractions = .empty
-        }
+        self.aggregatedInfo = aggregate.map { .init(from: $0) }
+        self.userInteractions = userInteraction.map { .init(from: $0) }
     }
 
     init(from reply: Reply) {

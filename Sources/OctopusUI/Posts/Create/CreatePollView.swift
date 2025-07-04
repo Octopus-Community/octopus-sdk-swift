@@ -7,9 +7,10 @@ import SwiftUI
 import OctopusCore
 
 struct EditablePoll: Equatable {
-    struct Option: Equatable {
+    struct Option: Equatable, Identifiable {
         /// Unique identifier for the option. Needed to avoid erasing changes when an option is deleted
         let uuid = UUID()
+        var id: UUID { uuid }
 
         var text: String {
             didSet {
@@ -49,7 +50,7 @@ struct EditablePoll: Equatable {
 
     init(validator: Validators.Poll) {
         self.validator = validator
-        options = Array(repeating: Option(validator: validator), count: validator.minOptions)
+        options = (0..<validator.minOptions).map { _ in Option(validator: validator) }
     }
 
     mutating func removeOption(at index: Int) {
@@ -82,24 +83,38 @@ struct CreatePollView: View {
                         .font(theme.fonts.caption1)
                         .foregroundColor(theme.colors.gray700)
                     Spacer()
-                    Button(action: deletePoll) {
+                    Button(action: {
+                        withAnimation {
+                            deletePoll()
+                        }
+                    }) {
                         Image(.trash)
                             .resizable()
                             .frame(width: 24, height: 24)
                             .foregroundColor(theme.colors.gray900)
                     }
                 }
-                ForEach(poll.options.indices, id: \.self) { pollOptionIdx in
+                ForEach($poll.options) { $option in
+                    let index = poll.options.firstIndex(where: { $0.id == option.id }) ?? 0
                     OptionView(
-                        index: pollOptionIdx,
-                        option: $poll.options[pollOptionIdx],
-                        focusIdentifier: pollOptionIdx,
+                        index: index,
+                        option: $option,
+                        focusIdentifier: index,
                         focus: $focusOptionIndex,
                         canDelete: poll.canRemoveOptions,
-                        deleteOption: { poll.removeOption(at: pollOptionIdx) })
+                        deleteOption: {
+                            withAnimation {
+                                poll.removeOption(at: index)
+                            }
+                        }
+                    )
                 }
                 if poll.canAddOptions {
-                    AddOptionView(addOption: { poll.addOption() })
+                    AddOptionView(addOption: {
+                        withAnimation {
+                            poll.addOption()
+                        }
+                    })
                 }
             }
             .padding(16)
@@ -130,32 +145,13 @@ private struct OptionView: View {
     var body: some View {
         VStack(spacing: 4) {
             HStack {
-                Group {
-                    if #available(iOS 16.0, *) {
-                        TextField(String(""), text: $option.text, axis: .vertical)
-                            .multilineTextAlignment(.leading)
-                            .focused(id: focusIdentifier, $focus)
-                            .foregroundColor(theme.colors.gray900)
-                            .placeholder(when: option.text.isEmpty) {
-                                Text("Poll.Create.Option.Text.Placeholder_index:\(index+1)", bundle: .module)
-                                    .multilineTextAlignment(.leading)
-                                    .foregroundColor(theme.colors.gray700)
-                            }
-                            .font(theme.fonts.body2)
-                    } else {
-                        // TODO: create a TextField that expands vertically on iOS 13
-                        TextField(String(""), text: $option.text)
-                            .multilineTextAlignment(.leading)
-                            .focused(id: focusIdentifier, $focus)
-                            .foregroundColor(theme.colors.gray900)
-                            .placeholder(when: option.text.isEmpty) {
-                                Text("Poll.Create.Option.Text.Placeholder_index:\(index+1)", bundle: .module)
-                                    .multilineTextAlignment(.leading)
-                                    .foregroundColor(theme.colors.gray700)
-                            }
-                            .font(theme.fonts.body2)
-                    }
-                }
+                OctopusTextInput(
+                    text: $option.text,
+                    placeholder: "Poll.Create.Option.Text.Placeholder_index:\(index+1)",
+                    error: option.error,
+                    lineLimit: nil,
+                    isFocused: focus == focusIdentifier)
+                .focused(id: focusIdentifier, $focus)
                 // keep the text without any new line character
                 .onValueChanged(of: option) {
                     // be sure that it is the same option. Needed in case an option has just been deleted
@@ -169,13 +165,6 @@ private struct OptionView: View {
                     newText.removeAll { $0.isNewline }
                     option.text = newText
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 11)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(theme.colors.gray300, lineWidth: 1)
-                )
 
                 Button(action: deleteOption) {
                     Image(systemName: "xmark")
@@ -184,15 +173,6 @@ private struct OptionView: View {
                 }
                 .disabled(!canDelete)
                 .buttonStyle(.plain)
-            }
-            if let error = option.error {
-                error.textView
-                    .font(theme.fonts.caption2)
-                    .bold()
-                    .foregroundColor(theme.colors.error)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
             }
         }
     }
@@ -208,11 +188,9 @@ private struct AddOptionView: View {
             HStack {
                 Image(systemName: "plus")
                 Text("Poll.Create.Option.Add", bundle: .module)
-                Spacer()
             }
             .font(theme.fonts.body2)
             .foregroundColor(theme.colors.gray700)
-            .contentShape(Rectangle())
             .padding(.horizontal, 8)
             .padding(.vertical, 11)
             .frame(maxWidth: .infinity)
@@ -220,6 +198,7 @@ private struct AddOptionView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(theme.colors.gray300, lineWidth: 1)
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

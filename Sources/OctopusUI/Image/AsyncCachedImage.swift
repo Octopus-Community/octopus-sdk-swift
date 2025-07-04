@@ -99,7 +99,7 @@ struct AsyncCachedImage<Content: View, Placeholder: View>: View {
     var body: some View {
 //        ZStack {
 //            if let image = imageLoader.image {
-//                content(Image(uiImage: image))
+//                content(image)
 //            }
 //            placeholder()
 //                .opacity(0.5)

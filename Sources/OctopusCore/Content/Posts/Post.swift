@@ -13,6 +13,7 @@ public struct Post: Equatable, Sendable {
     public let creationDate: Date
     public let updateDate: Date
     public let parentId: String
+    public let clientObjectBridgeInfo: ClientObjectBridgeInfo?
     public let newestFirstCommentsFeed: Feed<Comment>?
     public let oldestFirstCommentsFeed: Feed<Comment>?
 
@@ -32,6 +33,12 @@ public struct Post: Equatable, Sendable {
         case .moderated: return false
         }
     }
+
+    public struct ClientObjectBridgeInfo: Equatable, Sendable {
+        public let objectId: String
+        public let catchPhrase: String?
+        public let ctaText: String?
+    }
 }
 
 extension Post {
@@ -46,6 +53,14 @@ extension Post {
         innerStatus = storablePost.status
         innerStatusReasons = storablePost.statusReasons
         parentId = storablePost.parentId
+        if let clientObjectId = storablePost.clientObjectId {
+            clientObjectBridgeInfo = ClientObjectBridgeInfo(
+                objectId: clientObjectId,
+                catchPhrase: storablePost.catchPhrase?.nilIfEmpty,
+                ctaText: storablePost.ctaText?.nilIfEmpty)
+        } else {
+            clientObjectBridgeInfo = nil
+        }
         if let descCommentFeedId = storablePost.descCommentFeedId {
             newestFirstCommentsFeed = commentFeedsStore.getOrCreate(feedId: descCommentFeedId)
         } else {
@@ -57,7 +72,7 @@ extension Post {
             oldestFirstCommentsFeed = nil
         }
 
-        aggregatedInfo = storablePost.aggregatedInfo
-        userInteractions = storablePost.userInteractions
+        aggregatedInfo = storablePost.aggregatedInfo ?? .empty
+        userInteractions = storablePost.userInteractions ?? .empty
     }
 }

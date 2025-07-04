@@ -21,6 +21,8 @@ struct ResponseFeedItemView: View {
 
     @State private var liveMeasures: LiveMeasures = .init(aggregatedInfo: .empty, userInteractions: .empty)
 
+    private let minAspectRatio: CGFloat = 4 / 5
+
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             OpenProfileButton(author: response.author, displayProfile: displayProfile) {
@@ -80,18 +82,18 @@ struct ResponseFeedItemView: View {
                     if let image = response.image {
                         AsyncCachedImage(
                             url: image.url, cache: .content,
+                            croppingRatio: minAspectRatio,
                             placeholder: {
                                 theme.colors.gray200
                                     .aspectRatio(
-                                        image.size.width/image.size.height,
+                                        max(image.size.width/image.size.height, minAspectRatio),
                                         contentMode: .fit)
                                     .clipped()
                             },
                             content: { cachedImage in
-                                Image(uiImage: cachedImage.fullSizeImage)
+                                Image(uiImage: cachedImage.ratioImage)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .cornerRadius(12)
                                     .modify {
                                         if zoomableImageInfo?.url != image.url {
                                             $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
@@ -107,6 +109,7 @@ struct ResponseFeedItemView: View {
                                         }
                                     }
                             })
+                        .cornerRadius(12)
                     }
                 }
                 .frame(maxWidth: .infinity)

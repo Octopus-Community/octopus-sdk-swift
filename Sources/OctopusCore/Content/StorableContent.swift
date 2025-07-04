@@ -12,6 +12,6 @@ protocol StorableContent {
     var status: StorableStatus { get }
     var statusReasons: [StorableStatusReason] { get }
     var parentId: String { get }
-    var aggregatedInfo: AggregatedInfo { get }
-    var userInteractions: UserInteractions { get }
+    var aggregatedInfo: AggregatedInfo? { get }
+    var userInteractions: UserInteractions? { get }
 }

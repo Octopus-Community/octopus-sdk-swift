@@ -36,7 +36,7 @@ struct EditProfileView: View {
                     pictureError: viewModel.pictureError, bioFocused: bioFocused, bioMaxLength: viewModel.bioMaxLength,
                     photoPickerFocused: photoPickerFocused
         )
-        .navigationBarBackButtonHidden()
+        .navigationBarBackButtonHidden(viewModel.hasChanges)
         .navigationBarTitle(Text("Common.Edit", bundle: .module), displayMode: .inline)
         .navigationBarItems(leading: leadingBarItem, trailing: trailingBarItem)
         .alert(
@@ -84,10 +84,8 @@ struct EditProfileView: View {
         if !viewModel.isLoading {
             Button(action: viewModel.updateProfile) {
                 Text("Common.Save", bundle: .module)
-                    .font(theme.fonts.navBarItem)
-                    .fontWeight(.semibold)
-                    .foregroundColor(viewModel.saveAvailable ? theme.colors.primary : theme.colors.disabled)
             }
+            .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: viewModel.saveAvailable))
             .disabled(!viewModel.saveAvailable)
         } else {
             if #available(iOS 14.0, *) {
@@ -95,29 +93,28 @@ struct EditProfileView: View {
             } else {
                 Button(action: viewModel.updateProfile) {
                     Text("Common.Save", bundle: .module)
-                        .font(theme.fonts.navBarItem)
-                        .fontWeight(.semibold)
-                        .foregroundColor(theme.colors.disabled)
                 }
+                .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: false))
                 .disabled(true)
             }
         }
     }
 
+    @ViewBuilder
     private var leadingBarItem: some View {
-        Button(action: {
-            if viewModel.hasChanges {
+        if viewModel.hasChanges {
+            Button(action: {
                 showChangesWillBeLostAlert = true
-            } else {
-                presentationMode.wrappedValue.dismiss()
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(theme.fonts.navBarItem.weight(.semibold))
+                    .contentShape(Rectangle())
+                    .padding(.trailing, 40)
             }
-        }) {
-            Image(systemName: "chevron.left")
-                .font(theme.fonts.navBarItem.weight(.semibold))
-                .contentShape(Rectangle())
-                .padding(.trailing, 40)
+            .padding(.leading, -8)
+        } else {
+            EmptyView()
         }
-        .padding(.leading, -8)
     }
 }
 
@@ -237,124 +234,78 @@ private struct EditProfileFormView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Spacer().frame(height: 30)
-                Text("Profile.Edit.Nickname.Description", bundle: .module)
-                    .font(theme.fonts.body2)
-                    .fontWeight(.medium)
-                    .foregroundColor(theme.colors.gray700)
-                    .multilineTextAlignment(.center)
-                Spacer().frame(height: 6)
-                TextField(L10n("Profile.Nickname.Placeholder"), text: $nickname)
-                    .font(theme.fonts.body2)
-                    .foregroundColor(theme.colors.gray900)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .padding(.vertical, 14)
-                    .padding(.horizontal, 8)
-                    .focused($nicknameFocused)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(nicknameFocused ? theme.colors.gray900 : theme.colors.gray300,
-                                    lineWidth: nicknameFocused ? 2 : 1)
-                    )
-                    .disabled(!nicknameEditConfig.fieldIsEditable)
-                    .overlay(
-                        Group {
-                            if let callback = nicknameEditConfig.callback {
-                                Button(action: {
-                                    openEditProfileInApp = callback
-                                    displayOpenEditProfileInApp = true
-                                }) {
-                                    Color.white.opacity(0.0001)
-                                }
-                                .buttonStyle(.plain)
-                            } else {
-                                EmptyView()
+                OctopusTextInput(
+                    text: $nickname, label: "Profile.Edit.Nickname.Description",
+                    placeholder: "Profile.Nickname.Placeholder",
+                    hint: "Profile.Edit.Nickname.Explanation",
+                    error: nicknameError,
+                    isFocused: nicknameFocused,
+                    isDisabled: false // visually, let it as it was editable
+                )
+                .autocapitalization(.none)
+                .disableAutocorrection(true)
+                .focused($nicknameFocused)
+                .disabled(!nicknameEditConfig.fieldIsEditable)
+                .overlay(
+                    Group {
+                        if let callback = nicknameEditConfig.callback {
+                            Button(action: {
+                                openEditProfileInApp = callback
+                                displayOpenEditProfileInApp = true
+                            }) {
+                                Color.white.opacity(0.0001)
                             }
+                            .buttonStyle(.plain)
+                        } else {
+                            EmptyView()
                         }
-                    )
-                Spacer().frame(height: 6)
-                Text("Profile.Edit.Nickname.Explanation", bundle: .module)
-                    .font(theme.fonts.caption1)
-                    .foregroundColor(theme.colors.gray500)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let nicknameError {
-                    Spacer().frame(height: 4)
-                    nicknameError.textView
-                        .font(theme.fonts.caption2)
-                        .bold()
-                        .foregroundColor(theme.colors.error)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                Spacer().frame(height: 20)
-                HStack {
-                    Text("Profile.Edit.Bio.Description", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(theme.colors.gray700)
-                        .multilineTextAlignment(.center)
-                    Spacer()
-                    if bioEditConfig.fieldIsEditable {
-                        Text(verbatim: "(\(bio.count)/\(bioMaxLength))")
-                            .font(theme.fonts.body2)
-                            .foregroundColor(bio.count <= bioMaxLength ? theme.colors.gray500 : theme.colors.error)
+                    }
+                )
+                Spacer().frame(height: 24)
+                OctopusTextInput(
+                    text: $bio,
+                    label: "Profile.Edit.Bio.Description",
+                    placeholder: "Profile.Edit.Bio.Placeholder",
+                    error: bioError,
+                    lineLimit: nil,
+                    isFocused: bioFocused,
+                    isDisabled: false) // visually, let it as it was editable
+                .focused($bioFocused)
+                .onValueChanged(of: bio) { [oldValue = bio] newValue in
+                    // only scroll to bottom if the last line changed
+                    let previousLastLine = oldValue.components(separatedBy: "\n").last ?? ""
+                    let newLastLine = newValue.components(separatedBy: "\n").last ?? ""
+                    if previousLastLine != newLastLine {
+                        withAnimation {
+                            scrollToBottomOfId = "bioBlockBottom"
+                        }
                     }
                 }
-                Spacer().frame(height: 6)
-                MultilineTextField(text: $bio, shouldFocus: $bioFocused, placeholderText: "Profile.Edit.Bio.Placeholder")
-                    .font(theme.fonts.body2)
-                    .foregroundColor(theme.colors.gray900)
-                    .focused($bioFocused)
-                    .frame(minHeight: 140, alignment: .top)
-                    .padding(.vertical, 14)
-                    .padding(.horizontal, 8)
-                    .background(Color(UIColor.systemBackground))
-                    .onTapGesture {
-                        bioFocused = true
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(bioFocused ? theme.colors.gray900 : theme.colors.gray300,
-                                    lineWidth: bioFocused ? 2 : 1)
-                    )
-                    .onValueChanged(of: bio) { [oldValue = bio] newValue in
-                        // only scroll to bottom if the last line changed
-                        let previousLastLine = oldValue.components(separatedBy: "\n").last ?? ""
-                        let newLastLine = newValue.components(separatedBy: "\n").last ?? ""
-                        if previousLastLine != newLastLine {
-                            withAnimation {
-                                scrollToBottomOfId = "bioBlockBottom"
+                .disabled(!bioEditConfig.fieldIsEditable)
+                .overlay(
+                    Group {
+                        if let callback = bioEditConfig.callback {
+                            Button(action: {
+                                nicknameFocused = false
+                                bioFocused = false
+                                openEditProfileInApp = callback
+                                displayOpenEditProfileInApp = true
+                            }) {
+                                Color.white.opacity(0.0001)
                             }
+                            .buttonStyle(.plain)
+                        } else {
+                            EmptyView()
                         }
                     }
-                    .disabled(!bioEditConfig.fieldIsEditable)
-                    .overlay(
-                        Group {
-                            if let callback = bioEditConfig.callback {
-                                Button(action: {
-                                    nicknameFocused = false
-                                    bioFocused = false
-                                    openEditProfileInApp = callback
-                                    displayOpenEditProfileInApp = true
-                                }) {
-                                    Color.white.opacity(0.0001)
-                                }
-                                .buttonStyle(.plain)
-                            } else {
-                                EmptyView()
-                            }
-                        }
-                    )
-                if let bioError {
-                    Spacer().frame(height: 4)
-                    bioError.textView
+                )
+                // Not passed as an hint because it is a String and aligned right
+                if bioError == nil, bioEditConfig.fieldIsEditable {
+                    Spacer().frame(height: 2)
+                    Text(verbatim: "\(bio.count)/\(bioMaxLength)")
                         .font(theme.fonts.caption2)
-                        .bold()
-                        .foregroundColor(theme.colors.error)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundColor(bio.count <= bioMaxLength ? theme.colors.gray700 : theme.colors.error)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 Color.clear.frame(height: 1)
                     .id("bioBlockBottom")
@@ -376,50 +327,6 @@ private struct EditProfileFormView: View {
                     }
                 },
                 message: { _ in })
-        }
-    }
-}
-
-struct MultilineTextField: View {
-    @Environment(\.octopusTheme) private var theme
-    @Binding var text: String
-    @Binding var shouldFocus: Bool
-    let placeholderText: LocalizedStringKey?
-
-    private let focusInterested: Bool
-
-    init(text: Binding<String>, shouldFocus: Binding<Bool>? = nil, placeholderText: LocalizedStringKey? = nil) {
-        self._text = text
-        self._shouldFocus = shouldFocus ?? .constant(false)
-        focusInterested = shouldFocus != nil
-        self.placeholderText = placeholderText
-    }
-
-    @ViewBuilder
-    var body: some View {
-        if #available(iOS 16.0, *) {
-            TextField(String(""), text: $text, axis: .vertical)
-                .placeholder(when: text.isEmpty) {
-                    if let placeholderText {
-                        Text(placeholderText, bundle: .module)
-                            .foregroundColor(theme.colors.gray500)
-                    } else {
-                        EmptyView()
-                    }
-                }
-                .multilineTextAlignment(.leading)
-        } else {
-            // TODO: create a TextField that expands vertically on iOS 13
-            TextField(String(""), text: $text)
-                .placeholder(when: text.isEmpty) {
-                    if let placeholderText {
-                        Text(placeholderText, bundle: .module)
-                            .foregroundColor(theme.colors.gray500)
-                    } else {
-                        EmptyView()
-                    }
-                }
-                .multilineTextAlignment(.leading)
         }
     }
 }

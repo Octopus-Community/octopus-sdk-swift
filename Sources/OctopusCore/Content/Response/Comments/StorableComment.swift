@@ -18,8 +18,8 @@ struct StorableComment: StorableResponse, Equatable, Sendable {
     let descReplyFeedId: String?
     let ascReplyFeedId: String?
 
-    let aggregatedInfo: AggregatedInfo
-    let userInteractions: UserInteractions
+    let aggregatedInfo: AggregatedInfo?
+    let userInteractions: UserInteractions?
 }
 
 extension StorableComment {
@@ -70,17 +70,8 @@ extension StorableComment {
         descReplyFeedId = octoComment.descChildrenFeedID
         ascReplyFeedId = octoComment.ascChildrenFeedID
 
-        if let aggregate {
-            aggregatedInfo = AggregatedInfo(from: aggregate)
-        } else {
-            aggregatedInfo = .empty
-        }
-
-        if let userInteraction {
-            userInteractions = .init(from: userInteraction)
-        } else {
-            userInteractions = .empty
-        }
+        self.aggregatedInfo = aggregate.map { .init(from: $0) }
+        self.userInteractions = userInteraction.map { .init(from: $0) }
     }
 
     init(from comment: Comment) {

@@ -20,6 +20,7 @@ class APITests {
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .text(.init(text: "")))
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarPrimaryColor: true)
         _ = OctopusHomeScreen(octopus: octopusSdk, notificationResponse: .constant(nil))
+        _ = OctopusHomeScreen(octopus: octopusSdk, postId: "POST_ID")
     }
 
     @Test func testOctopusThemeApi() async throws {

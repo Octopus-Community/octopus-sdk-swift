@@ -274,17 +274,18 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         }
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
-            var profile = profile
             var resizedPicture: Data?
+            var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated
             if case let .updated(imageData) = profile.picture, let imageData {
-                resizedPicture = ImageResizer.resizeIfNeeded(imageData: imageData)
-                profile.picture = .updated(resizedPicture)
+                let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                resizedPicture = resizedImgData
+                pictureUpdate = .updated((imgData: resizedImgData, isCompressed: isCompressed))
             }
             let response = try await remoteClient.userService.updateProfile(
                 userId: userData.id,
                 nickname: profile.nickname.backendValue,
                 bio: profile.bio.backendValue,
-                picture: profile.picture.backendValue,
+                picture: pictureUpdate.backendValue,
                 isProfileCreation: isCreation,
                 authenticationMethod: try authCallProvider.authenticatedMethod())
             switch response.result {

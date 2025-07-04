@@ -50,6 +50,7 @@ public struct OctopusHomeScreen: View {
     private let bottomSafeAreaInset: CGFloat
     private let navBarLeadingItem: NavBarLeadingItemKind
     private let navBarPrimaryColor: Bool
+    private let postId: String?
 
     @Compat.StateObject private var mainFlowPath = MainFlowPath()
 
@@ -62,11 +63,13 @@ public struct OctopusHomeScreen: View {
     ///                         a text you can provide (less than 18chars is recommanded). Default is `.logo`.
     ///    - navBarPrimaryColor: whether the primary color you set in the theme should be used on the nav bar of the
     ///                          main screen. If false, default nav bar color will be used. Default is false.
+    ///    - postId: the id of the post to be directly displayed. If nil, post feed with the feed selector will be
+    ///              displayed. Default is nil.
     ///    - notificationResponse: a binding on the notification response if an Octopus Push Notification has been
     ///                            tapped. Default is nil. The binding is set back to nil after the notification has
     ///                            been used inside Octopus (i.e. the screen relative to the notification has been
     ///                            displayed).
-    /// 
+    ///  
     /// You can pass an OctopusTheme as an environment to customize the colors, fonts and images used in this
     /// view:
     /// ```swift
@@ -77,6 +80,7 @@ public struct OctopusHomeScreen: View {
                 bottomSafeAreaInset: CGFloat = 0,
                 navBarLeadingItem: NavBarLeadingItemKind = .logo,
                 navBarPrimaryColor: Bool = false,
+                postId: String? = nil,
                 notificationResponse: Binding<UNNotificationResponse?> = .constant(nil)) {
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
@@ -86,12 +90,40 @@ public struct OctopusHomeScreen: View {
         } else {
             self.navBarPrimaryColor = false
         }
+        self.postId = postId
         self._notificationResponse = notificationResponse
     }
 
     public var body: some View {
         MainFlowNavigationStack(octopus: octopus, mainFlowPath: mainFlowPath, bottomSafeAreaInset: bottomSafeAreaInset) {
             if #available(iOS 14.0, *) {
+            if let postId {
+                PostDetailView(octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postId,
+                               comment: false,
+                               commentToScrollTo: nil,
+                               scrollToMostRecentComment: false,
+                               shouldTrackEventBridgeOpened: true)
+                .navigationBarItems(
+                    trailing:
+                        Group {
+                            if presentationMode.wrappedValue.isPresented {
+                                Button(action: {
+                                    presentationMode.wrappedValue.dismiss()
+                                }) {
+                                    Text("Common.Close", bundle: .module)
+                                        .font(theme.fonts.navBarItem)
+                                }
+                            }
+                        }
+                )
+                .onAppear {
+                    if presentationMode.wrappedValue.isPresented && !isPresentedModally {
+                        Logger.general.warning(
+                            "⚠️ You are trying to push the OctopusHomeScreen from a screen that already has a navigation bar.")
+                    }
+                }
+                .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
+            } else {
                 RootFeedsView(octopus: octopus, mainFlowPath: mainFlowPath, navBarLeadingItem: navBarLeadingItem,
                               navBarPrimaryColor: navBarPrimaryColor)
                 .onAppear {
@@ -103,6 +135,7 @@ public struct OctopusHomeScreen: View {
                 .safeAreaInsetCompat(edge: .bottom) {
                     Spacer().frame(height: bottomSafeAreaInset)
                 }
+            }
             } else {
                 UnsupportedOSVersionView()
                     .navigationBarItems(
@@ -131,12 +164,12 @@ public struct OctopusHomeScreen: View {
         .navigationViewStyle(.stack)
         .onValueChanged(of: notificationResponse) {
             displayScreenAfterNotificationTapped(notificationResponse: $0)
-            notificationResponse = nil
         }
     }
 
     private func displayScreenAfterNotificationTapped(notificationResponse: UNNotificationResponse?) {
         guard let notificationResponse else { return }
+        defer { self.notificationResponse = nil }
         guard let action = octopus.core.notificationsRepository.getPushNotificationTappedAction(
             notificationResponse: notificationResponse) else { return }
         switch action {

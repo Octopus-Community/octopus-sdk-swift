@@ -40,7 +40,8 @@ struct PollView: View {
                         }
                     }
                 }
-                if userInteractions.hasVoted, let totalVoteCount = aggregatedInfo.pollResult?.totalVoteCount {
+                if let totalVoteCount = aggregatedInfo.pollResult?.totalVoteCount,
+                   userInteractions.hasVoted || totalVoteCount >= 4 {
                     Text("Poll.Results.VoteCount_total:\(totalVoteCount)", bundle: .module)
                         .font(theme.fonts.caption2)
                         .fontWeight(.medium)

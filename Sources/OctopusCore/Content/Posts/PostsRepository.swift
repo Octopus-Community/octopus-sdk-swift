@@ -8,6 +8,7 @@ import OctopusRemoteClient
 import OctopusGrpcModels
 import SwiftProtobuf
 import OctopusDependencyInjection
+import os
 
 extension Injected {
     static let postsRepository = Injector.InjectedIdentifier<PostsRepository>()
@@ -119,11 +120,14 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
 
         do {
             var post = post
+            var imageIsCompressed = false
             if case let .image(imageData) = post.attachment {
-                post.attachment = .image(ImageResizer.resizeIfNeeded(imageData: imageData))
+                let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                post.attachment = .image(resizedImgData)
+                imageIsCompressed = isCompressed
             }
             let response = try await remoteClient.octoService.put(
-                post: post.rwOctoObject(),
+                post: post.rwOctoObject(imageIsCompressed: imageIsCompressed),
                 authenticationMethod: try authCallProvider.authenticatedMethod())
 
             switch response.result {
@@ -262,6 +266,76 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             }
         } catch {
             if let error = error as? PollVote.Error {
+                throw error
+            } else if let error = error as? RemoteClientError {
+                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
+            } else {
+                throw .serverCall(.other(error))
+            }
+        }
+    }
+
+    public func getOrCreateClientObjectRelatedPostId(content: ClientPost)
+    async throws(GetOrCreateClientPost.Error) -> String {
+        do {
+            // first check in the db if the post exists:
+            if let post = try await postsDatabase.getClientObjectRelatedPost(objectId: content.clientObjectId) {
+                // Without waiting for the answer, send the data to the backend, in case they want to update it
+                Task {
+                    do {
+                        _ = try await remotelyGetOrCreateClientObjectRelatedPostId(content: content)
+                    } catch {
+                        if #available(iOS 14, *) { Logger.posts.debug("Error when sending bridge post: \(error)") }
+                    }
+                }
+                return post.uuid
+            } else {
+                // the post is not in db yet, so ask the backend to get or create it
+                return try await remotelyGetOrCreateClientObjectRelatedPostId(content: content)
+            }
+        } catch {
+            if #available(iOS 14, *) { Logger.posts.debug("Error when getting/creating bridge post: \(error)") }
+            if let error = error as? GetOrCreateClientPost.Error {
+                throw error
+            } else if let error = error as? RemoteClientError {
+                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
+            } else {
+                throw .serverCall(.other(error))
+            }
+        }
+    }
+
+    private func remotelyGetOrCreateClientObjectRelatedPostId(content: ClientPost)
+    async throws(GetOrCreateClientPost.Error) -> String {
+        guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
+        do {
+            var clientPost = content
+            var imageIsCompressed = false
+            if case let .localImage(imageData) = clientPost.attachment {
+                let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                clientPost.attachment = .localImage(resizedImgData)
+                imageIsCompressed = isCompressed
+            }
+            let response = try await remoteClient.octoService.getOrCreateBridgePost(
+                post: clientPost.rwOctoPost(imageIsCompressed: imageIsCompressed),
+                topicId: clientPost.topicId,
+                clientToken: clientPost.signature,
+                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+
+            switch response.result {
+            case let .success(content):
+                guard let finalPost = StorablePost(octoPost: content.postBridge, aggregate: nil, userInteraction: nil) else {
+                    throw SendComment.Error.serverCall(.other(nil))
+                }
+                try await postsDatabase.upsert(posts: [finalPost])
+                return finalPost.uuid
+            case let .fail(failure):
+                throw GetOrCreateClientPost.Error.validation(.init(from: failure))
+            case .none:
+                throw GetOrCreateClientPost.Error.serverCall(.other(nil))
+            }
+        } catch {
+            if let error = error as? GetOrCreateClientPost.Error {
                 throw error
             } else if let error = error as? RemoteClientError {
                 throw .serverCall(.serverError(ServerError(remoteClientError: error)))

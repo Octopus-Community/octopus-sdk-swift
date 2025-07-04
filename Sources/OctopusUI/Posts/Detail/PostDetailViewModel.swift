@@ -18,6 +18,10 @@ class PostDetailViewModel: ObservableObject {
             case image(ImageMedia)
             case poll(DisplayablePoll)
         }
+        struct BridgeCTA: Equatable {
+            let text: String
+            let clientObjectId: String
+        }
         let uuid: String
         let text: String
         let attachment: Attachment?
@@ -28,6 +32,8 @@ class PostDetailViewModel: ObservableObject {
         let userInteractions: UserInteractions
         let canBeDeleted: Bool
         let canBeModerated: Bool
+        let catchPhrase: String?
+        let bridgeCTA: BridgeCTA?
     }
 
     enum PostDeletion {
@@ -58,6 +64,8 @@ class PostDetailViewModel: ObservableObject {
 
     @Published var postNotAvailable = false
 
+    var canDisplayClientObject: Bool { octopus.displayClientObjectCallback != nil }
+
     private var shouldFetchLatestComments = CurrentValueSubject<Bool, Never>(false)
     private var liveMeasures: [String: CurrentValueSubject<LiveMeasures, Never>] = [:]
 
@@ -79,6 +87,7 @@ class PostDetailViewModel: ObservableObject {
     private var newestFirstCommentsFeed: Feed<Comment>?
     private var commentToScrollTo: String?
     private var scrollToMostRecentComment: Bool
+    private var shouldTrackEventBridgeOpened: Bool
 
     private var internalPost: OctopusCore.Post?
 
@@ -96,11 +105,13 @@ class PostDetailViewModel: ObservableObject {
     }()
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, commentToScrollTo: String?,
-         scrollToMostRecentComment: Bool) {
+         scrollToMostRecentComment: Bool,
+         shouldTrackEventBridgeOpened: Bool) {
         self.octopus = octopus
         self.postUuid = postUuid
         self.commentToScrollTo = commentToScrollTo
         self.scrollToMostRecentComment = scrollToMostRecentComment
+        self.shouldTrackEventBridgeOpened = shouldTrackEventBridgeOpened
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         Publishers.CombineLatest3(
@@ -239,7 +250,7 @@ class PostDetailViewModel: ObservableObject {
             }
         }.store(in: &storage)
 
-        fetchPost(incrementViewCount: true)
+        fetchPost(incrementViewCount: true, shouldTrackEventBridgeOpened: shouldTrackEventBridgeOpened)
         fetchTopics()
 
         octopus.core.commentsRepository.commentSentPublisher
@@ -338,6 +349,22 @@ class PostDetailViewModel: ObservableObject {
                     self.error = error.displayableMessage
                 }
             }
+        }
+    }
+
+    func displayClientObject(clientObjectId: String) {
+        guard let callback = octopus.displayClientObjectCallback else {
+            error = .localizationKey("Error.Unknown")
+            return
+        }
+
+        do {
+            try callback(clientObjectId)
+            Task {
+                try? await octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
+            }
+        } catch {
+            self.error = .localizationKey("Error.Unknown")
         }
     }
 
@@ -502,9 +529,10 @@ class PostDetailViewModel: ObservableObject {
         additionalDataToFetch.send(currentValue)
     }
 
-    private func fetchPost(incrementViewCount: Bool = false) {
+    private func fetchPost(incrementViewCount: Bool = false, shouldTrackEventBridgeOpened: Bool = false) {
         Task {
-            try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
+            try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount,
+                                shouldTrackEventBridgeOpened: shouldTrackEventBridgeOpened)
         }
     }
 
@@ -514,10 +542,21 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    private func fetchPost(uuid: String, incrementViewCount: Bool) async throws(ServerCallError) {
+    private func fetchPost(uuid: String, incrementViewCount: Bool,
+                           shouldTrackEventBridgeOpened: Bool = false) async throws(ServerCallError) {
         do {
             try await octopus.core.postsRepository.fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
+            if shouldTrackEventBridgeOpened {
+                try? await octopus.core.trackingRepository.trackBridgePostOpened(success: true)
+            }
         } catch {
+            if shouldTrackEventBridgeOpened {
+                switch error {
+                case .noNetwork: break // do not track a failure if the error was no network
+                default:
+                    try? await octopus.core.trackingRepository.trackBridgePostOpened(success: false)
+                }
+            }
             if case let .serverError(error) = error, case .notFound = error {
                 postNotAvailable = true
             } else {
@@ -731,7 +770,8 @@ extension PostDetailViewModel.Post.Attachment {
 }
 
 extension PostDetailViewModel.Post {
-    init(from post: Post, thisUserProfileId: String?, topic: Topic, dateFormatter: RelativeDateTimeFormatter) {
+    init(from post: Post, thisUserProfileId: String?, topic: OctopusCore.Topic,
+         dateFormatter: RelativeDateTimeFormatter) {
         uuid = post.uuid
         text = post.text
         author = .init(profile: post.author)
@@ -742,5 +782,12 @@ extension PostDetailViewModel.Post {
         canBeModerated = post.author?.uuid != thisUserProfileId
         aggregatedInfo = post.aggregatedInfo
         userInteractions = post.userInteractions
+        bridgeCTA = if let bridgeInfo = post.clientObjectBridgeInfo,
+                       let ctaText = bridgeInfo.ctaText {
+            BridgeCTA(text: ctaText, clientObjectId: bridgeInfo.objectId)
+        } else {
+            nil
+        }
+        catchPhrase = post.clientObjectBridgeInfo?.catchPhrase
     }
 }

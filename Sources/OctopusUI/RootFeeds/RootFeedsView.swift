@@ -182,24 +182,7 @@ private struct RootFeedChip: View {
             selectedRootFeed = rootFeed
         }) {
             Text(rootFeed.label)
-                .font(theme.fonts.body2)
-                .fontWeight(.medium)
-                .foregroundColor(
-                    selectedRootFeed == rootFeed ?
-                        theme.colors.onPrimary :
-                        theme.colors.primary
-                )
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(
-                    Capsule()
-                        .foregroundColor(
-                            selectedRootFeed == rootFeed ?
-                                theme.colors.primary :
-                                theme.colors.primaryLowContrast
-                        )
-                )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedRootFeed == rootFeed ? .on : .off))
     }
 }

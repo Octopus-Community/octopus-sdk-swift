@@ -18,6 +18,7 @@ struct ScenariosView: View {
                 NotSeenNotificationsCell(showFullScreen: showFullScreen)
                 ABTestsCell(showFullScreen: showFullScreen)
                 CustomEventsCell()
+                BridgeToClientObjectCell(showFullScreen: showFullScreen)
                 SSOCell(showFullScreen: showFullScreen)
             }
             .listStyle(.plain)

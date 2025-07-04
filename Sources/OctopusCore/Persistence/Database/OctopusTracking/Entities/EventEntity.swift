@@ -37,6 +37,13 @@ class EventEntity: NSManagedObject, Identifiable {
             specializedEntity.endTimestamp = endDate.timeIntervalSince1970
             specializedEntity.firstSession = firstSession
             entity = specializedEntity
+        case let .bridgePostOpened(success):
+            let specializedEntity = BridgePostOpenedEventEntity(context: context)
+            specializedEntity.success = success
+            entity = specializedEntity
+        case .openClientObjectFromBridge:
+            let specializedEntity = OpenClientObjectFromBridgeEventEntity(context: context)
+            entity = specializedEntity
         case let .custom(customEvent):
             let specializedEntity = CustomEventEntity(context: context)
             specializedEntity.name = customEvent.name

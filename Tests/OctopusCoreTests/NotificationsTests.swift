@@ -121,7 +121,7 @@ class NotificationsTests: XCTestCase {
         mockAppStateMonitor.appState = .background
         mockUserNotifCenter.mockAutorizationStatus(.provisional)
         mockAppStateMonitor.appState = .active
-        try await assertWithTimeout(timeout: 10, notificationsRepository.canHandlePushNotifications)
+        try await assertWithTimeout(notificationsRepository.canHandlePushNotifications)
 
         mockAppStateMonitor.appState = .background
         mockUserNotifCenter.mockAutorizationStatus(.denied)

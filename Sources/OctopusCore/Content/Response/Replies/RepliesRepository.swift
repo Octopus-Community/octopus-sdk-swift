@@ -51,7 +51,9 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
         do {
             var reply = reply
             if let imageData = reply.imageData {
-                reply.imageData = ImageResizer.resizeIfNeeded(imageData: imageData)
+                let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                reply.imageData = resizedImgData
+                reply.isImageCompressed = isCompressed
             }
             let response = try await remoteClient.octoService.put(
                 reply: reply.rwOctoObject(),

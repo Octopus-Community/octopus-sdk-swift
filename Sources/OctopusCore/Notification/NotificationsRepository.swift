@@ -130,6 +130,7 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
     }
 
     public func markNotificationsAsRead(notifIds: [String]) async throws {
+        guard !notifIds.isEmpty else { return }
         try await notificationsDatabase.markAsRead(ids: notifIds)
         _ = try await remoteClient.notificationService.markNotificationsAsRead(
             notificationIds: notifIds,

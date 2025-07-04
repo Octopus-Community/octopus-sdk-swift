@@ -54,7 +54,8 @@ class PostsTests: XCTestCase {
             author: .init(uuid: "me", nickname: "Me", avatarUrl: nil), creationDate: Date(), updateDate: Date(),
             status: .published, statusReasons: [],
             parentId: "topicId",
-            descCommentFeedId: nil, ascCommentFeedId: nil, aggregatedInfo: .empty, userInteractions: .empty))
+            descCommentFeedId: nil, ascCommentFeedId: nil, clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+            aggregatedInfo: .empty, userInteractions: .empty))
         let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
         try await postsRepository.send(post)
 
@@ -78,7 +79,8 @@ class PostsTests: XCTestCase {
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty))
+                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  aggregatedInfo: .empty, userInteractions: .empty))
         _ = try await postsRepository.fetchPost(uuid: "1")
 
         await fulfillment(of: [localExpectation], timeout: 0.5)
@@ -92,7 +94,8 @@ class PostsTests: XCTestCase {
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty)
+                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  aggregatedInfo: .empty, userInteractions: .empty)
         ])
 
         let postPresentExpectation = XCTestExpectation(description: "Post is present")
@@ -130,7 +133,8 @@ class PostsTests: XCTestCase {
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty)
+                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  aggregatedInfo: .empty, userInteractions: .empty)
         ])
 
         let localExpectation = XCTestExpectation(description: "DB updated")
@@ -149,21 +153,88 @@ class PostsTests: XCTestCase {
         await fulfillment(of: [localExpectation], timeout: 0.5)
     }
 
+    func testPostFromGetOrCreateBridgeDoesNotEraseAggregates() async throws {
+        // precondition: a post with aggregates and user interactions is in db
+        try await postsDatabase.upsert(posts: [
+            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
+                  author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil),
+                  creationDate: Date(), updateDate: Date(),
+                  status: .published, statusReasons: [],
+                  parentId: "Sport",
+                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  aggregatedInfo: .init(likeCount: 10, childCount: 20, viewCount: 30, pollResult: nil),
+                  userInteractions: .init(userLikeId: "LIKE_ID", pollVoteId: "VOTE_ID"))
+        ])
+
+        let postPresentExpectation = XCTestExpectation(description: "Post is present")
+
+        postsRepository.getPost(uuid: "1")
+            .replaceError(with: nil)
+            .sink { post in
+                if post != nil {
+                    postPresentExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [postPresentExpectation], timeout: 0.5)
+        storage = []
+
+        let aggregatesAndUserInteractionPresentExpectation = XCTestExpectation(description: "Post is present, with its former aggregates and user interactions")
+
+        mockOctoService.injectNextGetOrCreateBridgePostResponse(.with {
+            $0.result = .success(.with {
+                $0.postBridge = .with {
+                    $0.createdAt = Date().timestampMs
+                    $0.id = "1"
+                    $0.parentID = "Sport"
+                    $0.createdBy = .with {
+                        $0.profileID = "authorId"
+                        $0.nickname = ""
+                    }
+                    $0.content = .with {
+                        $0.post = .with {
+                            $0.text = "new Text"
+                        }
+                    }
+                }
+            })
+        })
+        _ = try await postsRepository.getOrCreateClientObjectRelatedPostId(
+            content: ClientPost(clientObjectId: "", topicId: "Sport",
+                                text: "new Text",
+                                catchPhrase: nil, attachment: nil,
+                                viewClientObjectButtonText: nil, signature: nil))
+
+        postsRepository.getPost(uuid: "1")
+            .replaceError(with: nil)
+            .sink { post in
+                if let post, post.text == "new Text",
+                   post.aggregatedInfo.likeCount == 10,
+                   post.aggregatedInfo.childCount == 20,
+                   post.aggregatedInfo.viewCount == 30,
+                   post.userInteractions.hasLiked,
+                   post.userInteractions.hasVoted {
+                    aggregatesAndUserInteractionPresentExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [aggregatesAndUserInteractionPresentExpectation], timeout: 0.5)
+    }
+
     func injectGetPost(_ item: StorablePost) {
         let post = octoPost(from: item)
 
         let aggregate = Com_Octopuscommunity_Aggregate.with {
-                $0.childrenCount = UInt32(item.aggregatedInfo.childCount)
-                $0.likeCount = UInt32(item.aggregatedInfo.likeCount)
-                $0.viewCount = UInt32(item.aggregatedInfo.viewCount)
+                $0.childrenCount = UInt32(item.aggregatedInfo?.childCount ?? 0)
+                $0.likeCount = UInt32(item.aggregatedInfo?.likeCount ?? 0)
+                $0.viewCount = UInt32(item.aggregatedInfo?.viewCount ?? 0)
             }
 
         let requesterCtx = Com_Octopuscommunity_RequesterCtx.with {
-            if let userLikeId = item.userInteractions.userLikeId {
+            if let userLikeId = item.userInteractions?.userLikeId {
                 $0.likeID = userLikeId
             }
         }
-
 
         mockOctoService.injectNextGetResponse(.with {
             $0.octoObject = post

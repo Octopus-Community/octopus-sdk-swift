@@ -106,6 +106,7 @@ class NotificationCenterViewModel: ObservableObject {
             guard notif.action == nil, !notif.isRead else { return nil }
             return notif.uuid
         }
+        guard !notReadNotificationsWithoutAction.isEmpty else { return }
         Task {
             await markNotifsAsRead(ids: notReadNotificationsWithoutAction)
         }

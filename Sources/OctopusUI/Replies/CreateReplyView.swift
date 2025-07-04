@@ -28,7 +28,6 @@ struct CreateReplyView: View {
     var body: some View {
         CreateResponseView(
             responseKind: .reply,
-            avatar: viewModel.avatar,
             isLoading: viewModel.isLoading,
             sendAvailable: viewModel.sendAvailable,
             text: $viewModel.text,

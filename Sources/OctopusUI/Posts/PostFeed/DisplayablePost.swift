@@ -20,6 +20,7 @@ struct DisplayablePost: Equatable {
         let text: String
         let attachment: Attachment?
         let textIsEllipsized: Bool
+        let bridgeCTA: (text: String, clientObjectId: String)?
         fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
         var liveMeasures: AnyPublisher<LiveMeasures, Never> {
             _liveMeasuresPublisher.removeDuplicates().eraseToAnyPublisher()
@@ -29,10 +30,12 @@ struct DisplayablePost: Equatable {
         }
 
         init(text: String, attachment: Attachment?, textIsEllipsized: Bool,
+             bridgeCTA: (text: String, clientObjectId: String)?,
              liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
             self.text = text
             self.attachment = attachment
             self.textIsEllipsized = textIsEllipsized
+            self.bridgeCTA = bridgeCTA
             self._liveMeasuresPublisher = liveMeasuresPublisher
         }
 
@@ -70,10 +73,18 @@ extension DisplayablePost {
                 .prefix(4)
                 .joined(separator: "\n")
 
+            let bridgeCTA: (text: String, clientObjectId: String)? = if let bridgeInfo = post.clientObjectBridgeInfo,
+                                                                        let ctaText = bridgeInfo.ctaText {
+                (text: ctaText, clientObjectId: bridgeInfo.objectId)
+            } else {
+                nil
+            }
+
             content = .published(PostContent(
                 text: displayableText,
                 attachment: PostContent.Attachment(from: post),
                 textIsEllipsized: post.text != displayableText,
+                bridgeCTA: bridgeCTA,
                 liveMeasuresPublisher: liveMeasuresPublisher)
             )
             canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId

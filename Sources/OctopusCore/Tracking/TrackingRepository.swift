@@ -117,6 +117,22 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         remoteClient.set(hasAccessToCommunity: hasAccessToCommunity)
     }
 
+    public func trackBridgePostOpened(success: Bool) async throws {
+        try await database.upsert(event: Event(
+            date: Date(),
+            appSessionId: appSessionManager.currentSession?.uuid,
+            uiSessionId: octopusUISessionManager.currentSession?.uuid,
+            content: .bridgePostOpened(success: success)))
+    }
+
+    public func trackClientObjectOpenedFromBridge() async throws {
+        try await database.upsert(event: Event(
+            date: Date(),
+            appSessionId: appSessionManager.currentSession?.uuid,
+            uiSessionId: octopusUISessionManager.currentSession?.uuid,
+            content: .openClientObjectFromBridge))
+    }
+
     public func track(customEvent: CustomEvent) async throws {
         try await database.upsert(event: Event(
             date: Date(),

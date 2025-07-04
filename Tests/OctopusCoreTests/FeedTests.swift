@@ -467,7 +467,8 @@ class FeedTests: XCTestCase {
                      updateDate: updateDate,
                      status: .published, statusReasons: [],
                      parentId: "",
-                     descCommentFeedId: "", ascCommentFeedId: "", aggregatedInfo: .empty, userInteractions: .empty)
+                     descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                     aggregatedInfo: .empty, userInteractions: .empty)
     }
 
     private func insert(feedItems: [String], feedId: String, db: FeedItemInfosDatabase) async throws {

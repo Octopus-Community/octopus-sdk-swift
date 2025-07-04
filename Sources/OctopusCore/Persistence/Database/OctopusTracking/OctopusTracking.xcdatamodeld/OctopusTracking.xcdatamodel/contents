@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24E263" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="BridgePostOpenedEvent" representedClassName="BridgePostOpenedEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="success" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
     <entity name="CustomEvent" representedClassName="CustomEventEntity" parentEntity="Event" syncable="YES">
         <attribute name="name" attributeType="String"/>
         <relationship name="hasProperties" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CustomEventProperty" inverseName="isPropertyOf" inverseEntity="CustomEventProperty"/>
@@ -32,4 +35,5 @@
         <attribute name="firstSession" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="startTimestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
+    <entity name="OpenClientObjectFromBridgeEvent" representedClassName="OpenClientObjectFromBridgeEventEntity" parentEntity="Event" syncable="YES"/>
 </model>

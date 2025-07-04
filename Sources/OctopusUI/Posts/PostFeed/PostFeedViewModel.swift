@@ -32,6 +32,8 @@ class PostFeedViewModel: ObservableObject {
 
     let ensureConnected: () -> Bool
 
+    var canDisplayClientObject: Bool { octopus.displayClientObjectCallback != nil }
+
     private var relativeDateFormatter: RelativeDateTimeFormatter = {
         let relativeDateFormatter = RelativeDateTimeFormatter()
         relativeDateFormatter.dateTimeStyle = .numeric
@@ -206,6 +208,22 @@ class PostFeedViewModel: ObservableObject {
             await vote(pollAnswerId: pollAnswerId, post: post)
         }
         return true
+    }
+
+    func displayClientObject(clientObjectId: String) {
+        guard let callback = octopus.displayClientObjectCallback else {
+            error = .localizationKey("Error.Unknown")
+            return
+        }
+
+        do {
+            try callback(clientObjectId)
+            Task {
+                try? await octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
+            }
+        } catch {
+            self.error = .localizationKey("Error.Unknown")
+        }
     }
 
     private func toggleLike(post: Post) async {

@@ -56,7 +56,7 @@ extension Comment {
             oldestFirstRepliesFeed = nil
         }
 
-        aggregatedInfo = storableComment.aggregatedInfo
-        userInteractions = storableComment.userInteractions
+        aggregatedInfo = storableComment.aggregatedInfo ?? .empty
+        userInteractions = storableComment.userInteractions ?? .empty
     }
 }

@@ -59,7 +59,13 @@
     "Bio:" : {
 
     },
+    "Bridge to Client Object" : {
+
+    },
     "Can access the community" : {
+
+    },
+    "Canele Recipe" : {
 
     },
     "Client User Config:" : {
@@ -87,6 +93,12 @@
 
     },
     "Email: %@" : {
+
+    },
+    "Error" : {
+
+    },
+    "Have a post directly linked to a specific object (article, product, item...) of your app" : {
 
     },
     "In order to test these scenarios, your community should be configured to use SSO authentication." : {
@@ -153,6 +165,9 @@
 
     },
     "Picture" : {
+
+    },
+    "Random identifier (new each time the sample is launched)" : {
 
     },
     "Scenarios" : {

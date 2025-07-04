@@ -48,7 +48,7 @@ class MockUserService: UserService {
     func updateProfile(userId: String,
                        nickname: FieldUpdate<String>,
                        bio: FieldUpdate<String?>,
-                       picture: FieldUpdate<Data?>,
+                       picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?>,
                        isProfileCreation: Bool,
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {

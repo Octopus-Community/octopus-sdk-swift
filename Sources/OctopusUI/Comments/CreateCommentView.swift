@@ -29,7 +29,6 @@ struct CreateCommentView: View {
     var body: some View {
         CreateResponseView(
             responseKind: .comment,
-            avatar: viewModel.avatar,
             isLoading: viewModel.isLoading,
             sendAvailable: viewModel.sendAvailable,
             text: $viewModel.text,

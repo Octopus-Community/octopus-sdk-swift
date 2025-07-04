@@ -54,8 +54,14 @@ public struct OctopusTheme: Sendable {
 
         /// Color for disabled elements
         public let disabled: Color = Color.Theme.gray500
+        /// Color for the background of disabled elements
+        public let disabledBg: Color = Color.Theme.gray200
+        /// Color for the text of disabled elements
+        public let onDisabled: Color = Color.Theme.gray500
         /// Color for elements that represents an error
         public let error: Color = Color.Theme.danger200
+        /// Color for elements that represents an error
+        public let errorLowContrast: Color = Color.Theme.alertLowContrast
         /// Color of links
         public let link: Color = Color.Theme.link
         /// Color of the like button when the content is liked

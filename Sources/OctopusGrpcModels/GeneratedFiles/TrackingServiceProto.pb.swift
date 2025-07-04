@@ -103,6 +103,22 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .customEvent(newValue)}
     }
 
+    public var bridgePostOpened: Com_Octopuscommunity_TrackRequest.BridgePostOpened {
+      get {
+        if case .bridgePostOpened(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.BridgePostOpened()
+      }
+      set {eventType = .bridgePostOpened(newValue)}
+    }
+
+    public var openClientObjectFromBridge: Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge {
+      get {
+        if case .openClientObjectFromBridge(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge()
+      }
+      set {eventType = .openClientObjectFromBridge(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_EventType: Equatable, Sendable {
@@ -111,6 +127,8 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case enteringOctopus(Com_Octopuscommunity_TrackRequest.EnteringOctopus)
       case leavingOctopus(Com_Octopuscommunity_TrackRequest.LeavingOctopus)
       case customEvent(Com_Octopuscommunity_TrackRequest.CustomEvent)
+      case bridgePostOpened(Com_Octopuscommunity_TrackRequest.BridgePostOpened)
+      case openClientObjectFromBridge(Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge)
 
     }
 
@@ -232,6 +250,28 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _sessionSummary: Com_Octopuscommunity_TrackRequest.SessionSummary? = nil
   }
 
+  public struct BridgePostOpened: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var success: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct OpenClientObjectFromBridge: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public struct SessionSummary: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -320,6 +360,8 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     14: .same(proto: "enteringOctopus"),
     15: .same(proto: "leavingOctopus"),
     16: .same(proto: "customEvent"),
+    17: .same(proto: "bridgePostOpened"),
+    18: .same(proto: "openClientObjectFromBridge"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -396,6 +438,32 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .customEvent(v)
         }
       }()
+      case 17: try {
+        var v: Com_Octopuscommunity_TrackRequest.BridgePostOpened?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .bridgePostOpened(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .bridgePostOpened(v)
+        }
+      }()
+      case 18: try {
+        var v: Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .openClientObjectFromBridge(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .openClientObjectFromBridge(v)
+        }
+      }()
       default: break
       }
     }
@@ -435,6 +503,14 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     case .customEvent?: try {
       guard case .customEvent(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+    }()
+    case .bridgePostOpened?: try {
+      guard case .bridgePostOpened(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
+    }()
+    case .openClientObjectFromBridge?: try {
+      guard case .openClientObjectFromBridge(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
     }()
     case nil: break
     }
@@ -660,6 +736,57 @@ extension Com_Octopuscommunity_TrackRequest.LeavingOctopus: SwiftProtobuf.Messag
 
   public static func ==(lhs: Com_Octopuscommunity_TrackRequest.LeavingOctopus, rhs: Com_Octopuscommunity_TrackRequest.LeavingOctopus) -> Bool {
     if lhs._sessionSummary != rhs._sessionSummary {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.BridgePostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".BridgePostOpened"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "success"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.success) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.success != false {
+      try visitor.visitSingularBoolField(value: self.success, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.BridgePostOpened, rhs: Com_Octopuscommunity_TrackRequest.BridgePostOpened) -> Bool {
+    if lhs.success != rhs.success {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".OpenClientObjectFromBridge"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge, rhs: Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

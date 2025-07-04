@@ -27,7 +27,7 @@ public struct WritablePost: Sendable, Equatable {
     }
     public let text: String
     public internal(set) var attachment: Attachment?
-    public var parentId: String
+    public let parentId: String
 
     public init(topicId: String, text: String, attachment: Attachment?) {
         self.parentId = topicId
@@ -37,7 +37,7 @@ public struct WritablePost: Sendable, Equatable {
 }
 
 extension WritablePost {
-    func rwOctoObject() -> Com_Octopuscommunity_RwOctoObject {
+    func rwOctoObject(imageIsCompressed: Bool) -> Com_Octopuscommunity_RwOctoObject {
         return .with {
             $0.parentID = parentId
             $0.pressedEnterAt = Date().timestampMs
@@ -48,7 +48,10 @@ extension WritablePost {
                     case let .image(imageData):
                         $0.media = .with {
                             $0.images = [
-                                .with { $0.file = .bytes(imageData) }
+                                .with {
+                                    $0.file = .bytes(imageData)
+                                    $0.isOptimized = imageIsCompressed
+                                }
                             ]
                         }
                     case let .poll(poll):
