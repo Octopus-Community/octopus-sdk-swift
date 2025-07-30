@@ -25,7 +25,7 @@ struct SettingProfileView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack(alignment: .top, spacing: 12) {
-                        Image(.Settings.info)
+                        Image(res: .Settings.info)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 20, height: 20)
@@ -51,7 +51,7 @@ struct SettingProfileView: View {
 
                     Button(action: { navigator.push(.deleteAccount) }) {
                         HStack(alignment: .top, spacing: 12) {
-                            Image(.Settings.logout)
+                            Image(res: .Settings.logout)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 20, height: 20)

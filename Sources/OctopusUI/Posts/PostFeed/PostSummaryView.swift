@@ -74,7 +74,7 @@ struct PostSummaryView: View {
                                     }
                                 }, label: {
                                     VStack {
-                                        Image(.more)
+                                        Image(res: .more)
                                             .resizable()
                                             .frame(width: 24, height: 24)
                                             .foregroundColor(theme.colors.gray500)
@@ -83,7 +83,7 @@ struct PostSummaryView: View {
                                 .buttonStyle(.plain)
                             } else {
                                 Button(action: { openActions = true }) {
-                                    Image(.more)
+                                    Image(res: .more)
                                         .resizable()
                                         .frame(width: 24, height: 24)
                                         .foregroundColor(theme.colors.gray500)

@@ -88,7 +88,7 @@ struct CreatePollView: View {
                             deletePoll()
                         }
                     }) {
-                        Image(.trash)
+                        Image(res: .trash)
                             .resizable()
                             .frame(width: 24, height: 24)
                             .foregroundColor(theme.colors.gray900)

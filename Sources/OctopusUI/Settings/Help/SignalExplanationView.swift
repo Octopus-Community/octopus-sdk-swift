@@ -22,7 +22,7 @@ struct SignalExplanationView: View {
             Spacer().frame(height: 20)
             ScrollView {
                 HStack(alignment: .top) {
-                    Image(.Settings.info)
+                    Image(res: .Settings.info)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 20, height: 20)

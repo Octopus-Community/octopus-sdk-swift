@@ -18,7 +18,7 @@ struct OctopusToggleStyle: ToggleStyle {
             RoundedRectangle(cornerRadius: 30)
                 .fill(configuration.isOn ? theme.colors.primary : theme.colors.gray300)
                 .overlay(
-                    Image(configuration.isOn ? .Toggle.on : .Toggle.off)
+                    Image(res: configuration.isOn ? .Toggle.on : .Toggle.off)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .padding(2)

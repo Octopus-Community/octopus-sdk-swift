@@ -75,7 +75,7 @@ struct AggregatedInfoView: View {
 struct AggregateView: View {
     @Environment(\.octopusTheme) private var theme
 
-    let image: ImageResource
+    let image: GenImageResource
     let imageForegroundColor: Color?
     let count: Int
     let nullDisplayValue: LocalizedStringKey?
@@ -92,7 +92,7 @@ struct AggregateView: View {
 
     private var normalFont: Font { theme.fonts.caption1 }
 
-    init(image: ImageResource, imageForegroundColor: Color? = nil, count: Int, nullDisplayValue: LocalizedStringKey?) {
+    init(image: GenImageResource, imageForegroundColor: Color? = nil, count: Int, nullDisplayValue: LocalizedStringKey?) {
         self.image = image
         self.imageForegroundColor = imageForegroundColor
         self.count = count
@@ -107,7 +107,7 @@ struct AggregateView: View {
                 .font(normalFont.weight(.medium))
                 .foregroundColor(Color.clear)
                 .overlay(
-                    Image(image)
+                    Image(res: image)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .foregroundColor(imageForegroundColor ?? theme.colors.gray700)

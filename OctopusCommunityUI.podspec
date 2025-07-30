@@ -1,7 +1,8 @@
 require_relative 'SharedPodSpecConfig'
 
 Pod::Spec.new do |spec|
-  spec.name         = 'OctopusUI'
+  spec.name         = 'OctopusCommunityUI'
+  spec.module_name  = 'OctopusUI'
   spec.summary      = 'UI part of the Octopus Community SDK'
   spec.version      = SharedPodSpecConfig::VERSION
   spec.homepage     = SharedPodSpecConfig::GITHUB_PAGE
@@ -14,11 +15,10 @@ Pod::Spec.new do |spec|
 
   spec.source_files = 'Sources/OctopusUI/**/*.swift'
 
-  spec.resources = [
-    'Sources/OctopusUI/Resources/Assets.xcassets',
-    'Sources/OctopusUI/Resources/Localizable.xcstrings'
-  ]
+  spec.resource_bundles = {
+    'OctopusUI' => ['Sources/OctopusUI/Resources/**/*.{xcassets,xcstrings}']
+  }
 
-  spec.dependency 'Octopus', SharedPodSpecConfig::VERSION
-  spec.dependency 'OctopusCore', SharedPodSpecConfig::VERSION
+  spec.dependency 'OctopusCommunity', SharedPodSpecConfig::VERSION
+  spec.dependency 'OctopusCommunityCore', SharedPodSpecConfig::VERSION
 end

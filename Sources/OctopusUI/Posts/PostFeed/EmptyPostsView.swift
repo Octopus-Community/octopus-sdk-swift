@@ -11,7 +11,7 @@ struct DefaultEmptyPostsView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(.noPosts)
+            Image(res: .noPosts)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 64, height: 64)
@@ -32,7 +32,7 @@ struct CreatePostEmptyPostView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(.noPosts)
+            Image(res: .noPosts)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .foregroundColor(theme.colors.gray700)
@@ -56,7 +56,7 @@ struct OtherUserEmptyPostView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(.noPosts)
+            Image(res: .noPosts)
             Text("Post.List.OtherUser.Empty", bundle: .module)
                 .font(theme.fonts.body2)
                 .fontWeight(.medium)

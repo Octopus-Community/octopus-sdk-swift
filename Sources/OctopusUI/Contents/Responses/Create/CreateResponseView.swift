@@ -41,7 +41,7 @@ struct CreateResponseView: View {
                 }
             })
         .disabled(isLoading)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,
@@ -87,7 +87,7 @@ private struct ContentView: View {
                 removeFocus()
                 openPhotosPicker = true
             }) {
-                Image(.addMedia)
+                Image(res: .addMedia)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 24, height: 24)
@@ -142,7 +142,7 @@ private struct ContentView: View {
                     if isLoading {
                         Compat.ProgressView(tint: theme.colors.onPrimary)
                     } else {
-                        Image(.send)
+                        Image(res: .send)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 24, height: 24)

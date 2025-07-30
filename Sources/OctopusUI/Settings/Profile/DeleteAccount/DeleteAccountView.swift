@@ -34,7 +34,7 @@ struct DeleteAccountView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .top, spacing: 12) {
-                            Image(.Settings.warning)
+                            Image(res: .Settings.warning)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 20, height: 20)
@@ -111,7 +111,7 @@ struct DeleteAccountView: View {
                 secondaryButton: .cancel()
             )
         }
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,
@@ -163,7 +163,7 @@ private struct ReasonCell: View {
             selectedReason = reason
         }) {
             HStack {
-                Image(selectedReason == reason ? .RadioButton.on : .RadioButton.off)
+                Image(res: selectedReason == reason ? .RadioButton.on : .RadioButton.off)
                 Text(reason.localizedKey, bundle: .module)
                     .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)
