@@ -1,8 +1,9 @@
 require_relative 'SharedPodSpecConfig'
 
 Pod::Spec.new do |spec|
-  spec.name         = 'OctopusGrpcModels'
-  spec.summary      = 'Grpc models of the Octopus Community SDK.'
+  spec.name         = 'OctopusCommunityDependencyInjection'
+  spec.module_name  = 'OctopusDependencyInjection'
+  spec.summary      = 'Dependency injection part of Octopus Community SDK'
   spec.version      = SharedPodSpecConfig::VERSION
   spec.homepage     = SharedPodSpecConfig::GITHUB_PAGE
   spec.license      = SharedPodSpecConfig::LICENSE
@@ -12,9 +13,5 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = SharedPodSpecConfig::IOS_DEPLOYMENT_TARGET
   spec.swift_version = SharedPodSpecConfig::SWIFT_VERSION
   
-  spec.source_files = 'Sources/OctopusGrpcModels/**/*.swift'
-
-  spec.dependency 'OctopusDependencyInjection', SharedPodSpecConfig::VERSION
-  spec.dependency 'SwiftProtobuf'
-  spec.dependency 'gRPC-Swift'
+  spec.source_files = 'Sources/OctopusDependencyInjection/**/*.swift'
 end

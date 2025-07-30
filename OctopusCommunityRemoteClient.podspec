@@ -1,8 +1,9 @@
 require_relative 'SharedPodSpecConfig'
 
 Pod::Spec.new do |spec|
-  spec.name         = 'OctopusDependencyInjection'
-  spec.summary      = 'Dependency injection part of Octopus Community SDK'
+  spec.name         = 'OctopusCommunityRemoteClient'
+  spec.module_name  = 'OctopusRemoteClient'
+  spec.summary      = 'Remote client for the Octopus Community SDK'
   spec.version      = SharedPodSpecConfig::VERSION
   spec.homepage     = SharedPodSpecConfig::GITHUB_PAGE
   spec.license      = SharedPodSpecConfig::LICENSE
@@ -12,5 +13,7 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = SharedPodSpecConfig::IOS_DEPLOYMENT_TARGET
   spec.swift_version = SharedPodSpecConfig::SWIFT_VERSION
   
-  spec.source_files = 'Sources/OctopusDependencyInjection/**/*.swift'
+  spec.source_files = 'Sources/OctopusRemoteClient/**/*.swift'
+
+  spec.dependency 'OctopusCommunityGrpcModels', SharedPodSpecConfig::VERSION
 end

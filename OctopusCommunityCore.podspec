@@ -1,7 +1,8 @@
 require_relative 'SharedPodSpecConfig'
 
 Pod::Spec.new do |spec|
-  spec.name         = 'OctopusCore'
+  spec.name         = 'OctopusCommunityCore'
+  spec.module_name  = 'OctopusCore'
   spec.summary      = 'Octopus core model objects. You should not use directly this pod. You should use Octopus and OctopusUI.'
   spec.version      = SharedPodSpecConfig::VERSION
   spec.homepage     = SharedPodSpecConfig::GITHUB_PAGE
@@ -19,7 +20,7 @@ Pod::Spec.new do |spec|
   }
 
   spec.dependency 'KeychainAccess'
-  spec.dependency 'OctopusRemoteClient', SharedPodSpecConfig::VERSION
-  spec.dependency 'OctopusGrpcModels', SharedPodSpecConfig::VERSION
-  spec.dependency 'OctopusDependencyInjection', SharedPodSpecConfig::VERSION
+  spec.dependency 'OctopusCommunityRemoteClient', SharedPodSpecConfig::VERSION
+  spec.dependency 'OctopusCommunityGrpcModels', SharedPodSpecConfig::VERSION
+  spec.dependency 'OctopusCommunityDependencyInjection', SharedPodSpecConfig::VERSION
 end
