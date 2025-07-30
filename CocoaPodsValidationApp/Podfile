@@ -3,20 +3,20 @@ platform :ios, '14.0'
 target 'CocoaPodsValidationApp' do
   use_frameworks! :linkage => :static
 
-#  pod 'OctopusCommunityUI'
-#  pod 'OctopusCommunity'
-#  pod 'OctopusCommunityCore'
-#  pod 'OctopusCommunityRemoteClient'
-#  pod 'OctopusCommunityGrpcModels'
-#  pod 'OctopusCommunityDependencyInjection'
+  pod 'OctopusCommunityUI'
+  pod 'OctopusCommunity'
+  pod 'OctopusCommunityCore'
+  pod 'OctopusCommunityRemoteClient'
+  pod 'OctopusCommunityGrpcModels'
+  pod 'OctopusCommunityDependencyInjection'
 
 # Replace with that if you want to test with the local version
-  pod 'OctopusCommunityUI', :path => '..'
-  pod 'OctopusCommunity', :path => '..'
-  pod 'OctopusCommunityCore', :path => '..'
-  pod 'OctopusCommunityRemoteClient', :path => '..'
-  pod 'OctopusCommunityGrpcModels', :path => '..'
-  pod 'OctopusCommunityDependencyInjection', :path => '..'
+#  pod 'OctopusCommunityUI', :path => '..'
+#  pod 'OctopusCommunity', :path => '..'
+#  pod 'OctopusCommunityCore', :path => '..'
+#  pod 'OctopusCommunityRemoteClient', :path => '..'
+#  pod 'OctopusCommunityGrpcModels', :path => '..'
+#  pod 'OctopusCommunityDependencyInjection', :path => '..'
 end
 
 post_install do |installer|
