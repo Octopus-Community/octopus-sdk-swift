@@ -74,7 +74,7 @@ struct PostFeedView<EmptyPostView: View>: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

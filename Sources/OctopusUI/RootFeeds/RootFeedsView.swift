@@ -73,7 +73,7 @@ struct RootFeedsView: View {
                 }.pickerStyle(.wheel)
             }
         }
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,
@@ -130,7 +130,7 @@ private struct ContentView: View {
         VStack(spacing: 0) {
             HStack {
                 Button(action: { showRootFeedPicker = true }) {
-                    Image(.search)
+                    Image(res: .search)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 30, height: 30)

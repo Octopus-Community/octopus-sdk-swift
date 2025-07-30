@@ -39,7 +39,7 @@ struct CreateProfileView: View {
             .padding()
         }
         .navigationBarBackButtonHidden(true)
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,

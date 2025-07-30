@@ -38,7 +38,7 @@ struct NotificationCenterView: View {
         .onDisappear {
             viewModel.viewDidDisappear()
         }
-        .alert(
+        .compatAlert(
             "Common.Error",
             isPresented: $displayError,
             presenting: displayableError,
@@ -177,7 +177,7 @@ private struct NoNotificationView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(.bell)
+            Image(res: .bell)
                 .resizable()
                 .frame(width: 32, height: 32)
             Text("Notifications.List.Empty", bundle: .module)

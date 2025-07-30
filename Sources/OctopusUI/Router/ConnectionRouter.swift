@@ -38,7 +38,7 @@ struct ConnectionRouter: ViewModifier {
                 .navigationBarHidden(true)
                 .accentColor(theme.colors.primary)
             }
-            .alert(
+            .compatAlert(
                 "Common.Error",
                 isPresented: $displaySSOError,
                 presenting: displayableSSOError,

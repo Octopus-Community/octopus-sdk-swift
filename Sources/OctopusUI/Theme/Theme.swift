@@ -44,30 +44,30 @@ public struct OctopusTheme: Sendable {
         public let onPrimary: Color
 
         // Non editable values
-        public let gray100: Color = Color.Theme.gray100
-        public let gray200: Color = Color.Theme.gray200
-        public let gray300: Color = Color.Theme.gray300
-        public let gray500: Color = Color.Theme.gray500
-        public let gray700: Color = Color.Theme.gray700
-        public let gray800: Color = Color.Theme.gray800
-        public let gray900: Color = Color.Theme.gray900
+        public let gray100: Color = .Gen.Theme.gray100
+        public let gray200: Color = .Gen.Theme.gray200
+        public let gray300: Color = .Gen.Theme.gray300
+        public let gray500: Color = .Gen.Theme.gray500
+        public let gray700: Color = .Gen.Theme.gray700
+        public let gray800: Color = .Gen.Theme.gray800
+        public let gray900: Color = .Gen.Theme.gray900
 
         /// Color for disabled elements
-        public let disabled: Color = Color.Theme.gray500
+        public let disabled: Color = .Gen.Theme.gray500
         /// Color for the background of disabled elements
-        public let disabledBg: Color = Color.Theme.gray200
+        public let disabledBg: Color = .Gen.Theme.gray200
         /// Color for the text of disabled elements
-        public let onDisabled: Color = Color.Theme.gray500
+        public let onDisabled: Color = .Gen.Theme.gray500
         /// Color for elements that represents an error
-        public let error: Color = Color.Theme.danger200
+        public let error: Color = .Gen.Theme.danger200
         /// Color for elements that represents an error
-        public let errorLowContrast: Color = Color.Theme.alertLowContrast
+        public let errorLowContrast: Color = .Gen.Theme.alertLowContrast
         /// Color of links
-        public let link: Color = Color.Theme.link
+        public let link: Color = .Gen.Theme.link
         /// Color of the like button when the content is liked
-        public let like: Color = Color.Theme.danger200
+        public let like: Color = .Gen.Theme.danger200
         /// Background color of the screens that are placed above others
-        public let hover: Color = Color.Theme.hover
+        public let hover: Color = .Gen.Theme.hover
 
         /// Constructor of colors
         /// - Parameters:
@@ -77,10 +77,10 @@ public struct OctopusTheme: Sendable {
         public init(
             primarySet: ColorSet? = nil,
             onPrimary: Color? = nil) {
-                self.primary = primarySet?.main ?? Color.Theme.Primary.main
-                self.primaryLowContrast = primarySet?.lowContrast ?? Color.Theme.Primary.lowContrast
-                self.primaryHighContrast = primarySet?.highContrast ?? Color.Theme.Primary.highContrast
-                self.onPrimary = onPrimary ?? Color.Theme.gray100
+                self.primary = primarySet?.main ?? .Gen.Theme.Primary.main
+                self.primaryLowContrast = primarySet?.lowContrast ?? .Gen.Theme.Primary.lowContrast
+                self.primaryHighContrast = primarySet?.highContrast ?? .Gen.Theme.Primary.highContrast
+                self.onPrimary = onPrimary ?? .Gen.Theme.gray100
             }
     }
 
@@ -93,7 +93,7 @@ public struct OctopusTheme: Sendable {
         /// Constructor of assets
         /// - Parameter logo: the logo. Nil if you want the default value (Octopus logo) to be used.
         public init(logo: UIImage? = nil) {
-            self.logo = logo ?? .Theme.logo
+            self.logo = logo ?? .Gen.Theme.logo
         }
     }
 
