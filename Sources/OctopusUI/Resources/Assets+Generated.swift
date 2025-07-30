@@ -7,8 +7,23 @@ import UIKit
 #if SWIFT_PACKAGE
 private let resourceBundle = Foundation.Bundle.module
 #else
-private class ResourceBundleClass {}
-private let resourceBundle = Foundation.Bundle(for: ResourceBundleClass.self)
+private let resourceBundle: Bundle = {
+    let bundleName = "OctopusUI"
+
+    let candidates = [
+        Bundle(for: BundleModuleLocator.self),
+        Bundle.main,
+    ]
+
+    for candidate in candidates {
+        if let url = candidate.url(forResource: bundleName, withExtension: "bundle"),
+           let bundle = Bundle(url: url) {
+            return bundle
+        }
+    }
+
+    fatalError("Cannot find resource bundle named \(bundleName)")
+}()
 #endif
 
 // MARK: - Generated Resource Base Types -
