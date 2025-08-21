@@ -39,11 +39,11 @@ private struct ContentView: View {
     @Binding var selectedTopic: CreatePostViewModel.DisplayableTopic?
 
     var body: some View {
-        VStack {
+        VStack(spacing: 10) {
             TitleView()
             TopicsGridView(topics: topics, selectedTopic: $selectedTopic)
         }
-        .padding(.bottom)
+        .padding(.top, 10)
     }
 }
 
@@ -55,12 +55,13 @@ private struct ScrollingContentView: View {
     @Binding var selectedTopic: CreatePostViewModel.DisplayableTopic?
 
     var body: some View {
-        VStack {
+        VStack(spacing: 10) {
             TitleView()
             ScrollView {
                 TopicsGridView(topics: topics, selectedTopic: $selectedTopic)
             }
         }
+        .padding(.top, 10)
     }
 }
 

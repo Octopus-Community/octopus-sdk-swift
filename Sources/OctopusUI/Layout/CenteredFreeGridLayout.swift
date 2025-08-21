@@ -49,7 +49,7 @@ struct CenteredFreeGridLayout: Layout {
                     subviewsByLines.append(currentLine)
                 }
                 currentLine = []
-                currentLineSize = bounds.minX
+                currentLineSize = 0
             }
 
             currentLine.append((subview, size))

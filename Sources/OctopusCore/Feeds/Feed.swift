@@ -26,6 +26,9 @@ public class Feed<Item: FeedItem> {
     @Published public private(set) var hasMoreData: Bool = true
     @Published public private(set) var items: [Item]?
 
+    @Published private var canPublishItems: Bool = true
+    @Published private var internalItems: [Item]?
+
     nonisolated init(id: String, feedManager: FeedManager<Item>) {
         self.id = id
         self.feedManager = feedManager
@@ -34,7 +37,7 @@ public class Feed<Item: FeedItem> {
     public func populateWithLocalData(pageSize: Int) async {
         do {
             let result = try await feedManager.getLocalFeedItems(feedId: id, pageSize: pageSize, currentIds: [])
-            hasMoreData = result.hasMoreItems
+            hasMoreData = result.hasMoreData
             listenForItems(publisher: result.itemsPublisher)
         } catch {
             if #available(iOS 14, *) { Logger.feed.debug("Error: \(error)") }
@@ -49,7 +52,7 @@ public class Feed<Item: FeedItem> {
         isFetching = true
         do {
             let result = try await feedManager.refreshFeed(feedId: id, pageSize: pageSize)
-            hasMoreData = result.hasMoreItems
+            hasMoreData = result.hasMoreData
             currentPageCursor = result.currentPageCursor
             nextPageCursor = result.nextPageCursor
             hasFetchedDistantOnce = true
@@ -69,16 +72,13 @@ public class Feed<Item: FeedItem> {
         do {
             if !hasFetchedDistantOnce {
                 if #available(iOS 14, *) { Logger.feed.trace("Calling load previous but not called refresh before") }
-                try await refresh(pageSize: pageSize)
-
-                return
+                return try await refresh(pageSize: pageSize)
             }
             isFetching = true
-
             let result = try await feedManager.getPreviousItems(feedId: id,
                                                                 nextPageCursor: nextPageCursor, pageSize: pageSize,
-                                                                currentIds: items?.map(\.id) ?? [])
-            hasMoreData = result.hasMoreItems
+                                                                currentIds: internalItems?.map(\.id) ?? [])
+            hasMoreData = result.hasMoreData
             currentPageCursor = result.currentPageCursor
             nextPageCursor = result.nextPageCursor
             isFetching = false
@@ -88,7 +88,7 @@ public class Feed<Item: FeedItem> {
             isFetching = false
             do {
                 let result = try await feedManager.getLocalFeedItems(feedId: id, pageSize: pageSize,
-                                                               currentIds: items?.map(\.id) ?? [])
+                                                               currentIds: internalItems?.map(\.id) ?? [])
                 listenForItems(publisher: result.itemsPublisher)
             } catch {
                 throw .other(error)
@@ -107,9 +107,19 @@ public class Feed<Item: FeedItem> {
             nextPageCursor = currentPageCursor
             hasMoreData = true
         }
+        // Only publish the items at the end of the loading, so it won't jump in the UI during the load of the different
+        // pages. Use defer, to do it even if one call threw an error
+        canPublishItems = false
+        defer { canPublishItems = true }
+
         while hasMoreData {
             if nextPageCursor == nil {
                 try await refresh(pageSize: 100)
+                // if it has more data, directly do the loadPreviousItem to cover the case where there is no more
+                // distant items infos (i.e. nextPageCursor is nil) but there are more items to fetch
+                if hasMoreData {
+                    try await loadPreviousItems(pageSize: 100)
+                }
             } else {
                 try await loadPreviousItems(pageSize: 100)
             }
@@ -125,13 +135,24 @@ public class Feed<Item: FeedItem> {
         }
         // if the searched item is not already here and the last call has not returned any results,
         // re-do it in case their are new ones
-        if !(items?.contains(where: { $0.id == id }) ?? false) && !hasMoreData {
+        if !(internalItems?.contains(where: { $0.id == id }) ?? false) && !hasMoreData {
             nextPageCursor = currentPageCursor
             hasMoreData = true
         }
-        while !(items?.contains(where: { $0.id == id }) ?? false) && hasMoreData {
+
+        // Only publish the items at the end of the loading, so it won't jump in the UI during the load of the different
+        // pages. Use defer, to do it even if one call threw an error
+        canPublishItems = false
+        defer { canPublishItems = true }
+
+        while !(internalItems?.contains(where: { $0.id == id }) ?? false) && hasMoreData {
             if nextPageCursor == nil {
                 try await refresh(pageSize: 100)
+                // if it has more data, directly do the loadPreviousItem to cover the case where there is no more
+                // distant items infos (i.e. nextPageCursor is nil) but there are more items to fetch
+                if hasMoreData {
+                    try await loadPreviousItems(pageSize: 100)
+                }
             } else {
                 try await loadPreviousItems(pageSize: 100)
             }
@@ -140,10 +161,15 @@ public class Feed<Item: FeedItem> {
 
 
     private func listenForItems(publisher: AnyPublisher<[Item], Error>) {
-        feedItemsCancellable = publisher.sink(receiveCompletion: { _ in },
-                       receiveValue: { [unowned self] feedItems in
-            items = feedItems
-        })
+        feedItemsCancellable = Publishers.CombineLatest(
+            publisher.replaceError(with: []),
+            $canPublishItems
+        ).sink { [unowned self] feedItems, canPublishItems in
+            internalItems = feedItems
+            if canPublishItems {
+                items = internalItems
+            }
+        }
     }
 }
 
