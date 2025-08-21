@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import UIKit
 
 /// A recipe. This is considered as the `object` of your app.
 struct Recipe: Equatable {

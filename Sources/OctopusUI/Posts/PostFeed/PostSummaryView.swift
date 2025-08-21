@@ -192,6 +192,7 @@ private struct PublishedContentView: View {
             .font(theme.fonts.body2)
             .foregroundColor(theme.colors.gray900)
             .contentShape(Rectangle())
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, 20)
 
             switch content.attachment {

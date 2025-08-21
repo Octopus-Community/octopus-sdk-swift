@@ -40,11 +40,12 @@ private struct ContentView: View {
     @Binding var selectedRootFeed: RootFeed?
 
     var body: some View {
-        VStack {
+        VStack(spacing: 10) {
             TitleView()
             RootFeedsGridView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
+            PoweredByOctopusView()
         }
-        .padding(.bottom)
+        .padding(.top, 10)
     }
 }
 
@@ -56,12 +57,14 @@ private struct ScrollingContentView: View {
     @Binding var selectedRootFeed: RootFeed?
 
     var body: some View {
-        VStack {
+        VStack(spacing: 10) {
             TitleView()
             ScrollView {
                 RootFeedsGridView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
             }
+            PoweredByOctopusView()
         }
+        .padding(.top, 10)
     }
 }
 

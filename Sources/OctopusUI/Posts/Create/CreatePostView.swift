@@ -43,9 +43,7 @@ struct CreatePostView: View {
                     TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
                     .readHeight($height)
                     .onValueChanged(of: height) { [$topicPickerDetentHeight] height in
-                        // add a small padding otherwise multi line texts are not correctly rendered
-                        // TODO: change that fixed size to a ScaledMetric (but not available on iOS 13)
-                        $topicPickerDetentHeight.wrappedValue = height + 40
+                        $topicPickerDetentHeight.wrappedValue = height
                     }
                     .presentationDetents([.height(topicPickerDetentHeight)])
                     .presentationDragIndicator(.visible)

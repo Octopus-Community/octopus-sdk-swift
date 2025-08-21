@@ -13,7 +13,7 @@ import OctopusRemoteClient
 class FeedManager<Item: FeedItem>: @unchecked Sendable {
 
     struct Result: @unchecked Sendable {
-        let hasMoreItems: Bool
+        let hasMoreData: Bool
         let currentPageCursor: String?
         let nextPageCursor: String?
         let itemsPublisher: AnyPublisher<[Item], Error>
@@ -68,27 +68,29 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
         let feedItemsPublisher = try feedItemsDatabase.feedItemsPublisher(ids: currentIds + consecutivePresentItemIds)
             .prepend(feedItems).eraseToAnyPublisher()
         guard !consecutivePresentItemIds.isEmpty else {
-            return Result(hasMoreItems: false, currentPageCursor: nil, nextPageCursor: nil,
+            return Result(hasMoreData: false,
+                          currentPageCursor: nil, nextPageCursor: nil,
                           itemsPublisher: feedItemsPublisher)
         }
 
-        let hasMoreItems: Bool
+        let hasMoreData: Bool
         if !missingFeedItems.isEmpty {
             // if there were missing items, it means that we have no more local data
-            hasMoreItems = false
+            hasMoreData = false
         } else if let nextFeedItemInfo = try await feedsDatabase.feedItemInfos(
             feedId: feedId, pageSize: 1, lastPageIdx: lastPageIdx + pageSize).first,
                   !(try await feedItemsDatabase.getFeedItems(ids: [nextFeedItemInfo.itemId]).isEmpty) {
             // if there is another feed item info and this next item info points to an existing item,
             // it means that we have more local data
-            hasMoreItems = true
+            hasMoreData = true
         } else {
             // if there is not another feed item info or if this next item info points to a missing item,
             // it means that we have no more local data
-            hasMoreItems = false
+            hasMoreData = false
         }
 
-        return Result(hasMoreItems: hasMoreItems, currentPageCursor: nil, nextPageCursor: nil,
+        return Result(hasMoreData: hasMoreData,
+                      currentPageCursor: nil, nextPageCursor: nil,
                       itemsPublisher: feedItemsPublisher)
     }
 
@@ -127,16 +129,17 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
                 .prepend(feedItems).eraseToAnyPublisher()
 
             // there is no more items if no next item info page and there is no next local item info
-            let hasMoreItems: Bool
+            let hasMoreData: Bool
             if nextPageCursor == nil {
-                hasMoreItems = (try? await feedsDatabase.feedItemInfos(
+                hasMoreData = (try? await feedsDatabase.feedItemInfos(
                     feedId: feedId, pageSize: 1, lastPageIdx: pageSize).first) != nil
             } else {
-                hasMoreItems = true
+                hasMoreData = true
             }
 
             if #available(iOS 14, *) { Logger.feed.trace("Got \(feedItemInfoIds.count) feedItems from DB") }
-            return Result(hasMoreItems: hasMoreItems, currentPageCursor: nil, nextPageCursor: nextPageCursor,
+            return Result(hasMoreData: hasMoreData,
+                          currentPageCursor: nil, nextPageCursor: nextPageCursor,
                           itemsPublisher: feedItemsPublisher)
         } catch {
             if let error = error as? RemoteClientError {
@@ -196,16 +199,17 @@ class FeedManager<Item: FeedItem>: @unchecked Sendable {
                 .prepend(feedItems).eraseToAnyPublisher()
 
             // there is no more items if no next item info page and there is no next local item info
-            let hasMoreItems: Bool
-            if nextPageCursor == nil {
-                hasMoreItems = (try? await feedsDatabase.feedItemInfos(
+            let hasMoreData: Bool
+            if newNextPageCursor == nil {
+                hasMoreData = (try? await feedsDatabase.feedItemInfos(
                     feedId: feedId, pageSize: 1, lastPageIdx: lastPageIdx + pageSize).first) != nil
             } else {
-                hasMoreItems = true
+                hasMoreData = true
             }
 
             if #available(iOS 14, *) { Logger.feed.trace("Got \(feedItemInfoIds.count) feedItems from DB") }
-            return Result(hasMoreItems: hasMoreItems, currentPageCursor: nextPageCursor,
+            return Result(hasMoreData: hasMoreData,
+                          currentPageCursor: nextPageCursor,
                           nextPageCursor: newNextPageCursor, itemsPublisher: feedItemsPublisher)
         } catch {
             if let error = error as? RemoteClientError {

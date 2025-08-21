@@ -375,6 +375,121 @@ class FeedTests: XCTestCase {
         XCTAssertEqual(postsAfterBlockingUsers?.map(\.uuid), ["1", "3"])
     }
 
+    @MainActor
+    func testFetchAll() async throws {
+        let feed = Feed(id: "1", feedManager: postFeedManager)
+
+        // initial refresh will ask for the feed item infos and the items since they are not in the db
+        mockFeedService.injectNextInitializeFeed(.with {
+            $0.items = (1..<123).map { identifier in
+                Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
+           }
+            $0.nextPageCursor = ""
+        })
+        injectBatchItems((1..<123).map { "\($0)" })
+
+        var publishedItems: [Post]?
+        var updateCount = 0
+        feed.$items.sink { items in
+            publishedItems = items
+            updateCount += 1
+        }.store(in: &storage)
+
+        try await feed.fetchAll()
+
+        let hasMoreData = feed.hasMoreData
+        let items = feed.items
+        XCTAssertEqual(hasMoreData, false)
+        XCTAssertEqual(items?.map { $0.uuid }, (1..<123).map { "\($0)" })
+        XCTAssertEqual(publishedItems, items)
+        XCTAssertEqual(updateCount, 2)
+    }
+
+    @MainActor
+    func testFetchAllWhenFeedHasBeenInitialized() async throws {
+        let feed = Feed(id: "1", feedManager: postFeedManager)
+
+        // initial refresh will ask for the feed item infos and the items since they are not in the db
+        mockFeedService.injectNextInitializeFeed(.with {
+            $0.items = (1..<50).map { identifier in
+                Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
+           }
+            $0.nextPageCursor = "page2"
+        })
+        injectBatchItems((1..<123).map { "\($0)" })
+
+        try await feed.refresh(pageSize: 15)
+
+        mockFeedService.injectNextGetNextFeedPage(.with {
+            $0.items = (50..<80).map { identifier in
+                Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
+           }
+            $0.nextPageCursor = "page3"
+        })
+        mockFeedService.injectNextGetNextFeedPage(.with {
+            $0.items = (80..<123).map { identifier in
+                Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
+           }
+            $0.nextPageCursor = ""
+        })
+
+        var publishedItems: [Post]?
+        var updateCount = 0
+        feed.$items.sink { items in
+            publishedItems = items
+            updateCount += 1
+        }.store(in: &storage)
+
+        try await feed.fetchAll()
+
+        let hasMoreData = feed.hasMoreData
+        let items = feed.items
+        XCTAssertEqual(hasMoreData, false)
+        XCTAssertEqual(items?.map { $0.uuid }, (1..<123).map { "\($0)" })
+        XCTAssertEqual(publishedItems, items)
+        XCTAssertEqual(updateCount, 2)
+    }
+
+    @MainActor
+    func testFetchAllWhenAllWasLoaded() async throws {
+        let feed = Feed(id: "1", feedManager: postFeedManager)
+
+        // initial refresh will ask for the feed item infos and the items since they are not in the db
+        mockFeedService.injectNextInitializeFeed(.with {
+            $0.items = (1..<72).map { identifier in
+                Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
+           }
+            $0.nextPageCursor = ""
+        })
+        injectBatchItems((1..<72).map { "\($0)" })
+
+        try await feed.refresh(pageSize: 72)
+
+        mockFeedService.injectNextInitializeFeed(.with {
+            $0.items = (1..<73).map { identifier in
+                Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
+           }
+            $0.nextPageCursor = ""
+        })
+        injectBatchItems(["72"])
+
+        var publishedItems: [Post]?
+        var updateCount = 0
+        feed.$items.sink { items in
+            publishedItems = items
+            updateCount += 1
+        }.store(in: &storage)
+
+        try await feed.fetchAll()
+
+        let hasMoreData = feed.hasMoreData
+        let items = feed.items
+        XCTAssertEqual(hasMoreData, false)
+        XCTAssertEqual(items?.map { $0.uuid }, (1..<73).map { "\($0)" })
+        XCTAssertEqual(publishedItems, items)
+        XCTAssertEqual(updateCount, 2)
+    }
+
     func testClean() async throws {
         // precondition: fill the db with data that will be cleaned
 

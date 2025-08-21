@@ -50,9 +50,7 @@ struct RootFeedsView: View {
                 RootFeedPicker(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed)
                 .readHeight($height)
                 .onValueChanged(of: height) { [$rootFeedPickerDetentHeight] height in
-                    // add a small padding otherwise multi line texts are not correctly rendered
-                    // TODO: change that fixed size to a ScaledMetric (but not available on iOS 13)
-                    $rootFeedPickerDetentHeight.wrappedValue = height + 40
+                    $rootFeedPickerDetentHeight.wrappedValue = height
                 }
                 .presentationDetents([.height(rootFeedPickerDetentHeight)])
                 .presentationDragIndicator(.visible)
