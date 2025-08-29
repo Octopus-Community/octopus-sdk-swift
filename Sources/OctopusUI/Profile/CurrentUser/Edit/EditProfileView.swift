@@ -38,7 +38,8 @@ struct EditProfileView: View {
         )
         .navigationBarBackButtonHidden(viewModel.hasChanges)
         .navigationBarTitle(Text("Common.Edit", bundle: .module), displayMode: .inline)
-        .navigationBarItems(leading: leadingBarItem, trailing: trailingBarItem)
+        .toolbar(leading: leadingBarItem, trailing: trailingBarItem,
+                 trailingSharedBackgroundVisibility: .hidden)
         .compatAlert(
             "Common.Error",
             isPresented: $displayError,
@@ -103,15 +104,7 @@ struct EditProfileView: View {
     @ViewBuilder
     private var leadingBarItem: some View {
         if viewModel.hasChanges {
-            Button(action: {
-                showChangesWillBeLostAlert = true
-            }) {
-                Image(systemName: "chevron.left")
-                    .font(theme.fonts.navBarItem.weight(.semibold))
-                    .contentShape(Rectangle())
-                    .padding(.trailing, 40)
-            }
-            .padding(.leading, -8)
+            BackButton(action: { showChangesWillBeLostAlert = true })
         } else {
             EmptyView()
         }
