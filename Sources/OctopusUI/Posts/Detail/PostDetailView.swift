@@ -8,6 +8,7 @@ import os
 import Octopus
 
 struct PostDetailView: View {
+    @Environment(\.presentationMode) private var presentationMode
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
 
@@ -28,17 +29,21 @@ struct PostDetailView: View {
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
+    private let canClose: Bool
+
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String,
          comment: Bool,
          commentToScrollTo: String?,
          scrollToMostRecentComment: Bool = false,
-         shouldTrackEventBridgeOpened: Bool = false) {
+         shouldTrackEventBridgeOpened: Bool = false,
+         canClose: Bool = false) {
         _viewModel = Compat.StateObject(wrappedValue: PostDetailViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postUuid,
             commentToScrollTo: commentToScrollTo,
             scrollToMostRecentComment: scrollToMostRecentComment,
             shouldTrackEventBridgeOpened: shouldTrackEventBridgeOpened))
         _commentTextFocused = .init(initialValue: comment)
+        self.canClose = canClose
     }
 
     var body: some View {
@@ -141,7 +146,13 @@ struct PostDetailView: View {
                     Text("Common.CancelModifications", bundle: .module),
                     isPresented: $showChangesWillBeLostAlert) {
                         Button(L10n("Common.No"), role: .cancel, action: {})
-                        Button(L10n("Common.Yes"), role: .destructive, action: { navigator.pop() })
+                        Button(L10n("Common.Yes"), role: .destructive, action: {
+                            if canClose {
+                                presentationMode.wrappedValue.dismiss()
+                            } else {
+                                navigator.pop()
+                            }
+                        })
                     }
             } else {
                 $0.alert(isPresented: $showChangesWillBeLostAlert) {
@@ -149,7 +160,13 @@ struct PostDetailView: View {
                           primaryButton: .default(Text("Common.No", bundle: .module)),
                           secondaryButton: .destructive(
                             Text("Common.Yes", bundle: .module),
-                            action: { navigator.pop() }
+                            action: {
+                                if canClose {
+                                    presentationMode.wrappedValue.dismiss()
+                                } else {
+                                    navigator.pop()
+                                }
+                            }
                           )
                     )
                 }
@@ -207,6 +224,10 @@ struct PostDetailView: View {
 
     @ViewBuilder
     private var leadingBarItem: some View {
+        if canClose {
+            // Do not display the back button
+            Color.white.opacity(0.0001)
+        } else
         if commentHasChanges {
             Button(action: {
                 showChangesWillBeLostAlert = true
@@ -224,7 +245,20 @@ struct PostDetailView: View {
 
     @ViewBuilder
     private var trailingBarItem: some View {
-        EmptyView()
+        if canClose {
+            Button(action: {
+                if commentHasChanges {
+                    showChangesWillBeLostAlert = true
+                } else {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }) {
+                Text("Common.Close", bundle: .module)
+                    .font(theme.fonts.navBarItem)
+            }
+        } else {
+            EmptyView()
+        }
     }
 }
 
