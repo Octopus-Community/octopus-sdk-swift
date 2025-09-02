@@ -102,20 +102,8 @@ public struct OctopusHomeScreen: View {
                                comment: false,
                                commentToScrollTo: nil,
                                scrollToMostRecentComment: false,
-                               shouldTrackEventBridgeOpened: true)
-                .navigationBarItems(
-                    trailing:
-                        Group {
-                            if presentationMode.wrappedValue.isPresented {
-                                Button(action: {
-                                    presentationMode.wrappedValue.dismiss()
-                                }) {
-                                    Text("Common.Close", bundle: .module)
-                                        .font(theme.fonts.navBarItem)
-                                }
-                            }
-                        }
-                )
+                               shouldTrackEventBridgeOpened: true,
+                               canClose: presentationMode.wrappedValue.isPresented)
                 .onAppear {
                     if presentationMode.wrappedValue.isPresented && !isPresentedModally {
                         Logger.general.warning(
