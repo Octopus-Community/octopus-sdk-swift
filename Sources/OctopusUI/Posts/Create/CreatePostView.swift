@@ -16,7 +16,7 @@ struct CreatePostView: View {
     @State private var showTopicPicker = false
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
-    @State private var topicPickerDetentHeight: CGFloat = 0
+    @State private var topicPickerDetentHeight: CGFloat = 80
     @State private var showChangesWillBeLostAlert = false
     @State private var height: CGFloat = 0
 
@@ -36,8 +36,10 @@ struct CreatePostView: View {
                         selectedTopic: viewModel.selectedTopic,
                         showTopicPicker: $showTopicPicker,
                         createPoll: viewModel.createPoll)
+            .presentationBackground(Color(.systemBackground))
             .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
-            .navigationBarItems(leading: cancelButton, trailing: postButton)
+            .toolbar(leading: cancelButton, trailing: postButton,
+                     trailingSharedBackgroundVisibility: .hidden)
             .sheet(isPresented: $showTopicPicker) {
                 if #available(iOS 16.0, *) {
                     TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
@@ -120,8 +122,8 @@ struct CreatePostView: View {
             }
         }) {
             Image(systemName: "xmark")
-                .resizable()
                 .font(theme.fonts.navBarItem)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

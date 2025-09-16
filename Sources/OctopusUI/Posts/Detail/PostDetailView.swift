@@ -229,15 +229,7 @@ struct PostDetailView: View {
             Color.white.opacity(0.0001)
         } else
         if commentHasChanges {
-            Button(action: {
-                showChangesWillBeLostAlert = true
-            }) {
-                Image(systemName: "chevron.left")
-                    .font(theme.fonts.navBarItem.weight(.semibold))
-                    .contentShape(Rectangle())
-                    .padding(.trailing, 40)
-            }
-            .padding(.leading, -8)
+            BackButton(action: { showChangesWillBeLostAlert = true })
         } else {
             EmptyView()
         }

@@ -76,6 +76,7 @@ struct AppLoginScreen: View {
                     }
                 }
             }
+            .presentationBackground(Color(.systemBackground))
         }
     }
 }

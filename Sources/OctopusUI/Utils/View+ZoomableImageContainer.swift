@@ -59,13 +59,19 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
                 }
             }
         }
-        .navigationBarItems(leading: leadingBarItem, trailing: trailingBarItem)
+        .toolbar(
+            leading: leadingBarItem, trailing: trailingBarItem,
+            leadingSharedBackgroundVisibility: .hidden,
+            trailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : .automatic)
         .navigationBarTitle(
             usableZoomableImageInfo == nil ? defaultNavigationBarTitle : Text(verbatim: ""),
             displayMode: .inline)
         .navigationBarBackButtonHidden(defaultNavigationBarBackButtonHidden || usableZoomableImageInfo != nil)
         .modify {
-            if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
+            if #available(iOS 26.0, *), !defaultNavigationBarPrimaryColor {
+                $0
+                    .toolbarBackground(.hidden, for: .navigationBar)
+            } else if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
                 $0
                     .toolbarBackground(theme.colors.primary, for: .navigationBar)
                     .toolbarBackground(zoomableImageInfo == nil ? .visible : .hidden, for: .navigationBar)
@@ -94,7 +100,14 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
             }) {
                 Image(systemName: "xmark")
                     .font(theme.fonts.navBarItem.weight(.semibold))
-                    .padding(.leading)
+                    .modify {
+                        if #available(iOS 26.0, *) {
+                            $0
+                        } else {
+                            $0.padding(.leading)
+                        }
+
+                    }
                     .foregroundColor(theme.colors.primary)
                     .colorScheme(.dark)
             }

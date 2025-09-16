@@ -13,7 +13,7 @@ struct RootFeedsView: View {
     @Compat.StateObject private var viewModel: RootFeedsViewModel
 
     @State private var showRootFeedPicker = false
-    @State private var rootFeedPickerDetentHeight: CGFloat = 0
+    @State private var rootFeedPickerDetentHeight: CGFloat = 80
 
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
@@ -94,11 +94,13 @@ struct RootFeedsView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 28)
+                .fixedSize()
         case let .text(title):
             Text(title.text)
                 .font(theme.fonts.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(navBarPrimaryColor ? theme.colors.onPrimary : theme.colors.gray900)
+                .fixedSize()
         }
     }
 
@@ -111,6 +113,13 @@ struct RootFeedsView: View {
                 Text("Common.Close", bundle: .module)
                     .font(theme.fonts.navBarItem)
                     .foregroundColor(navBarPrimaryColor ? theme.colors.onPrimary : theme.colors.primary)
+            }
+            .modify {
+                if #available(iOS 26.0, *), navBarPrimaryColor {
+                    $0.glassEffect(.regular.tint(theme.colors.primary))
+                } else {
+                    $0
+                }
             }
         }
     }

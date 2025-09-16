@@ -1,5 +1,5 @@
 module SharedPodSpecConfig
-  VERSION = '1.5.3'
+  VERSION = '1.5.4'
   GITHUB_PAGE = 'https://github.com/Octopus-Community/octopus-sdk-swift'
   SOURCE = { :git => "#{GITHUB_PAGE}.git", :tag => "v#{VERSION}" }
   LICENSE = { :file => 'LICENSE.md' }

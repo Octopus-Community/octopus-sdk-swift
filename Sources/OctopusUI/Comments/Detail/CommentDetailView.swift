@@ -204,15 +204,7 @@ struct CommentDetailView: View {
     @ViewBuilder
     private var leadingBarItem: some View {
         if replyHasChanges {
-            Button(action: {
-                showChangesWillBeLostAlert = true
-            }) {
-                Image(systemName: "chevron.left")
-                    .font(theme.fonts.navBarItem.weight(.semibold))
-                    .contentShape(Rectangle())
-                    .padding(.trailing, 40)
-            }
-            .padding(.leading, -8)
+            BackButton(action: { showChangesWillBeLostAlert = true })
         } else {
             EmptyView()
         }

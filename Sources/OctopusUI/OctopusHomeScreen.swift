@@ -111,6 +111,7 @@ public struct OctopusHomeScreen: View {
                     }
                 }
                 .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
+                .presentationBackground(Color(.systemBackground))
             } else {
                 RootFeedsView(octopus: octopus, mainFlowPath: mainFlowPath, navBarLeadingItem: navBarLeadingItem,
                               navBarPrimaryColor: navBarPrimaryColor)
@@ -123,6 +124,7 @@ public struct OctopusHomeScreen: View {
                 .safeAreaInsetCompat(edge: .bottom) {
                     Spacer().frame(height: bottomSafeAreaInset)
                 }
+                .presentationBackground(Color(.systemBackground))
             }
             } else {
                 UnsupportedOSVersionView()
