@@ -34,6 +34,7 @@ struct ConnectionRouter: ViewModifier {
                 NavigationView {
                     CreateProfileView(octopus: octopus)
                         .environment(\.dismissModal, $openCreateProfile)
+                        .presentationBackground(Color(.systemBackground))
                 }
                 .navigationBarHidden(true)
                 .accentColor(theme.colors.primary)

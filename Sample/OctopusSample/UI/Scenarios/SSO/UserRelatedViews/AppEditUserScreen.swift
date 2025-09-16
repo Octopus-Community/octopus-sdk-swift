@@ -43,6 +43,7 @@ struct AppEditUserScreen: View {
                 bio = appUser?.bio ?? ""
                 picture = appUser?.picture
             }
+            .presentationBackground(Color(.systemBackground))
         }
     }
 }

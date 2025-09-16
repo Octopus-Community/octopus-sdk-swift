@@ -85,6 +85,7 @@ private struct RecipeScreen: View {
                         }
                         .buttonStyle(.plain)
                 )
+                .presentationBackground(Color(.systemBackground))
         }
     }
 }

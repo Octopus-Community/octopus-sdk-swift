@@ -153,8 +153,15 @@ struct ProfileSummaryView: View {
             }, label: {
                 VStack {
                     Image(systemName: "ellipsis")
-                        .padding(.vertical)
-                        .padding(.leading)
+                        .modify {
+                            if #available(iOS 26.0, *) {
+                                $0
+                            } else {
+                                $0.padding(.vertical)
+                                .padding(.leading)
+                            }
+
+                        }
                         .font(theme.fonts.navBarItem)
                 }.frame(width: 32, height: 32)
             })
@@ -181,6 +188,13 @@ private struct ContentView<PostsView: View>: View {
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
+                // Disable nav bar opacity on iOS 26 to have the same behavior as before.
+                // TODO: See with product team if we need to keep it.
+                if #available(iOS 26.0, *) {
+                    Color.white.opacity(0.0001)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 1)
+                }
                 ProfileContentView(profile: profile, zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
                     postsView
                 }
