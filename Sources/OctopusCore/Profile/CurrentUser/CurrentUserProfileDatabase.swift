@@ -46,9 +46,16 @@ class CurrentUserProfileDatabase: InjectableObject {
             }
 
             profileEntity.nickname = profile.nickname
+            profileEntity.originalNickname = profile.originalNickname
             profileEntity.email = profile.email
             profileEntity.bio = profile.bio
             profileEntity.pictureUrl = profile.pictureUrl
+            profileEntity.hasAcceptedCguOptional = profile.hasAcceptedCgu.map { NSNumber(booleanLiteral: $0) }
+            profileEntity.hasSeenOnboardingOptional = profile.hasSeenOnboarding.map { NSNumber(booleanLiteral: $0) }
+            profileEntity.hasConfirmedNicknameOptional = profile.hasConfirmedNickname.map { NSNumber(booleanLiteral: $0) }
+            profileEntity.hasConfirmedBioOptional = profile.hasConfirmedBio.map { NSNumber(booleanLiteral: $0) }
+            profileEntity.hasConfirmedPictureOptional = profile.hasConfirmedPicture.map { NSNumber(booleanLiteral: $0) }
+            profileEntity.isGuest = profile.isGuest
             // if the notificationBadgeCount, keep the previous value
             if let notificationBadgeCount = profile.notificationBadgeCount {
                 profileEntity.notificationBadgeCount = notificationBadgeCount

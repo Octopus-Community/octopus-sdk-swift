@@ -4,22 +4,13 @@
     "" : {
 
     },
-    "< 16" : {
-
-    },
-    ">= 16" : {
-
-    },
-    "A/B Tests" : {
-
-    },
-    "All App Managed Fields" : {
+    "Account" : {
 
     },
     "App Login Flow" : {
 
     },
-    "App managed fields: %@." : {
+    "App User Config:" : {
 
     },
     "App Version: %@" : {
@@ -47,6 +38,12 @@
     "Ask for notification permission" : {
 
     },
+    "Associated Fields:" : {
+
+    },
+    "Authentication mode:" : {
+
+    },
     "Avatar 1" : {
 
     },
@@ -66,9 +63,6 @@
 
     },
     "Canele Recipe" : {
-
-    },
-    "Client User Config:" : {
 
     },
     "Custom events" : {
@@ -98,13 +92,16 @@
     "Error" : {
 
     },
+    "Force login on strong actions" : {
+
+    },
+    "Force Octopus A/B Tests Cohort" : {
+
+    },
     "Have a post directly linked to a specific object (article, product, item...) of your app" : {
 
     },
-    "In order to test these scenarios, your community should be configured to use SSO authentication." : {
-
-    },
-    "Information about the age" : {
+    "If you are managing an AB Test to enable/disable community access to your users, inform the SDK if the user cannot access the community UI to improve the analytics data we provide." : {
 
     },
     "Integrate some of your custom events to the analytics we provide to you." : {
@@ -128,13 +125,10 @@
     "Nickname:" : {
 
     },
-    "No App Managed Fields" : {
+    "No existing community to match this configuration" : {
 
     },
     "None" : {
-
-    },
-    "Not checked" : {
 
     },
     "Notification Badge" : {
@@ -149,7 +143,7 @@
     "Octo Tab" : {
 
     },
-    "Open Octopus" : {
+    "Octopus" : {
 
     },
     "Open Octopus Home Screen" : {
@@ -164,13 +158,25 @@
     "Open the Octopus SDK in a non full screen sheet" : {
 
     },
+    "Override cohort attribution" : {
+
+    },
     "Picture" : {
 
     },
     "Random identifier (new each time the sample is launched)" : {
 
     },
+    "Save" : {
+
+    },
     "Scenarios" : {
+
+    },
+    "SDK Configuration" : {
+
+    },
+    "SDK configured with: %@" : {
 
     },
     "Send CustomEvent1" : {
@@ -182,13 +188,13 @@
     "Some App Managed Fields" : {
 
     },
-    "SSO Connection" : {
-
-    },
-    "SSO Scenarios" : {
+    "SSO" : {
 
     },
     "The following switch simulates an A/B test.\nWhen off, the community is hidden to the user." : {
+
+    },
+    "The following switch will permanently override the internal cohort attribution for the current user." : {
 
     },
     "This is your app's content" : {
@@ -197,22 +203,16 @@
     "This is your app's login flow" : {
 
     },
-    "To improve the analytics data we provide, inform the SDK if the user cannot access the community UI (during A/B tests for example)." : {
+    "To increase user engagement, let your users know that they have not seen internal notifications" : {
 
     },
-    "To increase user engagement, let your users know that they have not seen internal notifications" : {
+    "Track A/B Tests" : {
 
     },
     "Use logo on Octopus Home Screen nav bar" : {
 
     },
     "Use primary color on Octopus Home Screen nav bar" : {
-
-    },
-    "Use your login system to let your user interact with the community" : {
-
-    },
-    "With all App Managed Fields" : {
 
     }
   },

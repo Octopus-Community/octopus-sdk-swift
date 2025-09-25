@@ -126,10 +126,12 @@ extension GenColorResource {
 extension GenImageResource {
     static let addMedia = GenImageResource(name: "addMedia", bundle: resourceBundle)
     static let bell = GenImageResource(name: "bell", bundle: resourceBundle)
+    static let congrats = GenImageResource(name: "congrats", bundle: resourceBundle)
     static let contentNotAvailable = GenImageResource(name: "contentNotAvailable", bundle: resourceBundle)
     static let createPost = GenImageResource(name: "createPost", bundle: resourceBundle)
     static let editPicture = GenImageResource(name: "editPicture", bundle: resourceBundle)
     static let more = GenImageResource(name: "more", bundle: resourceBundle)
+    static let noCurrentUserPost = GenImageResource(name: "noCurrentUserPost", bundle: resourceBundle)
     static let noPosts = GenImageResource(name: "noPosts", bundle: resourceBundle)
     static let poll = GenImageResource(name: "poll", bundle: resourceBundle)
     static let poweredByOctopus = GenImageResource(name: "poweredByOctopus", bundle: resourceBundle)
@@ -220,10 +222,12 @@ extension UIKit.UIImage {
     enum Gen {
         static var addMedia: UIKit.UIImage { .init(res: .addMedia) }
         static var bell: UIKit.UIImage { .init(res: .bell) }
+        static var congrats: UIKit.UIImage { .init(res: .congrats) }
         static var contentNotAvailable: UIKit.UIImage { .init(res: .contentNotAvailable) }
         static var createPost: UIKit.UIImage { .init(res: .createPost) }
         static var editPicture: UIKit.UIImage { .init(res: .editPicture) }
         static var more: UIKit.UIImage { .init(res: .more) }
+        static var noCurrentUserPost: UIKit.UIImage { .init(res: .noCurrentUserPost) }
         static var noPosts: UIKit.UIImage { .init(res: .noPosts) }
         static var poll: UIKit.UIImage { .init(res: .poll) }
         static var poweredByOctopus: UIKit.UIImage { .init(res: .poweredByOctopus) }

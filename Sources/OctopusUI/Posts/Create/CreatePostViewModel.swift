@@ -7,6 +7,7 @@ import Combine
 import Octopus
 import OctopusCore
 import UIKit
+import SwiftUI
 
 @MainActor
 class CreatePostViewModel: ObservableObject {
@@ -46,6 +47,7 @@ class CreatePostViewModel: ObservableObject {
     @Published var topics = [DisplayableTopic]()
     @Published private(set) var userAvatar: Author.Avatar?
     @Published private(set) var hasChanges = false
+    @Published var authenticationAction: ConnectedActionReplacement?
 
     var sendButtonAvailable: Bool {
         !isLoading &&
@@ -62,21 +64,54 @@ class CreatePostViewModel: ObservableObject {
     private var storage = [AnyCancellable]()
     private var sendingCancellable: AnyCancellable?
 
-    init(octopus: OctopusSDK) {
+    let connectedActionChecker: ConnectedActionChecker
+    var authenticationActionBinding: Binding<ConnectedActionReplacement?> {
+        Binding(
+            get: { self.authenticationAction },
+            set: { self.authenticationAction = $0 }
+        )
+    }
+
+    private var isWaitingToSendPost = false
+
+    init(octopus: OctopusSDK, withPoll: Bool) {
         self.octopus = octopus
         validator = octopus.core.validators.post
         pollValidator = octopus.core.validators.poll
+        connectedActionChecker = ConnectedActionChecker(octopus: octopus)
+
+        if withPoll {
+            createPoll()
+        }
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.forceLoginOnStrongActions }
+            .removeDuplicates()
+            .sink { [unowned self] forceLoginOnStrongActions in
+                guard forceLoginOnStrongActions != nil else {
+                    return
+                }
+                if isWaitingToSendPost {
+                    isWaitingToSendPost = false
+                    DispatchQueue.main.async { [weak self] in
+                        self?.send()
+                    }
+                }
+            }.store(in: &storage)
 
         Publishers.CombineLatest3(
             octopus.core.profileRepository.profilePublisher,
             $alertError,
-            $isLoading
+            $isLoading.removeDuplicates()
         ).sink { [unowned self] profile, currentError, isLoading in
-            guard let profile else {
-                if currentError == nil && !isLoading {
-                    dismiss = true
+            guard let profile else { return }
+            if !profile.isGuest || profile.hasConfirmedNickname {
+                if isWaitingToSendPost {
+                    isWaitingToSendPost = false
+                    DispatchQueue.main.async { [weak self] in
+                        self?.send()
+                    }
                 }
-                return
             }
             if let pictureUrl = profile.pictureUrl {
                 userAvatar = .image(url: pictureUrl, name: profile.nickname)
@@ -142,6 +177,12 @@ class CreatePostViewModel: ObservableObject {
         default: break
         }
         guard validator.validate(post: post) else { return }
+
+        guard connectedActionChecker.ensureConnected(action: .post, actionWhenNotConnected: authenticationActionBinding) else {
+            isWaitingToSendPost = true
+            isLoading = false
+            return
+        }
 
         isLoading = true
 

@@ -124,41 +124,76 @@ private struct MarkdownText: View {
         var result: [MarkdownPart] = []
         var remaining = text
 
-        let patterns: [(pattern: String, builder: (String) -> MarkdownStyle)] = [
-            (pattern: "\\*\\*(.+?)\\*\\*", builder: { (text: String) -> MarkdownStyle in .bold }),
-            (pattern: "__(.+?)__", builder: { (text: String) -> MarkdownStyle in .bold }),
-            (pattern: "\\*(.+?)\\*", builder: { (text: String) -> MarkdownStyle in .italic }),
-            (pattern: "_(.+?)_", builder: { (text: String) -> MarkdownStyle in .italic }),
-            (pattern: "(https?://[\\w./?=&%-]+|www\\.[\\w./?=&%-]+)", builder: { (match: String) -> MarkdownStyle in
-                let prefix = match.hasPrefix("http") ? "" : "https://"
-                return .link(URL(string: prefix + match)!)
-            })
+        struct Pattern {
+            let regex: NSRegularExpression
+            let handler: (NSTextCheckingResult, String) -> (String, MarkdownStyle)
+        }
+
+        let patterns: [Pattern] = [
+            Pattern(regex: try! NSRegularExpression(pattern: "\\[([^\\]]+)\\]\\(([^)]+)\\)"),
+                    handler: { match, source in
+                        let labelRange = Range(match.range(at: 1), in: source)!
+                        let urlRange = Range(match.range(at: 2), in: source)!
+                        let label = String(source[labelRange])
+                        let url = URL(string: String(source[urlRange]))!
+                        return (label, .link(url))
+                    }),
+            Pattern(regex: try! NSRegularExpression(pattern: "\\*\\*(.+?)\\*\\*"),
+                    handler: { match, source in
+                        let range = Range(match.range(at: 1), in: source)!
+                        return (String(source[range]), .bold)
+                    }),
+            Pattern(regex: try! NSRegularExpression(pattern: "__(.+?)__"),
+                    handler: { match, source in
+                        let range = Range(match.range(at: 1), in: source)!
+                        return (String(source[range]), .bold)
+                    }),
+            Pattern(regex: try! NSRegularExpression(pattern: "\\*(.+?)\\*"),
+                    handler: { match, source in
+                        let range = Range(match.range(at: 1), in: source)!
+                        return (String(source[range]), .italic)
+                    }),
+            Pattern(regex: try! NSRegularExpression(pattern: "_(.+?)_"),
+                    handler: { match, source in
+                        let range = Range(match.range(at: 1), in: source)!
+                        return (String(source[range]), .italic)
+                    }),
+            Pattern(regex: try! NSRegularExpression(pattern: "(https?://[\\w./?=&%-]+|www\\.[\\w./?=&%-]+)"),
+                    handler: { match, source in
+                        let range = Range(match.range(at: 1), in: source)!
+                        let raw = String(source[range])
+                        let prefix = raw.hasPrefix("http") ? "" : "https://"
+                        return (raw, .link(URL(string: prefix + raw)!))
+                    })
         ]
 
         while !remaining.isEmpty {
-            var matched = false
+            var earliestMatch: (pattern: Pattern, match: NSTextCheckingResult, range: Range<String.Index>)? = nil
 
-            for (pattern, styleBuilder) in patterns {
-                if let regex = try? NSRegularExpression(pattern: pattern, options: []),
-                   let match = regex.firstMatch(in: remaining, range: NSRange(location: 0, length: remaining.utf16.count)),
-                   let fullRange = Range(match.range(at: 0), in: remaining),
-                   let contentRange = match.numberOfRanges > 1 ? Range(match.range(at: 1), in: remaining) : fullRange {
-
-                    let before = String(remaining[..<fullRange.lowerBound])
-                    if !before.isEmpty {
-                        result.append(.init(content: before, style: .normal))
+            for pattern in patterns {
+                if let match = pattern.regex.firstMatch(in: remaining, range: NSRange(location: 0, length: remaining.utf16.count)),
+                   let fullRange = Range(match.range(at: 0), in: remaining) {
+                    if earliestMatch == nil || fullRange.lowerBound < earliestMatch!.range.lowerBound {
+                        earliestMatch = (pattern, match, fullRange)
                     }
-
-                    let content = String(remaining[contentRange])
-                    result.append(.init(content: content, style: styleBuilder(content)))
-
-                    remaining = String(remaining[fullRange.upperBound...])
-                    matched = true
-                    break
                 }
             }
 
-            if !matched {
+            if let earliest = earliestMatch {
+                // Add text before the match
+                let before = String(remaining[..<earliest.range.lowerBound])
+                if !before.isEmpty {
+                    result.append(.init(content: before, style: .normal))
+                }
+
+                // Add styled content
+                let (content, style) = earliest.pattern.handler(earliest.match, remaining)
+                result.append(.init(content: content, style: style))
+
+                // Continue after the match
+                remaining = String(remaining[earliest.range.upperBound...])
+            } else {
+                // No more matches
                 result.append(.init(content: remaining, style: .normal))
                 break
             }

@@ -7,14 +7,14 @@ import CoreData
 import os
 import OctopusDependencyInjection
 
-class ContentsDatabase<Content: FetchableContentEntity> {
+class ContentsDatabase<Content: FetchableContentEntity>: OctoObjectsDatabase {
     private let context: NSManagedObjectContext
 
-    init(injector: Injector) {
+    override init(injector: Injector) {
         let coreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
         context = coreDataStack.saveContext
+        super.init(injector: injector)
     }
-
 
     func getMissingContents(infos: [FeedItemInfo]) async throws -> [String] {
         let dict = Dictionary(uniqueKeysWithValues: infos.map { ($0.itemId, $0.updateDate) })
@@ -27,60 +27,6 @@ class ContentsDatabase<Content: FetchableContentEntity> {
                 .map { $0.uuid }
         }
         return Array(Set(Array(dict.keys)).subtracting(existingIds))
-    }
-
-    func update(additionalData array: [(String, AggregatedInfo?, UserInteractions?)]) async throws {
-        try await context.performAsync { [context] in
-            let context = context
-            let request = Content.fetchAllByIds(ids: array.map(\.0))
-            let existingContents = try context.fetch(request)
-
-            for additionalData in array {
-                guard let contentEntity = existingContents.first(where: { $0.uuid == additionalData.0 }) else {
-                    if #available(iOS 14, *) {
-                        Logger.content.debug("Developper error: updating additional data without content")
-                    }
-                    continue
-                }
-                contentEntity.fill(aggregatedInfo: additionalData.1, userInteractions: additionalData.2,
-                                   context: context)
-            }
-            try context.save()
-        }
-    }
-
-    func incrementChildCount(by diff: Int, contentId: String) async throws {
-        try await context.performAsync { [context] in
-            guard let existingContent = try context.fetch(Content.fetchById(id: contentId)).first else { return }
-            existingContent.childCount = max(existingContent.childCount + diff, 0)
-            try context.save()
-        }
-    }
-
-    func updateLikeId(newId: String?, contentId: String, updateLikeCount: Bool = true) async throws {
-        try await context.performAsync { [context] in
-            let context = context
-            guard let existingContent = try context.fetch(Content.fetchById(id: contentId)).first else { return }
-            existingContent.userLikeId = newId
-            if updateLikeCount {
-                let diff = newId != nil ? 1 : -1
-                existingContent.likeCount = max(existingContent.likeCount + diff, 0)
-            }
-            try context.save()
-        }
-    }
-
-    func resetUserInteractions() async throws {
-        try await context.performAsync { [context] in
-            let context = context
-            let request = Content.fetchAll()
-            let existingContents = try context.fetch(request)
-
-            for existingContent in existingContents {
-                existingContent.fill(aggregatedInfo: nil, userInteractions: .empty, context: context)
-            }
-            try context.save()
-        }
     }
 
     func delete(contentId: String) async throws {

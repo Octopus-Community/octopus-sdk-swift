@@ -52,26 +52,26 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
 
     func start() {
         Publishers.CombineLatest(
-            userDataStorage.$userData.removeDuplicates(),
+            userDataStorage.$userData.map { $0?.id }.removeDuplicates(),
             networkMonitor.connectionAvailablePublisher
         )
-        .map { userData, connectionAvailable -> UserDataStorage.UserData? in
+        .map { userId, connectionAvailable -> String? in
             guard connectionAvailable else { return nil }
-            guard let userData else { return nil }
-            return userData
+            guard let userId else { return nil }
+            return userId
         }
         // do it only once when all requirements are met
         .removeDuplicates()
-        .sink { userData in
-            guard let userData else { return }
+        .sink { userId in
+            guard let userId else { return }
             Task { [self] in
                 do {
                     let response = try await remoteClient.userService
                         .getPrivateProfile(
-                            userId: userData.id,
+                            userId: userId,
                             authenticationMethod: try authCallProvider.authenticatedMethod())
                     // Pass the user id that triggered the response to be sure to have consistent data.
-                    userProfileResponse = (response, userData.id)
+                    userProfileResponse = (response, userId)
                 } catch {
                     if let error = error as? RemoteClientError {
                         if case .notFound = error {

@@ -11,7 +11,11 @@ import NIOHPACK
 import os
 
 class LoggingInterceptor<Request, Response>: ClientInterceptor<Request, Response>, @unchecked Sendable {
-    let verbose: Bool = false
+    let verbose: Bool
+
+    init(verbose: Bool = false) {
+        self.verbose = verbose
+    }
 
     override func receive(
         _ part: GRPCClientResponsePart<Response>,

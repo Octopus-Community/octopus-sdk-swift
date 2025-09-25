@@ -14,8 +14,8 @@ public protocol FeedItem: Equatable, Sendable {
 }
 
 @MainActor
-public class Feed<Item: FeedItem> {
-    let feedManager: FeedManager<Item>
+public class Feed<Item: FeedItem, ChildItem: FeedItem> {
+    let feedManager: FeedManager<Item, ChildItem>
     public let id: String
     private var currentPageCursor: String?
     private var nextPageCursor: String?
@@ -27,9 +27,9 @@ public class Feed<Item: FeedItem> {
     @Published public private(set) var items: [Item]?
 
     @Published private var canPublishItems: Bool = true
-    @Published private var internalItems: [Item]?
+    private var idsInfo = [FeedItemInfoData]()
 
-    nonisolated init(id: String, feedManager: FeedManager<Item>) {
+    nonisolated init(id: String, feedManager: FeedManager<Item, ChildItem>) {
         self.id = id
         self.feedManager = feedManager
     }
@@ -38,6 +38,7 @@ public class Feed<Item: FeedItem> {
         do {
             let result = try await feedManager.getLocalFeedItems(feedId: id, pageSize: pageSize, currentIds: [])
             hasMoreData = result.hasMoreData
+            idsInfo = result.idsInfos
             listenForItems(publisher: result.itemsPublisher)
         } catch {
             if #available(iOS 14, *) { Logger.feed.debug("Error: \(error)") }
@@ -55,6 +56,7 @@ public class Feed<Item: FeedItem> {
             hasMoreData = result.hasMoreData
             currentPageCursor = result.currentPageCursor
             nextPageCursor = result.nextPageCursor
+            idsInfo = result.idsInfos
             hasFetchedDistantOnce = true
             isFetching = false
             listenForItems(publisher: result.itemsPublisher)
@@ -77,20 +79,24 @@ public class Feed<Item: FeedItem> {
             isFetching = true
             let result = try await feedManager.getPreviousItems(feedId: id,
                                                                 nextPageCursor: nextPageCursor, pageSize: pageSize,
-                                                                currentIds: internalItems?.map(\.id) ?? [])
+                                                                currentIds: idsInfo)
             hasMoreData = result.hasMoreData
             currentPageCursor = result.currentPageCursor
             nextPageCursor = result.nextPageCursor
+            idsInfo = result.idsInfos
             isFetching = false
             listenForItems(publisher: result.itemsPublisher)
         } catch {
             if #available(iOS 14, *) { Logger.feed.debug("An error occured during the load previous items call, loading local items instead") }
-            isFetching = false
             do {
                 let result = try await feedManager.getLocalFeedItems(feedId: id, pageSize: pageSize,
-                                                               currentIds: internalItems?.map(\.id) ?? [])
+                                                               currentIds: idsInfo)
+                hasMoreData = result.hasMoreData
+                idsInfo = result.idsInfos
+                isFetching = false
                 listenForItems(publisher: result.itemsPublisher)
             } catch {
+                isFetching = false
                 throw .other(error)
             }
         }
@@ -135,7 +141,7 @@ public class Feed<Item: FeedItem> {
         }
         // if the searched item is not already here and the last call has not returned any results,
         // re-do it in case their are new ones
-        if !(internalItems?.contains(where: { $0.id == id }) ?? false) && !hasMoreData {
+        if !idsInfo.contains(where: { $0.itemId == id }) && !hasMoreData {
             nextPageCursor = currentPageCursor
             hasMoreData = true
         }
@@ -145,7 +151,7 @@ public class Feed<Item: FeedItem> {
         canPublishItems = false
         defer { canPublishItems = true }
 
-        while !(internalItems?.contains(where: { $0.id == id }) ?? false) && hasMoreData {
+        while !idsInfo.contains(where: { $0.itemId == id }) && hasMoreData {
             if nextPageCursor == nil {
                 try await refresh(pageSize: 100)
                 // if it has more data, directly do the loadPreviousItem to cover the case where there is no more
@@ -165,16 +171,15 @@ public class Feed<Item: FeedItem> {
             publisher.replaceError(with: []),
             $canPublishItems
         ).sink { [unowned self] feedItems, canPublishItems in
-            internalItems = feedItems
             if canPublishItems {
-                items = internalItems
+                items = feedItems
             }
         }
     }
 }
 
 extension Feed: Equatable {
-    nonisolated public static func == (lhs: Feed<Item>, rhs: Feed<Item>) -> Bool {
+    nonisolated public static func == (lhs: Feed<Item, ChildItem>, rhs: Feed<Item, ChildItem>) -> Bool {
         lhs.id == rhs.id
     }
 }

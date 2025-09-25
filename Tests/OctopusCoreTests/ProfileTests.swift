@@ -53,7 +53,13 @@ class ProfileTests: XCTestCase {
         // Precondition: user is logged in and a profile is in db
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
-                                                email: nil, bio: nil, pictureUrl: nil, notificationBadgeCount: 0,
+                                                originalNickname: nil,
+                                                email: nil, bio: nil, pictureUrl: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: nil, hasConfirmedBio: nil,
+                                                hasConfirmedPicture: nil,
+                                                isGuest: true,
+                                                notificationBadgeCount: 0,
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 
@@ -90,6 +96,7 @@ class ProfileTests: XCTestCase {
             $0.profile = .with {
                 $0.id = "profileId"
                 $0.nickname = "nickname"
+                $0.hasConfirmedNickname_p = true
             }
         })
 
@@ -120,7 +127,7 @@ class ProfileTests: XCTestCase {
                     }
                 })
         })
-        try await profileRepository.createCurrentUserProfile(with: EditableProfile(nickname: .updated("nickname"),
+        try await profileRepository.updateCurrentUserProfile(with: EditableProfile(nickname: .updated("nickname"),
                                                                                    bio: .updated("Bio")))
 
         try await delay()
@@ -141,7 +148,13 @@ class ProfileTests: XCTestCase {
         // start with a connected user
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
-                                                email: nil, bio: nil, pictureUrl: nil, notificationBadgeCount: 0,
+                                                originalNickname: nil,
+                                                email: nil, bio: nil, pictureUrl: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: nil, hasConfirmedBio: nil,
+                                                hasConfirmedPicture: nil,
+                                                isGuest: true,
+                                                notificationBadgeCount: 0,
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 
@@ -200,7 +213,13 @@ class ProfileTests: XCTestCase {
         // Precondition: user is logged in and a profile is in db
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
-                                                email: nil, bio: nil, pictureUrl: nil, notificationBadgeCount: 0,
+                                                originalNickname: nil,
+                                                email: nil, bio: nil, pictureUrl: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: nil, hasConfirmedBio: nil,
+                                                hasConfirmedPicture: nil,
+                                                isGuest: true,
+                                                notificationBadgeCount: 0,
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 

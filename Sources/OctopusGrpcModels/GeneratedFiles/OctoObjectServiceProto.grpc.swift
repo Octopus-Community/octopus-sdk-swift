@@ -61,20 +61,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>
 
-  func putLike(
-    _ request: Com_Octopuscommunity_PutRequest,
-    callOptions: CallOptions?
-  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>
-
   func putPollVote(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>
-
-  func deleteLike(
-    _ request: Com_Octopuscommunity_DeleteLikeRequest,
-    callOptions: CallOptions?
-  ) -> UnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>
 
   func getTopics(
     _ request: Com_Octopuscommunity_GetTopicsRequest,
@@ -96,6 +86,36 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>
 
+  func shadowbanPost(
+    _ request: Com_Octopuscommunity_ShadowbanPostRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse>
+
+  func shadowbanComment(
+    _ request: Com_Octopuscommunity_ShadowbanCommentRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowbanCommentRequest, Com_Octopuscommunity_ShadowbanCommentResponse>
+
+  func shadowbanReply(
+    _ request: Com_Octopuscommunity_ShadowbanReplyRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowbanReplyRequest, Com_Octopuscommunity_ShadowbanReplyResponse>
+
+  func unshadowbanPost(
+    _ request: Com_Octopuscommunity_UnshadowbanPostRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_UnshadowbanPostRequest, Com_Octopuscommunity_UnshadowbanPostResponse>
+
+  func unshadowbanComment(
+    _ request: Com_Octopuscommunity_UnshadowbanCommentRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_UnshadowbanCommentRequest, Com_Octopuscommunity_UnshadowbanCommentResponse>
+
+  func unshadowbanReply(
+    _ request: Com_Octopuscommunity_UnshadowbanReplyRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>
+
   func reportContent(
     _ request: Com_Octopuscommunity_ReportContentRequest,
     callOptions: CallOptions?
@@ -105,6 +125,26 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func putLike(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>
+
+  func deleteLike(
+    _ request: Com_Octopuscommunity_DeleteLikeRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>
+
+  func putReaction(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReactionResponse>
+
+  func deleteReaction(
+    _ request: Com_Octopuscommunity_DeleteRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>
 }
 
 extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
@@ -274,24 +314,6 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
-  /// Unary call to PutLike
-  ///
-  /// - Parameters:
-  ///   - request: Request to send to PutLike.
-  ///   - callOptions: Call options.
-  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
-  public func putLike(
-    _ request: Com_Octopuscommunity_PutRequest,
-    callOptions: CallOptions? = nil
-  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse> {
-    return self.makeUnaryCall(
-      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
-    )
-  }
-
   /// Unary call to PutPollVote
   ///
   /// - Parameters:
@@ -307,24 +329,6 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? []
-    )
-  }
-
-  /// Unary call to DeleteLike
-  ///
-  /// - Parameters:
-  ///   - request: Request to send to DeleteLike.
-  ///   - callOptions: Call options.
-  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
-  public func deleteLike(
-    _ request: Com_Octopuscommunity_DeleteLikeRequest,
-    callOptions: CallOptions? = nil
-  ) -> UnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse> {
-    return self.makeUnaryCall(
-      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? []
     )
   }
 
@@ -400,6 +404,114 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
+  /// Unary call to ShadowbanPost
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to ShadowbanPost.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func shadowbanPost(
+    _ request: Com_Octopuscommunity_ShadowbanPostRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanPostInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to ShadowbanComment
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to ShadowbanComment.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func shadowbanComment(
+    _ request: Com_Octopuscommunity_ShadowbanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowbanCommentRequest, Com_Octopuscommunity_ShadowbanCommentResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanCommentInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to ShadowbanReply
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to ShadowbanReply.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func shadowbanReply(
+    _ request: Com_Octopuscommunity_ShadowbanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowbanReplyRequest, Com_Octopuscommunity_ShadowbanReplyResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanReplyInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UnshadowbanPost
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnshadowbanPost.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unshadowbanPost(
+    _ request: Com_Octopuscommunity_UnshadowbanPostRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_UnshadowbanPostRequest, Com_Octopuscommunity_UnshadowbanPostResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanPostInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UnshadowbanComment
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnshadowbanComment.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unshadowbanComment(
+    _ request: Com_Octopuscommunity_UnshadowbanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_UnshadowbanCommentRequest, Com_Octopuscommunity_UnshadowbanCommentResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanCommentInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UnshadowbanReply
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnshadowbanReply.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unshadowbanReply(
+    _ request: Com_Octopuscommunity_UnshadowbanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? []
+    )
+  }
+
   ///Do nothing if moderation mod is off
   ///
   /// - Parameters:
@@ -433,6 +545,78 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  ///reactions
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to PutLike.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func putLike(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
+    )
+  }
+
+  ///Deprecated. Use DeleteReaction
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to DeleteLike.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func deleteLike(
+    _ request: Com_Octopuscommunity_DeleteLikeRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to PutReaction
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to PutReaction.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func putReaction(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReactionResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReaction.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutReactionInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to DeleteReaction
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to DeleteReaction.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func deleteReaction(
+    _ request: Com_Octopuscommunity_DeleteRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReaction.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? []
     )
   }
 }
@@ -544,20 +728,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>
 
-  func makePutLikeCall(
-    _ request: Com_Octopuscommunity_PutRequest,
-    callOptions: CallOptions?
-  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>
-
   func makePutPollVoteCall(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>
-
-  func makeDeleteLikeCall(
-    _ request: Com_Octopuscommunity_DeleteLikeRequest,
-    callOptions: CallOptions?
-  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>
 
   func makeGetTopicsCall(
     _ request: Com_Octopuscommunity_GetTopicsRequest,
@@ -579,6 +753,36 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>
 
+  func makeShadowbanPostCall(
+    _ request: Com_Octopuscommunity_ShadowbanPostRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse>
+
+  func makeShadowbanCommentCall(
+    _ request: Com_Octopuscommunity_ShadowbanCommentRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowbanCommentRequest, Com_Octopuscommunity_ShadowbanCommentResponse>
+
+  func makeShadowbanReplyCall(
+    _ request: Com_Octopuscommunity_ShadowbanReplyRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowbanReplyRequest, Com_Octopuscommunity_ShadowbanReplyResponse>
+
+  func makeUnshadowbanPostCall(
+    _ request: Com_Octopuscommunity_UnshadowbanPostRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnshadowbanPostRequest, Com_Octopuscommunity_UnshadowbanPostResponse>
+
+  func makeUnshadowbanCommentCall(
+    _ request: Com_Octopuscommunity_UnshadowbanCommentRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnshadowbanCommentRequest, Com_Octopuscommunity_UnshadowbanCommentResponse>
+
+  func makeUnshadowbanReplyCall(
+    _ request: Com_Octopuscommunity_UnshadowbanReplyRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>
+
   func makeReportContentCall(
     _ request: Com_Octopuscommunity_ReportContentRequest,
     callOptions: CallOptions?
@@ -588,6 +792,26 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func makePutLikeCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>
+
+  func makeDeleteLikeCall(
+    _ request: Com_Octopuscommunity_DeleteLikeRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>
+
+  func makePutReactionCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReactionResponse>
+
+  func makeDeleteReactionCall(
+    _ request: Com_Octopuscommunity_DeleteRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -708,18 +932,6 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
-  public func makePutLikeCall(
-    _ request: Com_Octopuscommunity_PutRequest,
-    callOptions: CallOptions? = nil
-  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse> {
-    return self.makeAsyncUnaryCall(
-      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
-    )
-  }
-
   public func makePutPollVoteCall(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions? = nil
@@ -729,18 +941,6 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? []
-    )
-  }
-
-  public func makeDeleteLikeCall(
-    _ request: Com_Octopuscommunity_DeleteLikeRequest,
-    callOptions: CallOptions? = nil
-  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse> {
-    return self.makeAsyncUnaryCall(
-      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? []
     )
   }
 
@@ -792,6 +992,78 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func makeShadowbanPostCall(
+    _ request: Com_Octopuscommunity_ShadowbanPostRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanPostInterceptors() ?? []
+    )
+  }
+
+  public func makeShadowbanCommentCall(
+    _ request: Com_Octopuscommunity_ShadowbanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowbanCommentRequest, Com_Octopuscommunity_ShadowbanCommentResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanCommentInterceptors() ?? []
+    )
+  }
+
+  public func makeShadowbanReplyCall(
+    _ request: Com_Octopuscommunity_ShadowbanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowbanReplyRequest, Com_Octopuscommunity_ShadowbanReplyResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanReplyInterceptors() ?? []
+    )
+  }
+
+  public func makeUnshadowbanPostCall(
+    _ request: Com_Octopuscommunity_UnshadowbanPostRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnshadowbanPostRequest, Com_Octopuscommunity_UnshadowbanPostResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanPostInterceptors() ?? []
+    )
+  }
+
+  public func makeUnshadowbanCommentCall(
+    _ request: Com_Octopuscommunity_UnshadowbanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnshadowbanCommentRequest, Com_Octopuscommunity_UnshadowbanCommentResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanCommentInterceptors() ?? []
+    )
+  }
+
+  public func makeUnshadowbanReplyCall(
+    _ request: Com_Octopuscommunity_UnshadowbanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? []
+    )
+  }
+
   public func makeReportContentCall(
     _ request: Com_Octopuscommunity_ReportContentRequest,
     callOptions: CallOptions? = nil
@@ -813,6 +1085,54 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  public func makePutLikeCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
+    )
+  }
+
+  public func makeDeleteLikeCall(
+    _ request: Com_Octopuscommunity_DeleteLikeRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? []
+    )
+  }
+
+  public func makePutReactionCall(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReactionResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReaction.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutReactionInterceptors() ?? []
+    )
+  }
+
+  public func makeDeleteReactionCall(
+    _ request: Com_Octopuscommunity_DeleteRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReaction.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? []
     )
   }
 }
@@ -927,18 +1247,6 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
-  public func putLike(
-    _ request: Com_Octopuscommunity_PutRequest,
-    callOptions: CallOptions? = nil
-  ) async throws -> Com_Octopuscommunity_PutLikeResponse {
-    return try await self.performAsyncUnaryCall(
-      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
-    )
-  }
-
   public func putPollVote(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions? = nil
@@ -948,18 +1256,6 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? []
-    )
-  }
-
-  public func deleteLike(
-    _ request: Com_Octopuscommunity_DeleteLikeRequest,
-    callOptions: CallOptions? = nil
-  ) async throws -> Com_Octopuscommunity_DeleteLikeResponse {
-    return try await self.performAsyncUnaryCall(
-      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike.path,
-      request: request,
-      callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? []
     )
   }
 
@@ -1011,6 +1307,78 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func shadowbanPost(
+    _ request: Com_Octopuscommunity_ShadowbanPostRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_ShadowbanPostResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanPostInterceptors() ?? []
+    )
+  }
+
+  public func shadowbanComment(
+    _ request: Com_Octopuscommunity_ShadowbanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_ShadowbanCommentResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanCommentInterceptors() ?? []
+    )
+  }
+
+  public func shadowbanReply(
+    _ request: Com_Octopuscommunity_ShadowbanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_ShadowbanReplyResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowbanReplyInterceptors() ?? []
+    )
+  }
+
+  public func unshadowbanPost(
+    _ request: Com_Octopuscommunity_UnshadowbanPostRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UnshadowbanPostResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanPostInterceptors() ?? []
+    )
+  }
+
+  public func unshadowbanComment(
+    _ request: Com_Octopuscommunity_UnshadowbanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UnshadowbanCommentResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanCommentInterceptors() ?? []
+    )
+  }
+
+  public func unshadowbanReply(
+    _ request: Com_Octopuscommunity_UnshadowbanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UnshadowbanReplyResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? []
+    )
+  }
+
   public func reportContent(
     _ request: Com_Octopuscommunity_ReportContentRequest,
     callOptions: CallOptions? = nil
@@ -1032,6 +1400,54 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  public func putLike(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_PutLikeResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutLikeInterceptors() ?? []
+    )
+  }
+
+  public func deleteLike(
+    _ request: Com_Octopuscommunity_DeleteLikeRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_DeleteLikeResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? []
+    )
+  }
+
+  public func putReaction(
+    _ request: Com_Octopuscommunity_PutRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_PutReactionResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReaction.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makePutReactionInterceptors() ?? []
+    )
+  }
+
+  public func deleteReaction(
+    _ request: Com_Octopuscommunity_DeleteRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_DeleteReactionResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReaction.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? []
     )
   }
 }
@@ -1082,14 +1498,8 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
   /// - Returns: Interceptors to use when invoking 'putPost'.
   func makePutPostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>]
 
-  /// - Returns: Interceptors to use when invoking 'putLike'.
-  func makePutLikeInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
-
   /// - Returns: Interceptors to use when invoking 'putPollVote'.
   func makePutPollVoteInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>]
-
-  /// - Returns: Interceptors to use when invoking 'deleteLike'.
-  func makeDeleteLikeInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>]
 
   /// - Returns: Interceptors to use when invoking 'getTopics'.
   func makeGetTopicsInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetTopicsRequest, Com_Octopuscommunity_GetTopicsResponse>]
@@ -1103,11 +1513,41 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
   /// - Returns: Interceptors to use when invoking 'moderatePost'.
   func makeModeratePostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'shadowbanPost'.
+  func makeShadowbanPostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'shadowbanComment'.
+  func makeShadowbanCommentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ShadowbanCommentRequest, Com_Octopuscommunity_ShadowbanCommentResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'shadowbanReply'.
+  func makeShadowbanReplyInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ShadowbanReplyRequest, Com_Octopuscommunity_ShadowbanReplyResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unshadowbanPost'.
+  func makeUnshadowbanPostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnshadowbanPostRequest, Com_Octopuscommunity_UnshadowbanPostResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unshadowbanComment'.
+  func makeUnshadowbanCommentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnshadowbanCommentRequest, Com_Octopuscommunity_UnshadowbanCommentResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unshadowbanReply'.
+  func makeUnshadowbanReplyInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>]
+
   /// - Returns: Interceptors to use when invoking 'reportContent'.
   func makeReportContentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ReportContentRequest, Com_Octopuscommunity_ReportContentResponse>]
 
   /// - Returns: Interceptors to use when invoking 'getOrCreateBridgePost'.
   func makeGetOrCreateBridgePostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'putLike'.
+  func makePutLikeInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'deleteLike'.
+  func makeDeleteLikeInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'putReaction'.
+  func makePutReactionInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReactionResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'deleteReaction'.
+  func makeDeleteReactionInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>]
 }
 
 public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
@@ -1124,15 +1564,23 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPost,
-      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPollVote,
-      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getTopics,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.updatePost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deletePost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderatePost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanPost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanComment,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanReply,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanPost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanComment,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.reportContent,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOrCreateBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReaction,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReaction,
     ]
   )
 
@@ -1191,21 +1639,9 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
-    public static let putLike = GRPCMethodDescriptor(
-      name: "PutLike",
-      path: "/com.octopuscommunity.OctoObjectService/PutLike",
-      type: GRPCCallType.unary
-    )
-
     public static let putPollVote = GRPCMethodDescriptor(
       name: "PutPollVote",
       path: "/com.octopuscommunity.OctoObjectService/PutPollVote",
-      type: GRPCCallType.unary
-    )
-
-    public static let deleteLike = GRPCMethodDescriptor(
-      name: "DeleteLike",
-      path: "/com.octopuscommunity.OctoObjectService/DeleteLike",
       type: GRPCCallType.unary
     )
 
@@ -1233,6 +1669,42 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let shadowbanPost = GRPCMethodDescriptor(
+      name: "ShadowbanPost",
+      path: "/com.octopuscommunity.OctoObjectService/ShadowbanPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let shadowbanComment = GRPCMethodDescriptor(
+      name: "ShadowbanComment",
+      path: "/com.octopuscommunity.OctoObjectService/ShadowbanComment",
+      type: GRPCCallType.unary
+    )
+
+    public static let shadowbanReply = GRPCMethodDescriptor(
+      name: "ShadowbanReply",
+      path: "/com.octopuscommunity.OctoObjectService/ShadowbanReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let unshadowbanPost = GRPCMethodDescriptor(
+      name: "UnshadowbanPost",
+      path: "/com.octopuscommunity.OctoObjectService/UnshadowbanPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let unshadowbanComment = GRPCMethodDescriptor(
+      name: "UnshadowbanComment",
+      path: "/com.octopuscommunity.OctoObjectService/UnshadowbanComment",
+      type: GRPCCallType.unary
+    )
+
+    public static let unshadowbanReply = GRPCMethodDescriptor(
+      name: "UnshadowbanReply",
+      path: "/com.octopuscommunity.OctoObjectService/UnshadowbanReply",
+      type: GRPCCallType.unary
+    )
+
     public static let reportContent = GRPCMethodDescriptor(
       name: "ReportContent",
       path: "/com.octopuscommunity.OctoObjectService/ReportContent",
@@ -1242,6 +1714,30 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
     public static let getOrCreateBridgePost = GRPCMethodDescriptor(
       name: "GetOrCreateBridgePost",
       path: "/com.octopuscommunity.OctoObjectService/GetOrCreateBridgePost",
+      type: GRPCCallType.unary
+    )
+
+    public static let putLike = GRPCMethodDescriptor(
+      name: "PutLike",
+      path: "/com.octopuscommunity.OctoObjectService/PutLike",
+      type: GRPCCallType.unary
+    )
+
+    public static let deleteLike = GRPCMethodDescriptor(
+      name: "DeleteLike",
+      path: "/com.octopuscommunity.OctoObjectService/DeleteLike",
+      type: GRPCCallType.unary
+    )
+
+    public static let putReaction = GRPCMethodDescriptor(
+      name: "PutReaction",
+      path: "/com.octopuscommunity.OctoObjectService/PutReaction",
+      type: GRPCCallType.unary
+    )
+
+    public static let deleteReaction = GRPCMethodDescriptor(
+      name: "DeleteReaction",
+      path: "/com.octopuscommunity.OctoObjectService/DeleteReaction",
       type: GRPCCallType.unary
     )
   }
@@ -1271,11 +1767,7 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
 
   func putPost(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutPostResponse>
 
-  func putLike(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutLikeResponse>
-
   func putPollVote(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutPollVoteResponse>
-
-  func deleteLike(request: Com_Octopuscommunity_DeleteLikeRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_DeleteLikeResponse>
 
   func getTopics(request: Com_Octopuscommunity_GetTopicsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetTopicsResponse>
 
@@ -1285,10 +1777,32 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
 
   func moderatePost(request: Com_Octopuscommunity_ModeratePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ModeratePostResponse>
 
+  func shadowbanPost(request: Com_Octopuscommunity_ShadowbanPostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ShadowbanPostResponse>
+
+  func shadowbanComment(request: Com_Octopuscommunity_ShadowbanCommentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ShadowbanCommentResponse>
+
+  func shadowbanReply(request: Com_Octopuscommunity_ShadowbanReplyRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ShadowbanReplyResponse>
+
+  func unshadowbanPost(request: Com_Octopuscommunity_UnshadowbanPostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnshadowbanPostResponse>
+
+  func unshadowbanComment(request: Com_Octopuscommunity_UnshadowbanCommentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnshadowbanCommentResponse>
+
+  func unshadowbanReply(request: Com_Octopuscommunity_UnshadowbanReplyRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnshadowbanReplyResponse>
+
   ///Do nothing if moderation mod is off
   func reportContent(request: Com_Octopuscommunity_ReportContentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ReportContentResponse>
 
   func getOrCreateBridgePost(request: Com_Octopuscommunity_GetOrCreateBridgePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  ///reactions
+  func putLike(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutLikeResponse>
+
+  ///Deprecated. Use DeleteReaction
+  func deleteLike(request: Com_Octopuscommunity_DeleteLikeRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_DeleteLikeResponse>
+
+  func putReaction(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutReactionResponse>
+
+  func deleteReaction(request: Com_Octopuscommunity_DeleteRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_DeleteReactionResponse>
 }
 
 extension Com_Octopuscommunity_OctoObjectServiceProvider {
@@ -1384,15 +1898,6 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         userFunction: self.putPost(request:context:)
       )
 
-    case "PutLike":
-      return UnaryServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
-        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutLikeResponse>(),
-        interceptors: self.interceptors?.makePutLikeInterceptors() ?? [],
-        userFunction: self.putLike(request:context:)
-      )
-
     case "PutPollVote":
       return UnaryServerHandler(
         context: context,
@@ -1400,15 +1905,6 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutPollVoteResponse>(),
         interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? [],
         userFunction: self.putPollVote(request:context:)
-      )
-
-    case "DeleteLike":
-      return UnaryServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteLikeRequest>(),
-        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteLikeResponse>(),
-        interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? [],
-        userFunction: self.deleteLike(request:context:)
       )
 
     case "GetTopics":
@@ -1447,6 +1943,60 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         userFunction: self.moderatePost(request:context:)
       )
 
+    case "ShadowbanPost":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowbanPostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowbanPostResponse>(),
+        interceptors: self.interceptors?.makeShadowbanPostInterceptors() ?? [],
+        userFunction: self.shadowbanPost(request:context:)
+      )
+
+    case "ShadowbanComment":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowbanCommentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowbanCommentResponse>(),
+        interceptors: self.interceptors?.makeShadowbanCommentInterceptors() ?? [],
+        userFunction: self.shadowbanComment(request:context:)
+      )
+
+    case "ShadowbanReply":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowbanReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowbanReplyResponse>(),
+        interceptors: self.interceptors?.makeShadowbanReplyInterceptors() ?? [],
+        userFunction: self.shadowbanReply(request:context:)
+      )
+
+    case "UnshadowbanPost":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnshadowbanPostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanPostResponse>(),
+        interceptors: self.interceptors?.makeUnshadowbanPostInterceptors() ?? [],
+        userFunction: self.unshadowbanPost(request:context:)
+      )
+
+    case "UnshadowbanComment":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnshadowbanCommentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanCommentResponse>(),
+        interceptors: self.interceptors?.makeUnshadowbanCommentInterceptors() ?? [],
+        userFunction: self.unshadowbanComment(request:context:)
+      )
+
+    case "UnshadowbanReply":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnshadowbanReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanReplyResponse>(),
+        interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? [],
+        userFunction: self.unshadowbanReply(request:context:)
+      )
+
     case "ReportContent":
       return UnaryServerHandler(
         context: context,
@@ -1463,6 +2013,42 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
         interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? [],
         userFunction: self.getOrCreateBridgePost(request:context:)
+      )
+
+    case "PutLike":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutLikeResponse>(),
+        interceptors: self.interceptors?.makePutLikeInterceptors() ?? [],
+        userFunction: self.putLike(request:context:)
+      )
+
+    case "DeleteLike":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteLikeRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteLikeResponse>(),
+        interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? [],
+        userFunction: self.deleteLike(request:context:)
+      )
+
+    case "PutReaction":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutReactionResponse>(),
+        interceptors: self.interceptors?.makePutReactionInterceptors() ?? [],
+        userFunction: self.putReaction(request:context:)
+      )
+
+    case "DeleteReaction":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteReactionResponse>(),
+        interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? [],
+        userFunction: self.deleteReaction(request:context:)
       )
 
     default:
@@ -1524,20 +2110,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_PutPostResponse
 
-  func putLike(
-    request: Com_Octopuscommunity_PutRequest,
-    context: GRPCAsyncServerCallContext
-  ) async throws -> Com_Octopuscommunity_PutLikeResponse
-
   func putPollVote(
     request: Com_Octopuscommunity_PutRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_PutPollVoteResponse
-
-  func deleteLike(
-    request: Com_Octopuscommunity_DeleteLikeRequest,
-    context: GRPCAsyncServerCallContext
-  ) async throws -> Com_Octopuscommunity_DeleteLikeResponse
 
   func getTopics(
     request: Com_Octopuscommunity_GetTopicsRequest,
@@ -1559,6 +2135,36 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_ModeratePostResponse
 
+  func shadowbanPost(
+    request: Com_Octopuscommunity_ShadowbanPostRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_ShadowbanPostResponse
+
+  func shadowbanComment(
+    request: Com_Octopuscommunity_ShadowbanCommentRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_ShadowbanCommentResponse
+
+  func shadowbanReply(
+    request: Com_Octopuscommunity_ShadowbanReplyRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_ShadowbanReplyResponse
+
+  func unshadowbanPost(
+    request: Com_Octopuscommunity_UnshadowbanPostRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UnshadowbanPostResponse
+
+  func unshadowbanComment(
+    request: Com_Octopuscommunity_UnshadowbanCommentRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UnshadowbanCommentResponse
+
+  func unshadowbanReply(
+    request: Com_Octopuscommunity_UnshadowbanReplyRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UnshadowbanReplyResponse
+
   ///Do nothing if moderation mod is off
   func reportContent(
     request: Com_Octopuscommunity_ReportContentRequest,
@@ -1569,6 +2175,28 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
+
+  ///reactions
+  func putLike(
+    request: Com_Octopuscommunity_PutRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_PutLikeResponse
+
+  ///Deprecated. Use DeleteReaction
+  func deleteLike(
+    request: Com_Octopuscommunity_DeleteLikeRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_DeleteLikeResponse
+
+  func putReaction(
+    request: Com_Octopuscommunity_PutRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_PutReactionResponse
+
+  func deleteReaction(
+    request: Com_Octopuscommunity_DeleteRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_DeleteReactionResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1671,15 +2299,6 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         wrapping: { try await self.putPost(request: $0, context: $1) }
       )
 
-    case "PutLike":
-      return GRPCAsyncServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
-        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutLikeResponse>(),
-        interceptors: self.interceptors?.makePutLikeInterceptors() ?? [],
-        wrapping: { try await self.putLike(request: $0, context: $1) }
-      )
-
     case "PutPollVote":
       return GRPCAsyncServerHandler(
         context: context,
@@ -1687,15 +2306,6 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutPollVoteResponse>(),
         interceptors: self.interceptors?.makePutPollVoteInterceptors() ?? [],
         wrapping: { try await self.putPollVote(request: $0, context: $1) }
-      )
-
-    case "DeleteLike":
-      return GRPCAsyncServerHandler(
-        context: context,
-        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteLikeRequest>(),
-        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteLikeResponse>(),
-        interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? [],
-        wrapping: { try await self.deleteLike(request: $0, context: $1) }
       )
 
     case "GetTopics":
@@ -1734,6 +2344,60 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         wrapping: { try await self.moderatePost(request: $0, context: $1) }
       )
 
+    case "ShadowbanPost":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowbanPostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowbanPostResponse>(),
+        interceptors: self.interceptors?.makeShadowbanPostInterceptors() ?? [],
+        wrapping: { try await self.shadowbanPost(request: $0, context: $1) }
+      )
+
+    case "ShadowbanComment":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowbanCommentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowbanCommentResponse>(),
+        interceptors: self.interceptors?.makeShadowbanCommentInterceptors() ?? [],
+        wrapping: { try await self.shadowbanComment(request: $0, context: $1) }
+      )
+
+    case "ShadowbanReply":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowbanReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowbanReplyResponse>(),
+        interceptors: self.interceptors?.makeShadowbanReplyInterceptors() ?? [],
+        wrapping: { try await self.shadowbanReply(request: $0, context: $1) }
+      )
+
+    case "UnshadowbanPost":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnshadowbanPostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanPostResponse>(),
+        interceptors: self.interceptors?.makeUnshadowbanPostInterceptors() ?? [],
+        wrapping: { try await self.unshadowbanPost(request: $0, context: $1) }
+      )
+
+    case "UnshadowbanComment":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnshadowbanCommentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanCommentResponse>(),
+        interceptors: self.interceptors?.makeUnshadowbanCommentInterceptors() ?? [],
+        wrapping: { try await self.unshadowbanComment(request: $0, context: $1) }
+      )
+
+    case "UnshadowbanReply":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnshadowbanReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanReplyResponse>(),
+        interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? [],
+        wrapping: { try await self.unshadowbanReply(request: $0, context: $1) }
+      )
+
     case "ReportContent":
       return GRPCAsyncServerHandler(
         context: context,
@@ -1750,6 +2414,42 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
         interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? [],
         wrapping: { try await self.getOrCreateBridgePost(request: $0, context: $1) }
+      )
+
+    case "PutLike":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutLikeResponse>(),
+        interceptors: self.interceptors?.makePutLikeInterceptors() ?? [],
+        wrapping: { try await self.putLike(request: $0, context: $1) }
+      )
+
+    case "DeleteLike":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteLikeRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteLikeResponse>(),
+        interceptors: self.interceptors?.makeDeleteLikeInterceptors() ?? [],
+        wrapping: { try await self.deleteLike(request: $0, context: $1) }
+      )
+
+    case "PutReaction":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_PutRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutReactionResponse>(),
+        interceptors: self.interceptors?.makePutReactionInterceptors() ?? [],
+        wrapping: { try await self.putReaction(request: $0, context: $1) }
+      )
+
+    case "DeleteReaction":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_DeleteRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_DeleteReactionResponse>(),
+        interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? [],
+        wrapping: { try await self.deleteReaction(request: $0, context: $1) }
       )
 
     default:
@@ -1796,17 +2496,9 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   ///   Defaults to calling `self.makeInterceptors()`.
   func makePutPostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>]
 
-  /// - Returns: Interceptors to use when handling 'putLike'.
-  ///   Defaults to calling `self.makeInterceptors()`.
-  func makePutLikeInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
-
   /// - Returns: Interceptors to use when handling 'putPollVote'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makePutPollVoteInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>]
-
-  /// - Returns: Interceptors to use when handling 'deleteLike'.
-  ///   Defaults to calling `self.makeInterceptors()`.
-  func makeDeleteLikeInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>]
 
   /// - Returns: Interceptors to use when handling 'getTopics'.
   ///   Defaults to calling `self.makeInterceptors()`.
@@ -1824,6 +2516,30 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeModeratePostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>]
 
+  /// - Returns: Interceptors to use when handling 'shadowbanPost'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeShadowbanPostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse>]
+
+  /// - Returns: Interceptors to use when handling 'shadowbanComment'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeShadowbanCommentInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ShadowbanCommentRequest, Com_Octopuscommunity_ShadowbanCommentResponse>]
+
+  /// - Returns: Interceptors to use when handling 'shadowbanReply'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeShadowbanReplyInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ShadowbanReplyRequest, Com_Octopuscommunity_ShadowbanReplyResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unshadowbanPost'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnshadowbanPostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnshadowbanPostRequest, Com_Octopuscommunity_UnshadowbanPostResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unshadowbanComment'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnshadowbanCommentInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnshadowbanCommentRequest, Com_Octopuscommunity_UnshadowbanCommentResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unshadowbanReply'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnshadowbanReplyInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>]
+
   /// - Returns: Interceptors to use when handling 'reportContent'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeReportContentInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ReportContentRequest, Com_Octopuscommunity_ReportContentResponse>]
@@ -1831,6 +2547,22 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   /// - Returns: Interceptors to use when handling 'getOrCreateBridgePost'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetOrCreateBridgePostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
+
+  /// - Returns: Interceptors to use when handling 'putLike'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makePutLikeInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
+
+  /// - Returns: Interceptors to use when handling 'deleteLike'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeDeleteLikeInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_DeleteLikeRequest, Com_Octopuscommunity_DeleteLikeResponse>]
+
+  /// - Returns: Interceptors to use when handling 'putReaction'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makePutReactionInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutReactionResponse>]
+
+  /// - Returns: Interceptors to use when handling 'deleteReaction'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeDeleteReactionInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>]
 }
 
 public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
@@ -1847,15 +2579,23 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderateReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putPost,
-      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putLike,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putPollVote,
-      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getTopics,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.updatePost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deletePost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderatePost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.shadowbanPost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.shadowbanComment,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.shadowbanReply,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unshadowbanPost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unshadowbanComment,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unshadowbanReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.reportContent,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getOrCreateBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putLike,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteLike,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putReaction,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteReaction,
     ]
   )
 
@@ -1914,21 +2654,9 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       type: GRPCCallType.unary
     )
 
-    public static let putLike = GRPCMethodDescriptor(
-      name: "PutLike",
-      path: "/com.octopuscommunity.OctoObjectService/PutLike",
-      type: GRPCCallType.unary
-    )
-
     public static let putPollVote = GRPCMethodDescriptor(
       name: "PutPollVote",
       path: "/com.octopuscommunity.OctoObjectService/PutPollVote",
-      type: GRPCCallType.unary
-    )
-
-    public static let deleteLike = GRPCMethodDescriptor(
-      name: "DeleteLike",
-      path: "/com.octopuscommunity.OctoObjectService/DeleteLike",
       type: GRPCCallType.unary
     )
 
@@ -1956,6 +2684,42 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let shadowbanPost = GRPCMethodDescriptor(
+      name: "ShadowbanPost",
+      path: "/com.octopuscommunity.OctoObjectService/ShadowbanPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let shadowbanComment = GRPCMethodDescriptor(
+      name: "ShadowbanComment",
+      path: "/com.octopuscommunity.OctoObjectService/ShadowbanComment",
+      type: GRPCCallType.unary
+    )
+
+    public static let shadowbanReply = GRPCMethodDescriptor(
+      name: "ShadowbanReply",
+      path: "/com.octopuscommunity.OctoObjectService/ShadowbanReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let unshadowbanPost = GRPCMethodDescriptor(
+      name: "UnshadowbanPost",
+      path: "/com.octopuscommunity.OctoObjectService/UnshadowbanPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let unshadowbanComment = GRPCMethodDescriptor(
+      name: "UnshadowbanComment",
+      path: "/com.octopuscommunity.OctoObjectService/UnshadowbanComment",
+      type: GRPCCallType.unary
+    )
+
+    public static let unshadowbanReply = GRPCMethodDescriptor(
+      name: "UnshadowbanReply",
+      path: "/com.octopuscommunity.OctoObjectService/UnshadowbanReply",
+      type: GRPCCallType.unary
+    )
+
     public static let reportContent = GRPCMethodDescriptor(
       name: "ReportContent",
       path: "/com.octopuscommunity.OctoObjectService/ReportContent",
@@ -1965,6 +2729,30 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
     public static let getOrCreateBridgePost = GRPCMethodDescriptor(
       name: "GetOrCreateBridgePost",
       path: "/com.octopuscommunity.OctoObjectService/GetOrCreateBridgePost",
+      type: GRPCCallType.unary
+    )
+
+    public static let putLike = GRPCMethodDescriptor(
+      name: "PutLike",
+      path: "/com.octopuscommunity.OctoObjectService/PutLike",
+      type: GRPCCallType.unary
+    )
+
+    public static let deleteLike = GRPCMethodDescriptor(
+      name: "DeleteLike",
+      path: "/com.octopuscommunity.OctoObjectService/DeleteLike",
+      type: GRPCCallType.unary
+    )
+
+    public static let putReaction = GRPCMethodDescriptor(
+      name: "PutReaction",
+      path: "/com.octopuscommunity.OctoObjectService/PutReaction",
+      type: GRPCCallType.unary
+    )
+
+    public static let deleteReaction = GRPCMethodDescriptor(
+      name: "DeleteReaction",
+      path: "/com.octopuscommunity.OctoObjectService/DeleteReaction",
       type: GRPCCallType.unary
     )
   }

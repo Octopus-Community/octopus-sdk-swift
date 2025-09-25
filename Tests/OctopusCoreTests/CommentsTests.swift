@@ -29,6 +29,7 @@ class CommentsTests: XCTestCase {
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ReplyFeedsStore(injector: $0) }
         injector.register { RepliesDatabase(injector: $0) }
+        injector.register { PostsDatabase(injector: $0) }
 
         commentsRepository = CommentsRepository(injector: injector)
         commentsDatabase = injector.getInjected(identifiedBy: Injected.commentsDatabase)
@@ -53,7 +54,7 @@ class CommentsTests: XCTestCase {
                                          descReplyFeedId: nil,
                                          ascReplyFeedId: nil,
                                          aggregatedInfo: .empty,
-                                         userInteractions: UserInteractions(userLikeId: nil, pollVoteId: nil)
+                                         userInteractions: UserInteractions(reaction: nil, pollVoteId: nil)
                                          ))
         let comment = WritableComment(postId: "postId", text: "My Comment", imageData: nil)
         try await commentsRepository.send(comment)
@@ -71,7 +72,7 @@ class CommentsTests: XCTestCase {
                             descReplyFeedId: nil,
                             ascReplyFeedId: nil,
                             aggregatedInfo: .empty,
-                            userInteractions: UserInteractions(userLikeId: nil, pollVoteId: nil))
+                            userInteractions: UserInteractions(reaction: nil, pollVoteId: nil))
         ])
 
         mockOctoService.injectNextDeleteCommentResponse(Com_Octopuscommunity_DeleteCommentResponse())

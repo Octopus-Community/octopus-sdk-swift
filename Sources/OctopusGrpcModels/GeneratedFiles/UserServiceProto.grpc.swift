@@ -31,6 +31,16 @@ public protocol Com_Octopuscommunity_UserServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>
 
+  func shadowBanUser(
+    _ request: Com_Octopuscommunity_ShadowBanUserRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowBanUserRequest, Com_Octopuscommunity_ShadowBanUserResponse>
+
+  func unShadowBanUser(
+    _ request: Com_Octopuscommunity_ShadowUnbanUserRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowUnbanUserRequest, Com_Octopuscommunity_UnShadowBanUserResponse>
+
   func createUser(
     _ request: Com_Octopuscommunity_CreateUserRequest,
     callOptions: CallOptions?
@@ -71,10 +81,35 @@ public protocol Com_Octopuscommunity_UserServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_BlockUserRequest, Com_Octopuscommunity_BlockUserResponse>
 
+  func searchUser(
+    _ request: Com_Octopuscommunity_SearchUserRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_SearchUserRequest, Com_Octopuscommunity_SearchUserResponse>
+
   func getJwtFromClientSignedToken(
     _ request: Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>
+
+  func getGuestJwt(
+    _ request: Com_Octopuscommunity_GetGuestJwtRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_GetGuestJwtRequest, Com_Octopuscommunity_GetGuestJwtResponse>
+
+  func canAccessCommunity(
+    _ request: Com_Octopuscommunity_CanAccessCommunityRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_CanAccessCommunityRequest, Com_Octopuscommunity_CanAccessCommunityResponse>
+
+  func byPassAbTesting(
+    _ request: Com_Octopuscommunity_ByPassAbTestingRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ByPassAbTestingRequest, Com_Octopuscommunity_ByPassAbTestingResponse>
+
+  func setProfileTag(
+    _ request: Com_Octopuscommunity_SetProfileTagRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>
 }
 
 extension Com_Octopuscommunity_UserServiceClientProtocol {
@@ -133,6 +168,42 @@ extension Com_Octopuscommunity_UserServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? []
+    )
+  }
+
+  ///For BO user only
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to ShadowBanUser.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func shadowBanUser(
+    _ request: Com_Octopuscommunity_ShadowBanUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowBanUserRequest, Com_Octopuscommunity_ShadowBanUserResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.shadowBanUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowBanUserInterceptors() ?? []
+    )
+  }
+
+  ///For Admin user only
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnShadowBanUser.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unShadowBanUser(
+    _ request: Com_Octopuscommunity_ShadowUnbanUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ShadowUnbanUserRequest, Com_Octopuscommunity_UnShadowBanUserResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.unShadowBanUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnShadowBanUserInterceptors() ?? []
     )
   }
 
@@ -280,6 +351,24 @@ extension Com_Octopuscommunity_UserServiceClientProtocol {
     )
   }
 
+  /// Unary call to SearchUser
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to SearchUser.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func searchUser(
+    _ request: Com_Octopuscommunity_SearchUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_SearchUserRequest, Com_Octopuscommunity_SearchUserResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.searchUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSearchUserInterceptors() ?? []
+    )
+  }
+
   /// Unary call to GetJwtFromClientSignedToken
   ///
   /// - Parameters:
@@ -295,6 +384,78 @@ extension Com_Octopuscommunity_UserServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetJwtFromClientSignedTokenInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to GetGuestJwt
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetGuestJwt.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func getGuestJwt(
+    _ request: Com_Octopuscommunity_GetGuestJwtRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_GetGuestJwtRequest, Com_Octopuscommunity_GetGuestJwtResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.getGuestJwt.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetGuestJwtInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to CanAccessCommunity
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to CanAccessCommunity.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func canAccessCommunity(
+    _ request: Com_Octopuscommunity_CanAccessCommunityRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_CanAccessCommunityRequest, Com_Octopuscommunity_CanAccessCommunityResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.canAccessCommunity.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCanAccessCommunityInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to ByPassAbTesting
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to ByPassAbTesting.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func byPassAbTesting(
+    _ request: Com_Octopuscommunity_ByPassAbTestingRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ByPassAbTestingRequest, Com_Octopuscommunity_ByPassAbTestingResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.byPassAbTesting.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeByPassAbTestingInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to SetProfileTag
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to SetProfileTag.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func setProfileTag(
+    _ request: Com_Octopuscommunity_SetProfileTagRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileTag.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetProfileTagInterceptors() ?? []
     )
   }
 }
@@ -376,6 +537,16 @@ public protocol Com_Octopuscommunity_UserServiceAsyncClientProtocol: GRPCClient 
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>
 
+  func makeShadowBanUserCall(
+    _ request: Com_Octopuscommunity_ShadowBanUserRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowBanUserRequest, Com_Octopuscommunity_ShadowBanUserResponse>
+
+  func makeUnShadowBanUserCall(
+    _ request: Com_Octopuscommunity_ShadowUnbanUserRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowUnbanUserRequest, Com_Octopuscommunity_UnShadowBanUserResponse>
+
   func makeCreateUserCall(
     _ request: Com_Octopuscommunity_CreateUserRequest,
     callOptions: CallOptions?
@@ -416,10 +587,35 @@ public protocol Com_Octopuscommunity_UserServiceAsyncClientProtocol: GRPCClient 
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_BlockUserRequest, Com_Octopuscommunity_BlockUserResponse>
 
+  func makeSearchUserCall(
+    _ request: Com_Octopuscommunity_SearchUserRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SearchUserRequest, Com_Octopuscommunity_SearchUserResponse>
+
   func makeGetJwtFromClientSignedTokenCall(
     _ request: Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>
+
+  func makeGetGuestJwtCall(
+    _ request: Com_Octopuscommunity_GetGuestJwtRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetGuestJwtRequest, Com_Octopuscommunity_GetGuestJwtResponse>
+
+  func makeCanAccessCommunityCall(
+    _ request: Com_Octopuscommunity_CanAccessCommunityRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_CanAccessCommunityRequest, Com_Octopuscommunity_CanAccessCommunityResponse>
+
+  func makeByPassAbTestingCall(
+    _ request: Com_Octopuscommunity_ByPassAbTestingRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ByPassAbTestingRequest, Com_Octopuscommunity_ByPassAbTestingResponse>
+
+  func makeSetProfileTagCall(
+    _ request: Com_Octopuscommunity_SetProfileTagRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -465,6 +661,30 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? []
+    )
+  }
+
+  public func makeShadowBanUserCall(
+    _ request: Com_Octopuscommunity_ShadowBanUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowBanUserRequest, Com_Octopuscommunity_ShadowBanUserResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.shadowBanUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowBanUserInterceptors() ?? []
+    )
+  }
+
+  public func makeUnShadowBanUserCall(
+    _ request: Com_Octopuscommunity_ShadowUnbanUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ShadowUnbanUserRequest, Com_Octopuscommunity_UnShadowBanUserResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.unShadowBanUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnShadowBanUserInterceptors() ?? []
     )
   }
 
@@ -564,6 +784,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
     )
   }
 
+  public func makeSearchUserCall(
+    _ request: Com_Octopuscommunity_SearchUserRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SearchUserRequest, Com_Octopuscommunity_SearchUserResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.searchUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSearchUserInterceptors() ?? []
+    )
+  }
+
   public func makeGetJwtFromClientSignedTokenCall(
     _ request: Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest,
     callOptions: CallOptions? = nil
@@ -573,6 +805,54 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetJwtFromClientSignedTokenInterceptors() ?? []
+    )
+  }
+
+  public func makeGetGuestJwtCall(
+    _ request: Com_Octopuscommunity_GetGuestJwtRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetGuestJwtRequest, Com_Octopuscommunity_GetGuestJwtResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.getGuestJwt.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetGuestJwtInterceptors() ?? []
+    )
+  }
+
+  public func makeCanAccessCommunityCall(
+    _ request: Com_Octopuscommunity_CanAccessCommunityRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_CanAccessCommunityRequest, Com_Octopuscommunity_CanAccessCommunityResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.canAccessCommunity.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCanAccessCommunityInterceptors() ?? []
+    )
+  }
+
+  public func makeByPassAbTestingCall(
+    _ request: Com_Octopuscommunity_ByPassAbTestingRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ByPassAbTestingRequest, Com_Octopuscommunity_ByPassAbTestingResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.byPassAbTesting.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeByPassAbTestingInterceptors() ?? []
+    )
+  }
+
+  public func makeSetProfileTagCall(
+    _ request: Com_Octopuscommunity_SetProfileTagRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileTag.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetProfileTagInterceptors() ?? []
     )
   }
 }
@@ -612,6 +892,30 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? []
+    )
+  }
+
+  public func shadowBanUser(
+    _ request: Com_Octopuscommunity_ShadowBanUserRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_ShadowBanUserResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.shadowBanUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeShadowBanUserInterceptors() ?? []
+    )
+  }
+
+  public func unShadowBanUser(
+    _ request: Com_Octopuscommunity_ShadowUnbanUserRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UnShadowBanUserResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.unShadowBanUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnShadowBanUserInterceptors() ?? []
     )
   }
 
@@ -711,6 +1015,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
     )
   }
 
+  public func searchUser(
+    _ request: Com_Octopuscommunity_SearchUserRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_SearchUserResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.searchUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSearchUserInterceptors() ?? []
+    )
+  }
+
   public func getJwtFromClientSignedToken(
     _ request: Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest,
     callOptions: CallOptions? = nil
@@ -720,6 +1036,54 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetJwtFromClientSignedTokenInterceptors() ?? []
+    )
+  }
+
+  public func getGuestJwt(
+    _ request: Com_Octopuscommunity_GetGuestJwtRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_GetGuestJwtResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.getGuestJwt.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetGuestJwtInterceptors() ?? []
+    )
+  }
+
+  public func canAccessCommunity(
+    _ request: Com_Octopuscommunity_CanAccessCommunityRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_CanAccessCommunityResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.canAccessCommunity.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCanAccessCommunityInterceptors() ?? []
+    )
+  }
+
+  public func byPassAbTesting(
+    _ request: Com_Octopuscommunity_ByPassAbTestingRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_ByPassAbTestingResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.byPassAbTesting.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeByPassAbTestingInterceptors() ?? []
+    )
+  }
+
+  public func setProfileTag(
+    _ request: Com_Octopuscommunity_SetProfileTagRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_SetProfileTagResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileTag.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetProfileTagInterceptors() ?? []
     )
   }
 }
@@ -752,6 +1116,12 @@ public protocol Com_Octopuscommunity_UserServiceClientInterceptorFactoryProtocol
   /// - Returns: Interceptors to use when invoking 'unbanUser'.
   func makeUnbanUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'shadowBanUser'.
+  func makeShadowBanUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ShadowBanUserRequest, Com_Octopuscommunity_ShadowBanUserResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unShadowBanUser'.
+  func makeUnShadowBanUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ShadowUnbanUserRequest, Com_Octopuscommunity_UnShadowBanUserResponse>]
+
   /// - Returns: Interceptors to use when invoking 'createUser'.
   func makecreateUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_CreateUserRequest, Com_Octopuscommunity_CreateUserResponse>]
 
@@ -776,8 +1146,23 @@ public protocol Com_Octopuscommunity_UserServiceClientInterceptorFactoryProtocol
   /// - Returns: Interceptors to use when invoking 'blockUser'.
   func makeBlockUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_BlockUserRequest, Com_Octopuscommunity_BlockUserResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'searchUser'.
+  func makeSearchUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_SearchUserRequest, Com_Octopuscommunity_SearchUserResponse>]
+
   /// - Returns: Interceptors to use when invoking 'getJwtFromClientSignedToken'.
   func makeGetJwtFromClientSignedTokenInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getGuestJwt'.
+  func makeGetGuestJwtInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetGuestJwtRequest, Com_Octopuscommunity_GetGuestJwtResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'canAccessCommunity'.
+  func makeCanAccessCommunityInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_CanAccessCommunityRequest, Com_Octopuscommunity_CanAccessCommunityResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'byPassAbTesting'.
+  func makeByPassAbTestingInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ByPassAbTestingRequest, Com_Octopuscommunity_ByPassAbTestingResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'setProfileTag'.
+  func makeSetProfileTagInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>]
 }
 
 public enum Com_Octopuscommunity_UserServiceClientMetadata {
@@ -788,6 +1173,8 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.deleteUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.banUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.unbanUser,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.shadowBanUser,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.unShadowBanUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.createUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.createProfile,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.updateProfile,
@@ -796,7 +1183,12 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.deleteMyProfile,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.reportUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.blockUser,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.searchUser,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.getJwtFromClientSignedToken,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.getGuestJwt,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.canAccessCommunity,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.byPassAbTesting,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileTag,
     ]
   )
 
@@ -816,6 +1208,18 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
     public static let unbanUser = GRPCMethodDescriptor(
       name: "UnbanUser",
       path: "/com.octopuscommunity.UserService/UnbanUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let shadowBanUser = GRPCMethodDescriptor(
+      name: "ShadowBanUser",
+      path: "/com.octopuscommunity.UserService/ShadowBanUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let unShadowBanUser = GRPCMethodDescriptor(
+      name: "UnShadowBanUser",
+      path: "/com.octopuscommunity.UserService/UnShadowBanUser",
       type: GRPCCallType.unary
     )
 
@@ -867,9 +1271,39 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let searchUser = GRPCMethodDescriptor(
+      name: "SearchUser",
+      path: "/com.octopuscommunity.UserService/SearchUser",
+      type: GRPCCallType.unary
+    )
+
     public static let getJwtFromClientSignedToken = GRPCMethodDescriptor(
       name: "GetJwtFromClientSignedToken",
       path: "/com.octopuscommunity.UserService/GetJwtFromClientSignedToken",
+      type: GRPCCallType.unary
+    )
+
+    public static let getGuestJwt = GRPCMethodDescriptor(
+      name: "GetGuestJwt",
+      path: "/com.octopuscommunity.UserService/GetGuestJwt",
+      type: GRPCCallType.unary
+    )
+
+    public static let canAccessCommunity = GRPCMethodDescriptor(
+      name: "CanAccessCommunity",
+      path: "/com.octopuscommunity.UserService/CanAccessCommunity",
+      type: GRPCCallType.unary
+    )
+
+    public static let byPassAbTesting = GRPCMethodDescriptor(
+      name: "ByPassAbTesting",
+      path: "/com.octopuscommunity.UserService/ByPassAbTesting",
+      type: GRPCCallType.unary
+    )
+
+    public static let setProfileTag = GRPCMethodDescriptor(
+      name: "SetProfileTag",
+      path: "/com.octopuscommunity.UserService/SetProfileTag",
       type: GRPCCallType.unary
     )
   }
@@ -886,6 +1320,12 @@ public protocol Com_Octopuscommunity_UserServiceProvider: CallHandlerProvider {
 
   ///For Admin user only
   func unbanUser(request: Com_Octopuscommunity_UnbanUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnbanUserResponse>
+
+  ///For BO user only
+  func shadowBanUser(request: Com_Octopuscommunity_ShadowBanUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ShadowBanUserResponse>
+
+  ///For Admin user only
+  func unShadowBanUser(request: Com_Octopuscommunity_ShadowUnbanUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnShadowBanUserResponse>
 
   func createUser(request: Com_Octopuscommunity_CreateUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_CreateUserResponse>
 
@@ -904,7 +1344,17 @@ public protocol Com_Octopuscommunity_UserServiceProvider: CallHandlerProvider {
 
   func blockUser(request: Com_Octopuscommunity_BlockUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_BlockUserResponse>
 
+  func searchUser(request: Com_Octopuscommunity_SearchUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_SearchUserResponse>
+
   func getJwtFromClientSignedToken(request: Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>
+
+  func getGuestJwt(request: Com_Octopuscommunity_GetGuestJwtRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetGuestJwtResponse>
+
+  func canAccessCommunity(request: Com_Octopuscommunity_CanAccessCommunityRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_CanAccessCommunityResponse>
+
+  func byPassAbTesting(request: Com_Octopuscommunity_ByPassAbTestingRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ByPassAbTestingResponse>
+
+  func setProfileTag(request: Com_Octopuscommunity_SetProfileTagRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_SetProfileTagResponse>
 }
 
 extension Com_Octopuscommunity_UserServiceProvider {
@@ -944,6 +1394,24 @@ extension Com_Octopuscommunity_UserServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnbanUserResponse>(),
         interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? [],
         userFunction: self.unbanUser(request:context:)
+      )
+
+    case "ShadowBanUser":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowBanUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowBanUserResponse>(),
+        interceptors: self.interceptors?.makeShadowBanUserInterceptors() ?? [],
+        userFunction: self.shadowBanUser(request:context:)
+      )
+
+    case "UnShadowBanUser":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowUnbanUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnShadowBanUserResponse>(),
+        interceptors: self.interceptors?.makeUnShadowBanUserInterceptors() ?? [],
+        userFunction: self.unShadowBanUser(request:context:)
       )
 
     case "createUser":
@@ -1018,6 +1486,15 @@ extension Com_Octopuscommunity_UserServiceProvider {
         userFunction: self.blockUser(request:context:)
       )
 
+    case "SearchUser":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SearchUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SearchUserResponse>(),
+        interceptors: self.interceptors?.makeSearchUserInterceptors() ?? [],
+        userFunction: self.searchUser(request:context:)
+      )
+
     case "GetJwtFromClientSignedToken":
       return UnaryServerHandler(
         context: context,
@@ -1025,6 +1502,42 @@ extension Com_Octopuscommunity_UserServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>(),
         interceptors: self.interceptors?.makeGetJwtFromClientSignedTokenInterceptors() ?? [],
         userFunction: self.getJwtFromClientSignedToken(request:context:)
+      )
+
+    case "GetGuestJwt":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetGuestJwtRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetGuestJwtResponse>(),
+        interceptors: self.interceptors?.makeGetGuestJwtInterceptors() ?? [],
+        userFunction: self.getGuestJwt(request:context:)
+      )
+
+    case "CanAccessCommunity":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_CanAccessCommunityRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_CanAccessCommunityResponse>(),
+        interceptors: self.interceptors?.makeCanAccessCommunityInterceptors() ?? [],
+        userFunction: self.canAccessCommunity(request:context:)
+      )
+
+    case "ByPassAbTesting":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ByPassAbTestingRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ByPassAbTestingResponse>(),
+        interceptors: self.interceptors?.makeByPassAbTestingInterceptors() ?? [],
+        userFunction: self.byPassAbTesting(request:context:)
+      )
+
+    case "SetProfileTag":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SetProfileTagRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SetProfileTagResponse>(),
+        interceptors: self.interceptors?.makeSetProfileTagInterceptors() ?? [],
+        userFunction: self.setProfileTag(request:context:)
       )
 
     default:
@@ -1055,6 +1568,18 @@ public protocol Com_Octopuscommunity_UserServiceAsyncProvider: CallHandlerProvid
     request: Com_Octopuscommunity_UnbanUserRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_UnbanUserResponse
+
+  ///For BO user only
+  func shadowBanUser(
+    request: Com_Octopuscommunity_ShadowBanUserRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_ShadowBanUserResponse
+
+  ///For Admin user only
+  func unShadowBanUser(
+    request: Com_Octopuscommunity_ShadowUnbanUserRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UnShadowBanUserResponse
 
   func createUser(
     request: Com_Octopuscommunity_CreateUserRequest,
@@ -1097,10 +1622,35 @@ public protocol Com_Octopuscommunity_UserServiceAsyncProvider: CallHandlerProvid
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_BlockUserResponse
 
+  func searchUser(
+    request: Com_Octopuscommunity_SearchUserRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_SearchUserResponse
+
   func getJwtFromClientSignedToken(
     request: Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse
+
+  func getGuestJwt(
+    request: Com_Octopuscommunity_GetGuestJwtRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_GetGuestJwtResponse
+
+  func canAccessCommunity(
+    request: Com_Octopuscommunity_CanAccessCommunityRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_CanAccessCommunityResponse
+
+  func byPassAbTesting(
+    request: Com_Octopuscommunity_ByPassAbTestingRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_ByPassAbTestingResponse
+
+  func setProfileTag(
+    request: Com_Octopuscommunity_SetProfileTagRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_SetProfileTagResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1147,6 +1697,24 @@ extension Com_Octopuscommunity_UserServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnbanUserResponse>(),
         interceptors: self.interceptors?.makeUnbanUserInterceptors() ?? [],
         wrapping: { try await self.unbanUser(request: $0, context: $1) }
+      )
+
+    case "ShadowBanUser":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowBanUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ShadowBanUserResponse>(),
+        interceptors: self.interceptors?.makeShadowBanUserInterceptors() ?? [],
+        wrapping: { try await self.shadowBanUser(request: $0, context: $1) }
+      )
+
+    case "UnShadowBanUser":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ShadowUnbanUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnShadowBanUserResponse>(),
+        interceptors: self.interceptors?.makeUnShadowBanUserInterceptors() ?? [],
+        wrapping: { try await self.unShadowBanUser(request: $0, context: $1) }
       )
 
     case "createUser":
@@ -1221,6 +1789,15 @@ extension Com_Octopuscommunity_UserServiceAsyncProvider {
         wrapping: { try await self.blockUser(request: $0, context: $1) }
       )
 
+    case "SearchUser":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SearchUserRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SearchUserResponse>(),
+        interceptors: self.interceptors?.makeSearchUserInterceptors() ?? [],
+        wrapping: { try await self.searchUser(request: $0, context: $1) }
+      )
+
     case "GetJwtFromClientSignedToken":
       return GRPCAsyncServerHandler(
         context: context,
@@ -1228,6 +1805,42 @@ extension Com_Octopuscommunity_UserServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>(),
         interceptors: self.interceptors?.makeGetJwtFromClientSignedTokenInterceptors() ?? [],
         wrapping: { try await self.getJwtFromClientSignedToken(request: $0, context: $1) }
+      )
+
+    case "GetGuestJwt":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetGuestJwtRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetGuestJwtResponse>(),
+        interceptors: self.interceptors?.makeGetGuestJwtInterceptors() ?? [],
+        wrapping: { try await self.getGuestJwt(request: $0, context: $1) }
+      )
+
+    case "CanAccessCommunity":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_CanAccessCommunityRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_CanAccessCommunityResponse>(),
+        interceptors: self.interceptors?.makeCanAccessCommunityInterceptors() ?? [],
+        wrapping: { try await self.canAccessCommunity(request: $0, context: $1) }
+      )
+
+    case "ByPassAbTesting":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ByPassAbTestingRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ByPassAbTestingResponse>(),
+        interceptors: self.interceptors?.makeByPassAbTestingInterceptors() ?? [],
+        wrapping: { try await self.byPassAbTesting(request: $0, context: $1) }
+      )
+
+    case "SetProfileTag":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SetProfileTagRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SetProfileTagResponse>(),
+        interceptors: self.interceptors?.makeSetProfileTagInterceptors() ?? [],
+        wrapping: { try await self.setProfileTag(request: $0, context: $1) }
       )
 
     default:
@@ -1249,6 +1862,14 @@ public protocol Com_Octopuscommunity_UserServiceServerInterceptorFactoryProtocol
   /// - Returns: Interceptors to use when handling 'unbanUser'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUnbanUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnbanUserRequest, Com_Octopuscommunity_UnbanUserResponse>]
+
+  /// - Returns: Interceptors to use when handling 'shadowBanUser'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeShadowBanUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ShadowBanUserRequest, Com_Octopuscommunity_ShadowBanUserResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unShadowBanUser'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnShadowBanUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ShadowUnbanUserRequest, Com_Octopuscommunity_UnShadowBanUserResponse>]
 
   /// - Returns: Interceptors to use when handling 'createUser'.
   ///   Defaults to calling `self.makeInterceptors()`.
@@ -1282,9 +1903,29 @@ public protocol Com_Octopuscommunity_UserServiceServerInterceptorFactoryProtocol
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeBlockUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_BlockUserRequest, Com_Octopuscommunity_BlockUserResponse>]
 
+  /// - Returns: Interceptors to use when handling 'searchUser'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSearchUserInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_SearchUserRequest, Com_Octopuscommunity_SearchUserResponse>]
+
   /// - Returns: Interceptors to use when handling 'getJwtFromClientSignedToken'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetJwtFromClientSignedTokenInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getGuestJwt'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetGuestJwtInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetGuestJwtRequest, Com_Octopuscommunity_GetGuestJwtResponse>]
+
+  /// - Returns: Interceptors to use when handling 'canAccessCommunity'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeCanAccessCommunityInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_CanAccessCommunityRequest, Com_Octopuscommunity_CanAccessCommunityResponse>]
+
+  /// - Returns: Interceptors to use when handling 'byPassAbTesting'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeByPassAbTestingInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ByPassAbTestingRequest, Com_Octopuscommunity_ByPassAbTestingResponse>]
+
+  /// - Returns: Interceptors to use when handling 'setProfileTag'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSetProfileTagInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>]
 }
 
 public enum Com_Octopuscommunity_UserServiceServerMetadata {
@@ -1295,6 +1936,8 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.deleteUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.banUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.unbanUser,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.shadowBanUser,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.unShadowBanUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.createUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.createProfile,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.updateProfile,
@@ -1303,7 +1946,12 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.deleteMyProfile,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.reportUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.blockUser,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.searchUser,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.getJwtFromClientSignedToken,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.getGuestJwt,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.canAccessCommunity,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.byPassAbTesting,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.setProfileTag,
     ]
   )
 
@@ -1323,6 +1971,18 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
     public static let unbanUser = GRPCMethodDescriptor(
       name: "UnbanUser",
       path: "/com.octopuscommunity.UserService/UnbanUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let shadowBanUser = GRPCMethodDescriptor(
+      name: "ShadowBanUser",
+      path: "/com.octopuscommunity.UserService/ShadowBanUser",
+      type: GRPCCallType.unary
+    )
+
+    public static let unShadowBanUser = GRPCMethodDescriptor(
+      name: "UnShadowBanUser",
+      path: "/com.octopuscommunity.UserService/UnShadowBanUser",
       type: GRPCCallType.unary
     )
 
@@ -1374,9 +2034,39 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let searchUser = GRPCMethodDescriptor(
+      name: "SearchUser",
+      path: "/com.octopuscommunity.UserService/SearchUser",
+      type: GRPCCallType.unary
+    )
+
     public static let getJwtFromClientSignedToken = GRPCMethodDescriptor(
       name: "GetJwtFromClientSignedToken",
       path: "/com.octopuscommunity.UserService/GetJwtFromClientSignedToken",
+      type: GRPCCallType.unary
+    )
+
+    public static let getGuestJwt = GRPCMethodDescriptor(
+      name: "GetGuestJwt",
+      path: "/com.octopuscommunity.UserService/GetGuestJwt",
+      type: GRPCCallType.unary
+    )
+
+    public static let canAccessCommunity = GRPCMethodDescriptor(
+      name: "CanAccessCommunity",
+      path: "/com.octopuscommunity.UserService/CanAccessCommunity",
+      type: GRPCCallType.unary
+    )
+
+    public static let byPassAbTesting = GRPCMethodDescriptor(
+      name: "ByPassAbTesting",
+      path: "/com.octopuscommunity.UserService/ByPassAbTesting",
+      type: GRPCCallType.unary
+    )
+
+    public static let setProfileTag = GRPCMethodDescriptor(
+      name: "SetProfileTag",
+      path: "/com.octopuscommunity.UserService/SetProfileTag",
       type: GRPCCallType.unary
     )
   }

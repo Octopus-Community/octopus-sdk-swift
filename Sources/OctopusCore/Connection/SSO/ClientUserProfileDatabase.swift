@@ -21,6 +21,15 @@ class ClientUserProfileDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
+    func getProfile(clientUserId: String) async throws -> ClientUserProfile? {
+        return try await context.performAsync { [context] in
+            try context.fetch(ClientUserEntity.fetchByClientUserId(clientUserId))
+                .compactMap { $0.profile }
+                .first
+                .map { ClientUserProfile(from: $0) }
+        }
+    }
+
     func profilePublisher(clientUserId: String) -> AnyPublisher<ClientUserProfile?, Error> {
         (context
             .publisher(request: ClientUserEntity.fetchByClientUserId(clientUserId)) {
@@ -47,7 +56,6 @@ class ClientUserProfileDatabase: InjectableObject {
             profileEntity.nickname = profile.nickname
             profileEntity.bio = profile.bio
             profileEntity.picture = profile.picture
-            profileEntity.ageInformationValue = profile.ageInformation.entity.rawValue
             clientUserEntity.profile = profileEntity
 
             try context.save()

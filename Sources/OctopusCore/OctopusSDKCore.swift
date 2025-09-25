@@ -18,6 +18,7 @@ public class OctopusSDKCore: ObservableObject {
     public let externalLinksRepository: ExternalLinksRepository
     public let trackingRepository: TrackingRepository
     public let notificationsRepository: NotificationsRepository
+    public let configRepository: ConfigRepository
 
     public let validators: Validators
 
@@ -32,11 +33,15 @@ public class OctopusSDKCore: ObservableObject {
         let installIdProvider = InstallIdProvider()
         let modelCoreDataStack = try ModelCoreDataStack()
         let trackingCoreDataStack = try TrackingCoreDataStack()
+        let configCoreDataStack = try ConfigCoreDataStack()
         injector.register { _ in SecuredStorageDefault(apiKey: apiKey, isNewInstall: installIdProvider.isNewInstall) }
         injector.register { UserDataStorage(injector: $0) }
         let userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         let remoteClient = try GrpcClient(
             apiKey: apiKey, sdkVersion: version, installId: installIdProvider.installId,
+            getUserIdBlock: { [userDataStorage] in
+                userDataStorage.userData?.id
+            },
             updateTokenBlock: { [userDataStorage] newToken in
                 guard let userData = userDataStorage.userData else { return }
                 let newUserData = UserDataStorage.UserData(id: userData.id, clientId: userData.clientId, jwtToken: newToken)
@@ -44,6 +49,7 @@ public class OctopusSDKCore: ObservableObject {
             })
         injector.register { _ in remoteClient }
         injector.register { _ in modelCoreDataStack }
+        injector.register { _ in configCoreDataStack }
         injector.register { _ in NetworkMonitorDefault() }
         injector.register { _ in AppStateMonitorDefault() }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
@@ -53,6 +59,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
 
         // Repository
+        injector.register { ConfigRepositoryDefault(injector: $0) }
         injector.register { RootFeedsRepository(injector: $0) }
         injector.register { PostsRepository(injector: $0) }
         injector.register { CommentsRepository(injector: $0) }
@@ -67,6 +74,8 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { ReplyFeedsStore(injector: $0) }
 
         // Database
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        injector.register { UserConfigDatabase(injector: $0) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
         injector.register { RootFeedsDatabase(injector: $0) }
@@ -107,10 +116,14 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { NotificationSettingsDatabase(injector: $0) }
         injector.register { NotificationsRepository(injector: $0) }
 
+        // Config
+        injector.register { CommunityAccessMonitor(injector: $0) }
+
         // Start monitors
         injector.getInjected(identifiedBy: Injected.networkMonitor).start()
         injector.getInjected(identifiedBy: Injected.appStateMonitor).start()
         injector.getInjected(identifiedBy: Injected.appSessionMonitor).start()
+        injector.getInjected(identifiedBy: Injected.communityAccessMonitor).start()
         injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).start()
         switch connectionMode {
         case .octopus:
@@ -136,6 +149,7 @@ public class OctopusSDKCore: ObservableObject {
         externalLinksRepository = injector.getInjected(identifiedBy: Injected.externalLinksRepository)
         trackingRepository = injector.getInjected(identifiedBy: Injected.trackingRepository)
         notificationsRepository = injector.getInjected(identifiedBy: Injected.notificationsRepository)
+        configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
     }
 
     deinit {
@@ -150,6 +164,7 @@ public class OctopusSDKCore: ObservableObject {
             break
         }
         injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.communityAccessMonitor).stop()
         injector.getInjected(identifiedBy: Injected.appSessionMonitor).stop()
         injector.getInjected(identifiedBy: Injected.appStateMonitor).stop()
         injector.getInjected(identifiedBy: Injected.networkMonitor).stop()

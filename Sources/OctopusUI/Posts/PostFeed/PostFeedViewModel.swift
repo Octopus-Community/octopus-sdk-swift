@@ -15,22 +15,22 @@ class PostFeedViewModel: ObservableObject {
     @Published private(set) var posts: [DisplayablePost]?
     @Published private(set) var hasMoreData = true
     @Published private(set) var error: DisplayableString?
-    @Published private(set) var isDeletingPost = false
-    @Published var postDeleted = false
+    @Published private(set) var isDeletingContent = false
+    @Published var contentDeleted = false
 
     var thisUserProfileId: String? {
         octopus.core.profileRepository.profile?.id
     }
 
     let octopus: OctopusSDK
-    let feed: Feed<OctopusCore.Post>
+    let feed: Feed<Post, Comment>
     private var storage = [AnyCancellable]()
 
     private var visiblePostIds: Set<String> = []
     private var additionalDataToFetch: CurrentValueSubject<Set<String>, Never> = .init([])
     private var liveMeasures: [String: CurrentValueSubject<LiveMeasures, Never>] = [:]
 
-    let ensureConnected: () -> Bool
+    let ensureConnected: (UserAction) -> Bool
 
     var canDisplayClientObject: Bool { octopus.displayClientObjectCallback != nil }
 
@@ -42,8 +42,8 @@ class PostFeedViewModel: ObservableObject {
         return relativeDateFormatter
     }()
 
-    init(octopus: OctopusSDK, postFeed: Feed<OctopusCore.Post>, displayModeratedPosts: Bool = false,
-         ensureConnected: @escaping () -> Bool) {
+    init(octopus: OctopusSDK, postFeed: Feed<Post, Comment>, displayModeratedPosts: Bool = false,
+         ensureConnected: @escaping (UserAction) -> Bool) {
         self.octopus = octopus
         self.feed = postFeed
         self.ensureConnected = ensureConnected
@@ -93,33 +93,47 @@ class PostFeedViewModel: ObservableObject {
                         self?.loadPreviousItems()
                         self?.queueFetchAdditionalData(id: post.uuid)
                         self?.visiblePostIds.insert(post.uuid)
+                        if let featuredCommentUuid = post.featuredComment?.uuid {
+                            self?.queueFetchAdditionalData(id: featuredCommentUuid)
+                            self?.visiblePostIds.insert(featuredCommentUuid)
+                        }
                     }
                 } else {
                     onAppear = { [weak self] in
                         self?.queueFetchAdditionalData(id: post.uuid)
                         self?.visiblePostIds.insert(post.uuid)
+                        if let featuredCommentUuid = post.featuredComment?.uuid {
+                            self?.queueFetchAdditionalData(id: featuredCommentUuid)
+                            self?.visiblePostIds.insert(featuredCommentUuid)
+                        }
                     }
                 }
 
                 let onDisappear: () -> Void = { [weak self] in
                     self?.dequeueFetchAdditionalData(id: post.uuid)
                     self?.visiblePostIds.remove(post.uuid)
+                    if let featuredCommentUuid = post.featuredComment?.uuid {
+                        self?.queueFetchAdditionalData(id: featuredCommentUuid)
+                        self?.visiblePostIds.insert(featuredCommentUuid)
+                    }
                 }
 
-                let liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
-                if let existingPublisher = liveMeasures[post.uuid] {
-                    liveMeasuresPublisher = existingPublisher
-                } else {
-                    let newPublisher = CurrentValueSubject<LiveMeasures, Never>(
-                        LiveMeasures(aggregatedInfo: .empty, userInteractions: .empty))
-                    liveMeasuresPublisher = newPublisher
-                    liveMeasures[post.uuid] = newPublisher
-                }
+                let liveMeasuresPublisher = getOrCreateLiveMeasuresPublisher(contentId: post.uuid)
                 liveMeasuresPublisher.send(LiveMeasures(aggregatedInfo: post.aggregatedInfo,
                                                         userInteractions: post.userInteractions))
 
+                let childLiveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>?
+                if let featuredComment = post.featuredComment {
+                    childLiveMeasuresPublisher = getOrCreateLiveMeasuresPublisher(contentId: featuredComment.uuid)
+                    childLiveMeasuresPublisher!.send(LiveMeasures(aggregatedInfo: featuredComment.aggregatedInfo,
+                                                            userInteractions: featuredComment.userInteractions))
+                } else {
+                    childLiveMeasuresPublisher = nil
+                }
+
 
                 return DisplayablePost(from: post, liveMeasuresPublisher: liveMeasuresPublisher,
+                                       childLiveMeasuresPublisher: childLiveMeasuresPublisher,
                                        thisUserProfileId: profile?.id, topic: topic,
                                        dateFormatter: relativeDateFormatter,
                                        onAppear: onAppear, onDisappear: onDisappear)
@@ -180,26 +194,46 @@ class PostFeedViewModel: ObservableObject {
     }
 
     func deletePost(postId: String) {
-        isDeletingPost = true
+        isDeletingContent = true
         Task {
             await deletePost(postId: postId)
-            isDeletingPost = false
+            isDeletingContent = false
         }
     }
 
-    func toggleLike(postId: String) {
-        guard ensureConnected() else { return }
+    func deleteComment(commentId: String) {
+        isDeletingContent = true
+        Task {
+            await deleteComment(commentId: commentId)
+            isDeletingContent = false
+        }
+    }
+
+    func setReaction(_ reaction: ReactionKind?, postId: String) {
+        guard ensureConnected(.reaction) else { return }
         guard let post = feed.items?.first(where: { $0.id == postId }) else {
             error = .localizationKey("Error.Unknown")
             return
         }
         Task {
-            await toggleLike(post: post)
+            await set(reaction: reaction, post: post)
+        }
+    }
+
+    func setCommentReaction(_ reaction: ReactionKind?, commentId: String) {
+        guard ensureConnected(.reaction) else { return }
+        let comment = feed.items?.first(where: { $0.featuredComment?.uuid == commentId })?.featuredComment
+        guard let comment else {
+            error = .localizationKey("Error.Unknown")
+            return
+        }
+        Task {
+            await set(reaction: reaction, comment: comment)
         }
     }
 
     func vote(pollAnswerId: String, postId: String) -> Bool {
-        guard ensureConnected() else { return false }
+        guard ensureConnected(.vote) else { return false }
         guard let post = feed.items?.first(where: { $0.id == postId }) else {
             error = .localizationKey("Error.Unknown")
             return false
@@ -226,9 +260,9 @@ class PostFeedViewModel: ObservableObject {
         }
     }
 
-    private func toggleLike(post: Post) async {
+    private func set(reaction: ReactionKind?, post: Post) async {
         do {
-            try await octopus.core.postsRepository.toggleLike(post: post)
+            try await octopus.core.postsRepository.set(reaction: reaction, post: post)
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -237,6 +271,37 @@ class PostFeedViewModel: ObservableObject {
                 for error in argumentError.errors.values.flatMap({ $0 }) {
                     if case .missingParent = error.detail {
                         try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
+                        break
+                    }
+                }
+                for (displayKind, errors) in argumentError.errors {
+                    guard !errors.isEmpty else { continue }
+                    let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
+                    switch displayKind {
+                    case .alert:
+                        self.error = .localizedString(multiErrorLocalizedString)
+                    case let .linkedToField(field):
+                        switch field {
+                        }
+                    }
+                }
+            case let .serverCall(serverError):
+                self.error = serverError.displayableMessage
+            }
+        }
+    }
+
+    private func set(reaction: ReactionKind?, comment: Comment) async {
+        do {
+            try await octopus.core.commentsRepository.set(reaction: reaction, comment: comment)
+        } catch {
+            switch error {
+            case let .validation(argumentError):
+                // special case where the error missingParent is returned: reload the comment to check that it has not
+                // been deleted
+                for error in argumentError.errors.values.flatMap({ $0 }) {
+                    if case .missingParent = error.detail {
+                        try? await octopus.core.commentsRepository.fetchComment(uuid: comment.uuid)
                         break
                     }
                 }
@@ -291,7 +356,16 @@ class PostFeedViewModel: ObservableObject {
     private func deletePost(postId: String) async {
         do {
             try await octopus.core.postsRepository.deletePost(postId: postId)
-            postDeleted = true
+            contentDeleted = true
+        } catch {
+            self.error = error.displayableMessage
+        }
+    }
+
+    private func deleteComment(commentId: String) async {
+        do {
+            try await octopus.core.commentsRepository.deleteComment(commentId: commentId)
+            contentDeleted = true
         } catch {
             self.error = error.displayableMessage
         }
@@ -342,6 +416,17 @@ class PostFeedViewModel: ObservableObject {
     private func loadRemoteTopics() {
         Task { [octopus] in
             try await octopus.core.topicsRepository.fetchTopics()
+        }
+    }
+
+    private func getOrCreateLiveMeasuresPublisher(contentId: String) -> CurrentValueSubject<LiveMeasures, Never> {
+        if let existingPublisher = liveMeasures[contentId] {
+            return existingPublisher
+        } else {
+            let newPublisher = CurrentValueSubject<LiveMeasures, Never>(
+                LiveMeasures(aggregatedInfo: .empty, userInteractions: .empty))
+            liveMeasures[contentId] = newPublisher
+            return newPublisher
         }
     }
 }

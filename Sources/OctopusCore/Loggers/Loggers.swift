@@ -24,6 +24,8 @@ extension Logger {
     static let tracking = Logger(subsystem: subsystem, category: "Tracking")
     /// Logs that are related to notifications
     static let notifs = Logger(subsystem: subsystem, category: "Notifications")
+    /// Logs that are related to the config
+    static let config = Logger(subsystem: subsystem, category: "Config")
     /// Logs that are related to internal stuffs
     static let other = Logger(subsystem: subsystem, category: "Other")
 }

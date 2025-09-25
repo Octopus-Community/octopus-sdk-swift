@@ -14,7 +14,8 @@ struct ConnectionRouter: ViewModifier {
     @Compat.StateObject private var viewModel: ConnectionRouterViewModel
 
     @State private var openLogin = false
-    @State private var openCreateProfile = false
+    @State private var openNicknameValidation = false
+    @State private var displayLoadConfigError = false
     @State private var displaySSOError = false
     @State private var displayableSSOError: DisplayableString?
 
@@ -30,14 +31,8 @@ struct ConnectionRouter: ViewModifier {
                 MagicLinkView(octopus: octopus)
                     .environment(\.dismissModal, $openLogin)
             }
-            .fullScreenCover(isPresented: $openCreateProfile) {
-                NavigationView {
-                    CreateProfileView(octopus: octopus)
-                        .environment(\.dismissModal, $openCreateProfile)
-                        .presentationBackground(Color(.systemBackground))
-                }
-                .navigationBarHidden(true)
-                .accentColor(theme.colors.primary)
+            .fullScreenCover(isPresented: $openNicknameValidation) {
+                ValidateNicknameScreen(octopus: viewModel.octopus, isPresented: $openNicknameValidation)
             }
             .compatAlert(
                 "Common.Error",
@@ -54,17 +49,37 @@ struct ConnectionRouter: ViewModifier {
                 message: { error in
                     error.textView
                 })
+            .compatAlert(
+                "Common.Error",
+                isPresented: $displayLoadConfigError,
+                presenting: LocalizedStringKey("Error.Unknown"),
+                actions: { _ in
+                    Button(action: viewModel.fetchConfig) {
+                        Text("Common.Retry", bundle: .module)
+                    }
+                    Button(action: {}) {
+                        Text("Common.Cancel", bundle: .module)
+                    }
+                },
+                message: { error in
+                    Text(error, bundle: .module)
+                })
             .onReceive(viewModel.$ssoError) { error in
                 guard let error else { return }
                 displayableSSOError = error
                 displaySSOError = true
             }
+            .onReceive(viewModel.$displayLoadConfigError) { display in
+                guard display else { return }
+                displayLoadConfigError = display
+            }
             .onValueChanged(of: noConnectedReplacementAction) {
                 defer { noConnectedReplacementAction = nil }
                 switch $0 {
                 case .login: openLogin = true
-                case .createProfile: openCreateProfile = true
-                case let .ssoError(error):
+                case .validateNickname: openNicknameValidation = true
+                case .loadConfig: displayLoadConfigError = true
+                case let .error(error):
                     displayableSSOError = error
                     displaySSOError = true
                 case .none: break
@@ -81,10 +96,8 @@ extension View {
 
 @MainActor
 class ConnectionRouterViewModel: ObservableObject {
-    @Published var openLogin = false
-    @Published var openCreateProfile = false
-
     @Published private(set) var ssoError: DisplayableString?
+    @Published private(set) var displayLoadConfigError = false
 
     let octopus: OctopusSDK
     init(octopus: OctopusSDK) {
@@ -94,6 +107,12 @@ class ConnectionRouterViewModel: ObservableObject {
     func linkClientUserToOctopusUser() {
         Task {
             await linkClientUserToOctopusUser()
+        }
+    }
+
+    func fetchConfig() {
+        Task {
+            await fetchConfig()
         }
     }
 
@@ -111,6 +130,14 @@ class ConnectionRouterViewModel: ObservableObject {
             default:
                 ssoError = .localizationKey("Connection.SSO.Error.Unknown")
             }
+        }
+    }
+
+    private func fetchConfig() async {
+        do {
+            try await octopus.core.configRepository.refreshCommunityConfig()
+        } catch {
+            displayLoadConfigError = true
         }
     }
 }

@@ -14,7 +14,6 @@ class SettingsListViewModel: ObservableObject {
     @Published private(set) var logoutInProgress = false
     @Published var logoutDone = false
     @Published private(set) var error: Error?
-    @Published private(set) var popToRoot = false
 
     private var storage = [AnyCancellable]()
 

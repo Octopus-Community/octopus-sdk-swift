@@ -6,6 +6,7 @@ import Foundation
 import SwiftUI
 import os
 import Octopus
+import OctopusCore
 
 struct CommentDetailView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
@@ -67,15 +68,16 @@ struct CommentDetailView: View {
                     },
                     deleteComment: viewModel.deleteComment,
                     deleteReply: viewModel.deleteReply,
-                    toggleCommentLike: viewModel.toggleCommentLike,
-                    toggleReplyLike: viewModel.toggleReplyLike,
+                    reactionTapped: viewModel.setReaction(_:),
+                    replyReactionTapped: viewModel.setReplyReaction(_:replyId:),
                     displayContentModeration: {
-                        guard viewModel.ensureConnected() else { return }
+                        guard viewModel.ensureConnected(action: .moderation) else { return }
                         navigator.push(.reportContent(contentId: $0))
                     },
                     displayParentPost: {
                         navigator.push(.postDetail(postId: $0, comment: false, commentToScrollTo: $1,
-                                                   scrollToMostRecentComment: false))
+                                                   scrollToMostRecentComment: false, origin: .sdk,
+                                                   hasFeaturedComment: false))
                     })
 
                 CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
@@ -233,8 +235,8 @@ private struct ContentView: View {
     let openCreateReply: () -> Void
     let deleteComment: () -> Void
     let deleteReply: (String) -> Void
-    let toggleCommentLike: () -> Void
-    let toggleReplyLike: (String) -> Void
+    let reactionTapped: (ReactionKind?) -> Void
+    let replyReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
     let displayParentPost: (String, String) -> Void
 
@@ -254,8 +256,8 @@ private struct ContentView: View {
                                              openCreateReply: openCreateReply,
                                              deleteComment: deleteComment,
                                              deleteReply: deleteReply,
-                                             toggleCommentLike: toggleCommentLike,
-                                             toggleReplyLike: toggleReplyLike,
+                                             reactionTapped: reactionTapped,
+                                             replyReactionTapped: replyReactionTapped,
                                              displayContentModeration: displayContentModeration,
                                              displayParentPost: displayParentPost)
                 } else {
@@ -289,13 +291,14 @@ private struct CommentDetailContentView: View {
     let openCreateReply: () -> Void
     let deleteComment: () -> Void
     let deleteReply: (String) -> Void
-    let toggleCommentLike: () -> Void
-    let toggleReplyLike: (String) -> Void
+    let reactionTapped: (ReactionKind?) -> Void
+    let replyReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
     let displayParentPost: (String, String) -> Void
 
     @State private var displayWillDeleteAlert = false
     @State private var openActions = false
+    @State private var showReactionPicker = false
 
     private let minAspectRatio: CGFloat = 4 / 5
 
@@ -412,26 +415,13 @@ private struct CommentDetailContentView: View {
 
                     let userInteractions = comment.userInteractions
                     let aggregatedInfo = comment.aggregatedInfo
-                    HStack(spacing: 24) {
-                        Button(action: toggleCommentLike) {
-                            AggregateView(image: userInteractions.hasLiked ? .AggregatedInfo.likeActivated : .AggregatedInfo.like,
-                                          imageForegroundColor: userInteractions.hasLiked ?
-                                          theme.colors.like : theme.colors.gray700,
-                                          count: aggregatedInfo.likeCount,
-                                          nullDisplayValue: "Content.AggregatedInfo.Like")
-                        }
-                        .buttonStyle(.plain)
-
-                        Button(action: openCreateReply) {
-                            AggregateView(image: .AggregatedInfo.comment, count: 0,
-                                          nullDisplayValue: "Content.AggregatedInfo.Answer")
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .fixedSize()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 8)
-                    .padding(.top, 8)
+                    ResponseReactionBarView(
+                        userReaction: userInteractions.reaction,
+                        canReply: true,
+                        reactions: aggregatedInfo.reactions,
+                        reactionTapped: reactionTapped,
+                        openCreateReply: openCreateReply
+                    )
                 }
             }
             .id("commentDetail-\(comment.uuid)")
@@ -444,7 +434,7 @@ private struct CommentDetailContentView: View {
                             loadPreviousReplies: loadPreviousReplies,
                             displayProfile: displayProfile,
                             deleteReply: deleteReply,
-                            toggleLike: toggleReplyLike,
+                            reactionTapped: replyReactionTapped,
                             displayContentModeration: displayContentModeration)
             } else {
                 Compat.ProgressView()
@@ -508,7 +498,7 @@ private struct RepliesView: View {
     let loadPreviousReplies: () -> Void
     let displayProfile: (String) -> Void
     let deleteReply: (String) -> Void
-    let toggleLike: (String) -> Void
+    let reactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
 
     var body: some View {
@@ -519,9 +509,12 @@ private struct RepliesView: View {
                     ResponseFeedItemView(
                         response: reply,
                         zoomableImageInfo: $zoomableImageInfo,
-                        displayResponseDetail: { _ in }, replyToResponse: { _ in },
-                        displayProfile: displayProfile, deleteResponse: deleteReply,
-                        toggleLike: toggleLike, displayContentModeration: displayContentModeration)
+                        displayResponseDetail: { _, _ in },
+                        displayParentDetail: { _ in },
+                        displayProfile: displayProfile,
+                        deleteResponse: deleteReply,
+                        reactionTapped: reactionTapped,
+                        displayContentModeration: displayContentModeration)
                     .onAppear {
                         reply.displayEvents.onAppear()
                     }

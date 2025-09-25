@@ -7,7 +7,8 @@ import Foundation
 enum MainFlowScreen: NBScreen {
     case currentUserProfile
     case publicProfile(profileId: String)
-    case postDetail(postId: String, comment: Bool, commentToScrollTo: String?, scrollToMostRecentComment: Bool)
+    case createPost(withPoll: Bool)
+    case postDetail(postId: String, comment: Bool, commentToScrollTo: String?, scrollToMostRecentComment: Bool, origin: PostDetailNavigationOrigin, hasFeaturedComment: Bool)
     case commentDetail(commentId: String, displayGoToParentButton: Bool, reply: Bool, replyToScrollTo: String?)
     case reportContent(contentId: String)
     case reportProfile(profileId: String)

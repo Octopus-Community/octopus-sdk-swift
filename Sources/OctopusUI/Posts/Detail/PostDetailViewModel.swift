@@ -10,6 +10,11 @@ import OctopusCore
 import UIKit
 import os
 
+enum PostDetailNavigationOrigin {
+    case clientApp
+    case sdk
+}
+
 @MainActor
 class PostDetailViewModel: ObservableObject {
 
@@ -46,7 +51,7 @@ class PostDetailViewModel: ObservableObject {
 
     // Comments
     private var feedStorage = [AnyCancellable]()
-    private var feed: Feed<Comment>?
+    private var feed: Feed<Comment, Never>?
 
     @Published private(set) var comments: [DisplayableFeedResponse]?
     @Published var scrollToBottom = false
@@ -84,10 +89,11 @@ class PostDetailViewModel: ObservableObject {
     let octopus: OctopusSDK
     let postUuid: String
     let connectedActionChecker: ConnectedActionChecker
-    private var newestFirstCommentsFeed: Feed<Comment>?
+    private var newestFirstCommentsFeed: Feed<Comment, Never>?
     private var commentToScrollTo: String?
     private var scrollToMostRecentComment: Bool
-    private var shouldTrackEventBridgeOpened: Bool
+    private let origin: PostDetailNavigationOrigin
+    private let hasFeaturedComment: Bool
 
     private var internalPost: OctopusCore.Post?
 
@@ -95,6 +101,7 @@ class PostDetailViewModel: ObservableObject {
     private var additionalDataToFetch: CurrentValueSubject<Set<String>, Never> = .init([])
 
     private var storage = [AnyCancellable]()
+    private var hasFetchedPostOnce = false
 
     private var relativeDateFormatter: RelativeDateTimeFormatter = {
         let relativeDateFormatter = RelativeDateTimeFormatter()
@@ -104,14 +111,23 @@ class PostDetailViewModel: ObservableObject {
         return relativeDateFormatter
     }()
 
+    private var postOpenedOrigin: PostOpenedOrigin {
+        switch origin {
+        case .clientApp: .clientApp
+        case .sdk: .sdk(hasFeaturedComment: hasFeaturedComment)
+        }
+    }
+
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, commentToScrollTo: String?,
          scrollToMostRecentComment: Bool,
-         shouldTrackEventBridgeOpened: Bool) {
+         origin: PostDetailNavigationOrigin,
+         hasFeaturedComment: Bool) {
         self.octopus = octopus
         self.postUuid = postUuid
         self.commentToScrollTo = commentToScrollTo
         self.scrollToMostRecentComment = scrollToMostRecentComment
-        self.shouldTrackEventBridgeOpened = shouldTrackEventBridgeOpened
+        self.origin = origin
+        self.hasFeaturedComment = hasFeaturedComment
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         Publishers.CombineLatest3(
@@ -230,7 +246,7 @@ class PostDetailViewModel: ObservableObject {
                 liveMeasurePublisher.send(LiveMeasures(aggregatedInfo: comment.aggregatedInfo, userInteractions: comment.userInteractions))
                 return DisplayableFeedResponse(
                     from: comment,
-                    liveMeasurePublisher: liveMeasurePublisher.eraseToAnyPublisher(),
+                    liveMeasurePublisher: liveMeasurePublisher,
                     thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
             }
@@ -250,7 +266,7 @@ class PostDetailViewModel: ObservableObject {
             }
         }.store(in: &storage)
 
-        fetchPost(incrementViewCount: true, shouldTrackEventBridgeOpened: shouldTrackEventBridgeOpened)
+        fetchPost(incrementViewCount: true)
         fetchTopics()
 
         octopus.core.commentsRepository.commentSentPublisher
@@ -273,7 +289,7 @@ class PostDetailViewModel: ObservableObject {
             .zip(mainFlowPath.$path)
             .sink { [unowned self] previous, current in
                 if case .currentUserProfile = previous.last,
-                   case let .postDetail(postId, _, _, _) = current.last,
+                   case let .postDetail(postId, _, _, _, _, _) = current.last,
                    postId == postUuid {
                     // refresh automatically when the user profile is dismissed
                     fetchPost()
@@ -368,7 +384,7 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    private func set(feed: Feed<Comment>) {
+    private func set(feed: Feed<Comment, Never>) {
         guard feed.id != self.feed?.id else { return }
         comments = nil
         self.feed = feed
@@ -402,8 +418,8 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    func ensureConnected() -> Bool {
-        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
+    func ensureConnected(action: UserAction) -> Bool {
+        return connectedActionChecker.ensureConnected(action: action, actionWhenNotConnected: authenticationActionBinding)
     }
 
     func refresh() async {
@@ -529,10 +545,9 @@ class PostDetailViewModel: ObservableObject {
         additionalDataToFetch.send(currentValue)
     }
 
-    private func fetchPost(incrementViewCount: Bool = false, shouldTrackEventBridgeOpened: Bool = false) {
+    private func fetchPost(incrementViewCount: Bool = false) {
         Task {
-            try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount,
-                                shouldTrackEventBridgeOpened: shouldTrackEventBridgeOpened)
+            try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
         }
     }
 
@@ -542,21 +557,32 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    private func fetchPost(uuid: String, incrementViewCount: Bool,
-                           shouldTrackEventBridgeOpened: Bool = false) async throws(ServerCallError) {
+    private func fetchPost(uuid: String, incrementViewCount: Bool) async throws(ServerCallError) {
         do {
             try await octopus.core.postsRepository.fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
-            if shouldTrackEventBridgeOpened {
-                try? await octopus.core.trackingRepository.trackBridgePostOpened(success: true)
+            if !hasFetchedPostOnce {
+                let postOpenedOrigin: PostOpenedOrigin =
+                switch origin {
+                case .clientApp: .clientApp
+                case .sdk: .sdk(hasFeaturedComment: hasFeaturedComment)
+                }
+                try? await octopus.core.trackingRepository.trackPostOpened(origin: postOpenedOrigin, success: true)
             }
+            hasFetchedPostOnce = true
         } catch {
-            if shouldTrackEventBridgeOpened {
+            if !hasFetchedPostOnce {
                 switch error {
                 case .noNetwork: break // do not track a failure if the error was no network
                 default:
-                    try? await octopus.core.trackingRepository.trackBridgePostOpened(success: false)
+                    let postOpenedOrigin: PostOpenedOrigin =
+                    switch origin {
+                    case .clientApp: .clientApp
+                    case .sdk: .sdk(hasFeaturedComment: hasFeaturedComment)
+                    }
+                    try? await octopus.core.trackingRepository.trackPostOpened(origin: postOpenedOrigin, success: false)
                 }
             }
+            hasFetchedPostOnce = true
             if case let .serverError(error) = error, case .notFound = error {
                 postNotAvailable = true
             } else {
@@ -637,16 +663,8 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    func togglePostLike() {
-        guard ensureConnected() else { return }
-        guard let post = internalPost else { return }
-        Task {
-            await togglePostLike(post: post)
-        }
-    }
-
     func vote(pollAnswerId: String) -> Bool {
-        guard ensureConnected() else { return false }
+        guard ensureConnected(action: .vote) else { return false }
         guard let post = internalPost else {
             error = .localizationKey("Error.Unknown")
             return false
@@ -688,27 +706,33 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    func toggleCommentLike(commentId: String) {
-        guard ensureConnected() else { return }
-        let comment = feed?.items?.first(where: { $0.id == commentId }) ??
-            newestFirstCommentsFeed?.items?.first(where: { $0.id == commentId })
-        guard let comment else {
+    func setReaction(_ reaction: ReactionKind?) {
+        guard ensureConnected(action: .reaction) else { return }
+        guard let post = internalPost else { return }
+        Task {
+            await set(reaction: reaction, post: post)
+        }
+    }
+
+    func setCommentReaction(_ reaction: ReactionKind?, commentId: String) {
+        guard ensureConnected(action: .reaction) else { return }
+        guard let comment = feed?.items?.first(where: { $0.id == commentId }) else {
             error = .localizationKey("Error.Unknown")
             return
         }
         Task {
-            await toggleCommentLike(comment: comment)
+            await set(reaction: reaction, comment: comment)
         }
     }
 
-    private func togglePostLike(post: OctopusCore.Post) async {
+    private func set(reaction: ReactionKind?, post: OctopusCore.Post) async {
         do {
-            try await octopus.core.postsRepository.toggleLike(post: post)
+            try await octopus.core.postsRepository.set(reaction: reaction, post: post)
         } catch {
             switch error {
             case let .validation(argumentError):
-                // special case where the error missingParent is returned: reload the post to check that it has not been
-                // deleted
+                // special case where the error missingParent is returned: reload the comment to check that it has not
+                // been deleted
                 for error in argumentError.errors.values.flatMap({ $0 }) {
                     if case .missingParent = error.detail {
                         try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
@@ -732,12 +756,20 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    private func toggleCommentLike(comment: Comment) async {
+    private func set(reaction: ReactionKind?, comment: Comment) async {
         do {
-            try await octopus.core.commentsRepository.toggleLike(comment: comment)
+            try await octopus.core.commentsRepository.set(reaction: reaction, comment: comment)
         } catch {
             switch error {
             case let .validation(argumentError):
+                // special case where the error missingParent is returned: reload the comment to check that it has not
+                // been deleted
+                for error in argumentError.errors.values.flatMap({ $0 }) {
+                    if case .missingParent = error.detail {
+                        try? await octopus.core.commentsRepository.fetchComment(uuid: comment.uuid)
+                        break
+                    }
+                }
                 for (displayKind, errors) in argumentError.errors {
                     guard !errors.isEmpty else { continue }
                     let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")

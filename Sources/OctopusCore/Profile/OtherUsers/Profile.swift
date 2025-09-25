@@ -11,7 +11,7 @@ public struct Profile: Equatable, Sendable {
     public let bio: String?
     public let pictureUrl: URL?
 
-    public let newestFirstPostsFeed: Feed<Post>
+    public let newestFirstPostsFeed: Feed<Post, Comment>
 }
 
 extension Profile {

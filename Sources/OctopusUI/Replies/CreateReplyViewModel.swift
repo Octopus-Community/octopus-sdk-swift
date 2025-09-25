@@ -31,10 +31,45 @@ class CreateReplyViewModel: ObservableObject {
     private var storage = [AnyCancellable]()
     private var replyReceivedCancellable: AnyCancellable?
 
-    init(octopus: OctopusSDK, commentId: String) {
+    private let ensureConnected: (UserAction) -> Bool
+
+    private var isWaitingToSendReply = false
+
+    init(octopus: OctopusSDK, commentId: String, ensureConnected: @escaping (UserAction) -> Bool) {
         self.octopus = octopus
         self.commentId = commentId
+        self.ensureConnected = ensureConnected
         validator = self.octopus.core.validators.reply
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.forceLoginOnStrongActions }
+            .removeDuplicates()
+            .sink { [unowned self] forceLoginOnStrongActions in
+                guard forceLoginOnStrongActions != nil else {
+                    return
+                }
+                if isWaitingToSendReply {
+                    isWaitingToSendReply = false
+                    DispatchQueue.main.async { [weak self] in
+                        self?.send()
+                    }
+                }
+            }.store(in: &storage)
+
+        octopus.core.profileRepository.profilePublisher
+            .sink { [unowned self] profile in
+            guard let profile else {
+                return
+            }
+            if !profile.isGuest || profile.hasConfirmedNickname {
+                if isWaitingToSendReply {
+                    isWaitingToSendReply = false
+                    DispatchQueue.main.async { [weak self] in
+                        self?.send()
+                    }
+                }
+            }
+        }.store(in: &storage)
 
         $text
             .removeDuplicates()
@@ -75,7 +110,13 @@ class CreateReplyViewModel: ObservableObject {
         guard validator.validate(reply: reply) else { return }
 
         isLoading = true
-        
+
+        guard ensureConnected(.reply) else {
+            isWaitingToSendReply = true
+            isLoading = false
+            return
+        }
+
         Task {
             try? await Task.sleep(nanoseconds: UInt64(0.25 * 1_000_000_000))
             await send(reply: reply)

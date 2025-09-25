@@ -10,13 +10,20 @@ struct DisplayableFeedResponse: Equatable {
     let kind: ResponseKind
     let uuid: String
     let text: String?
+    let textIsEllipsized: Bool
     let image: ImageMedia?
     let author: Author
     let relativeDate: String
     let canBeDeleted: Bool
     let canBeModerated: Bool
 
-    let liveMeasures: AnyPublisher<LiveMeasures, Never>
+    fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
+    var liveMeasures: AnyPublisher<LiveMeasures, Never> {
+        _liveMeasuresPublisher.removeDuplicates().eraseToAnyPublisher()
+    }
+    var liveMeasuresValue: LiveMeasures {
+        _liveMeasuresPublisher.value
+    }
 
     let displayEvents: CellDisplayEvents
 
@@ -32,33 +39,50 @@ struct DisplayableFeedResponse: Equatable {
 }
 
 extension DisplayableFeedResponse {
-    init(from comment: Comment, liveMeasurePublisher: AnyPublisher<LiveMeasures, Never>,
+    init(from comment: Comment, ellipsizeText: Bool = false,
+         liveMeasurePublisher: CurrentValueSubject<LiveMeasures, Never>,
          thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter,
          onAppearAction: @escaping () -> Void, onDisappearAction: @escaping () -> Void) {
         kind = .comment
         uuid = comment.uuid
-        text = comment.text
+
+        let displayableText: String?
+        if ellipsizeText {
+            // Display max 200 chars and 4 new lines.
+            displayableText = comment.text.map {
+                String($0.prefix(200))
+                    .split(separator: "\n", omittingEmptySubsequences: false)
+                    .prefix(4)
+                    .joined(separator: "\n")
+            }
+        } else {
+            displayableText = comment.text
+        }
+
+        text = displayableText
+        textIsEllipsized = comment.text != displayableText
         author = .init(profile: comment.author)
         relativeDate = dateFormatter.customLocalizedStructure(for: comment.creationDate, relativeTo: Date())
         image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
         canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
         canBeModerated = comment.author?.uuid != thisUserProfileId
-        liveMeasures = liveMeasurePublisher
+        _liveMeasuresPublisher = liveMeasurePublisher
         displayEvents = CellDisplayEvents(onAppear: onAppearAction, onDisappear: onDisappearAction)
     }
 
-    init(from reply: Reply, liveMeasurePublisher: AnyPublisher<LiveMeasures, Never>,
+    init(from reply: Reply, liveMeasurePublisher: CurrentValueSubject<LiveMeasures, Never>,
          thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter,
          onAppearAction: @escaping () -> Void, onDisappearAction: @escaping () -> Void) {
         kind = .reply
         uuid = reply.uuid
         text = reply.text
+        textIsEllipsized = false
         author = .init(profile: reply.author)
         relativeDate = dateFormatter.customLocalizedStructure(for: reply.creationDate, relativeTo: Date())
         image = ImageMedia(from: reply.medias.first(where: { $0.kind == .image }))
         canBeDeleted = reply.author != nil && reply.author?.uuid == thisUserProfileId
         canBeModerated = reply.author?.uuid != thisUserProfileId
-        liveMeasures = liveMeasurePublisher
+        _liveMeasuresPublisher = liveMeasurePublisher
         displayEvents = CellDisplayEvents(onAppear: onAppearAction, onDisappear: onDisappearAction)
     }
 }

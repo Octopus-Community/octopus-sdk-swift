@@ -37,7 +37,7 @@ extension StorableComment {
         descReplyFeedId = entity.descChildrenFeedId
         ascReplyFeedId = entity.ascChildrenFeedId
         aggregatedInfo = AggregatedInfo(from: entity)
-        userInteractions = UserInteractions(userLikeId: entity.userLikeId, pollVoteId: nil) // no poll on comments
+        userInteractions = UserInteractions(from: entity)
     }
 
     init?(octoComment: Com_Octopuscommunity_OctoObject, aggregate: Com_Octopuscommunity_Aggregate?,

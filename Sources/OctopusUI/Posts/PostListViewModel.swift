@@ -11,9 +11,6 @@ import SwiftUI
 
 @MainActor
 class PostListViewModel: ObservableObject {
-    @Published var openLogin = false
-    @Published var openCreatePost = false
-
     @Published var scrollToTop = false
 
     @Published var authenticationAction: ConnectedActionReplacement?
@@ -42,21 +39,11 @@ class PostListViewModel: ObservableObject {
         return relativeDateFormatter
     }()
 
-    private var feed: Feed<OctopusCore.Post>?
+    private var feed: Feed<Post, Comment>?
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
         self.octopus = octopus
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
-
-        $openCreatePost
-            .removeDuplicates()
-            .dropFirst()
-            .sink { [unowned self] in
-                // refresh automatically when the create post is dismissed
-                guard !$0 else { return }
-                refreshFeed(isManual: false)
-                scrollToTop = true
-            }.store(in: &storage)
 
         mainFlowPath.$path
             .prepend([])
@@ -65,7 +52,10 @@ class PostListViewModel: ObservableObject {
                 if case .currentUserProfile = previous.last, current == [] {
                     // refresh automatically when the user profile is dismissed
                     refreshFeed(isManual: false)
-                    refrehCurrentUserProfile()
+                    refreshCurrentUserProfile()
+                } else if case .createPost = previous.last, current == [] {
+                    refreshFeed(isManual: false)
+                    scrollToTop = true
                 }
             }.store(in: &storage)
 
@@ -73,26 +63,21 @@ class PostListViewModel: ObservableObject {
         NotificationCenter.default
             .publisher(for: UIApplication.willEnterForegroundNotification)
             .sink { [unowned self] _ in
-                refrehCurrentUserProfile()
+                refreshCurrentUserProfile()
             }
             .store(in: &storage)
     }
 
-    func set(feed: Feed<Post>) {
+    func set(feed: Feed<Post, Comment>) {
         guard postFeedViewModel?.feed.id != feed.id else { return }
-        postFeedViewModel = PostFeedViewModel(octopus: octopus, postFeed: feed, ensureConnected: { [weak self] in
+        postFeedViewModel = PostFeedViewModel(octopus: octopus, postFeed: feed, ensureConnected: { [weak self] action in
             guard let self else { return false }
-            return self.ensureConnected()
+            return self.ensureConnected(action: action)
         })
     }
 
-    func createPostTapped() {
-        guard ensureConnected() else { return }
-        openCreatePost = true
-    }
-
-    func ensureConnected() -> Bool {
-        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
+    func ensureConnected(action: UserAction) -> Bool {
+        connectedActionChecker.ensureConnected(action: action, actionWhenNotConnected: authenticationActionBinding)
     }
 
     func refresh() async {
@@ -105,7 +90,7 @@ class PostListViewModel: ObservableObject {
         }
     }
 
-    private func refrehCurrentUserProfile() {
+    private func refreshCurrentUserProfile() {
         let profileRepository = octopus.core.profileRepository
         Task { try? await profileRepository.fetchCurrentUserProfile() }
     }

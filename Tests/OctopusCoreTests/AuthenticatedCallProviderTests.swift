@@ -113,7 +113,14 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
     var connectionStatePublisher: AnyPublisher<ConnectionState, Never> {
         $connectionState.eraseToAnyPublisher()
     }
-    @Published private(set) var connectionState = ConnectionState.notConnected
+    @Published private(set) var connectionState = ConnectionState.notConnected(nil)
+
+    var magicLinkRequestPublisher: AnyPublisher<OctopusCore.MagicLinkRequest?, Never> {
+        $magicLinkRequest.eraseToAnyPublisher()
+    }
+    @Published private(set) var magicLinkRequest: OctopusCore.MagicLinkRequest?
+
+    var clientUserConnected: Bool { userDataStorage.clientUserData != nil }
 
     var connectionMode: ConnectionMode
 
@@ -132,14 +139,12 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
                     connectionState = .connected(
                         User(
                             profile: CurrentUserProfile(
-                                storableProfile: StorableCurrentUserProfile(
-                                    id: "profileId", userId: userData.id, nickname: "nickname", email: nil, bio: nil,
-                                    pictureUrl: nil, notificationBadgeCount: 0,
-                                    descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []),
+                                storableProfile: StorableCurrentUserProfile.create(
+                                    id: "profileId", userId: userData.id, nickname: "nickname"),
                                 postFeedsStore: postFeedsStore),
-                            jwtToken: userData.jwtToken))
+                            jwtToken: userData.jwtToken), nil)
                 } else {
-                    connectionState = .notConnected
+                    connectionState = .notConnected(nil)
                 }
             }.store(in: &storage)
     }

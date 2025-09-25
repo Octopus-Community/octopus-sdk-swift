@@ -17,45 +17,38 @@ struct PollView: View {
     @State private var simulateVote: String?
 
     var body: some View {
-        VStack {
-            VStack(spacing: 8) {
-                ForEach(poll.options, id: \.id) { pollOption in
-                    Group {
-                        let state = state(for: pollOption.id)
-                        if simulateVote != nil || state.displayResult {
-                            PollOptionView(pollOption: pollOption, state: state)
-                                .animation(.easeInOut, value: state) // Animates changes
-                        } else {
-                            Button(action: {
-                                simulateVote = pollOption.id
-                                let hasVoted = vote(pollOption.id)
-                                if !hasVoted {
-                                    simulateVote = nil
-                                }
-                            }) {
-                                PollOptionView(pollOption: pollOption, state: state)
-                                    .contentShape(Rectangle())
+        VStack(spacing: 8) {
+            ForEach(poll.options, id: \.id) { pollOption in
+                Group {
+                    let state = state(for: pollOption.id)
+                    if simulateVote != nil || state.displayResult {
+                        PollOptionView(pollOption: pollOption, state: state)
+                            .animation(.easeInOut, value: state) // Animates changes
+                    } else {
+                        Button(action: {
+                            simulateVote = pollOption.id
+                            let hasVoted = vote(pollOption.id)
+                            if !hasVoted {
+                                simulateVote = nil
                             }
-                            .buttonStyle(.plain)
+                        }) {
+                            PollOptionView(pollOption: pollOption, state: state)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     }
                 }
-                if let totalVoteCount = aggregatedInfo.pollResult?.totalVoteCount,
-                   userInteractions.hasVoted || totalVoteCount >= 4 {
-                    Text("Poll.Results.VoteCount_total:\(totalVoteCount)", bundle: .module)
-                        .font(theme.fonts.caption2)
-                        .fontWeight(.medium)
-                        .foregroundColor(theme.colors.gray700)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .multilineTextAlignment(.leading)
-                }
             }
-            .padding(16)
+            if let totalVoteCount = aggregatedInfo.pollResult?.totalVoteCount,
+               userInteractions.hasVoted || totalVoteCount >= 4 {
+                Text("Poll.Results.VoteCount_total:\(totalVoteCount)", bundle: .module)
+                    .font(theme.fonts.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(theme.colors.gray700)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .multilineTextAlignment(.leading)
+            }
         }
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(theme.colors.gray300, lineWidth: 1)
-        )
         .onValueChanged(of: userInteractions.hasVoted) {
             guard $0 else { return }
             // put back simulateVoting as soon as the user has voted

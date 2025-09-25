@@ -115,11 +115,15 @@ struct RootFeedsView: View {
                     .foregroundColor(navBarPrimaryColor ? theme.colors.onPrimary : theme.colors.primary)
             }
             .modify {
+#if compiler(>=6.2)
                 if #available(iOS 26.0, *), navBarPrimaryColor {
                     $0.glassEffect(.regular.tint(theme.colors.primary))
                 } else {
                     $0
                 }
+#else
+                $0
+#endif
             }
         }
     }

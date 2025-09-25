@@ -48,39 +48,39 @@ class MagicLinkMonitorDefault: MagicLinkMonitor, InjectableObject, @unchecked Se
     }
 
     func start() {
-        Publishers.CombineLatest(
-            networkMonitor.connectionAvailablePublisher,
-            userDataStorage.$magicLinkData
-        )
-        .sink { [unowned self] connectionAvailable, magicLinkData in
-            guard connectionAvailable else { return }
-            if let magicLinkData {
-                if #available(iOS 14, *) {
-                    Logger.connection.trace("Connection and magic link waiting for confirmation, subscribing to stream.")
-                }
-                let stream = remoteClient.magicLinkStreamService.subscribe(magicLinkId: magicLinkData.magicLinkId,
-                                                                                email: magicLinkData.email)
-                magicLinkSubscription?.cancel()
-                magicLinkSubscription = Task { [self] in
-                    do {
-                        try await listenForMagicLinkConfirmationUpdates(stream: stream)
-                    } catch {
-                        if let grpcError = error as? GRPC.GRPCStatus, grpcError.code == .cancelled {
-                            // nothing to do, it is normal
-                        } else {
-                            if #available(iOS 14, *) { Logger.connection.debug("Error during magic link subsription: \(error)") }
-                            // TODO: shouldn't we start it again?
-                        }
-                    }
-                    // TODO: shouldn't we start it again?
-                    if #available(iOS 14, *) { Logger.connection.trace("Subscription suspended because stream ended.") }
-                    magicLinkSubscription?.cancel()
-                }
-            } else {
-                if #available(iOS 14, *) { Logger.connection.trace("Stream suspended because no magic link data.") }
-                magicLinkSubscription?.cancel()
-            }
-        }.store(in: &storage)
+//        Publishers.CombineLatest(
+//            networkMonitor.connectionAvailablePublisher,
+//            userDataStorage.$magicLinkData
+//        )
+//        .sink { [unowned self] connectionAvailable, magicLinkData in
+//            guard connectionAvailable else { return }
+//            if let magicLinkData {
+//                if #available(iOS 14, *) {
+//                    Logger.connection.trace("Connection and magic link waiting for confirmation, subscribing to stream.")
+//                }
+//                let stream = remoteClient.magicLinkStreamService.subscribe(magicLinkId: magicLinkData.magicLinkId,
+//                                                                                email: magicLinkData.email)
+//                magicLinkSubscription?.cancel()
+//                magicLinkSubscription = Task { [self] in
+//                    do {
+//                        try await listenForMagicLinkConfirmationUpdates(stream: stream)
+//                    } catch {
+//                        if let grpcError = error as? GRPC.GRPCStatus, grpcError.code == .cancelled {
+//                            // nothing to do, it is normal
+//                        } else {
+//                            if #available(iOS 14, *) { Logger.connection.debug("Error during magic link subsription: \(error)") }
+//                            // TODO: shouldn't we start it again?
+//                        }
+//                    }
+//                    // TODO: shouldn't we start it again?
+//                    if #available(iOS 14, *) { Logger.connection.trace("Subscription suspended because stream ended.") }
+//                    magicLinkSubscription?.cancel()
+//                }
+//            } else {
+//                if #available(iOS 14, *) { Logger.connection.trace("Stream suspended because no magic link data.") }
+//                magicLinkSubscription?.cancel()
+//            }
+//        }.store(in: &storage)
 
         userDataStorage.$magicLinkData
             .filter { $0 != nil }

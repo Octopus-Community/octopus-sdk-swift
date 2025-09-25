@@ -50,9 +50,6 @@ struct CustomEventsView: View {
                 }
             }
         }
-        .onAppear {
-            viewModel.createSDK()
-        }
     }
 }
 

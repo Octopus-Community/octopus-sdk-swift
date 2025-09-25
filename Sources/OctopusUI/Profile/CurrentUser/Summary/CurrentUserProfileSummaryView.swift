@@ -14,7 +14,6 @@ struct CurrentUserProfileSummaryView: View {
 
     @Compat.StateObject private var viewModel: CurrentUserProfileSummaryViewModel
 
-    @State private var openCreatePost = false
     @State private var displayDeleteUserAlert = false
 
     @State private var displayError = false
@@ -48,14 +47,19 @@ struct CurrentUserProfileSummaryView: View {
                         viewModel: postFeedViewModel,
                         zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
-                            navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: nil,
-                                                       scrollToMostRecentComment: $2))
+                            navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
+                                                       scrollToMostRecentComment: $2, origin: .sdk,
+                                                       hasFeaturedComment: $4))
+                        },
+                        displayCommentDetail: {
+                            navigator.push(.commentDetail(
+                                commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
                         },
                         displayProfile: { _ in },
                         displayContentModeration: {
                             navigator.push(.reportContent(contentId: $0))
                         }) {
-                            CreatePostEmptyPostView(createPost: { openCreatePost = true })
+                            CreatePostEmptyPostView(createPost: { navigator.push(.createPost(withPoll: $0)) })
                         }
                 } else {
                     EmptyView()
@@ -66,9 +70,6 @@ struct CurrentUserProfileSummaryView: View {
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem)
-        .fullScreenCover(isPresented: $openCreatePost) {
-            CreatePostView(octopus: viewModel.octopus)
-        }
         .compatAlert(
             "Common.Error",
             isPresented: $displayError,
@@ -154,12 +155,17 @@ struct CurrentUserProfileSummaryView: View {
         Button(action: { navigator.push(.settingsList) }) {
             Image(systemName: "ellipsis")
                 .modify {
+#if compiler(>=6.2)
                     if #available(iOS 26.0, *) {
                         $0
                     } else {
                         $0.padding(.vertical)
-                        .padding(.leading)
+                            .padding(.leading)
                     }
+#else
+                    $0.padding(.vertical)
+                        .padding(.leading)
+#endif
                 }
                 .font(theme.fonts.navBarItem)
         }
@@ -182,6 +188,7 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
+#if compiler(>=6.2)
                 // Disable nav bar opacity on iOS 26 to have the same behavior as before.
                 // TODO: See with product team if we need to keep it.
                 if #available(iOS 26.0, *) {
@@ -189,6 +196,7 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 1)
                 }
+#endif
                 ProfileContentView(profile: profile,
                                    zoomableImageInfo: $zoomableImageInfo,
                                    hasInitialNotSeenNotifications: hasInitialNotSeenNotifications,
@@ -271,7 +279,7 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                             Button(action: openEdition) {
                                 Text("Profile.Edit.Button", bundle: .module)
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid(.outline)))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
                         }
                         Spacer().frame(height: 20)
                         Text(profile.nickname)
@@ -295,12 +303,16 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                                 }
                         } else {
                             Button(action: openEditionWithBioFocused) {
-                                HStack(spacing: 2) {
-//                                    Image(systemName: "plus")
+                                HStack(spacing: 4) {
+                                    Image(systemName: "plus")
+                                        .font(theme.fonts.body2.weight(.light))
                                     Text("Profile.Detail.EmptyBio.Button", bundle: .module)
+                                        .font(theme.fonts.body2)
+                                        .fontWeight(.medium)
                                 }
+                                .foregroundColor(theme.colors.gray900)
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid(.outline), hasLeadingIcon: false))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
                         }
                     }
                     .padding(.horizontal, 20)

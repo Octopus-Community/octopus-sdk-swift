@@ -15,14 +15,10 @@ struct EmbeddedOctopusAuthView: View {
         Group {
             if let octopus = viewModel.octopus {
                 // You can pass a `bottomSafeAreaInset` in order to add some safe area at the bottom of `OctopusHomeScreen`.
-                OctopusHomeScreen(octopus: octopus, bottomSafeAreaInset: 10)
-                    .id(UUID()) // add an changing id so that every time Octopus is re-created, the view is re-init
+                OctopusUIView(octopus: octopus, bottomSafeAreaInset: 10)
             } else {
                 Color.red
             }
-        }
-        .onAppear {
-            viewModel.createSDK()
         }
     }
 }

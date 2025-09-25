@@ -87,7 +87,7 @@ private struct TopicsGridView: View {
     @Binding var selectedTopic: CreatePostViewModel.DisplayableTopic?
 
     var body: some View {
-        CenteredFreeGridLayout {
+        FreeGridLayout {
             ForEach(topics, id: \.self) { topic in
                 Button(action: {
                     selectedTopic = topic

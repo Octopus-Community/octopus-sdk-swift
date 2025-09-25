@@ -36,6 +36,9 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
              case .contentText:              .linkedToField(.text)
              case .contentFile:              .linkedToField(.picture)
              case .contentPoll:              .linkedToField(.poll)
+             case .contentCatchphrase:       .alert // not used for the moment
+             case .contentCta:               .alert // not used for the moment
+             case .contentClientObject:      .alert // not used for the moment
              case .contentParent:            .alert // not used for the moment
              case .unknown, .UNRECOGNIZED:   .alert
              }
@@ -49,6 +52,7 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
              case .badFileFormat:                   .badFileFormat
              case .uploadIssue:                     .uploadIssue
              case .badPollAnswerNumber:             .badPollAnswerNumber
+             case .missingClientObjectID:           .unknown // not supported for the moment
              case .none:                            .unknown
              }
              let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail)

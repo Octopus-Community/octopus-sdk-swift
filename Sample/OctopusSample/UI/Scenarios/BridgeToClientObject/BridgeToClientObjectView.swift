@@ -24,7 +24,18 @@ struct BridgeToClientObjectView: View {
             }
             Spacer()
 
-            Button(action: { viewModel.displayOctopusAsFullScreenModal = true }) {
+            Button(action: {
+                showFullScreen {
+                    if let octopus = viewModel.octopus {
+                        OctopusUIView(octopus: octopus)
+                            .fullScreenCover(item: $viewModel.recipePresented) { recipe in
+                                RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
+                            }
+                    } else {
+                        EmptyView()
+                    }
+                }
+            }) {
                 Text("Open Octopus Home Screen")
             }
         }
@@ -45,24 +56,16 @@ struct BridgeToClientObjectView: View {
                 label: { EmptyView() }
             )
         )
-        .fullScreenCover(isPresented: $viewModel.displayOctopusAsFullScreenModal) {
-            if let octopus = viewModel.octopus {
-                OctopusHomeScreen(octopus: octopus)
-                    .fullScreenCover(item: $viewModel.recipePresented) { recipe in
-                        RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
-                    }
-            }
-        }
         .sheet(isPresented: $viewModel.displayOctopusAsSheet) {
             if let octopus = viewModel.octopus {
-                OctopusHomeScreen(octopus: octopus, postId: viewModel.octopusPostId)
+                OctopusUIView(octopus: octopus, postId: viewModel.octopusPostId)
                     .fullScreenCover(item: $viewModel.recipePresented) { recipe in
                         RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
                     }
             }
         }
         .onAppear {
-            viewModel.createSDK()
+            viewModel.configureSDK()
         }
     }
 }
@@ -80,8 +83,6 @@ private struct RecipeScreen: View {
                     trailing:
                         Button(action: { presentationMode.wrappedValue.dismiss() }) {
                             Image(systemName: "xmark")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
                         }
                         .buttonStyle(.plain)
                 )

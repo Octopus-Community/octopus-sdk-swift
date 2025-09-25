@@ -14,8 +14,9 @@ public struct Post: Equatable, Sendable {
     public let updateDate: Date
     public let parentId: String
     public let clientObjectBridgeInfo: ClientObjectBridgeInfo?
-    public let newestFirstCommentsFeed: Feed<Comment>?
-    public let oldestFirstCommentsFeed: Feed<Comment>?
+    public let newestFirstCommentsFeed: Feed<Comment, Never>?
+    public let oldestFirstCommentsFeed: Feed<Comment, Never>?
+    public let featuredComment: Comment?
 
     public let aggregatedInfo: AggregatedInfo
     public let userInteractions: UserInteractions
@@ -42,7 +43,7 @@ public struct Post: Equatable, Sendable {
 }
 
 extension Post {
-    init(storablePost: StorablePost, commentFeedsStore: CommentFeedsStore) {
+    init(storablePost: StorablePost, commentFeedsStore: CommentFeedsStore, featuredComment: Comment?) {
         uuid = storablePost.uuid
         text = storablePost.text
         medias = storablePost.medias
@@ -72,7 +73,13 @@ extension Post {
             oldestFirstCommentsFeed = nil
         }
 
+        self.featuredComment = featuredComment
+
         aggregatedInfo = storablePost.aggregatedInfo ?? .empty
         userInteractions = storablePost.userInteractions ?? .empty
     }
+}
+
+extension Never: FeedItem {
+    public var id: String { "" }
 }

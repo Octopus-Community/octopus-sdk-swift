@@ -40,10 +40,6 @@ struct SettingsListView: View {
             self.error = error
             displayError = true
         }
-        .onReceive(viewModel.$popToRoot) { shouldDismiss in
-            guard shouldDismiss else { return }
-            navigator.popToRoot()
-        }
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(

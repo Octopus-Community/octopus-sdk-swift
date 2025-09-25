@@ -76,7 +76,12 @@ class APITests {
 
     @Test func testHasCommunityAccess() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
-        octopus.set(hasAccessToCommunity: true)
+        octopus.track(hasAccessToCommunity: true)
+    }
+
+    @Test func testOverrideCommunityAccess() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        try await octopus.overrideCommunityAccess(true)
     }
 
     @Test func testTrackCustomEvent() async throws {
@@ -95,8 +100,6 @@ class APITests {
         _ = ClientUser.Profile(nickname: "")
         _ = ClientUser.Profile(nickname: "", bio: "")
         _ = ClientUser.Profile(nickname: "", bio: "", picture: nil)
-        _ = ClientUser.Profile(nickname: "", bio: "", picture: nil, ageInformation: .legalAgeReached)
-        _ = ClientUser.Profile(ageInformation: .underaged)
     }
 
     @Test func testGetOrCreateClientObjectRelatedPostId() async throws {

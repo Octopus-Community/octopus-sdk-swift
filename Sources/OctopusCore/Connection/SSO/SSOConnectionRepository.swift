@@ -15,86 +15,93 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     public var connectionStatePublisher: AnyPublisher<ConnectionState, Never> {
         $connectionState.receive(on: DispatchQueue.main).eraseToAnyPublisher()
     }
-    @Published private(set) public var connectionState = ConnectionState.notConnected
+    @Published private(set) public var connectionState: ConnectionState = .notConnected(nil)
+
+    public var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> { Just(nil).eraseToAnyPublisher() }
+    public let magicLinkRequest: MagicLinkRequest? = nil
+    public var clientUserConnected: Bool { userDataStorage.clientUserData != nil }
 
     public let connectionMode: ConnectionMode
-    private let remoteClient: OctopusRemoteClient
-    private let userDataStorage: UserDataStorage
-    private let networkMonitor: NetworkMonitor
     private let profileRepository: ProfileRepository
+    private let userDataStorage: UserDataStorage
+    private let remoteClient: OctopusRemoteClient
+    private let networkMonitor: NetworkMonitor
     private let userProfileDatabase: CurrentUserProfileDatabase
     private let clientUserProfileDatabase: ClientUserProfileDatabase
-    private let postFeedsStore: PostFeedsStore
-    private let clientUserProvider: ClientUserProvider
-    private var storage: Set<AnyCancellable> = []
-    private var userInDbCancellable: AnyCancellable?
+    private let authenticatedCallProvider: AuthenticatedCallProvider
 
-    private var receivedProfile: CurrentUserProfile?
-    private var latestDisconnectionReason: String?
-    private var isLinkingClientUserAfterUnauthenticatedError = false
+    private var storage: Set<AnyCancellable> = []
+    private var connectionStateIsSet = false
+    @Published private var isConnecting = false
+    @Published private var clientIsConnecting = false
+    private var isLoggingOutAfterUnauthenticatedError = false
 
     private var clientUserTokenProvider: (() async throws -> String)?
 
-    private var connectionStateIsSet = false
-
     init(connectionMode: ConnectionMode, injector: Injector) {
         self.connectionMode = connectionMode
-        remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
-        userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
-        networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
+        userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
+        remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
+        networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
         clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
-        postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
-        clientUserProvider = injector.getInjected(identifiedBy: Injected.clientUserProvider)
+        authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
 
-        Publishers.CombineLatest3(
-            // ensure that clientUser value is not the initial one
-            Publishers.CombineLatest(
-                clientUserProvider.$clientUser,
-                clientUserProvider.$hasLoadedClientUser.filter { $0 }
-            ).map { $0.0 }.removeDuplicates(),
-            userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
+        Publishers.CombineLatest(
+            userDataStorage.$userData.removeDuplicates()
+                .receive(on: DispatchQueue.main),
             // ensure that profile value is not the initial one
             Publishers.CombineLatest(
                 profileRepository.profilePublisher,
                 profileRepository.hasLoadedProfilePublisher.filter { $0 }
             ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main)
         )
-        .receive(on: DispatchQueue.main)
-        .sink { [unowned self] clientUser, userData, profile in
-            let newConnectionState: ConnectionState
-            if let userData, let clientUser {
-                if let profile = profile ?? receivedProfile, userData.id == profile.userId,
-                   profile.nickname.nilIfEmpty != nil {
-                    newConnectionState = .connected(User(profile: profile, jwtToken: userData.jwtToken))
-                } else {
-                    let lockedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>?
-                    if case let .sso(ssoConfiguration) = connectionMode {
-                        lockedFields = ssoConfiguration.appManagedFields
-                    } else {
-                        lockedFields = nil
-                    }
-                    newConnectionState = .profileCreationRequired(
-                        clientProfile: clientUser.profile,
-                        lockedFields: lockedFields)
-                }
-            } else if let clientUser {
-                var exchangeTokenError: ExchangeTokenError?
-                if case let .clientConnected(currentClientUser, currentExchangeTokenError) = connectionState,
-                   clientUser.userId == currentClientUser.userId {
-                    exchangeTokenError = currentExchangeTokenError
-                }
-                newConnectionState = .clientConnected(clientUser, exchangeTokenError)
-            } else {
-                newConnectionState = .notConnected
+        .map { [weak self] userData, profile in
+            guard let self else {
+                return Just<(UserDataStorage.UserData?, CurrentUserProfile?)>((nil, nil))
+                    .eraseToAnyPublisher()
             }
-            connectionState = newConnectionState
-            connectionStateIsSet = true
-        }.store(in: &storage)
+            return $isConnecting
+                .filter { !$0 }
+                .map { _ in
+                    return (userData, profile)
+                }
+                .eraseToAnyPublisher()
+        }
+        .switchToLatest()
+        .removeDuplicates { $0 == $1 }
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] userData, profile in
+            guard let self else { return }
+            if let profile = profileRepository.profile, let userData = userDataStorage.userData {
+                connectionState = .connected(User(profile: profile, jwtToken: userData.jwtToken), nil)
+                connectionStateIsSet = true
+            }
+        }
+        .store(in: &storage)
+
+        Publishers.CombineLatest3(
+            userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
+            // ensure that profile value is not the initial one
+            Publishers.CombineLatest(
+                profileRepository.profilePublisher,
+                profileRepository.hasLoadedProfilePublisher.filter { $0 }
+            ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main),
+            networkMonitor.connectionAvailablePublisher.filter { $0 }
+        )
+        .first()
+        .sink { [unowned self] userData, profile, _ in
+            if profile == nil && userData == nil {
+                connectAsync()
+            }
+        }
+        .store(in: &storage)
     }
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws {
+        clientIsConnecting = true
+        defer { clientIsConnecting = false }
         let previousClientUserId = userDataStorage.clientUserData?.id
         // since connection state is not set immediatly, we need to wait for its first "real" value, not the one that
         // it has been init with.
@@ -102,17 +109,16 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         let currentState = connectionState
         self.clientUserTokenProvider = tokenProvider
         // if client user changed, logout
-        if previousClientUserId != user.userId {
+        if let previousClientUserId, previousClientUserId != user.userId {
             try await logout()
-            if let previousClientUserId {
-                try await clientUserProfileDatabase.delete(clientUserId: previousClientUserId)
-            }
+            try await clientUserProfileDatabase.delete(clientUserId: previousClientUserId)
         }
+
         try await clientUserProfileDatabase.upsert(profile: user.profile, clientUserId: user.userId)
         // if state is not connected to the same user, ask for a token
         let tokenNeeded: Bool
         switch currentState {
-        case .connected, .profileCreationRequired:
+        case .connected:
             tokenNeeded = previousClientUserId != user.userId
         default:
             tokenNeeded = true
@@ -121,13 +127,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             userDataStorage.store(clientUserData: .init(id: user.userId))
         }
         if tokenNeeded {
-            Task {
-                do {
-                    try await doLinkClientUserToOctopusUser(clientUserId: user.userId)
-                } catch {
-                    if #available(iOS 14, *) { Logger.connection.debug("Error while trying to fetch client user token: \(error)") }
-                }
-            }
+            connectAsync()
         }
     }
 
@@ -135,30 +135,93 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         let previousClientUserId = userDataStorage.clientUserData?.id
         self.clientUserTokenProvider = nil
         userDataStorage.store(clientUserData: nil)
-        try await logout()
         if let previousClientUserId {
             try await clientUserProfileDatabase.delete(clientUserId: previousClientUserId)
         }
     }
 
-    func linkClientUserToOctopusUser() async throws(ExchangeTokenError) {
-        guard case let .clientConnected(clientUser, _) = connectionState else { throw .unknown(InternalError.incorrectState) }
-        try await doLinkClientUserToOctopusUser(clientUserId: clientUser.userId)
+    func logout() async throws {
+        let profileId: String? = if case let .connected(user, _) = connectionState {
+            user.profile.id
+        } else { nil }
+        userDataStorage.store(userData: nil)
+        if let profileId {
+            try await profileRepository.deleteCurrentUserProfile(profileId: profileId)
+        }
     }
 
-    private func doLinkClientUserToOctopusUser(clientUserId: String) async throws(ExchangeTokenError) {
-        guard networkMonitor.connectionAvailable else { throw .noNetwork }
-        // a client user with a callback to get token should have been set prior to this call
-        guard let clientUserTokenProvider else { throw .unknown(InternalError.incorrectState) }
+    private func connectAsync() {
+        Task {
+            // since guest connection might be currently happening, wait for it to end
+            try? await TaskUtils.wait(for: !isConnecting)
+            try? await connect()
+        }
+    }
+
+    private func connect() async throws(ConnectionError) {
+        guard !isConnecting else { return }
+        isConnecting = true
         do {
-            if #available(iOS 14, *) { Logger.connection.trace("Asking for client user token") }
-            let token = try await clientUserTokenProvider()
-            if #available(iOS 14, *) { Logger.connection.trace("Exchanging client user token for Octopus JWT") }
-            let response = try await remoteClient.userService.getJwt(clientToken: token)
-            try processGetJwtFromClientResponse(response, clientUserId: clientUserId)
+            if let clientUserData = userDataStorage.clientUserData {
+                do {
+                    try await connectWithClientUser(clientUserId: clientUserData.id)
+                } catch {
+                    if #available(iOS 14, *) { Logger.connection.debug("Error while connecting with client user: \(error)") }
+                    if case .notConnected = connectionState {
+                        try await connectAsGuest()
+                    } else {
+                        throw error
+                    }
+                }
+            } else {
+                try await connectAsGuest()
+            }
         } catch {
-            if let linkClientUserToOctopusUserError = error as? ExchangeTokenError {
-                throw linkClientUserToOctopusUserError
+            let connectionError: ConnectionError
+            if let error = error as? ConnectionError {
+                connectionError = error
+            } else if let error = error as? ExchangeTokenError {
+                connectionError = .init(from: error)
+            } else {
+                connectionError = .unknown(error)
+            }
+            switch connectionState {
+            case .notConnected:
+                connectionState = .notConnected(connectionError)
+            case let .connected(user, _):
+                connectionState = .connected(user, connectionError)
+            }
+            connectionStateIsSet = true
+            isConnecting = false
+            throw connectionError
+        }
+        isConnecting = false
+    }
+
+    private func connectAsGuest() async throws(ConnectionError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        do {
+            let response = try await remoteClient.userService.getGuestJwt()
+
+            switch response.result {
+            case let .success(connectionData):
+                if let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID) {
+                    try await userProfileDatabase.upsert(profile: profile)
+                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
+                } else {
+                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
+                    throw InternalError.objectMalformed
+                }
+            case let .fail(failure):
+                let detailedErrors = failure.errors.map { ConnectionError.DetailedError(from: $0) }
+                throw ConnectionError.detailedErrors(detailedErrors)
+            case .none:
+                // this will happen only if we add new values to the `result`. Since they are not supported in this version, throw an error
+                throw InternalError.invalidArgument
+            }
+        } catch {
+            if let connectionError = error as? ConnectionError {
+                throw connectionError
             } else if let error = error as? RemoteClientError {
                 throw .server(ServerError(remoteClientError: error))
             } else {
@@ -167,84 +230,72 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         }
     }
 
-    private func processGetJwtFromClientResponse(
-        _ response: Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse,
-        clientUserId: String) throws(ExchangeTokenError) {
+    private func connectWithClientUser(clientUserId: String) async throws(ExchangeTokenError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        // a client user with a callback to get token should have been set prior to this call
+        guard let clientUserTokenProvider else { throw .unknown(InternalError.incorrectState) }
+        do {
+            if #available(iOS 14, *) { Logger.connection.trace("Asking for client user token") }
+            let token = try await clientUserTokenProvider()
+            if #available(iOS 14, *) { Logger.connection.trace("Exchanging client user token for Octopus JWT") }
+            let response = try await remoteClient.userService.getJwt(
+                clientToken: token,
+                authenticationMethod: authenticatedCallProvider.authenticatedIfPossibleMethod())
             switch response.result {
-            case .success(let success):
-                if let profile = StorableCurrentUserProfile(from: success.profile, userId: success.userID) {
-                    receivedProfile = CurrentUserProfile(storableProfile: profile, postFeedsStore: postFeedsStore)
-                    Task {
-                        try await userProfileDatabase.upsert(profile: profile)
-                        // wait for the db to be sure to have all information about the profile in the db to avoid
-                        // a race condition where the user data is here but not yet the profile.
-                        // In this case, the create profile is displayed and at the next run loop since the profile is
-                        // here, the screen is popped and the magic link screen is displayed
-                        userInDbCancellable = userProfileDatabase.profilePublisher(userId: success.userID)
-                            .replaceError(with: nil)
-                            .first { $0 != nil }
-                            .receive(on: DispatchQueue.main)
-                            .sink { [unowned self] result in
-                                userDataStorage.store(userData: .init(id: success.userID, clientId: clientUserId,
-                                                                      jwtToken: success.jwt))
-
-                                userInDbCancellable = nil
-                            }
+            case let .success(connectionData):
+                if let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID) {
+                    // do it before setting the profile because we might need the token in updateProfileWithClientUser
+                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
+                    var newProfile: StorableCurrentUserProfile?
+                    if let clientUserProfile = try? await clientUserProfileDatabase.getProfile(clientUserId: clientUserId) {
+                        let clientUser = ClientUser(userId: clientUserId, profile: clientUserProfile)
+                        newProfile = try? await updateProfileWithClientUser(profile: profile, clientUser: clientUser, userId: connectionData.userID)
                     }
+                    try await userProfileDatabase.upsert(profile: newProfile ?? profile)
                 } else {
-                    userDataStorage.store(userData: .init(id: success.userID, clientId: clientUserId,
-                                                          jwtToken: success.jwt))
+                    userDataStorage.store(userData: .init(id: connectionData.userID, clientId: clientUserId, jwtToken: connectionData.jwt))
+                    throw InternalError.objectMalformed
                 }
             case let .fail(failure):
                 let detailedErrors = failure.errors.map { ExchangeTokenError.DetailedError(from: $0) }
-                let clientUser: ClientUser
-                if case let .clientConnected(currentClientUser, _) = connectionState,
-                    currentClientUser.userId == clientUserId {
-                    clientUser = currentClientUser
-                } else {
-                    clientUser = ClientUser(userId: clientUserId, profile: .empty)
-                }
-                connectionState = .clientConnected(clientUser, .detailedErrors(detailedErrors))
-                throw .detailedErrors(detailedErrors)
+                throw ExchangeTokenError.detailedErrors(detailedErrors)
             case .none:
-                let clientUser: ClientUser
-                if case let .clientConnected(currentClientUser, _) = connectionState,
-                    currentClientUser.userId == clientUserId {
-                    clientUser = currentClientUser
-                } else {
-                    clientUser = ClientUser(userId: clientUserId, profile: .empty)
-                }
-                connectionState = .clientConnected(clientUser, .unknown(nil))
-                throw .unknown(nil)
+                // this will happen only if we add new values to the `result`. Since they are not supported in this version, throw an error
+                throw InternalError.invalidArgument
             }
-        }
-
-    public func logout() async throws {
-        let profileId: String? = if case let .connected(user) = connectionState {
-            user.profile.id
-        } else { nil }
-        receivedProfile = nil
-        userDataStorage.store(userData: nil)
-        if let profileId {
-            try await profileRepository.deleteCurrentUserProfile(profileId: profileId)
+        } catch {
+            if let exchangeTokenError = error as? ExchangeTokenError {
+                throw exchangeTokenError
+            } else if let error = error as? RemoteClientError {
+                throw .server(ServerError(remoteClientError: error))
+            } else {
+                throw .unknown(error)
+            }
         }
     }
 
     func onAuthenticatedCallFailed() async throws {
         try await logout()
-        guard !isLinkingClientUserAfterUnauthenticatedError else { return }
-        isLinkingClientUserAfterUnauthenticatedError = true
-        defer { isLinkingClientUserAfterUnauthenticatedError = false }
+        guard !isLoggingOutAfterUnauthenticatedError else { return }
+        isLoggingOutAfterUnauthenticatedError = true
+        defer { isLoggingOutAfterUnauthenticatedError = false }
         // Wait to be in the correct state to try to re-connect the user
         try? await TaskUtils.wait(for: {
-            if case .clientConnected = connectionState { return true }
+            if case .notConnected = connectionState { return true }
             return false
         }())
-
-        try await linkClientUserToOctopusUser()
+        try await connect()
     }
 
-    public func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError) {
+    func linkClientUserToOctopusUser() async throws(ExchangeTokenError) {
+        do {
+            try await connect()
+        } catch {
+            throw ExchangeTokenError(from: error)
+        }
+    }
+
+    func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError) {
         preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
     }
 
@@ -259,4 +310,95 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     public func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) {
         preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
     }
+
+    private func updateProfileWithClientUser(profile: StorableCurrentUserProfile, clientUser: ClientUser, userId: String) async throws -> StorableCurrentUserProfile? {
+        let appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField> = switch connectionMode {
+        case let .sso(config): config.appManagedFields
+        default: []
+        }
+        var hasUpdate = false
+        let nickname: EditableProfile.FieldUpdate<String>
+        let hasConfirmedNickname: EditableProfile.FieldUpdate<Bool>
+        let findAvailableNickname: Bool
+        // update the field if is appManaged or if the user has not yet confirmed it
+        if (appManagedFields.contains(.nickname) || !(profile.hasConfirmedNickname ?? true)),
+           let clientNickname = clientUser.profile.nickname,
+           // check with the original nickname first because the nickname can vary from the one requested
+           (profile.originalNickname ?? profile.nickname) != clientNickname {
+            if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profile.nickname), new: \(clientNickname))") }
+            nickname = .updated(clientNickname)
+            hasConfirmedNickname = appManagedFields.contains(.nickname) ? .updated(true) : .notUpdated
+            findAvailableNickname = !appManagedFields.contains(.nickname)
+            hasUpdate = true
+        } else {
+            nickname = .notUpdated
+            hasConfirmedNickname = .notUpdated
+            findAvailableNickname = false
+        }
+
+        let bio: EditableProfile.FieldUpdate<String?>
+        let hasConfirmedBio: EditableProfile.FieldUpdate<Bool>
+        if (appManagedFields.contains(.bio) || !(profile.hasConfirmedBio ?? true)),
+           profile.bio != clientUser.profile.bio {
+            if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profile.bio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
+            bio = .updated(clientUser.profile.bio)
+            hasConfirmedBio = appManagedFields.contains(.bio) ? .updated(true) : .notUpdated
+            hasUpdate = true
+        } else {
+            bio = .notUpdated
+            hasConfirmedBio = .notUpdated
+        }
+
+        let picture: EditableProfile.FieldUpdate<Data?>
+        let hasConfirmedPicture: EditableProfile.FieldUpdate<Bool>
+        if (appManagedFields.contains(.picture) || !(profile.hasConfirmedPicture ?? true)) {
+            if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
+            picture = .updated(clientUser.profile.picture)
+            hasConfirmedPicture = appManagedFields.contains(.picture) ? .updated(true) : .notUpdated
+            hasUpdate = true
+        } else {
+            picture = .notUpdated
+            hasConfirmedPicture = .notUpdated
+        }
+
+        if hasUpdate {
+            do {
+                var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated
+                if case let .updated(imageData) = picture, let imageData {
+                    let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                    pictureUpdate = .updated((imgData: resizedImgData, isCompressed: isCompressed))
+                }
+                let response = try await remoteClient.userService.updateProfile(
+                    userId: userId,
+                    profile: .init(
+                        nickname: nickname.backendValue,
+                        bio: bio.backendValue,
+                        picture: pictureUpdate.backendValue,
+                        hasConfirmedNickname: hasConfirmedNickname.backendValue,
+                        hasConfirmedBio: hasConfirmedBio.backendValue,
+                        hasConfirmedPicture: hasConfirmedPicture.backendValue,
+                        optFindAvailableNickname: findAvailableNickname
+                    ),
+                    authenticationMethod: try authenticatedCallProvider.authenticatedMethod())
+                switch response.result {
+                case let .success(content):
+                    if let profile = StorableCurrentUserProfile(from: content.profile, userId: userId) {
+                        return profile
+                    } else {
+                        throw UpdateProfile.Error.serverCall(.other(nil))
+                    }
+
+                case let .fail(failure):
+                    throw UpdateProfile.Error.validation(.init(from: failure))
+                case .none:
+                    throw UpdateProfile.Error.serverCall(.other(nil))
+                }
+            } catch {
+                // rollback client picture hash
+                if #available(iOS 14, *) { Logger.profile.debug("Error syncing profile: \(error)") }
+            }
+        }
+        return nil
+    }
+
 }

@@ -162,8 +162,14 @@ class PostsTests: XCTestCase {
                   status: .published, statusReasons: [],
                   parentId: "Sport",
                   descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
-                  aggregatedInfo: .init(likeCount: 10, childCount: 20, viewCount: 30, pollResult: nil),
-                  userInteractions: .init(userLikeId: "LIKE_ID", pollVoteId: "VOTE_ID"))
+                  aggregatedInfo: .init(
+                    reactions: [
+                        ReactionCount(reaction: .init(unicode: "❤️"), count: 4),
+                        ReactionCount(reaction: .init(unicode: "👏"), count: 5),
+                    ],
+                    childCount: 20, viewCount: 30, pollResult: nil),
+                  userInteractions: .init(reaction: .init(kind: .init(unicode: "👏"), id: "REACT_ID"),
+                                          pollVoteId: "VOTE_ID"))
         ])
 
         let postPresentExpectation = XCTestExpectation(description: "Post is present")
@@ -209,11 +215,13 @@ class PostsTests: XCTestCase {
             .replaceError(with: nil)
             .sink { post in
                 if let post, post.text == "new Text",
-                   post.aggregatedInfo.likeCount == 10,
+                   post.aggregatedInfo.reactions == [
+                    .init(reaction: .init(unicode: "❤️"), count: 4),
+                    .init(reaction: .init(unicode: "👏"), count: 5),
+                   ],
                    post.aggregatedInfo.childCount == 20,
                    post.aggregatedInfo.viewCount == 30,
-                   post.userInteractions.hasLiked,
-                   post.userInteractions.hasVoted {
+                   post.userInteractions.reaction == UserReaction(kind: .init(unicode: "👏"), id: "REACT_ID") {
                     aggregatesAndUserInteractionPresentExpectation.fulfill()
                 }
             }.store(in: &storage)
@@ -225,14 +233,17 @@ class PostsTests: XCTestCase {
         let post = octoPost(from: item)
 
         let aggregate = Com_Octopuscommunity_Aggregate.with {
-                $0.childrenCount = UInt32(item.aggregatedInfo?.childCount ?? 0)
-                $0.likeCount = UInt32(item.aggregatedInfo?.likeCount ?? 0)
-                $0.viewCount = UInt32(item.aggregatedInfo?.viewCount ?? 0)
-            }
+            $0.childrenCount = UInt32(item.aggregatedInfo?.childCount ?? 0)
+            $0.reactions = []
+            $0.viewCount = UInt32(item.aggregatedInfo?.viewCount ?? 0)
+        }
 
         let requesterCtx = Com_Octopuscommunity_RequesterCtx.with {
-            if let userLikeId = item.userInteractions?.userLikeId {
-                $0.likeID = userLikeId
+            if let userReaction = item.userInteractions?.reaction {
+                $0.reactionCtx = .with {
+                    $0.reactionID = userReaction.id
+                    $0.unicode = userReaction.kind.unicode
+                }
             }
         }
 

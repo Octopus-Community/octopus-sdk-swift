@@ -36,11 +36,6 @@ class NotSeenNotificationsViewModel: ObservableObject {
             }.store(in: &storage)
     }
 
-    func createSDK() {
-        octopusSDKProvider.createSDK(
-            connectionMode: .octopus(deepLink: "com.octopuscommunity.sample://magic-link"))
-    }
-
     func updateNotSeenNotificationsCount() {
         Task {
             try? await octopus?.updateNotSeenNotificationsCount()

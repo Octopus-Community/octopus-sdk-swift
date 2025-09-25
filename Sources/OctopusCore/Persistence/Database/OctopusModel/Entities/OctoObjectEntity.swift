@@ -18,11 +18,13 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
     @NSManaged public var parentId: String
     @NSManaged public var uuid: String
 
-    @NSManaged public var likeCount: Int
+    @NSManaged public var reactionsRelationship: NSOrderedSet?
     @NSManaged public var childCount: Int
     @NSManaged public var viewCount: Int
     @NSManaged public var pollTotalVoteCount: Int
     @NSManaged public var userLikeId: String?
+    @NSManaged public var userReactionId: String?
+    @NSManaged public var userReactionKind: String?
     @NSManaged public var userPollVoteId: String?
 
     @NSManaged public var descChildrenFeedId: String?
@@ -35,6 +37,27 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
             return nil
         }
         return pollOptions.removingDuplicates(by: \.optionId)
+    }
+
+    var reactions: [ContentReactionEntity] {
+        return reactionsRelationship?.array as? [ContentReactionEntity] ?? []
+    }
+
+    @nonobjc public class func fetchAllGeneric() -> NSFetchRequest<OctoObjectEntity> {
+        return NSFetchRequest<OctoObjectEntity>(entityName: "OctoObject")
+    }
+
+    @nonobjc public class func fetchAllGenericByIds(ids: [String]) -> NSFetchRequest<OctoObjectEntity> {
+        let request = fetchAllGeneric()
+        request.predicate = NSPredicate(format: "%K IN %@", #keyPath(OctoObjectEntity.uuid), ids)
+        return request
+    }
+
+    @nonobjc public class func fetchGenericById(id: String) -> NSFetchRequest<OctoObjectEntity> {
+        let request = fetchAllGeneric()
+        request.predicate = NSPredicate(format: "%K LIKE %@", #keyPath(PostEntity.uuid), id)
+        request.fetchLimit = 1
+        return request
     }
 
     func fill(with content: StorableContent, context: NSManagedObjectContext) {
@@ -55,11 +78,12 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
     func fill(aggregatedInfo: AggregatedInfo?, userInteractions: UserInteractions?, context: NSManagedObjectContext) {
         if let aggregatedInfo {
             viewCount = aggregatedInfo.viewCount
-            if userInteractions?.userLikeId != nil {
-                likeCount = max(aggregatedInfo.likeCount, 1)
-            } else {
-                likeCount = aggregatedInfo.likeCount
-            }
+            reactionsRelationship = NSOrderedSet(array: aggregatedInfo.reactions.map {
+                let reactionEntity = ContentReactionEntity(context: context)
+                reactionEntity.reactionKind = $0.reaction.unicode
+                reactionEntity.count = $0.count
+                return reactionEntity
+            })
             childCount = aggregatedInfo.childCount
             if let pollResult = aggregatedInfo.pollResult {
                 pollTotalVoteCount = pollResult.totalVoteCount
@@ -76,8 +100,9 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
         }
 
         if let userInteractions {
-            userLikeId = userInteractions.userLikeId
             userPollVoteId = userInteractions.pollVoteId
+            userReactionId = userInteractions.reaction?.id
+            userReactionKind = userInteractions.reaction?.kind.unicode
         }
     }
 }

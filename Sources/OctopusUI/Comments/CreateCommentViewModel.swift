@@ -30,11 +30,45 @@ class CreateCommentViewModel: ObservableObject {
     private let validator: Validators.Comment
     private var storage = [AnyCancellable]()
     private var commentReceivedCancellable: AnyCancellable?
+    private let ensureConnected: (UserAction) -> Bool
 
-    init(octopus: OctopusSDK, postId: String) {
+    private var isWaitingToSendComment = false
+
+    init(octopus: OctopusSDK, postId: String, ensureConnected: @escaping (UserAction) -> Bool) {
         self.octopus = octopus
         self.postId = postId
+        self.ensureConnected = ensureConnected
         validator = self.octopus.core.validators.comment
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.forceLoginOnStrongActions }
+            .removeDuplicates()
+            .sink { [unowned self] forceLoginOnStrongActions in
+                guard forceLoginOnStrongActions != nil else {
+                    return
+                }
+                if isWaitingToSendComment {
+                    isWaitingToSendComment = false
+                    DispatchQueue.main.async { [weak self] in
+                        self?.send()
+                    }
+                }
+            }.store(in: &storage)
+
+        octopus.core.profileRepository.profilePublisher
+            .sink { [unowned self] profile in
+                guard let profile else {
+                    return
+                }
+                if !profile.isGuest || profile.hasConfirmedNickname {
+                    if isWaitingToSendComment {
+                        isWaitingToSendComment = false
+                        DispatchQueue.main.async { [weak self] in
+                            self?.send()
+                        }
+                    }
+                }
+            }.store(in: &storage)
 
         $text
             .removeDuplicates()
@@ -75,7 +109,13 @@ class CreateCommentViewModel: ObservableObject {
         guard validator.validate(comment: comment) else { return }
 
         isLoading = true
-        
+
+        guard ensureConnected(.comment) else {
+            isWaitingToSendComment = true
+            isLoading = false
+            return
+        }
+
         Task {
             try? await Task.sleep(nanoseconds: UInt64(0.25 * 1_000_000_000))
             await send(comment: comment)

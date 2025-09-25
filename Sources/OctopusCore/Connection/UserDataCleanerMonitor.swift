@@ -20,10 +20,9 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
 
     private let injector: Injector
     private let userDataStorage: UserDataStorage
-    private let postsDatabase: PostsDatabase
-    private let commentsDatabase: CommentsDatabase
-    private let repliesDatabase: RepliesDatabase
+    private let octoObjectsDatabase: OctoObjectsDatabase
     private let notificationsDatabase: NotificationsDatabase
+    private let userConfigDatabase: UserConfigDatabase
 
     private var storage: Set<AnyCancellable> = []
     private var magicLinkSubscription: Task<Void, Error>?
@@ -31,10 +30,10 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
     init(injector: Injector) {
         self.injector = injector
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
-        postsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
-        commentsDatabase = injector.getInjected(identifiedBy: Injected.commentsDatabase)
-        repliesDatabase = injector.getInjected(identifiedBy: Injected.repliesDatabase)
+        // Take the postsDatabase as octoObjectsDatabase
+        octoObjectsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
         notificationsDatabase = injector.getInjected(identifiedBy: Injected.notificationsDatabase)
+        userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
     }
 
     func start() {
@@ -44,10 +43,9 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
                 Task { [self] in
                     if #available(iOS 14, *) { Logger.profile.trace("Cleaning user based data due to a logout") }
                     do {
-                        try await postsDatabase.resetUserInteractions()
-                        try await commentsDatabase.resetUserInteractions()
-                        try await repliesDatabase.resetUserInteractions()
+                        try await octoObjectsDatabase.resetUserInteractions()
                         try await notificationsDatabase.replaceAll(notifications: [])
+                        try await userConfigDatabase.deleteConfig()
                     } catch {
                         if #available(iOS 14, *) { Logger.profile.debug("Error while cleaning user based data: \(error)") }
                     }

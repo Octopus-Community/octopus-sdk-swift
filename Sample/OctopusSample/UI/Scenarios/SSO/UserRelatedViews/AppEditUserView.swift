@@ -33,11 +33,9 @@ struct AppEditUserView: View {
             }
         }
     }
-    let displayAge: Bool
     @Binding var nickname: String
     @Binding var bio: String
     @Binding var picture: Data?
-    @Binding var ageInformation: AppUser.AgeInfo?
 
     @State private var pictureKind = PictureKind.empty
 
@@ -61,15 +59,6 @@ struct AppEditUserView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 90, height: 90)
-            }
-            if displayAge {
-                Text("Information about the age")
-                Picker("", selection: $ageInformation) {
-                    Text("Not checked").tag(nil as AppUser.AgeInfo?)
-                    Text(">= 16").tag(AppUser.AgeInfo.moreThan16)
-                    Text("< 16").tag(AppUser.AgeInfo.lessThan16)
-                }
-                .pickerStyle(.segmented)
             }
             Spacer()
         }

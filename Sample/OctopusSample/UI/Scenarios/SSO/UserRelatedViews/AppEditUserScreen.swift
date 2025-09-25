@@ -10,20 +10,17 @@ import SwiftUI
 /// or when it tries to edit its profile in the SDK if app managed fields is not empty. (see `SSOView`)
 struct AppEditUserScreen: View {
     @Environment(\.presentationMode) private var presentationMode
-    @Binding var appUser: AppUser?
-    let displayAge: Bool
+    @StateObjectCompat private var viewModel = AppUserViewModel()
 
     @State private var nickname: String = ""
     @State private var bio: String = ""
     @State private var picture: Data?
-    @State private var ageInformation: AppUser.AgeInfo?
 
     var body: some View {
         NavigationView {
             VStack {
-                Text("Email: \(appUser?.userId ?? "")")
-                AppEditUserView(displayAge: displayAge,
-                             nickname: $nickname, bio: $bio, picture: $picture, ageInformation: $ageInformation)
+                Text("Email: \(viewModel.appUser?.userId ?? "")")
+                AppEditUserView(nickname: $nickname, bio: $bio, picture: $picture)
             }
             .navigationBarTitle("Edit your profile")
             .navigationBarItems(
@@ -32,16 +29,20 @@ struct AppEditUserScreen: View {
                 },
                 trailing:
                     Button(action: {
-                        appUser = .init(userId: appUser?.userId ?? "", nickname: nickname, bio: bio, picture: picture, ageInformation: ageInformation)
+                        viewModel.appUser = .init(
+                            userId: viewModel.appUser?.userId ?? "",
+                            nickname: nickname,
+                            bio: bio,
+                            picture: picture)
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Image(systemName: "checkmark")
                     }
             )
             .onAppear {
-                nickname = appUser?.nickname ?? ""
-                bio = appUser?.bio ?? ""
-                picture = appUser?.picture
+                nickname = viewModel.appUser?.nickname ?? ""
+                bio = viewModel.appUser?.bio ?? ""
+                picture = viewModel.appUser?.picture
             }
             .presentationBackground(Color(.systemBackground))
         }

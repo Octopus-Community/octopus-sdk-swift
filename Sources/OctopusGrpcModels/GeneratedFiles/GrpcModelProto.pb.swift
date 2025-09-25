@@ -305,6 +305,40 @@ public enum Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf.Enum, Swift.Cas
 
 }
 
+public enum Com_Octopuscommunity_ProfileTag: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case undefined // = 0
+  case admin // = 1
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .undefined
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .undefined
+    case 1: self = .admin
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .undefined: return 0
+    case .admin: return 1
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Com_Octopuscommunity_ProfileTag] = [
+    .undefined,
+    .admin,
+  ]
+
+}
+
 ///normalized OctoObject
 public struct Com_Octopuscommunity_OctoObject: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -370,6 +404,16 @@ public struct Com_Octopuscommunity_OctoObject: Sendable {
   /// Clears the value of `ascChildrenFeedID`. Subsequent reads from it will return its default value.
   public mutating func clearAscChildrenFeedID() {self._ascChildrenFeedID = nil}
 
+  ///JSON string
+  public var metadata: String {
+    get {return _metadata ?? String()}
+    set {_metadata = newValue}
+  }
+  /// Returns true if `metadata` has been explicitly set.
+  public var hasMetadata: Bool {return self._metadata != nil}
+  /// Clears the value of `metadata`. Subsequent reads from it will return its default value.
+  public mutating func clearMetadata() {self._metadata = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public struct Status: Sendable {
@@ -393,6 +437,7 @@ public struct Com_Octopuscommunity_OctoObject: Sendable {
   fileprivate var _status: Com_Octopuscommunity_OctoObject.Status? = nil
   fileprivate var _descChildrenFeedID: String? = nil
   fileprivate var _ascChildrenFeedID: String? = nil
+  fileprivate var _metadata: String? = nil
 }
 
 public struct Com_Octopuscommunity_RequesterCtx: Sendable {
@@ -420,12 +465,37 @@ public struct Com_Octopuscommunity_RequesterCtx: Sendable {
   /// Clears the value of `pollAnswerID`. Subsequent reads from it will return its default value.
   public mutating func clearPollAnswerID() {self._pollAnswerID = nil}
 
+  ///If the user reacted on the object
+  public var reactionCtx: Com_Octopuscommunity_ReactionCtx {
+    get {return _reactionCtx ?? Com_Octopuscommunity_ReactionCtx()}
+    set {_reactionCtx = newValue}
+  }
+  /// Returns true if `reactionCtx` has been explicitly set.
+  public var hasReactionCtx: Bool {return self._reactionCtx != nil}
+  /// Clears the value of `reactionCtx`. Subsequent reads from it will return its default value.
+  public mutating func clearReactionCtx() {self._reactionCtx = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _likeID: String? = nil
   fileprivate var _pollAnswerID: String? = nil
+  fileprivate var _reactionCtx: Com_Octopuscommunity_ReactionCtx? = nil
+}
+
+public struct Com_Octopuscommunity_ReactionCtx: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var reactionID: String = String()
+
+  public var unicode: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 public struct Com_Octopuscommunity_StatusReason: Sendable {
@@ -451,6 +521,7 @@ public struct Com_Octopuscommunity_Aggregate: Sendable {
 
   public var childrenLatestAddedAt: UInt64 = 0
 
+  ///Deprecated. Use reactionData
   public var likeCount: UInt32 = 0
 
   public var viewCount: UInt32 = 0
@@ -463,6 +534,8 @@ public struct Com_Octopuscommunity_Aggregate: Sendable {
   public var hasPollResult: Bool {return self._pollResult != nil}
   /// Clears the value of `pollResult`. Subsequent reads from it will return its default value.
   public mutating func clearPollResult() {self._pollResult = nil}
+
+  public var reactions: [Com_Octopuscommunity_ReactionData] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -499,6 +572,20 @@ public struct Com_Octopuscommunity_PollAnswerResult: Sendable {
   public init() {}
 }
 
+public struct Com_Octopuscommunity_ReactionData: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unicode: String = String()
+
+  public var count: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 public struct Com_Octopuscommunity_MinimalProfile: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -516,6 +603,8 @@ public struct Com_Octopuscommunity_MinimalProfile: Sendable {
   public var hasAvatarURL: Bool {return self._avatarURL != nil}
   /// Clears the value of `avatarURL`. Subsequent reads from it will return its default value.
   public mutating func clearAvatarURL() {self._avatarURL = nil}
+
+  public var tags: [Com_Octopuscommunity_ProfileTag] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -585,6 +674,7 @@ public struct Com_Octopuscommunity_Content: @unchecked Sendable {
   /// Clears the value of `message`. Subsequent reads from it will return its default value.
   public mutating func clearMessage() {_uniqueStorage()._message = nil}
 
+  ///Deprecated. Use Reaction instead
   public var like: Com_Octopuscommunity_Like {
     get {return _storage._like ?? Com_Octopuscommunity_Like()}
     set {_uniqueStorage()._like = newValue}
@@ -593,6 +683,15 @@ public struct Com_Octopuscommunity_Content: @unchecked Sendable {
   public var hasLike: Bool {return _storage._like != nil}
   /// Clears the value of `like`. Subsequent reads from it will return its default value.
   public mutating func clearLike() {_uniqueStorage()._like = nil}
+
+  public var reaction: Com_Octopuscommunity_Reaction {
+    get {return _storage._reaction ?? Com_Octopuscommunity_Reaction()}
+    set {_uniqueStorage()._reaction = newValue}
+  }
+  /// Returns true if `reaction` has been explicitly set.
+  public var hasReaction: Bool {return _storage._reaction != nil}
+  /// Clears the value of `reaction`. Subsequent reads from it will return its default value.
+  public mutating func clearReaction() {_uniqueStorage()._reaction = nil}
 
   public var vote: Com_Octopuscommunity_PollVote {
     get {return _storage._vote ?? Com_Octopuscommunity_PollVote()}
@@ -614,6 +713,19 @@ public struct Com_Octopuscommunity_Like: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_Reaction: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///Can be ❤️,😂,😮,👏,😢,😡
+  public var unicode: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1148,6 +1260,13 @@ extension Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf._ProtoNameProvidi
   ]
 }
 
+extension Com_Octopuscommunity_ProfileTag: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNDEFINED"),
+    1: .same(proto: "ADMIN"),
+  ]
+}
+
 extension Com_Octopuscommunity_OctoObject: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".OctoObject"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1161,6 +1280,7 @@ extension Com_Octopuscommunity_OctoObject: SwiftProtobuf.Message, SwiftProtobuf.
     20: .same(proto: "status"),
     10: .same(proto: "descChildrenFeedId"),
     11: .same(proto: "ascChildrenFeedId"),
+    999: .same(proto: "metadata"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1179,6 +1299,7 @@ extension Com_Octopuscommunity_OctoObject: SwiftProtobuf.Message, SwiftProtobuf.
       case 10: try { try decoder.decodeSingularStringField(value: &self._descChildrenFeedID) }()
       case 11: try { try decoder.decodeSingularStringField(value: &self._ascChildrenFeedID) }()
       case 20: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      case 999: try { try decoder.decodeSingularStringField(value: &self._metadata) }()
       default: break
       }
     }
@@ -1219,6 +1340,9 @@ extension Com_Octopuscommunity_OctoObject: SwiftProtobuf.Message, SwiftProtobuf.
     try { if let v = self._status {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
     } }()
+    try { if let v = self._metadata {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 999)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1233,6 +1357,7 @@ extension Com_Octopuscommunity_OctoObject: SwiftProtobuf.Message, SwiftProtobuf.
     if lhs._status != rhs._status {return false}
     if lhs._descChildrenFeedID != rhs._descChildrenFeedID {return false}
     if lhs._ascChildrenFeedID != rhs._ascChildrenFeedID {return false}
+    if lhs._metadata != rhs._metadata {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1281,6 +1406,7 @@ extension Com_Octopuscommunity_RequesterCtx: SwiftProtobuf.Message, SwiftProtobu
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "likeId"),
     2: .same(proto: "pollAnswerId"),
+    3: .same(proto: "reactionCtx"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1291,6 +1417,7 @@ extension Com_Octopuscommunity_RequesterCtx: SwiftProtobuf.Message, SwiftProtobu
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self._likeID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._pollAnswerID) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._reactionCtx) }()
       default: break
       }
     }
@@ -1307,12 +1434,54 @@ extension Com_Octopuscommunity_RequesterCtx: SwiftProtobuf.Message, SwiftProtobu
     try { if let v = self._pollAnswerID {
       try visitor.visitSingularStringField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._reactionCtx {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_RequesterCtx, rhs: Com_Octopuscommunity_RequesterCtx) -> Bool {
     if lhs._likeID != rhs._likeID {return false}
     if lhs._pollAnswerID != rhs._pollAnswerID {return false}
+    if lhs._reactionCtx != rhs._reactionCtx {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ReactionCtx: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ReactionCtx"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "reactionId"),
+    2: .same(proto: "unicode"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.reactionID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.unicode) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.reactionID.isEmpty {
+      try visitor.visitSingularStringField(value: self.reactionID, fieldNumber: 1)
+    }
+    if !self.unicode.isEmpty {
+      try visitor.visitSingularStringField(value: self.unicode, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ReactionCtx, rhs: Com_Octopuscommunity_ReactionCtx) -> Bool {
+    if lhs.reactionID != rhs.reactionID {return false}
+    if lhs.unicode != rhs.unicode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1364,6 +1533,7 @@ extension Com_Octopuscommunity_Aggregate: SwiftProtobuf.Message, SwiftProtobuf._
     3: .same(proto: "likeCount"),
     4: .same(proto: "viewCount"),
     5: .same(proto: "pollResult"),
+    6: .same(proto: "reactions"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1377,6 +1547,7 @@ extension Com_Octopuscommunity_Aggregate: SwiftProtobuf.Message, SwiftProtobuf._
       case 3: try { try decoder.decodeSingularUInt32Field(value: &self.likeCount) }()
       case 4: try { try decoder.decodeSingularUInt32Field(value: &self.viewCount) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._pollResult) }()
+      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.reactions) }()
       default: break
       }
     }
@@ -1402,6 +1573,9 @@ extension Com_Octopuscommunity_Aggregate: SwiftProtobuf.Message, SwiftProtobuf._
     try { if let v = self._pollResult {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     } }()
+    if !self.reactions.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.reactions, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1411,6 +1585,7 @@ extension Com_Octopuscommunity_Aggregate: SwiftProtobuf.Message, SwiftProtobuf._
     if lhs.likeCount != rhs.likeCount {return false}
     if lhs.viewCount != rhs.viewCount {return false}
     if lhs._pollResult != rhs._pollResult {return false}
+    if lhs.reactions != rhs.reactions {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1492,12 +1667,51 @@ extension Com_Octopuscommunity_PollAnswerResult: SwiftProtobuf.Message, SwiftPro
   }
 }
 
+extension Com_Octopuscommunity_ReactionData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ReactionData"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "unicode"),
+    2: .same(proto: "count"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.unicode) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.count) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.unicode.isEmpty {
+      try visitor.visitSingularStringField(value: self.unicode, fieldNumber: 1)
+    }
+    if self.count != 0 {
+      try visitor.visitSingularUInt32Field(value: self.count, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ReactionData, rhs: Com_Octopuscommunity_ReactionData) -> Bool {
+    if lhs.unicode != rhs.unicode {return false}
+    if lhs.count != rhs.count {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MinimalProfile"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "profileId"),
     2: .same(proto: "nickname"),
     3: .same(proto: "avatarUrl"),
+    4: .same(proto: "tags"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1509,6 +1723,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
       case 1: try { try decoder.decodeSingularStringField(value: &self.profileID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.nickname) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self._avatarURL) }()
+      case 4: try { try decoder.decodeRepeatedEnumField(value: &self.tags) }()
       default: break
       }
     }
@@ -1528,6 +1743,9 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
     try { if let v = self._avatarURL {
       try visitor.visitSingularStringField(value: v, fieldNumber: 3)
     } }()
+    if !self.tags.isEmpty {
+      try visitor.visitPackedEnumField(value: self.tags, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1535,6 +1753,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
     if lhs.profileID != rhs.profileID {return false}
     if lhs.nickname != rhs.nickname {return false}
     if lhs._avatarURL != rhs._avatarURL {return false}
+    if lhs.tags != rhs.tags {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1550,6 +1769,7 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
     201: .same(proto: "channel"),
     202: .same(proto: "message"),
     300: .same(proto: "like"),
+    301: .same(proto: "reaction"),
     400: .same(proto: "vote"),
   ]
 
@@ -1561,6 +1781,7 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
     var _channel: Com_Octopuscommunity_Channel? = nil
     var _message: Com_Octopuscommunity_Message? = nil
     var _like: Com_Octopuscommunity_Like? = nil
+    var _reaction: Com_Octopuscommunity_Reaction? = nil
     var _vote: Com_Octopuscommunity_PollVote? = nil
 
     #if swift(>=5.10)
@@ -1583,6 +1804,7 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
       _channel = source._channel
       _message = source._message
       _like = source._like
+      _reaction = source._reaction
       _vote = source._vote
     }
   }
@@ -1609,6 +1831,7 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
         case 201: try { try decoder.decodeSingularMessageField(value: &_storage._channel) }()
         case 202: try { try decoder.decodeSingularMessageField(value: &_storage._message) }()
         case 300: try { try decoder.decodeSingularMessageField(value: &_storage._like) }()
+        case 301: try { try decoder.decodeSingularMessageField(value: &_storage._reaction) }()
         case 400: try { try decoder.decodeSingularMessageField(value: &_storage._vote) }()
         default: break
         }
@@ -1643,6 +1866,9 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
       try { if let v = _storage._like {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 300)
       } }()
+      try { if let v = _storage._reaction {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 301)
+      } }()
       try { if let v = _storage._vote {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 400)
       } }()
@@ -1662,6 +1888,7 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
         if _storage._channel != rhs_storage._channel {return false}
         if _storage._message != rhs_storage._message {return false}
         if _storage._like != rhs_storage._like {return false}
+        if _storage._reaction != rhs_storage._reaction {return false}
         if _storage._vote != rhs_storage._vote {return false}
         return true
       }
@@ -1686,6 +1913,38 @@ extension Com_Octopuscommunity_Like: SwiftProtobuf.Message, SwiftProtobuf._Messa
   }
 
   public static func ==(lhs: Com_Octopuscommunity_Like, rhs: Com_Octopuscommunity_Like) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_Reaction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Reaction"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "unicode"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.unicode) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.unicode.isEmpty {
+      try visitor.visitSingularStringField(value: self.unicode, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_Reaction, rhs: Com_Octopuscommunity_Reaction) -> Bool {
+    if lhs.unicode != rhs.unicode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

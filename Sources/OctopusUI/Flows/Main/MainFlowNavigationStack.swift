@@ -34,11 +34,15 @@ struct MainFlowNavigationStack<RootView: View>: View {
                             CurrentUserProfileSummaryView(octopus: octopus, mainFlowPath: mainFlowPath)
                         case let .publicProfile(profileId):
                             ProfileSummaryView(octopus: octopus, profileId: profileId)
-                        case let .postDetail(postId, comment, commentToScrollTo, scrollToMostRecentComment):
+                        case let .createPost(withPoll):
+                            CreatePostView(octopus: octopus, withPoll: withPoll)
+                        case let .postDetail(postId, comment, commentToScrollTo, scrollToMostRecentComment, origin, hasFeaturedComment):
                             PostDetailView(octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postId,
                                            comment: comment,
                                            commentToScrollTo: commentToScrollTo,
-                                           scrollToMostRecentComment: scrollToMostRecentComment)
+                                           scrollToMostRecentComment: scrollToMostRecentComment,
+                                           origin: origin,
+                                           hasFeaturedComment: hasFeaturedComment)
                         case let .commentDetail(commentId, displayGoToParentButton, reply, replyToScrollTo):
                             CommentDetailView(octopus: octopus, commentUuid: commentId,
                                               displayGoToParentButton: displayGoToParentButton,

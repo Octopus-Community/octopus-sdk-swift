@@ -21,7 +21,7 @@ struct NotSeenNotificationsView: View {
                     // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                     showFullScreen {
                         if let octopus = viewModel.octopus {
-                            OctopusHomeScreen(octopus: octopus)
+                            OctopusUIView(octopus: octopus)
                         } else {
                             EmptyView()
                         }
@@ -56,7 +56,6 @@ struct NotSeenNotificationsView: View {
             Image(systemName: "arrow.clockwise")
         })
         .onAppear {
-            viewModel.createSDK()
             // update the count when the view is displayed
             viewModel.updateNotSeenNotificationsCount()
         }

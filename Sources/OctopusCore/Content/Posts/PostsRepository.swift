@@ -24,6 +24,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let commentFeedsStore: CommentFeedsStore
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Post
+    private let userInteractionsDelegate: UserInteractionsDelegate
 
     public var postSentPublisher: AnyPublisher<Void, Never> {
         _postSentPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher()
@@ -44,6 +45,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         validator = injector.getInjected(identifiedBy: Injected.validators).post
 
         commentFeedsStore = injector.getInjected(identifiedBy: Injected.commentFeedsStore)
+        userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
 
     public func getPost(uuid: String) -> AnyPublisher<Post?, Error> {
@@ -54,7 +56,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         .map { [unowned self] in
             guard let storablePost = $0 else { return nil }
             guard !storablePost.author.isBlocked(in: $1) else { return nil }
-            return Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore)
+            return Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
         }.eraseToAnyPublisher()
     }
 
@@ -138,7 +140,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 try await postsDatabase.upsert(posts: [finalPost])
                 _postSentPublisher.send()
                 let imageData: Data? = if case let .image(imageData) = post.attachment { imageData } else { nil }
-                return (Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore), imageData)
+                return (Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil), imageData)
             case let .fail(failure):
                 throw SendPost.Error.validation(.init(from: failure))
             case .none:
@@ -175,65 +177,8 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    public func toggleLike(post: Post) async throws(ToggleLike.Error) {
-        guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
-        do {
-            if let likeId = post.userInteractions.userLikeId, likeId != UserInteractions.temporaryLikeId {
-                do {
-                    // first, remove the like in the db to have an immediate result.
-                    try await postsDatabase.updateLikeId(newId: nil, contentId: post.uuid)
-                    _ = try await remoteClient.octoService.unlike(
-                        likeId: likeId,
-                        authenticationMethod: try authCallProvider.authenticatedMethod())
-                } catch {
-                    guard let error = error as? RemoteClientError,
-                       case .notFound = error else {
-                        // revert the db change in case of error
-                        try await postsDatabase.updateLikeId(newId: likeId, contentId: post.uuid)
-                        throw error
-                    }
-                    // nothing to do: we ignore the notFound error, it is thrown because the post is already unliked
-                }
-            } else {
-                do {
-                    // prevent tapping on the like without good connection that increase the like count
-                    if post.userInteractions.userLikeId != UserInteractions.temporaryLikeId {
-                        // first, add a fake like in the db to have an immediate result.
-                        try await postsDatabase.updateLikeId(newId: UserInteractions.temporaryLikeId,
-                                                             contentId: post.uuid)
-                    }
-                    let response = try await remoteClient.octoService.like(
-                        objectId: post.uuid,
-                        authenticationMethod: try authCallProvider.authenticatedMethod())
-                    switch response.result {
-                    case let .success(content):
-                        guard content.hasLike else {
-                            throw SendComment.Error.serverCall(.other(nil))
-                        }
-                        // no need to update like count because it has been with the temporaryLikeId
-                        try await postsDatabase.updateLikeId(newId: content.like.id,
-                                                             contentId: post.uuid,
-                                                             updateLikeCount: false)
-                    case let .fail(failure):
-                        throw ToggleLike.Error.validation(.init(from: failure))
-                    case .none:
-                        throw ToggleLike.Error.serverCall(.other(nil))
-                    }
-                } catch {
-                    // revert the db change in case of error
-                    try await postsDatabase.updateLikeId(newId: nil, contentId: post.uuid)
-                    throw error
-                }
-            }
-        } catch {
-            if let error = error as? ToggleLike.Error {
-                throw error
-            } else if let error = error as? RemoteClientError {
-                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
-            } else {
-                throw .serverCall(.other(error))
-            }
-        }
+    public func set(reaction: ReactionKind?, post: Post) async throws(Reaction.Error) {
+        try await userInteractionsDelegate.set(reaction: reaction, content: post)
     }
 
     public func vote(pollAnswerId: String, post: Post) async throws(PollVote.Error) {

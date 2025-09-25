@@ -14,14 +14,14 @@ extension Injected {
 class PostFeedsStore: InjectableObject {
     static let injectedIdentifier = Injected.postFeedsStore
 
-    private let postsFeedManager: FeedManager<Post>
-    private var feeds = NSMapTable<NSString, Feed<Post>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
+    private let postsFeedManager: FeedManager<Post, Comment>
+    private var feeds = NSMapTable<NSString, Feed<Post, Comment>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
 
     init(injector: Injector) {
         postsFeedManager = PostsFeedManager.factory(injector: injector)
     }
 
-    func getOrCreate(feedId: String) -> Feed<Post> {
+    func getOrCreate(feedId: String) -> Feed<Post, Comment> {
         if let feed = feeds.object(forKey: feedId as NSString) {
             return feed
         } else {
@@ -35,14 +35,14 @@ class PostFeedsStore: InjectableObject {
 class CommentFeedsStore: InjectableObject {
     static let injectedIdentifier = Injected.commentFeedsStore
 
-    private let commentsFeedManager: FeedManager<Comment>
-    private var feeds = NSMapTable<NSString, Feed<Comment>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
+    private let commentsFeedManager: FeedManager<Comment, Never>
+    private var feeds = NSMapTable<NSString, Feed<Comment, Never>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
 
     init(injector: Injector) {
         commentsFeedManager = CommentsFeedManager.factory(injector: injector)
     }
 
-    func getOrCreate(feedId: String) -> Feed<Comment> {
+    func getOrCreate(feedId: String) -> Feed<Comment, Never> {
         if let feed = feeds.object(forKey: feedId as NSString) {
             return feed
         } else {
@@ -56,14 +56,14 @@ class CommentFeedsStore: InjectableObject {
 class ReplyFeedsStore: InjectableObject {
     static let injectedIdentifier = Injected.replyFeedsStore
 
-    private let repliesFeedManager: FeedManager<Reply>
-    private var feeds = NSMapTable<NSString, Feed<Reply>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
+    private let repliesFeedManager: FeedManager<Reply, Never>
+    private var feeds = NSMapTable<NSString, Feed<Reply, Never>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
 
     init(injector: Injector) {
         repliesFeedManager = RepliesFeedManager.factory(injector: injector)
     }
 
-    func getOrCreate(feedId: String) -> Feed<Reply> {
+    func getOrCreate(feedId: String) -> Feed<Reply, Never> {
         if let feed = feeds.object(forKey: feedId as NSString) {
             return feed
         } else {

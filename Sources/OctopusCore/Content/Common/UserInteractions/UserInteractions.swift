@@ -6,15 +6,11 @@ import Foundation
 import OctopusGrpcModels
 
 public struct UserInteractions: Equatable, Sendable {
-    public static let empty = UserInteractions(userLikeId: nil, pollVoteId: nil)
-    static let temporaryLikeId = "tmpLikeId"
+    public static let empty = UserInteractions(reaction: nil, pollVoteId: nil)
+    static let temporaryReactionId = "tmpReactionId"
 
-    let userLikeId: String?
+    public let reaction: UserReaction?
     public let pollVoteId: String?
-
-    public var hasLiked: Bool {
-        userLikeId != nil
-    }
 
     public var hasVoted: Bool {
         pollVoteId != nil
@@ -22,8 +18,17 @@ public struct UserInteractions: Equatable, Sendable {
 }
 
 extension UserInteractions {
+    init(from entity: OctoObjectEntity) {
+        if let reactionKind = entity.userReactionKind, let reactionId = entity.userReactionId {
+            reaction = UserReaction(kind: .init(unicode: reactionKind), id: reactionId)
+        } else {
+            reaction = nil
+        }
+        pollVoteId = entity.userPollVoteId
+    }
+
     init(from requesterCtx: Com_Octopuscommunity_RequesterCtx) {
-        userLikeId = requesterCtx.hasLikeID ? requesterCtx.likeID.nilIfEmpty : nil
+        reaction = requesterCtx.hasReactionCtx ? UserReaction(from: requesterCtx.reactionCtx) : nil
         pollVoteId = requesterCtx.hasPollAnswerID ? requesterCtx.pollAnswerID.nilIfEmpty : nil
     }
 }

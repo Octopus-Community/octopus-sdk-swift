@@ -3,6 +3,7 @@
 //
 
 import SwiftUI
+import OctopusCore
 
 struct PostSummaryView: View {
     @Environment(\.octopusTheme) private var theme
@@ -10,10 +11,13 @@ struct PostSummaryView: View {
     let post: DisplayablePost
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
-    let toggleLike: (String) -> Void
+    let deleteComment: (String) -> Void
+    let reactionTapped: (ReactionKind?, String) -> Void
+    let commentReactionTapped: (ReactionKind?, String) -> Void
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
@@ -21,11 +25,13 @@ struct PostSummaryView: View {
     @State private var openActions = false
     @State private var displayDeleteAlert = false
 
+    @State private var displayReactionsCount = false
+
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 8) {
                 Group { // group views to have the same horizontal padding
-                    HStack {
+                    HStack(alignment: .top) {
                         OpenProfileButton(author: post.author, displayProfile: displayProfile) {
                             AuthorAvatarView(avatar: post.author.avatar)
                                 .frame(width: 40, height: 40)
@@ -37,7 +43,7 @@ struct PostSummaryView: View {
                             HStack(spacing: 4) {
                                 OpenDetailButton(
                                     post: post,
-                                    displayPostDetail: { displayPostDetail($0, false, false) }) {
+                                    displayPostDetail: { displayPostDetail($0, false, false, nil, post.hasFeaturedComment) }) {
                                         HStack {
                                             Text(post.topic)
                                                 .octopusBadgeStyle(.small, status: .off)
@@ -73,11 +79,12 @@ struct PostSummaryView: View {
                                         }
                                     }
                                 }, label: {
-                                    VStack {
+                                    HStack(alignment: .top) {
                                         Image(res: .more)
                                             .resizable()
                                             .frame(width: 24, height: 24)
                                             .foregroundColor(theme.colors.gray500)
+                                            .padding(.bottom, 8)
                                     }.frame(width: 32, height: 32)
                                 })
                                 .buttonStyle(.plain)
@@ -92,20 +99,27 @@ struct PostSummaryView: View {
                             }
                         }
                     }
-                }.padding(.horizontal, 20)
+                }.padding(.horizontal, 16)
 
                 switch post.content {
                 case let .published(postContent):
-                    OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false, false) }) {
+                    OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false, false, nil, post.hasFeaturedComment) }) {
                         PublishedContentView(
-                            content: postContent, width: width,
+                            content: postContent, contentId: post.uuid, width: width,
                             zoomableImageInfo: $zoomableImageInfo,
                             childrenTapped: {
                                 let comment = postContent.liveMeasuresValue.aggregatedInfo.childCount == 0
-                                displayPostDetail(post.uuid, comment, true) },
-                            likeTapped: { toggleLike(post.uuid) },
+                                displayPostDetail(post.uuid, comment, true, nil, post.hasFeaturedComment) },
+                            reactionTapped: { reactionTapped($0, post.uuid) },
+                            commentReactionTapped: commentReactionTapped,
                             voteOnPoll: { voteOnPoll($0, post.uuid) },
-                            displayClientObject: displayClientObject)
+                            displayClientObject: displayClientObject,
+                            displayPostDetail: { displayPostDetail(post.uuid, false, false, $0, post.hasFeaturedComment) },
+                            displayCommentDetail: displayCommentDetail,
+                            displayProfile: displayProfile,
+                            deleteComment: deleteComment,
+                            displayContentModeration: displayContentModeration
+                        )
                     }
                 case let .moderated(reasons):
                     ModeratedPostContentView(reasons: reasons)
@@ -161,19 +175,34 @@ struct PostSummaryView: View {
         buttons.append(.cancel())
         return buttons
     }
+
+    var reactions: [ReactionCount] {
+        switch post.content {
+        case let .published(postContent): postContent.liveMeasuresValue.aggregatedInfo.reactions
+        case .moderated: []
+        }
+    }
 }
 
 private struct PublishedContentView: View {
     @Environment(\.octopusTheme) private var theme
     let content: DisplayablePost.PostContent
+    let contentId: String
 
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let childrenTapped: () -> Void
-    let likeTapped: () -> Void
+    let reactionTapped: (ReactionKind?) -> Void
+    let commentReactionTapped: (ReactionKind?, String) -> Void
     let voteOnPoll: (String) -> Bool
     let displayClientObject: ((String) -> Void)?
+    let displayPostDetail: (_ scrollTo: String) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
+    let displayProfile: (String) -> Void
+    let deleteComment: (String) -> Void
+    let displayContentModeration: (String) -> Void
     private let minAspectRatio: CGFloat = 4 / 5
+    private let horizontalPadding: CGFloat = 16
 
     @State private var liveMeasures: LiveMeasures?
 
@@ -183,7 +212,7 @@ private struct PublishedContentView: View {
                 if content.textIsEllipsized {
                     Text(verbatim: "\(content.text)... ")
                     +
-                    Text("Post.List.ReadMore", bundle: .module)
+                    Text("Common.ReadMore", bundle: .module)
                         .bold()
                 } else {
                     Text(content.text)
@@ -193,7 +222,7 @@ private struct PublishedContentView: View {
             .foregroundColor(theme.colors.gray900)
             .contentShape(Rectangle())
             .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, horizontalPadding)
 
             switch content.attachment {
             case let .image(image):
@@ -250,28 +279,67 @@ private struct PublishedContentView: View {
                          aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
                          userInteractions: liveMeasures?.userInteractions ?? content.liveMeasuresValue.userInteractions,
                          vote: voteOnPoll)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, horizontalPadding)
             case .none:
                 EmptyView()
             }
 
-            HStack {
-                AggregatedInfoView(
-                    aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
-                    userInteractions: liveMeasures?.userInteractions ?? content.liveMeasuresValue.userInteractions,
-                    displayLabels: content.bridgeCTA == nil || displayClientObject == nil,
-                    childrenTapped: childrenTapped, likeTapped: likeTapped)
-                .layoutPriority(1)
-                Spacer()
-                if let bridgeCTA = content.bridgeCTA, let displayClientObject {
+            if let bridgeCTA = content.bridgeCTA, let displayClientObject {
+                HStack {
+                    Spacer()
                     Button(action: { displayClientObject(bridgeCTA.clientObjectId) }) {
                         Text(bridgeCTA.text)
                             .lineLimit(1)
                     }
-                    .buttonStyle(OctopusButtonStyle(.mid(.main)))
+                    .buttonStyle(OctopusButtonStyle(.mid))
+                    Spacer()
                 }
+                .padding(.horizontal, horizontalPadding)
             }
-            .padding(.horizontal, 20)
+
+            HStack {
+                PostAggregatedInfoView(
+                    aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
+                    childrenTapped: childrenTapped)
+                .layoutPriority(1)
+                Spacer()
+
+            }
+            .padding(.horizontal, horizontalPadding)
+            .padding(.bottom, 3)
+
+            HStack(spacing: 16) {
+                ReactionsPickerView(
+                    contentId: contentId,
+                    userReaction: liveMeasures?.userInteractions.reaction ?? content.liveMeasuresValue.userInteractions.reaction,
+                    reactionTapped: reactionTapped)
+
+                Spacer()
+
+                Button(action: childrenTapped) {
+                    CreateChildInteractionView(image: .AggregatedInfo.comment, text: "Content.AggregatedInfo.Comment")
+                }
+                .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
+            }
+            .padding(.horizontal, horizontalPadding)
+
+            if let featuredComment = content.featuredComment {
+                ResponseFeedItemView(
+                    response: featuredComment,
+                    displayChildCount: false,
+                    tapToOpenDetail: true,
+                    zoomableImageInfo: .constant(nil),
+                    displayResponseDetail: displayCommentDetail,
+                    displayParentDetail: displayPostDetail,
+                    displayProfile: displayProfile,
+                    deleteResponse: deleteComment,
+                    reactionTapped: commentReactionTapped,
+                    displayContentModeration: displayContentModeration
+                )
+                .padding(.horizontal, horizontalPadding)
+                .padding(.top, 8)
+                .padding(.bottom, -16)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .multilineTextAlignment(.leading)
@@ -300,7 +368,7 @@ private struct ModeratedPostContentView: View {
                     Text("Post.List.ModeratedPost.Reason", bundle: .module) + reasons.textView
                 }.font(theme.fonts.caption1)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 16)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .multilineTextAlignment(.leading)
@@ -320,6 +388,28 @@ private struct OpenDetailButton<Content: View>: View {
         }) {
             content
                 .contentShape(Rectangle())
-        }.buttonStyle(.plain)
+        }
+        .buttonStyle(.plain)
+        .preventScrollViewConflict()
+    }
+}
+
+private extension View {
+    /// This function prevent any tap conflict on a Button that can occurs when a Button is inside a ScrollView
+    /// presented with a sheet on iOS 18.
+    /// In that case, adding a simultaneous TapGesture seems to remove the bug.
+    func preventScrollViewConflict() -> some View {
+        self
+            .modify {
+                if #available(iOS 26, *) {
+                    $0
+                } else {
+                    if #available(iOS 18, *) {
+                        $0.simultaneousGesture(TapGesture())
+                    } else {
+                        $0
+                    }
+                }
+            }
     }
 }

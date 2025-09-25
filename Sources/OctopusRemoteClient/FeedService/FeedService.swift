@@ -26,9 +26,11 @@ class FeedServiceClient: ServiceClient, FeedService {
 
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+         getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_FeedServiceAsyncClient(
-            channel: unaryChannel, interceptors: FeedServiceInterceptor(updateTokenBlock: updateTokenBlock))
+            channel: unaryChannel, interceptors: FeedServiceInterceptor(
+                getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
         super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
     }
 

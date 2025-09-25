@@ -4,13 +4,12 @@
       "id" : "D5CAF914-FBA3-43D1-86A7-6E682B74FBC2",
       "name" : "Configuration 1",
       "options" : {
-
+        "testRepetitionMode" : "retryOnFailure"
       }
     }
   ],
   "defaultOptions" : {
-    "testExecutionOrdering" : "random",
-    "testRepetitionMode" : "retryOnFailure"
+    "testExecutionOrdering" : "random"
   },
   "testTargets" : [
     {

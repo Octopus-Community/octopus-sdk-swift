@@ -27,7 +27,7 @@ class MagicLinkViewModel: ObservableObject {
     }
 
 
-    @Published var profileCreationRequired = false
+//    @Published var profileCreationRequired = false
     @Published private(set) var isLoggedIn = false
     @Published private(set) var emailEntryError: MagicLinkEmailEntryError?
     @Published private(set) var confirmationError: MagicLinkConfirmationError?
@@ -42,22 +42,36 @@ class MagicLinkViewModel: ObservableObject {
     init(octopus: OctopusSDK) {
         self.octopus = octopus
 
-        octopus.core.connectionRepository.connectionStatePublisher.sink { [unowned self] in
-            switch $0 {
-            case .notConnected:
-                state = .emailEntry(.emailNeeded)
-            case let .magicLinkSent(request):
-                state = .magicLinkConfirmationPending(email: request.email, state: .magicLinkSent)
-                if let error = request.error {
+        Publishers.CombineLatest(
+            octopus.core.connectionRepository.connectionStatePublisher,
+            octopus.core.connectionRepository.magicLinkRequestPublisher
+        )
+        .sink { [unowned self] connectionState, magicLinkRequest in
+            if let magicLinkRequest {
+                state = .magicLinkConfirmationPending(email: magicLinkRequest.email, state: .magicLinkSent)
+                if let error = magicLinkRequest.error {
                     processConfirmationError(error: error)
                 }
-            case .profileCreationRequired:
-                profileCreationRequired = true
-            case .connected:
-                isLoggedIn = true
-            case .clientConnected:
-                // dev error, this should not happen !
-                break
+                return
+            }
+            switch connectionState {
+            case .notConnected:
+                state = .emailEntry(.emailNeeded)
+                // TODO Djavan: use connectionRepository.magicLinkRequest
+//            case let .magicLinkSent(request):
+//                state = .magicLinkConfirmationPending(email: request.email, state: .magicLinkSent)
+//                if let error = request.error {
+//                    processConfirmationError(error: error)
+//                }
+//            case .profileCreationRequired:
+//                profileCreationRequired = true
+            case let .connected(user, _):
+                if !user.profile.isGuest {
+                    isLoggedIn = true
+                }
+//            case .clientConnected:
+//                // dev error, this should not happen !
+//                break
             }
         }.store(in: &storage)
     }

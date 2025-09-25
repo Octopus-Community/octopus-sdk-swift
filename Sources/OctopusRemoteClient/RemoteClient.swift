@@ -18,6 +18,7 @@ public protocol OctopusRemoteClient {
     var feedService: FeedService { get }
     var trackingService: TrackingService { get }
     var notificationService: NotificationService { get }
+    var apiKeyService: ApiKeyService { get }
 
     func set(appSessionId: String?)
     func set(octopusUISessionId: String?)
@@ -32,6 +33,7 @@ public class GrpcClient: OctopusRemoteClient {
     public var feedService: FeedService { _feedService }
     public var trackingService: TrackingService { _trackingService }
     public var notificationService: NotificationService { _notificationService }
+    public var apiKeyService: ApiKeyService { _apiKeyService }
 
     private let _octoService: OctoServiceClient
     private let _magicLinkService: MagicLinkServiceClient
@@ -40,6 +42,7 @@ public class GrpcClient: OctopusRemoteClient {
     private let _feedService: FeedServiceClient
     private let _trackingService: TrackingServiceClient
     private let _notificationService: NotificationServiceClient
+    private let _apiKeyService: ApiKeyServiceClient
 
     private let unaryChannel: GRPCChannel
     private let streamingChannel: GRPCChannel
@@ -47,7 +50,9 @@ public class GrpcClient: OctopusRemoteClient {
 
     private let serviceClients: [ServiceClient]
 
-    public init(apiKey: String, sdkVersion: String, installId: String, updateTokenBlock: @escaping (String) -> Void) throws {
+    public init(apiKey: String, sdkVersion: String, installId: String,
+                getUserIdBlock: @escaping () -> String?,
+                updateTokenBlock: @escaping (String) -> Void) throws {
         // base URL can be overriden by env vars. This is used for the internal demo app for example
         let baseUrl: String = if let customBaseUrl = Bundle.main.infoDictionary?["OCTOPUS_REMOTE_BASE_URL"] as? String,
                                  !customBaseUrl.isEmpty {
@@ -68,28 +73,30 @@ public class GrpcClient: OctopusRemoteClient {
         
         _octoService = OctoServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            updateTokenBlock: updateTokenBlock)
+            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _magicLinkService = MagicLinkServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            updateTokenBlock: updateTokenBlock)
+            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _magicLinkStreamService = MagicLinkStreamingServiceClient(
-            streamingChannel: streamingChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            updateTokenBlock: updateTokenBlock)
+            streamingChannel: streamingChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
         _userService = UserServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            updateTokenBlock: updateTokenBlock)
+            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _feedService = FeedServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            updateTokenBlock: updateTokenBlock)
+            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _trackingService = TrackingServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            updateTokenBlock: updateTokenBlock)
+            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _notificationService = NotificationServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            updateTokenBlock: updateTokenBlock)
+            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
+        _apiKeyService = ApiKeyServiceClient(
+            unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
 
         serviceClients = [_octoService, _magicLinkService, _magicLinkStreamService, _userService, _feedService,
-                          _trackingService, _notificationService]
+                          _trackingService, _notificationService, _apiKeyService]
     }
 
     public func set(appSessionId: String?) {
