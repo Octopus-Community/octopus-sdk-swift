@@ -20,7 +20,7 @@ struct CreateResponseView: View {
     let send: () -> Void
     let userProfileTapped: () -> Void
     let resetAlertError: () -> Void
-    let ensureConnected: () -> Bool
+    let ensureConnected: (UserAction) -> Bool
 
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
@@ -30,16 +30,18 @@ struct CreateResponseView: View {
             responseKind: responseKind, isLoading: isLoading, sendAvailable: sendAvailable,
             text: $text, picture: $picture, textFocused: $textFocused,
             textError: textError, pictureError: pictureError,
-            send: {
-                if ensureConnected() {
-                    send()
-                }
-            },
+            send: send,
+//            {
+//                if ensureConnected(responseKind == .comment ? .comment : .reply) {
+//                    send()
+//                }
+//            },
             userProfileTapped: {
-                if ensureConnected() {
+                if ensureConnected(.viewOwnProfile) {
                     userProfileTapped()
                 }
-            })
+            }
+        )
         .disabled(isLoading)
         .compatAlert(
             "Common.Error",
@@ -92,7 +94,7 @@ private struct ContentView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 24, height: 24)
             }
-            .buttonStyle(OctopusButtonStyle(.small(.outline), hasLeadingIcon: true, hasTrailingIcon: true))
+            .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true, hasTrailingIcon: true))
 
             OctopusInput(error: pictureError ?? textError, isFocused: textFocused) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -149,7 +151,7 @@ private struct ContentView: View {
                     }
                 }
             }
-            .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: sendAvailable && !isLoading,
+            .buttonStyle(OctopusButtonStyle(.mid, enabled: sendAvailable && !isLoading,
                                             hasLeadingIcon: true, hasTrailingIcon: true))
             .disabled(!sendAvailable || isLoading)
         }

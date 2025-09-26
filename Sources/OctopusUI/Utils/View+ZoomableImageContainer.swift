@@ -68,6 +68,7 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
             displayMode: .inline)
         .navigationBarBackButtonHidden(defaultNavigationBarBackButtonHidden || usableZoomableImageInfo != nil)
         .modify {
+#if compiler(>=6.2)
             if #available(iOS 26.0, *), !defaultNavigationBarPrimaryColor {
                 $0
                     .toolbarBackground(.hidden, for: .navigationBar)
@@ -78,6 +79,15 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
             } else {
                 $0
             }
+#else
+            if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
+                $0
+                    .toolbarBackground(theme.colors.primary, for: .navigationBar)
+                    .toolbarBackground(zoomableImageInfo == nil ? .visible : .hidden, for: .navigationBar)
+            } else {
+                $0
+            }
+#endif
         }
     }
 
@@ -101,12 +111,15 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
                 Image(systemName: "xmark")
                     .font(theme.fonts.navBarItem.weight(.semibold))
                     .modify {
+#if compiler(>=6.2)
                         if #available(iOS 26.0, *) {
                             $0
                         } else {
                             $0.padding(.leading)
                         }
-
+#else
+                        $0.padding(.leading)
+#endif
                     }
                     .foregroundColor(theme.colors.primary)
                     .colorScheme(.dark)

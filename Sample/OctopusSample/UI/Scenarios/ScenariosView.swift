@@ -16,10 +16,10 @@ struct ScenariosView: View {
                 SheetCell(showInSheet: showInSheet)
                 CustomThemeCell(showFullScreen: showFullScreen)
                 NotSeenNotificationsCell(showFullScreen: showFullScreen)
-                ABTestsCell(showFullScreen: showFullScreen)
+                TrackABTestsCell(showFullScreen: showFullScreen)
+                ForceOctopusABTestsCell(showFullScreen: showFullScreen)
                 CustomEventsCell()
                 BridgeToClientObjectCell(showFullScreen: showFullScreen)
-                SSOCell(showFullScreen: showFullScreen)
             }
             .listStyle(.plain)
             .navigationBarTitle(Text("Scenarios"), displayMode: .inline)

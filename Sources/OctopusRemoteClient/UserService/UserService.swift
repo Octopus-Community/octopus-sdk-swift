@@ -7,10 +7,44 @@ import GRPC
 import OctopusGrpcModels
 import Logging
 
-public enum FieldUpdate<T> {
-    case notUpdated
-    case updated(T)
+public struct UpdateProfileData: Sendable {
+    public enum FieldUpdate<T: Sendable>: Sendable {
+        case notUpdated
+        case updated(T)
+    }
+
+    public let nickname: FieldUpdate<String>
+    public let bio: FieldUpdate<String?>
+    public let picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?>
+    public let hasSeenOnboarding: FieldUpdate<Bool>
+    public let hasAcceptedCgu: FieldUpdate<Bool>
+    public let hasConfirmedNickname: FieldUpdate<Bool>
+    public let hasConfirmedBio: FieldUpdate<Bool>
+    public let hasConfirmedPicture: FieldUpdate<Bool>
+    public let optFindAvailableNickname: Bool
+
+    public init(nickname: FieldUpdate<String> = .notUpdated,
+                bio: FieldUpdate<String?> = .notUpdated,
+                picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated,
+                hasSeenOnboarding: FieldUpdate<Bool> = .notUpdated,
+                hasAcceptedCgu: FieldUpdate<Bool> = .notUpdated,
+                hasConfirmedNickname: FieldUpdate<Bool> = .notUpdated,
+                hasConfirmedBio: FieldUpdate<Bool> = .notUpdated,
+                hasConfirmedPicture: FieldUpdate<Bool> = .notUpdated,
+                optFindAvailableNickname: Bool = false
+    ) {
+        self.nickname = nickname
+        self.bio = bio
+        self.picture = picture
+        self.hasSeenOnboarding = hasSeenOnboarding
+        self.hasAcceptedCgu = hasAcceptedCgu
+        self.hasConfirmedNickname = hasConfirmedNickname
+        self.hasConfirmedBio = hasConfirmedBio
+        self.hasConfirmedPicture = hasConfirmedPicture
+        self.optFindAvailableNickname = optFindAvailableNickname
+    }
 }
+
 
 public protocol UserService {
     func getPrivateProfile(
@@ -19,10 +53,7 @@ public protocol UserService {
     -> Com_Octopuscommunity_GetPrivateProfileResponse
 
     func updateProfile(userId: String,
-                       nickname: FieldUpdate<String>,
-                       bio: FieldUpdate<String?>,
-                       picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?>,
-                       isProfileCreation: Bool,
+                       profile: UpdateProfileData,
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse
 
@@ -45,18 +76,28 @@ public protocol UserService {
     func blockUser(profileId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_BlockUserResponse
 
-    func getJwt(clientToken: String) async throws(RemoteClientError)
+    func getJwt(clientToken: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse
+
+    func getGuestJwt() async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetGuestJwtResponse
+
+    func canAccessCommunity(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_CanAccessCommunityResponse
+
+    func bypassABTestingAccess(userId: String, canAccessCommunity: Bool, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_ByPassAbTestingResponse
 }
 
 class UserServiceClient: ServiceClient, UserService {
     private let client: Com_Octopuscommunity_UserServiceAsyncClient
 
-
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+         getUserIdBlock:  @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_UserServiceAsyncClient(
-            channel: unaryChannel, interceptors: UserServiceInterceptor(updateTokenBlock: updateTokenBlock))
+            channel: unaryChannel, interceptors: UserServiceInterceptor(
+                getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
         super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
     }
 
@@ -89,22 +130,19 @@ class UserServiceClient: ServiceClient, UserService {
     }
 
     public func updateProfile(userId: String,
-                              nickname: FieldUpdate<String>,
-                              bio: FieldUpdate<String?>,
-                              picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?>,
-                              isProfileCreation: Bool,
+                              profile: UpdateProfileData,
                               authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {
         let request = Com_Octopuscommunity_UpdateProfileRequest.with {
             $0.userID = userId
             $0.update = .with {
-                if case let .updated(nickname) = nickname {
+                if case let .updated(nickname) = profile.nickname {
                     $0.nickname = nickname
                 }
-                if case let .updated(bio) = bio {
+                if case let .updated(bio) = profile.bio {
                     $0.bio = bio ?? ""
                 }
-                if case let .updated(pictureInfo) = picture {
+                if case let .updated(pictureInfo) = profile.picture {
                     $0.picture = .with {
                         $0.request = if let pictureInfo {
                             .new(.with {
@@ -116,18 +154,28 @@ class UserServiceClient: ServiceClient, UserService {
                         }
                     }
                 }
+                if case let .updated(hasSeenOnboarding) = profile.hasSeenOnboarding {
+                    $0.hasSeenOnboarding_p = hasSeenOnboarding
+                }
+                if case let .updated(hasAcceptedCgu) = profile.hasAcceptedCgu {
+                    $0.hasAcceptedCgu_p = hasAcceptedCgu
+                }
+                if case let .updated(hasConfirmedNickname) = profile.hasConfirmedNickname {
+                    $0.hasConfirmedNickname_p = hasConfirmedNickname
+                }
+                if case let .updated(hasConfirmedBio) = profile.hasConfirmedBio {
+                    $0.hasConfirmedBio_p = hasConfirmedBio
+                }
+                if case let .updated(hasConfirmedPicture) = profile.hasConfirmedPicture {
+                    $0.hasConfirmedPicture_p = hasConfirmedPicture
+                }
+                $0.optFindAvailableNickname = profile.optFindAvailableNickname
             }
         }
         return try await callRemote(authenticationMethod) {
-            if isProfileCreation {
-                return try await client.createProfile(
-                    request,
-                    callOptions: getCallOptions(authenticationMethod: authenticationMethod))
-            } else {
-                return try await client.updateProfile(
-                    request,
-                    callOptions: getCallOptions(authenticationMethod: authenticationMethod))
-            }
+            return try await client.updateProfile(
+                request,
+                callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }
 
@@ -179,14 +227,47 @@ class UserServiceClient: ServiceClient, UserService {
         }
     }
 
-    func getJwt(clientToken: String) async throws(RemoteClientError)
+    func getJwt(clientToken: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse {
         let request = Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest.with {
             $0.clientToken = clientToken
         }
         return try await callRemote(.notAuthenticated) {
             try await client.getJwtFromClientSignedToken(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func getGuestJwt() async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetGuestJwtResponse {
+        let request = Com_Octopuscommunity_GetGuestJwtRequest()
+
+        return try await callRemote(.notAuthenticated) {
+            try await client.getGuestJwt(
                 request, callOptions: getCallOptions(authenticationMethod: .notAuthenticated))
+        }
+    }
+
+    func canAccessCommunity(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_CanAccessCommunityResponse {
+        let request = Com_Octopuscommunity_CanAccessCommunityRequest()
+
+        return try await callRemote(.notAuthenticated) {
+            try await client.canAccessCommunity(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func bypassABTestingAccess(userId: String, canAccessCommunity: Bool, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_ByPassAbTestingResponse {
+        let request = Com_Octopuscommunity_ByPassAbTestingRequest.with {
+            $0.userID = userId
+            $0.giveCommunityAccess = canAccessCommunity
+        }
+
+        return try await callRemote(.notAuthenticated) {
+            try await client.byPassAbTesting(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }
 }

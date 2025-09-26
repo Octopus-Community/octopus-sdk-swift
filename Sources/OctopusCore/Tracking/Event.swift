@@ -30,12 +30,17 @@ struct Event {
         case enteringUI(firstSession: Bool)
         /// Triggered when the Octopus UI is displayed not displayed anymore
         case leavingUI(startDate: Date, endDate: Date, firstSession: Bool)
-        /// Triggered when a bridge post has been opened. Success is the result of the first getObject
-        case bridgePostOpened(success: Bool)
+        /// Triggered when a post has been opened. Success is the result of the first getObject
+        case postOpened(origin: PostOpenedOrigin, success: Bool)
         /// Triggered when a user opens the client object from a bridge post
         case openClientObjectFromBridge
         /// Custom event, set by the client
         case custom(CustomEvent)
+    }
+
+    enum PostOpenedOrigin {
+        case clientApp
+        case sdk(hasFeaturedComment: Bool)
     }
 
     init(date: Date, appSessionId: String?, uiSessionId: String?, content: Content) {
@@ -80,9 +85,10 @@ extension Event.Content: CustomStringConvertible {
             extra = "        startDate: \(startDate)\n" +
                     "        endDate: \(endDate)\n" +
                     "        firstSession: \(firstSession)"
-        case let .bridgePostOpened(success):
-            name = "bridgePostOpened"
-            extra = "        success: \(success)"
+        case let .postOpened(origin, success):
+            name = "postOpened"
+            extra = "        origin: \(origin)\n" +
+                    "        success: \(success)"
         case .openClientObjectFromBridge:
             name = "openClientObjectFromBridge"
             extra = nil
@@ -120,8 +126,12 @@ extension Event {
                 .leavingUI(startDate: Date(timeIntervalSince1970: evt.startTimestamp),
                            endDate: Date(timeIntervalSince1970: evt.endTimestamp),
                            firstSession: evt.firstSession)
-        case let evt as BridgePostOpenedEventEntity:
-                .bridgePostOpened(success: evt.success)
+        case let evt as PostOpenedEventEntity:
+            if let origin = Event.PostOpenedOrigin(from: evt) {
+                .postOpened(origin: origin, success: evt.success)
+            } else {
+                nil
+            }
         case is OpenClientObjectFromBridgeEventEntity:
                 .openClientObjectFromBridge
         case let evt as CustomEventEntity:

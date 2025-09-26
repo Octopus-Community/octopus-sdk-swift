@@ -12,7 +12,9 @@ extension NotifAction.OctoScreen {
                 .postDetail(postId: postId,
                             comment: false,
                             commentToScrollTo: commentToScrollTo,
-                            scrollToMostRecentComment: scrollToMostRecentComment)
+                            scrollToMostRecentComment: scrollToMostRecentComment,
+                            origin: .sdk,
+                            hasFeaturedComment: false)
         case let .commentDetail(commentId, replyToScrollTo):
                 .commentDetail(commentId: commentId, displayGoToParentButton: true, reply: false,
                                replyToScrollTo: replyToScrollTo)

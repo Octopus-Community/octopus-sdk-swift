@@ -29,20 +29,25 @@ struct DisplayablePost: Equatable {
             _liveMeasuresPublisher.value
         }
 
+        let featuredComment: DisplayableFeedResponse?
+
         init(text: String, attachment: Attachment?, textIsEllipsized: Bool,
              bridgeCTA: (text: String, clientObjectId: String)?,
+             featuredComment: DisplayableFeedResponse?,
              liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
             self.text = text
             self.attachment = attachment
             self.textIsEllipsized = textIsEllipsized
             self.bridgeCTA = bridgeCTA
+            self.featuredComment = featuredComment
             self._liveMeasuresPublisher = liveMeasuresPublisher
         }
 
         static func == (lhs: DisplayablePost.PostContent, rhs: DisplayablePost.PostContent) -> Bool {
             return lhs.text == rhs.text &&
             lhs.attachment == rhs.attachment &&
-            lhs.textIsEllipsized == rhs.textIsEllipsized
+            lhs.textIsEllipsized == rhs.textIsEllipsized &&
+            lhs.featuredComment == rhs.featuredComment
         }
     }
     let uuid: String
@@ -55,10 +60,18 @@ struct DisplayablePost: Equatable {
     let content: Content
 
     let displayEvents: CellDisplayEvents
+
+    var hasFeaturedComment: Bool {
+        switch content {
+        case let .published(content): content.featuredComment != nil
+        case .moderated: false
+        }
+    }
 }
 
 extension DisplayablePost {
     init(from post: Post, liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>,
+         childLiveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>?,
          thisUserProfileId: String?, topic: Topic?, dateFormatter: RelativeDateTimeFormatter,
          onAppear: @escaping () -> Void, onDisappear: @escaping () -> Void) {
         uuid = post.uuid
@@ -80,11 +93,27 @@ extension DisplayablePost {
                 nil
             }
 
+            let featuredComment: DisplayableFeedResponse?
+            if let comment = post.featuredComment, let childLiveMeasuresPublisher {
+                featuredComment = DisplayableFeedResponse(
+                    from: comment,
+                    ellipsizeText: true,
+                    liveMeasurePublisher: childLiveMeasuresPublisher,
+                    thisUserProfileId: thisUserProfileId,
+                    dateFormatter: dateFormatter,
+                    onAppearAction: {},
+                    onDisappearAction: {}
+                )
+            } else {
+                featuredComment = nil
+            }
+
             content = .published(PostContent(
                 text: displayableText,
                 attachment: PostContent.Attachment(from: post),
                 textIsEllipsized: post.text != displayableText,
                 bridgeCTA: bridgeCTA,
+                featuredComment: featuredComment,
                 liveMeasuresPublisher: liveMeasuresPublisher)
             )
             canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
@@ -98,6 +127,7 @@ extension DisplayablePost {
         author = .init(profile: post.author)
         relativeDate = dateFormatter.customLocalizedStructure(for: post.creationDate, relativeTo: Date())
         self.topic = topic?.name ?? ""
+
         displayEvents = CellDisplayEvents(onAppear: onAppear, onDisappear: onDisappear)
     }
 }

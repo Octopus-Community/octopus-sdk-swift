@@ -31,8 +31,11 @@ public protocol OctoService {
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutReplyResponse
 
     func like(objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutLikeResponse
-
     func unlike(likeId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteLikeResponse
+
+    func react(reactionKind: String, objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse
+
+    func deleteReaction(reactionId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteReactionResponse
 
     func voteOnPoll(objectId: String, answerId: String, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse
@@ -61,10 +64,12 @@ class OctoServiceClient: ServiceClient, OctoService {
     private let client: Com_Octopuscommunity_OctoObjectServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+         getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_OctoObjectServiceAsyncClient(
             channel: unaryChannel,
-            interceptors: OctoServiceInterceptor(updateTokenBlock: updateTokenBlock))
+            interceptors: OctoServiceInterceptor(
+                getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
         super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
     }
 
@@ -205,6 +210,35 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.deleteLike(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func react(reactionKind: String, objectId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse {
+        let request = Com_Octopuscommunity_PutRequest.with {
+            $0.octoObject = .with {
+                $0.parentID = objectId
+                $0.content = .with {
+                    $0.reaction = .with {
+                        $0.unicode = reactionKind
+                    }
+                }
+            }
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.putReaction(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func deleteReaction(reactionId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteReactionResponse {
+        let request = Com_Octopuscommunity_DeleteRequest.with {
+            $0.octoObjectID = reactionId
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.deleteReaction(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

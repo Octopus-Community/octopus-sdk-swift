@@ -6,6 +6,7 @@ import Foundation
 import SwiftUI
 import os
 import Octopus
+import OctopusCore
 
 struct PostDetailView: View {
     @Environment(\.presentationMode) private var presentationMode
@@ -30,18 +31,20 @@ struct PostDetailView: View {
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
     private let canClose: Bool
-
+    
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String,
          comment: Bool,
          commentToScrollTo: String?,
          scrollToMostRecentComment: Bool = false,
-         shouldTrackEventBridgeOpened: Bool = false,
+         origin: PostDetailNavigationOrigin,
+         hasFeaturedComment: Bool,
          canClose: Bool = false) {
         _viewModel = Compat.StateObject(wrappedValue: PostDetailViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postUuid,
             commentToScrollTo: commentToScrollTo,
             scrollToMostRecentComment: scrollToMostRecentComment,
-            shouldTrackEventBridgeOpened: shouldTrackEventBridgeOpened))
+            origin: origin,
+            hasFeaturedComment: hasFeaturedComment))
         _commentTextFocused = .init(initialValue: comment)
         self.canClose = canClose
     }
@@ -59,13 +62,9 @@ struct PostDetailView: View {
                     zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousComments: viewModel.loadPreviousComments,
                     refresh: viewModel.refresh,
-                    displayCommentDetail: { commentId in
+                    displayCommentDetail: { commentId, reply in
                         navigator.push(.commentDetail(commentId: commentId, displayGoToParentButton: false,
-                                                      reply: false, replyToScrollTo: nil))
-                    },
-                    replyToComment: { commentId in
-                        navigator.push(.commentDetail(commentId: commentId, displayGoToParentButton: false,
-                                                      reply: true, replyToScrollTo: nil))
+                                                      reply: reply, replyToScrollTo: nil))
                     },
                     displayProfile: { profileId in
                         if profileId == viewModel.thisUserProfileId {
@@ -77,11 +76,11 @@ struct PostDetailView: View {
                     openCreateComment: { commentTextFocused = true },
                     deletePost: viewModel.deletePost,
                     deleteComment: viewModel.deleteComment,
-                    togglePostLike: viewModel.togglePostLike,
+                    reactionTapped: viewModel.setReaction(_:),
                     voteOnPoll: viewModel.vote,
-                    toggleCommentLike: viewModel.toggleCommentLike,
+                    commentReactionTapped: viewModel.setCommentReaction(_:commentId:),
                     displayContentModeration: {
-                        guard viewModel.ensureConnected() else { return }
+                        guard viewModel.ensureConnected(action: .moderation) else { return }
                         navigator.push(.reportContent(contentId: $0))
                     },
                     displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId:$0) } : nil)
@@ -266,49 +265,58 @@ private struct ContentView: View {
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
     let refresh: @Sendable () async -> Void
-    let displayCommentDetail: (String) -> Void
-    let replyToComment: (String) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
     let deletePost: () -> Void
     let deleteComment: (String) -> Void
-    let togglePostLike: () -> Void
+    let reactionTapped: (ReactionKind?) -> Void
     let voteOnPoll: (String) -> Bool
-    let toggleCommentLike: (String) -> Void
+    let commentReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
 
     var body: some View {
-        Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
-                          refreshAction: refresh) {
-            if let post {
-                PostDetailContentView(post: post, comments: comments,
-                                      hasMoreComments: hasMoreComments,
-                                      hideLoadMoreCommentsLoader: hideLoadMoreCommentsLoader,
-                                      width: width,
-                                      zoomableImageInfo: $zoomableImageInfo,
-                                      loadPreviousComments: loadPreviousComments,
-                                      displayCommentDetail: displayCommentDetail,
-                                      replyToComment: replyToComment,
-                                      displayProfile: displayProfile,
-                                      openCreateComment: openCreateComment,
-                                      deletePost: deletePost,
-                                      deleteComment: deleteComment,
-                                      togglePostLike: togglePostLike,
-                                      voteOnPoll: voteOnPoll,
-                                      toggleCommentLike: toggleCommentLike,
-                                      displayContentModeration: displayContentModeration,
-                                      displayClientObject: displayClientObject)
-            } else {
-                VStack {
-                    Spacer().frame(height: 54)
-                    Image(res: .contentNotAvailable)
-                    Text("Content.Detail.NotAvailable", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
+        VStack(spacing: 0) {
+#if compiler(>=6.2)
+            // Disable nav bar opacity on iOS 26 to have the same behavior as before.
+            // TODO: See with product team if we need to keep it.
+            if #available(iOS 26.0, *) {
+                Color.white.opacity(0.0001)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 1)
+            }
+#endif
+            Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
+                              refreshAction: refresh) {
+                if let post {
+                    PostDetailContentView(post: post, comments: comments,
+                                          hasMoreComments: hasMoreComments,
+                                          hideLoadMoreCommentsLoader: hideLoadMoreCommentsLoader,
+                                          width: width,
+                                          zoomableImageInfo: $zoomableImageInfo,
+                                          loadPreviousComments: loadPreviousComments,
+                                          displayCommentDetail: displayCommentDetail,
+                                          displayProfile: displayProfile,
+                                          openCreateComment: openCreateComment,
+                                          deletePost: deletePost,
+                                          deleteComment: deleteComment,
+                                          reactionTapped: reactionTapped,
+                                          voteOnPoll: voteOnPoll,
+                                          commentReactionTapped: commentReactionTapped,
+                                          displayContentModeration: displayContentModeration,
+                                          displayClientObject: displayClientObject)
+                } else {
+                    VStack {
+                        Spacer().frame(height: 54)
+                        Image(res: .contentNotAvailable)
+                        Text("Content.Detail.NotAvailable", bundle: .module)
+                            .font(theme.fonts.body2)
+                            .fontWeight(.medium)
+                            .multilineTextAlignment(.center)
+                    }
+                    .foregroundColor(theme.colors.gray500)
                 }
-                .foregroundColor(theme.colors.gray500)
             }
         }
     }
@@ -324,15 +332,14 @@ private struct PostDetailContentView: View {
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
-    let displayCommentDetail: (String) -> Void
-    let replyToComment: (String) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
     let deletePost: () -> Void
     let deleteComment: (String) -> Void
-    let togglePostLike: () -> Void
+    let reactionTapped: (ReactionKind?) -> Void
     let voteOnPoll: (String) -> Bool
-    let toggleCommentLike: (String) -> Void
+    let commentReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
 
@@ -453,26 +460,46 @@ private struct PostDetailContentView: View {
 
                 Spacer().frame(height: post.bridgeCTA == nil || displayClientObject == nil ? 8 : 4)
 
-                HStack {
-                    AggregatedInfoView(
-                        aggregatedInfo: post.aggregatedInfo, userInteractions: post.userInteractions,
-                        displayLabels: post.bridgeCTA == nil || displayClientObject == nil,
-                        minChildCount: comments?.count,
-                        childrenTapped: { openCreateComment() },
-                        likeTapped: togglePostLike)
-                    .layoutPriority(1)
-                    Spacer()
-                    if let bridgeCTA = post.bridgeCTA, let displayClientObject {
+                if let bridgeCTA = post.bridgeCTA, let displayClientObject {
+                    HStack {
+                        Spacer()
                         Button(action: { displayClientObject(bridgeCTA.clientObjectId) }) {
                             Text(bridgeCTA.text)
                                 .lineLimit(1)
                         }
-                        .buttonStyle(OctopusButtonStyle(.mid(.main)))
+                        .buttonStyle(OctopusButtonStyle(.mid))
+                        Spacer()
                     }
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.top, 8)
+                }
+
+                PostAggregatedInfoView(
+                    aggregatedInfo: post.aggregatedInfo,
+                    childrenTapped: { openCreateComment() })
+                .padding(.horizontal, horizontalPadding)
+                .padding(.bottom, 3)
+                .animation(.default)
+
+                Spacer().frame(height: 8)
+
+                HStack(spacing: 16) {
+                    ReactionsPickerView(
+                        contentId: post.uuid,
+                        userReaction: post.userInteractions.reaction,
+                        reactionTapped: reactionTapped)
+
+                    Spacer()
+
+                    Button(action: openCreateComment) {
+                        CreateChildInteractionView(image: .AggregatedInfo.comment, text: "Content.AggregatedInfo.Comment")
+                    }
+                    .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
                 }
                 .padding(.horizontal, horizontalPadding)
+                .animation(.default)
             }
-            .padding(.bottom, post.bridgeCTA == nil || displayClientObject == nil ? 8 : 4)
+            .padding(.bottom, 16)
 
             theme.colors.gray300.frame(height: 1)
 
@@ -483,11 +510,10 @@ private struct PostDetailContentView: View {
                              zoomableImageInfo: $zoomableImageInfo,
                              loadPreviousComments: loadPreviousComments,
                              displayCommentDetail: displayCommentDetail,
-                             replyToComment: replyToComment,
                              displayProfile: displayProfile,
                              openCreateComment: openCreateComment,
                              deleteComment: deleteComment,
-                             toggleLike: toggleCommentLike,
+                             reactionTapped: commentReactionTapped,
                              displayContentModeration: displayContentModeration)
                 .padding(.horizontal, horizontalPadding)
             } else {
@@ -549,12 +575,11 @@ private struct CommentsView: View {
     let hideLoader: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
-    let displayCommentDetail: (String) -> Void
-    let replyToComment: (String) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
     let deleteComment: (String) -> Void
-    let toggleLike: (String) -> Void
+    let reactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
 
     var body: some View {
@@ -564,9 +589,10 @@ private struct CommentsView: View {
                     ResponseFeedItemView(
                         response: comment,
                         zoomableImageInfo: $zoomableImageInfo,
-                        displayResponseDetail: displayCommentDetail, replyToResponse: replyToComment,
+                        displayResponseDetail: displayCommentDetail, displayParentDetail: { _ in },
                         displayProfile: displayProfile, deleteResponse: deleteComment,
-                        toggleLike: toggleLike, displayContentModeration: displayContentModeration)
+                        reactionTapped: reactionTapped,
+                        displayContentModeration: displayContentModeration)
                     .onAppear {
                         comment.displayEvents.onAppear()
                     }

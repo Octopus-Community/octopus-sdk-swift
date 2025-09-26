@@ -24,6 +24,7 @@ struct UnsupportedOSVersionView: View {
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+
             Spacer()
         }
         .padding()

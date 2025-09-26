@@ -10,23 +10,34 @@ struct OctopusButtonStyle: ButtonStyle {
     @Environment(\.octopusTheme) private var theme
 
     enum Kind {
-        enum SubKind {
-            case outline
-            case main
-            case secondary
-        }
         case main
-        case mid(SubKind)
-        case small(SubKind)
+        case mid
+        case small
+    }
+
+    enum Style {
+        case outline
+        case main
+        case secondary
     }
 
     let kind: Kind
+    let style: Style
     let hasLeadingIcon: Bool
     let hasTrailingIcon: Bool
+    let customBackgroundColor: Color?
     let enabled: Bool
 
-    init(_ kind: Kind, enabled: Bool = true, hasLeadingIcon: Bool = false, hasTrailingIcon: Bool = false) {
+    init(_ kind: Kind,
+         style: Style = .main,
+         backgroundColor: Color? = nil,
+         enabled: Bool = true,
+         hasLeadingIcon: Bool = false,
+         hasTrailingIcon: Bool = false
+    ) {
         self.kind = kind
+        self.style = style
+        self.customBackgroundColor = backgroundColor
         self.enabled = enabled
         self.hasLeadingIcon = hasLeadingIcon
         self.hasTrailingIcon = hasTrailingIcon
@@ -39,7 +50,7 @@ struct OctopusButtonStyle: ButtonStyle {
             .padding(.trailing, trailingPadding)
             .padding(.vertical, verticalPadding)
             .foregroundColor(foregroundColor)
-            .background(background)
+            .background(background.contentShape(Rectangle()))
     }
 }
 
@@ -47,26 +58,48 @@ struct OctopusButtonStyle: ButtonStyle {
 fileprivate extension OctopusButtonStyle {
     @ViewBuilder
     var background: some View {
-        switch kind {
-        case .main, .mid(.main), .small(.main):
+        switch style {
+        case .main:
             Capsule()
-                .fill(enabled ? theme.colors.primary : theme.colors.disabledBg)
-        case .mid(.outline), .small(.outline):
+                .fill(backgroundColor)
+        case .outline:
             Capsule()
                 .stroke(theme.colors.gray300, lineWidth: 1)
-        case .mid(.secondary), .small(.secondary):
+                .background(
+                    Capsule().fill(backgroundColor)
+                )
+        case .secondary:
             Capsule()
-                .fill(enabled ? theme.colors.gray300 : theme.colors.disabledBg)
+                .fill(backgroundColor)
+        }
+    }
+
+    var backgroundColor: Color {
+        if enabled {
+            if let customBackgroundColor {
+                return customBackgroundColor
+            } else {
+                switch style {
+                    case .main:
+                    return theme.colors.primary
+                case .outline:
+                    return .white.opacity(0.0001)
+                case .secondary:
+                    return theme.colors.gray300
+                }
+            }
+        } else {
+            return theme.colors.disabledBg
         }
     }
 
     var foregroundColor: Color {
-        switch kind {
-        case .main, .mid(.main), .small(.main):
+        switch style {
+        case .main:
             enabled ? theme.colors.onPrimary : theme.colors.onDisabled
-        case .mid(.outline), .small(.outline):
+        case .outline:
             enabled ? theme.colors.gray900 : theme.colors.onDisabled
-        case .mid(.secondary), .small(.secondary):
+        case .secondary:
             enabled ? theme.colors.gray900 : theme.colors.onDisabled
         }
     }
@@ -145,11 +178,19 @@ fileprivate extension OctopusButtonStyle {
         }
 
         HStack {
+            Text("Main with outlined style Active")
+            Spacer()
+            Button(action: {}) {
+                Text("Click me")
+            }.buttonStyle(OctopusButtonStyle(.main, style: .outline))
+        }
+
+        HStack {
             Text("Mid main Active")
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.mid(.main)))
+            }.buttonStyle(OctopusButtonStyle(.mid))
         }
 
         HStack {
@@ -157,7 +198,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.mid(.main), enabled: false))
+            }.buttonStyle(OctopusButtonStyle(.mid, enabled: false))
         }
 
         HStack {
@@ -165,7 +206,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.mid(.outline)))
+            }.buttonStyle(OctopusButtonStyle(.mid, style: .outline))
         }
 
         HStack {
@@ -173,7 +214,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.mid(.outline), enabled: false))
+            }.buttonStyle(OctopusButtonStyle(.mid, style: .outline, enabled: false))
         }
 
         HStack {
@@ -181,7 +222,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.mid(.secondary)))
+            }.buttonStyle(OctopusButtonStyle(.mid, style: .secondary))
         }
 
         HStack {
@@ -192,7 +233,7 @@ fileprivate extension OctopusButtonStyle {
                     Text("Click me")
                     Image(systemName: "checkmark")
                 }
-            }.buttonStyle(OctopusButtonStyle(.mid(.secondary), hasTrailingIcon: true))
+            }.buttonStyle(OctopusButtonStyle(.mid, style: .secondary, hasTrailingIcon: true))
         }
 
         HStack {
@@ -200,7 +241,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.mid(.secondary), enabled: false))
+            }.buttonStyle(OctopusButtonStyle(.mid, style: .secondary, enabled: false))
         }
 
         HStack {
@@ -208,7 +249,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.mid(.main)))
+            }.buttonStyle(OctopusButtonStyle(.small))
         }
 
         HStack {
@@ -216,7 +257,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.small(.main), enabled: false))
+            }.buttonStyle(OctopusButtonStyle(.small, enabled: false))
         }
 
         HStack {
@@ -224,7 +265,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.small(.outline)))
+            }.buttonStyle(OctopusButtonStyle(.small, style: .outline))
         }
 
         HStack {
@@ -232,7 +273,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.small(.outline), enabled: false))
+            }.buttonStyle(OctopusButtonStyle(.small, style: .outline, enabled: false))
         }
 
         HStack {
@@ -240,7 +281,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.small(.secondary)))
+            }.buttonStyle(OctopusButtonStyle(.small, style: .secondary))
         }
 
         HStack {
@@ -251,7 +292,7 @@ fileprivate extension OctopusButtonStyle {
                     Text("Click me")
                     Image(systemName: "checkmark")
                 }
-            }.buttonStyle(OctopusButtonStyle(.small(.secondary), hasTrailingIcon: true))
+            }.buttonStyle(OctopusButtonStyle(.small, style: .secondary, hasTrailingIcon: true))
         }
 
         HStack {
@@ -259,7 +300,7 @@ fileprivate extension OctopusButtonStyle {
             Spacer()
             Button(action: {}) {
                 Text("Click me")
-            }.buttonStyle(OctopusButtonStyle(.small(.secondary), enabled: false))
+            }.buttonStyle(OctopusButtonStyle(.small, style: .secondary, enabled: false))
         }
     }
     .padding()

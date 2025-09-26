@@ -12,6 +12,7 @@ struct BackButton: View {
     let action: () -> Void
 
     var body: some View {
+#if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             Button(action: action) {
                 Image(systemName: "chevron.left")
@@ -27,6 +28,15 @@ struct BackButton: View {
             }
             .padding(.leading, -8)
         }
+#else
+        Button(action: action) {
+            Image(systemName: "chevron.left")
+                .font(theme.fonts.navBarItem.weight(.semibold))
+                .contentShape(Rectangle())
+                .padding(.trailing, 40)
+        }
+        .padding(.leading, -8)
+#endif
     }
 }
 

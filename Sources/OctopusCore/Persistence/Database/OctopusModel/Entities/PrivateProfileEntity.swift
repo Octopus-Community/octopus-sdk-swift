@@ -10,6 +10,7 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var profileId: String
     @NSManaged public var userId: String
     @NSManaged public var nickname: String
+    @NSManaged public var originalNickname: String?
     @NSManaged public var email: String?
     @NSManaged public var bio: String?
     @NSManaged public var pictureUrl: URL?
@@ -17,6 +18,18 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var ascPostFeedId: String
     @NSManaged public var notificationBadgeCount: Int
     @NSManaged public var blocking: NSOrderedSet
+    @NSManaged public var hasSeenOnboardingOptional: NSNumber?
+    @NSManaged public var hasAcceptedCguOptional: NSNumber?
+    @NSManaged public var hasConfirmedNicknameOptional: NSNumber?
+    @NSManaged public var hasConfirmedBioOptional: NSNumber?
+    @NSManaged public var hasConfirmedPictureOptional: NSNumber?
+    @NSManaged public var isGuest: Bool
+
+    var hasSeenOnboarding: Bool? { hasSeenOnboardingOptional?.boolValue }
+    var hasAcceptedCgu: Bool? { hasAcceptedCguOptional?.boolValue }
+    var hasConfirmedNickname: Bool? { hasConfirmedNicknameOptional?.boolValue }
+    var hasConfirmedBio: Bool? { hasConfirmedBioOptional?.boolValue }
+    var hasConfirmedPicture: Bool? { hasConfirmedPictureOptional?.boolValue }
 
     var blockedProfileIds: [String] {
         (blocking.array as? [BlockedUserEntity] ?? []).map { $0.profileId }

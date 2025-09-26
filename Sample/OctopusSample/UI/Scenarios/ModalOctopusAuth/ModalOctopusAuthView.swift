@@ -36,26 +36,26 @@ struct ModalOctopusAuthView: View {
                 }
             }
             Spacer()
+            if let sdkConfig = SDKConfigManager.instance.sdkConfig {
+                Text("SDK configured with: \(sdkConfig.displayableString)")
+            }
             Text("App Version: \(versionStr)")
                 .bold()
                 .padding()
         }
         .fullScreenCover(isPresented: $openOctopusAsModal) {
             if let octopus = viewModel.octopus {
-                OctopusHomeScreen(octopus: octopus, notificationResponse: $octopusNotification)
+                OctopusUIView(octopus: octopus, octopusNotification: $octopusNotification)
                 // only for used for internal purpose, you can ignore this for the easiest way to use Octopus
                 // If you want to override the theme, please have a look to Scenarios/CustomTheme
                     .modify {
-                        if DefaultValuesProvider.demoMode {
+                        if DefaultValuesProvider.internalDemoMode {
                             $0.environment(\.octopusTheme, demoTheme)
                         } else { $0 }
                     }
             } else {
                 EmptyView()
             }
-        }
-        .onAppear {
-            viewModel.createSDK()
         }
         .onReceive(NotificationManager.instance.$handleOctopusNotification) {
             octopusNotification = $0

@@ -75,12 +75,19 @@ class RecipeViewModel: ObservableObject {
                     // An example of how the signature might be constructed is available in `TokenProvider` (without the
                     // need of the `sub` info in the token), but it is safer if it is your backend that provides the
                     // signature.
-                    signature: nil
+                    signature: getSignature()
                 )
             )
             octopusPostId = postId
         } catch {
             self.error = error
+        }
+    }
+
+    private func getSignature() throws -> String? {
+        return switch SDKConfigManager.instance.sdkConfig?.authKind {
+        case .sso: try TokenProvider().getBridgeSignature()
+        default: nil
         }
     }
 }

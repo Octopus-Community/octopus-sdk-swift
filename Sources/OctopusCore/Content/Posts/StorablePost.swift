@@ -45,7 +45,7 @@ extension StorablePost {
         descCommentFeedId = entity.descChildrenFeedId
         ascCommentFeedId = entity.ascChildrenFeedId
         aggregatedInfo = AggregatedInfo(from: entity)
-        userInteractions = .init(userLikeId: entity.userLikeId, pollVoteId: entity.userPollVoteId)
+        userInteractions = UserInteractions(from: entity)
     }
 
     init?(octoPost: Com_Octopuscommunity_OctoObject, aggregate: Com_Octopuscommunity_Aggregate?,

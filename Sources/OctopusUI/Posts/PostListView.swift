@@ -13,8 +13,6 @@ struct PostListView: View {
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: PostListViewModel
 
-    @State private var noConnectedReplacementAction: ConnectedActionReplacement?
-
     @Binding var selectedRootFeed: RootFeed?
     @Binding private var zoomableImageInfo: ZoomableImageInfo?
 
@@ -34,8 +32,13 @@ struct PostListView: View {
                             viewModel: postFeedViewModel,
                             zoomableImageInfo: $zoomableImageInfo,
                             displayPostDetail: {
-                                navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: nil,
-                                                           scrollToMostRecentComment: $2))
+                                navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
+                                                           scrollToMostRecentComment: $2, origin: .sdk,
+                                                           hasFeaturedComment: $4))
+                            },
+                            displayCommentDetail: {
+                                navigator.push(.commentDetail(
+                                    commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
                             },
                             displayProfile: { profileId in
                                 if #available(iOS 14, *) { Logger.profile.trace("Display profile \(profileId)") }
@@ -64,26 +67,27 @@ struct PostListView: View {
                     AuthorActionView(
                         octopus: viewModel.octopus, actionKind: .post,
                         userProfileTapped: {
-                            if viewModel.ensureConnected() {
+                            if viewModel.ensureConnected(action: .viewOwnProfile) {
                                 navigator.push(.currentUserProfile)
                             }
                         },
-                        actionTapped: viewModel.createPostTapped)
+                        actionTapped: {
+                            navigator.push(.createPost(withPoll: false))
+                        })
                 })
             } else {
                 $0.overlay(
                     AuthorActionView(octopus: viewModel.octopus, actionKind: .post,
                                      userProfileTapped: {
-                                         if viewModel.ensureConnected() {
+                                         if viewModel.ensureConnected(action: .viewOwnProfile) {
                                              navigator.push(.currentUserProfile)
                                          }
                                      },
-                                     actionTapped: viewModel.createPostTapped),
+                                     actionTapped: {
+                                         navigator.push(.createPost(withPoll: false))
+                                     }),
                     alignment: .bottomTrailing)
             }
-        }
-        .fullScreenCover(isPresented: $viewModel.openCreatePost) {
-            CreatePostView(octopus: viewModel.octopus)
         }
         .onValueChanged(of: selectedRootFeed) {
             guard let selectedRootFeed = $0 else { return }

@@ -90,7 +90,7 @@ private struct RootFeedsGridView: View {
     @Binding var selectedRootFeed: RootFeed?
 
     var body: some View {
-        CenteredFreeGridLayout {
+        FreeGridLayout {
             ForEach(rootFeeds, id: \.self) { rootFeed in
                 Button(action: {
                     selectedRootFeed = rootFeed

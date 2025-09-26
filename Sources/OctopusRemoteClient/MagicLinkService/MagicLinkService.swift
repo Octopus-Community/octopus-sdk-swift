@@ -16,10 +16,12 @@ class MagicLinkServiceClient: ServiceClient, MagicLinkService {
     private let client: Com_Octopuscommunity_MagicLinkServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+         getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_MagicLinkServiceAsyncClient(
             channel: unaryChannel,
-            interceptors: MagicLinkServiceInterceptor(updateTokenBlock: updateTokenBlock))
+            interceptors: MagicLinkServiceInterceptor(
+                getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
         super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
     }
 

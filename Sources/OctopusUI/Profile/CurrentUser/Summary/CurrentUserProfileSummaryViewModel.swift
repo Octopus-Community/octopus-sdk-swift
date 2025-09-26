@@ -25,30 +25,20 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
 
     @Published private var isFetchingProfile: Bool = false
+    @Published private(set) var editConfig: EditConfig = .editInOctopus
 
     let hasInitialNotSeenNotifications: Bool
 
     let notifCenterViewModel: NotificationCenterViewModel
 
-    let editConfig: EditConfig
-
     let octopus: OctopusSDK
+    private var previousProfileId: String?
 
     private var storage = [AnyCancellable]()
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
         self.octopus = octopus
         notifCenterViewModel = NotificationCenterViewModel(octopus: octopus)
-        if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode,
-           !configuration.appManagedFields.isEmpty {
-            if configuration.appManagedFields.isStrictSubset(of: CoreProfileField.allCases) {
-                editConfig = .mixed(configuration.appManagedFields, configuration.modifyUser)
-            } else {
-                editConfig = .editInApp(configuration.modifyUser)
-            }
-        } else {
-            editConfig = .editInOctopus
-        }
 
         hasInitialNotSeenNotifications = (octopus.core.profileRepository.profile?.notificationBadgeCount ?? 0) > 0
 
@@ -63,18 +53,40 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             mainFlowPath.$isLocked
         ).sink { [unowned self] profile, currentError, isFetchingProfile, isLocked in
             guard let profile else {
-                if currentError == nil && !isFetchingProfile && !isLocked {
-                    dismiss = true
-                }
+//                if currentError == nil && !isFetchingProfile && !isLocked {
+//                    dismiss = true
+//                }
                 return
             }
+//            if let previousProfileId, previousProfileId != profile.id {
+//                if currentError == nil && !isFetchingProfile && !isLocked {
+//                    self.previousProfileId = profile.id
+//                    dismiss = true
+//                    return
+//                }
+//            } else {
+//                // do it in the else to avoid replacing the previousProfileId if isFetchingProfile || isLocked
+//                previousProfileId = profile.id
+//            }
             self.profile = profile
+
+            if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode,
+               !configuration.appManagedFields.isEmpty, !profile.isGuest {
+                if configuration.appManagedFields.isStrictSubset(of: CoreProfileField.allCases) {
+                    editConfig = .mixed(configuration.appManagedFields, configuration.modifyUser)
+                } else {
+                    editConfig = .editInApp(configuration.modifyUser)
+                }
+            } else {
+                editConfig = .editInOctopus
+            }
+
             // Update the view model only if feed id has changed
             let newestFirstPostsFeed = profile.newestFirstPostsFeed
             if postFeedViewModel?.feed.id != newestFirstPostsFeed.id {
                 postFeedViewModel = PostFeedViewModel(octopus: octopus, postFeed: newestFirstPostsFeed,
                                                       displayModeratedPosts: true,
-                                                      ensureConnected: { true })
+                                                      ensureConnected: { _ in true }) // TODO Djavan: can we be sure that we are fully authorized to post?
             }
         }.store(in: &storage)
     }

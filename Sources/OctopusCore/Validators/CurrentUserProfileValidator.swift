@@ -16,16 +16,10 @@ public extension Validators {
             case tooLong
         }
 
-        public enum BirthDateError: Error {
-            case tooYoung
-        }
-
         public let minNicknameLength = 3
         public let maxNicknameLength = 20
 
         public let maxBioLength = 200
-
-        public let minAge = 16
 
         public var pictureMinSize: CGFloat { pictureValidator.minSize }
         public var pictureMaxRatio: CGFloat { pictureValidator.maxRatio }
@@ -40,38 +34,31 @@ public extension Validators {
             self.appManagedFields = appManagedFields
         }
 
-        public func validate(picture: UIImage) -> Picture.ValidationResult {
-            guard !appManagedFields.contains(.picture) else { return .valid }
+        public func validate(picture: UIImage, isGuest: Bool) -> Picture.ValidationResult {
+            guard !appManagedFields.contains(.picture) || isGuest else { return .valid }
             return pictureValidator.validate(picture)
         }
 
-        public func validate(nickname: String) -> Result<Void, NicknameError> {
-            guard !appManagedFields.contains(.nickname) else { return .success(Void()) }
+        public func validate(nickname: String, isGuest: Bool) -> Result<Void, NicknameError> {
+            guard !appManagedFields.contains(.nickname) || isGuest else { return .success(Void()) }
             guard nickname.count >= minNicknameLength else { return .failure(.tooShort) }
             guard nickname.count <= maxNicknameLength else { return .failure(.tooLong) }
             return .success(Void())
         }
 
-        public func validate(bio: String?) -> Result<Void, BioError> {
-            guard !appManagedFields.contains(.bio) else { return .success(Void()) }
+        public func validate(bio: String?, isGuest: Bool) -> Result<Void, BioError> {
+            guard !appManagedFields.contains(.bio) || isGuest else { return .success(Void()) }
             guard let bio else { return .success(Void()) }
             guard bio.count <= maxBioLength else { return .failure(.tooLong) }
             return .success(Void())
         }
 
-        public func validate(birthDate: Date) -> Result<Void, BirthDateError> {
-            let calendar = Calendar.current
-            let ageComponents = calendar.dateComponents([.year], from: birthDate, to: Date())
-            guard let age = ageComponents.year, age >= minAge else { return .failure(.tooYoung) }
-            return .success(Void())
-        }
-
-        public func validate(profile: EditableProfile) -> Bool {
+        public func validate(profile: EditableProfile, isGuest: Bool) -> Bool {
             // Note that we can't check picture because we only have the data here
             if case let .updated(nickname) = profile.nickname,
-               case .failure = validate(nickname: nickname) { return false }
+               case .failure = validate(nickname: nickname, isGuest: isGuest) { return false }
             if case let .updated(bio) = profile.bio,
-               case .failure = validate(bio: bio) { return false }
+               case .failure = validate(bio: bio, isGuest: isGuest) { return false }
             return true
         }
     }

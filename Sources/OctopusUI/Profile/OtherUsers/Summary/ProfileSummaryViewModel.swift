@@ -48,9 +48,9 @@ class ProfileSummaryViewModel: ObservableObject {
                     if postFeedViewModel?.feed.id != newestFirstPostsFeed.id {
                         postFeedViewModel = PostFeedViewModel(
                             octopus: octopus, postFeed: newestFirstPostsFeed,
-                            ensureConnected: { [weak self] in
+                            ensureConnected: { [weak self] action in
                                 guard let self else { return false }
-                                return self.ensureConnected()
+                                return self.ensureConnected(action: action)
                             })
                     }
                 } else {
@@ -84,8 +84,8 @@ class ProfileSummaryViewModel: ObservableObject {
         }
     }
 
-    func ensureConnected() -> Bool {
-        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
+    func ensureConnected(action: UserAction) -> Bool {
+        connectedActionChecker.ensureConnected(action: action, actionWhenNotConnected: authenticationActionBinding)
     }
 
     private func blockUser() async {

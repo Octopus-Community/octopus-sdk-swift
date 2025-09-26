@@ -35,10 +35,7 @@ class BridgeToClientObjectViewModel: ObservableObject {
             }.store(in: &storage)
     }
 
-    func createSDK() {
-        octopusSDKProvider.createSDK(
-            connectionMode: .octopus(deepLink: "com.octopuscommunity.sample://magic-link"))
-
+    func configureSDK() {
         // Set the callback that will be called when the user tapped on a button that should display one of your objects
         octopusSDKProvider.octopus?.set(displayClientObjectCallback: { [weak self] objectId in
             guard let self else { return }
@@ -53,10 +50,5 @@ class BridgeToClientObjectViewModel: ObservableObject {
                 recipePresented = recipe
             }
         })
-    }
-
-    func resetSDK() {
-        octopusSDKProvider.createSDK(
-            connectionMode: .octopus(deepLink: "com.octopuscommunity.sample://magic-link"), forceNew: true)
     }
 }

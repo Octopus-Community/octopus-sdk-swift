@@ -36,7 +36,7 @@ class CommentDetailViewModel: ObservableObject {
 
     // Comments
     private var feedStorage = [AnyCancellable]()
-    private var feed: Feed<Reply>?
+    private var feed: Feed<Reply, Never>?
 
     @Published private(set) var replies: [DisplayableFeedResponse]?
     @Published var scrollToBottom = false
@@ -73,7 +73,7 @@ class CommentDetailViewModel: ObservableObject {
     let commentUuid: String
     let connectedActionChecker: ConnectedActionChecker
 
-    private var newestFirstRepliesFeed: Feed<Reply>?
+    private var newestFirstRepliesFeed: Feed<Reply, Never>?
     private var reply: Bool
     private var replyToScrollTo: String?
 
@@ -209,7 +209,7 @@ class CommentDetailViewModel: ObservableObject {
                 liveMeasurePublisher.send(LiveMeasures(aggregatedInfo: reply.aggregatedInfo, userInteractions: reply.userInteractions))
                 return DisplayableFeedResponse(
                     from: reply,
-                    liveMeasurePublisher: liveMeasurePublisher.eraseToAnyPublisher(),
+                    liveMeasurePublisher: liveMeasurePublisher,
                     thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
             }
@@ -304,7 +304,7 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
-    private func set(feed: Feed<Reply>) {
+    private func set(feed: Feed<Reply, Never>) {
         guard feed.id != self.feed?.id else { return }
         replies = nil
         self.feed = feed
@@ -469,8 +469,8 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
-    func ensureConnected() -> Bool {
-        connectedActionChecker.ensureConnected(actionWhenNotConnected: authenticationActionBinding)
+    func ensureConnected(action: UserAction) -> Bool {
+        connectedActionChecker.ensureConnected(action: action, actionWhenNotConnected: authenticationActionBinding)
     }
 
     private func fetchComment(uuid: String, incrementViewCount: Bool) async throws(ServerCallError) {
@@ -554,30 +554,28 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
-    func toggleCommentLike() {
-        guard ensureConnected() else { return }
+    func setReaction(_ reaction: ReactionKind?) {
+        guard ensureConnected(action: .reaction) else { return }
         guard let comment = internalComment else { return }
         Task {
-            await toggleCommentLike(comment: comment)
+            await set(reaction: reaction, comment: comment)
         }
     }
 
-    func toggleReplyLike(replyId: String) {
-        guard ensureConnected() else { return }
-        let reply = feed?.items?.first(where: { $0.id == replyId }) ??
-            newestFirstRepliesFeed?.items?.first(where: { $0.id == replyId })
-        guard let reply else {
+    func setReplyReaction(_ reaction: ReactionKind?, replyId: String) {
+        guard ensureConnected(action: .reaction) else { return }
+        guard let reply = feed?.items?.first(where: { $0.id == replyId }) else {
             error = .localizationKey("Error.Unknown")
             return
         }
         Task {
-            await toggleReplyLike(reply: reply)
+            await set(reaction: reaction, reply: reply)
         }
     }
 
-    private func toggleCommentLike(comment: Comment) async {
+    private func set(reaction: ReactionKind?, comment: Comment) async {
         do {
-            try await octopus.core.commentsRepository.toggleLike(comment: comment)
+            try await octopus.core.commentsRepository.set(reaction: reaction, comment: comment)
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -606,9 +604,9 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
-    private func toggleReplyLike(reply: Reply) async {
+    private func set(reaction: ReactionKind?, reply: Reply) async {
         do {
-            try await octopus.core.repliesRepository.toggleLike(reply: reply)
+            try await octopus.core.repliesRepository.set(reaction: reaction, reply: reply)
         } catch {
             switch error {
             case let .validation(argumentError):

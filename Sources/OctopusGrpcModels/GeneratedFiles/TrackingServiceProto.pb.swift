@@ -103,6 +103,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .customEvent(newValue)}
     }
 
+    ///Deprecated use Post open with client origin
     public var bridgePostOpened: Com_Octopuscommunity_TrackRequest.BridgePostOpened {
       get {
         if case .bridgePostOpened(let v)? = eventType {return v}
@@ -119,6 +120,54 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .openClientObjectFromBridge(newValue)}
     }
 
+    public var postOpened: Com_Octopuscommunity_TrackRequest.PostOpened {
+      get {
+        if case .postOpened(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.PostOpened()
+      }
+      set {eventType = .postOpened(newValue)}
+    }
+
+    public var clientContentSharingStarted: Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted {
+      get {
+        if case .clientContentSharingStarted(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted()
+      }
+      set {eventType = .clientContentSharingStarted(newValue)}
+    }
+
+    public var clientContentSharingCanceled: Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled {
+      get {
+        if case .clientContentSharingCanceled(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled()
+      }
+      set {eventType = .clientContentSharingCanceled(newValue)}
+    }
+
+    public var viewTopic: Com_Octopuscommunity_TrackRequest.ViewTopic {
+      get {
+        if case .viewTopic(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ViewTopic()
+      }
+      set {eventType = .viewTopic(newValue)}
+    }
+
+    public var viewProfile: Com_Octopuscommunity_TrackRequest.ViewProfile {
+      get {
+        if case .viewProfile(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ViewProfile()
+      }
+      set {eventType = .viewProfile(newValue)}
+    }
+
+    public var searchTopicButtonHit: Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit {
+      get {
+        if case .searchTopicButtonHit(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit()
+      }
+      set {eventType = .searchTopicButtonHit(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_EventType: Equatable, Sendable {
@@ -127,8 +176,15 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case enteringOctopus(Com_Octopuscommunity_TrackRequest.EnteringOctopus)
       case leavingOctopus(Com_Octopuscommunity_TrackRequest.LeavingOctopus)
       case customEvent(Com_Octopuscommunity_TrackRequest.CustomEvent)
+      ///Deprecated use Post open with client origin
       case bridgePostOpened(Com_Octopuscommunity_TrackRequest.BridgePostOpened)
       case openClientObjectFromBridge(Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge)
+      case postOpened(Com_Octopuscommunity_TrackRequest.PostOpened)
+      case clientContentSharingStarted(Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted)
+      case clientContentSharingCanceled(Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled)
+      case viewTopic(Com_Octopuscommunity_TrackRequest.ViewTopic)
+      case viewProfile(Com_Octopuscommunity_TrackRequest.ViewProfile)
+      case searchTopicButtonHit(Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit)
 
     }
 
@@ -262,6 +318,85 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
+  public struct PostOpened: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var origin: Com_Octopuscommunity_TrackRequest.Origin {
+      get {return _origin ?? Com_Octopuscommunity_TrackRequest.Origin()}
+      set {_origin = newValue}
+    }
+    /// Returns true if `origin` has been explicitly set.
+    public var hasOrigin: Bool {return self._origin != nil}
+    /// Clears the value of `origin`. Subsequent reads from it will return its default value.
+    public mutating func clearOrigin() {self._origin = nil}
+
+    public var success: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _origin: Com_Octopuscommunity_TrackRequest.Origin? = nil
+  }
+
+  public struct Origin: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var from: Com_Octopuscommunity_TrackRequest.Origin.OneOf_From? = nil
+
+    public var fromClientApp: Com_Octopuscommunity_TrackRequest.ClientApp {
+      get {
+        if case .fromClientApp(let v)? = from {return v}
+        return Com_Octopuscommunity_TrackRequest.ClientApp()
+      }
+      set {from = .fromClientApp(newValue)}
+    }
+
+    public var fromOctopusSdk: Com_Octopuscommunity_TrackRequest.Sdk {
+      get {
+        if case .fromOctopusSdk(let v)? = from {return v}
+        return Com_Octopuscommunity_TrackRequest.Sdk()
+      }
+      set {from = .fromOctopusSdk(newValue)}
+    }
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public enum OneOf_From: Equatable, Sendable {
+      case fromClientApp(Com_Octopuscommunity_TrackRequest.ClientApp)
+      case fromOctopusSdk(Com_Octopuscommunity_TrackRequest.Sdk)
+
+    }
+
+    public init() {}
+  }
+
+  public struct ClientApp: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct Sdk: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var hasFeaturedComment_p: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public struct OpenClientObjectFromBridge: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -298,6 +433,118 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
 
     fileprivate var _firstSession: Bool? = nil
+  }
+
+  public struct ClientContentSharingStarted: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct ClientContentSharingCanceled: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct ViewTopic: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var from: Com_Octopuscommunity_TrackRequest.ViewTopic.OneOf_From? = nil
+
+    public var search: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton {
+      get {
+        if case .search(let v)? = from {return v}
+        return Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton()
+      }
+      set {from = .search(newValue)}
+    }
+
+    public var carousel: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel {
+      get {
+        if case .carousel(let v)? = from {return v}
+        return Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel()
+      }
+      set {from = .carousel(newValue)}
+    }
+
+    ///Topic name
+    public var value: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public enum OneOf_From: Equatable, Sendable {
+      case search(Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton)
+      case carousel(Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel)
+
+    }
+
+    public struct ViewTopicFrom: Sendable {
+      // SwiftProtobuf.Message conformance is added in an extension below. See the
+      // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+      // methods supported on all messages.
+
+      public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+      public struct SearchButton: Sendable {
+        // SwiftProtobuf.Message conformance is added in an extension below. See the
+        // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+        // methods supported on all messages.
+
+        public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+        public init() {}
+      }
+
+      public struct Carousel: Sendable {
+        // SwiftProtobuf.Message conformance is added in an extension below. See the
+        // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+        // methods supported on all messages.
+
+        public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+        public init() {}
+      }
+
+      public init() {}
+    }
+
+    public init() {}
+  }
+
+  public struct ViewProfile: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///true if user is asking for his own profile, false otherwise
+    public var self_p: Bool = false
+
+    public var target: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct SearchTopicButtonHit: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
   }
 
   public init() {}
@@ -362,6 +609,12 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     16: .same(proto: "customEvent"),
     17: .same(proto: "bridgePostOpened"),
     18: .same(proto: "openClientObjectFromBridge"),
+    19: .same(proto: "postOpened"),
+    20: .same(proto: "clientContentSharingStarted"),
+    21: .same(proto: "clientContentSharingCanceled"),
+    22: .same(proto: "viewTopic"),
+    23: .same(proto: "viewProfile"),
+    24: .same(proto: "searchTopicButtonHit"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -464,6 +717,84 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .openClientObjectFromBridge(v)
         }
       }()
+      case 19: try {
+        var v: Com_Octopuscommunity_TrackRequest.PostOpened?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .postOpened(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .postOpened(v)
+        }
+      }()
+      case 20: try {
+        var v: Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .clientContentSharingStarted(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .clientContentSharingStarted(v)
+        }
+      }()
+      case 21: try {
+        var v: Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .clientContentSharingCanceled(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .clientContentSharingCanceled(v)
+        }
+      }()
+      case 22: try {
+        var v: Com_Octopuscommunity_TrackRequest.ViewTopic?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .viewTopic(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .viewTopic(v)
+        }
+      }()
+      case 23: try {
+        var v: Com_Octopuscommunity_TrackRequest.ViewProfile?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .viewProfile(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .viewProfile(v)
+        }
+      }()
+      case 24: try {
+        var v: Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .searchTopicButtonHit(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .searchTopicButtonHit(v)
+        }
+      }()
       default: break
       }
     }
@@ -511,6 +842,30 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     case .openClientObjectFromBridge?: try {
       guard case .openClientObjectFromBridge(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
+    }()
+    case .postOpened?: try {
+      guard case .postOpened(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 19)
+    }()
+    case .clientContentSharingStarted?: try {
+      guard case .clientContentSharingStarted(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
+    }()
+    case .clientContentSharingCanceled?: try {
+      guard case .clientContentSharingCanceled(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 21)
+    }()
+    case .viewTopic?: try {
+      guard case .viewTopic(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 22)
+    }()
+    case .viewProfile?: try {
+      guard case .viewProfile(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 23)
+    }()
+    case .searchTopicButtonHit?: try {
+      guard case .searchTopicButtonHit(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 24)
     }()
     case nil: break
     }
@@ -773,6 +1128,169 @@ extension Com_Octopuscommunity_TrackRequest.BridgePostOpened: SwiftProtobuf.Mess
   }
 }
 
+extension Com_Octopuscommunity_TrackRequest.PostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".PostOpened"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "origin"),
+    2: .same(proto: "success"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._origin) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.success) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._origin {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.success != false {
+      try visitor.visitSingularBoolField(value: self.success, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.PostOpened, rhs: Com_Octopuscommunity_TrackRequest.PostOpened) -> Bool {
+    if lhs._origin != rhs._origin {return false}
+    if lhs.success != rhs.success {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.Origin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Origin"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "fromClientApp"),
+    2: .same(proto: "fromOctopusSdk"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: Com_Octopuscommunity_TrackRequest.ClientApp?
+        var hadOneofValue = false
+        if let current = self.from {
+          hadOneofValue = true
+          if case .fromClientApp(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.from = .fromClientApp(v)
+        }
+      }()
+      case 2: try {
+        var v: Com_Octopuscommunity_TrackRequest.Sdk?
+        var hadOneofValue = false
+        if let current = self.from {
+          hadOneofValue = true
+          if case .fromOctopusSdk(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.from = .fromOctopusSdk(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.from {
+    case .fromClientApp?: try {
+      guard case .fromClientApp(let v)? = self.from else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .fromOctopusSdk?: try {
+      guard case .fromOctopusSdk(let v)? = self.from else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.Origin, rhs: Com_Octopuscommunity_TrackRequest.Origin) -> Bool {
+    if lhs.from != rhs.from {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ClientApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientApp"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClientApp, rhs: Com_Octopuscommunity_TrackRequest.ClientApp) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.Sdk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Sdk"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "hasFeaturedComment"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.hasFeaturedComment_p) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.hasFeaturedComment_p != false {
+      try visitor.visitSingularBoolField(value: self.hasFeaturedComment_p, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.Sdk, rhs: Com_Octopuscommunity_TrackRequest.Sdk) -> Bool {
+    if lhs.hasFeaturedComment_p != rhs.hasFeaturedComment_p {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".OpenClientObjectFromBridge"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
@@ -841,6 +1359,234 @@ extension Com_Octopuscommunity_TrackRequest.SessionSummary: SwiftProtobuf.Messag
     if lhs.endedAt != rhs.endedAt {return false}
     if lhs.duration != rhs.duration {return false}
     if lhs._firstSession != rhs._firstSession {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientContentSharingStarted"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted, rhs: Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientContentSharingCanceled"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled, rhs: Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ViewTopic: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewTopic"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    11: .same(proto: "search"),
+    12: .same(proto: "carousel"),
+    2: .same(proto: "value"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 2: try { try decoder.decodeSingularStringField(value: &self.value) }()
+      case 11: try {
+        var v: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton?
+        var hadOneofValue = false
+        if let current = self.from {
+          hadOneofValue = true
+          if case .search(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.from = .search(v)
+        }
+      }()
+      case 12: try {
+        var v: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel?
+        var hadOneofValue = false
+        if let current = self.from {
+          hadOneofValue = true
+          if case .carousel(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.from = .carousel(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.value.isEmpty {
+      try visitor.visitSingularStringField(value: self.value, fieldNumber: 2)
+    }
+    switch self.from {
+    case .search?: try {
+      guard case .search(let v)? = self.from else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .carousel?: try {
+      guard case .carousel(let v)? = self.from else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ViewTopic, rhs: Com_Octopuscommunity_TrackRequest.ViewTopic) -> Bool {
+    if lhs.from != rhs.from {return false}
+    if lhs.value != rhs.value {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.ViewTopic.protoMessageName + ".ViewTopicFrom"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom, rhs: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.protoMessageName + ".SearchButton"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton, rhs: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.protoMessageName + ".Carousel"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel, rhs: Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ViewProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewProfile"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "self"),
+    2: .same(proto: "target"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.self_p) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.target) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.self_p != false {
+      try visitor.visitSingularBoolField(value: self.self_p, fieldNumber: 1)
+    }
+    if !self.target.isEmpty {
+      try visitor.visitSingularStringField(value: self.target, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ViewProfile, rhs: Com_Octopuscommunity_TrackRequest.ViewProfile) -> Bool {
+    if lhs.self_p != rhs.self_p {return false}
+    if lhs.target != rhs.target {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".SearchTopicButtonHit"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit, rhs: Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

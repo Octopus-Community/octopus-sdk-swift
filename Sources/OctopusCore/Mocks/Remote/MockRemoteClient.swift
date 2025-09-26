@@ -15,6 +15,7 @@ class MockRemoteClient: OctopusRemoteClient, InjectableObject {
     let feedService: any FeedService
     let trackingService: any TrackingService
     let notificationService: any NotificationService
+    let apiKeyService: any ApiKeyService
 
     init() {
         self.octoService = MockOctoService()
@@ -24,6 +25,7 @@ class MockRemoteClient: OctopusRemoteClient, InjectableObject {
         self.feedService = MockFeedService()
         self.trackingService = MockTrackingService()
         self.notificationService = MockNotificationService()
+        self.apiKeyService = MockApiKeyService()
     }
 
     func set(appSessionId: String?) { }

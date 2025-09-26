@@ -37,10 +37,10 @@ struct MagicLinkView: View {
                 }
                 .buttonStyle(.plain)
                 .padding()
-                NavigationLink(destination: CreateProfileView(octopus: viewModel.octopus),
-                               isActive: $viewModel.profileCreationRequired) {
-                    EmptyView()
-                }.hidden()
+//                NavigationLink(destination: CreateProfileView(octopus: viewModel.octopus),
+//                               isActive: $viewModel.profileCreationRequired) {
+//                    EmptyView()
+//                }.hidden()
             }
             .presentationBackground(Color(.systemBackground))
             .compatAlert(

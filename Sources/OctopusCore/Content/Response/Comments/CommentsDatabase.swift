@@ -93,10 +93,6 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
         return try await getMissingContents(infos: infos)
     }
 
-    func updateLikeId(newId: String?, commentId: String, updateLikeCount: Bool = true) async throws {
-        try await super.updateLikeId(newId: newId, contentId: commentId, updateLikeCount: updateLikeCount)
-    }
-
     func delete(commentId: String) async throws {
         try await super.delete(contentId: commentId)
     }

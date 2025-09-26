@@ -12,6 +12,7 @@ class FeedItemInfoEntity: NSManagedObject, Identifiable {
     @NSManaged public var itemId: String
     @NSManaged public var updateTimestamp: Double
     @NSManaged public var position: Int
+    @NSManaged public var featuredChildId: String?
 
     @nonobjc public class func fetchByFeedAndSorted(
         feedId: String, pageSize: Int, lastPageIdx: Int)

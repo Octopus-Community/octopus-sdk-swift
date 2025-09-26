@@ -16,11 +16,12 @@ struct CreateCommentView: View {
     @Binding var textFocused: Bool
     @Binding var hasChanges: Bool
 
-    let ensureConnected: () -> Bool
+    let ensureConnected: (UserAction) -> Bool
 
     init(octopus: OctopusSDK, postId: String, textFocused: Binding<Bool>, hasChanges: Binding<Bool>,
-         ensureConnected: @escaping () -> Bool) {
-        _viewModel = Compat.StateObject(wrappedValue: CreateCommentViewModel(octopus: octopus, postId: postId))
+         ensureConnected: @escaping (UserAction) -> Bool) {
+        _viewModel = Compat.StateObject(wrappedValue: CreateCommentViewModel(octopus: octopus, postId: postId,
+                                                                             ensureConnected: ensureConnected))
         self._textFocused = textFocused
         self._hasChanges = hasChanges
         self.ensureConnected = ensureConnected

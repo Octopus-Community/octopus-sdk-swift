@@ -30,11 +30,6 @@ class OctopusAuthSDKViewModel: ObservableObject {
             }.store(in: &storage)
     }
 
-    func createSDK() {
-        octopusSDKProvider.createSDK(
-            connectionMode: .octopus(deepLink: "com.octopuscommunity.sample://magic-link"))
-    }
-
     func askForNotificationPermission() {
         notificationManager.requestForPushNotificationPermission()
     }

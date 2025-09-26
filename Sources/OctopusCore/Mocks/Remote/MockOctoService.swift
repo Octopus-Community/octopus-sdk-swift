@@ -40,6 +40,12 @@ class MockOctoService: OctoService {
     /// Fifo of the responses to `unlike(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var deleteLikeResponses = [Com_Octopuscommunity_DeleteLikeResponse]()
+    /// Fifo of the responses to `react(:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var putReactionResponses = [Com_Octopuscommunity_PutReactionResponse]()
+    /// Fifo of the responses to `deleteReaction(:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var deleteReactionResponses = [Com_Octopuscommunity_DeleteReactionResponse]()
     /// Fifo of the responses to `voteOnPoll(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putPollVoteResponses = [Com_Octopuscommunity_PutPollVoteResponse]()
@@ -143,6 +149,22 @@ class MockOctoService: OctoService {
         return response
     }
 
+    func react(reactionKind: String, objectId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse {
+        guard let response = putReactionResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextReactionResponse must be called before"))
+        }
+        return response
+    }
+
+    func deleteReaction(reactionId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteReactionResponse {
+        guard let response = deleteReactionResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextDeleteReactionResponse must be called before"))
+        }
+        return response
+    }
+
     func voteOnPoll(objectId: String, answerId: String, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse {
         guard let response = putPollVoteResponses.popLast() else {
@@ -213,6 +235,14 @@ extension MockOctoService {
 
     func injectNextUnlikeResponse(_ response: Com_Octopuscommunity_DeleteLikeResponse) {
         deleteLikeResponses.insert(response, at: 0)
+    }
+
+    func injectNextReactionResponse(_ response: Com_Octopuscommunity_PutReactionResponse) {
+        putReactionResponses.insert(response, at: 0)
+    }
+
+    func injectNextDeleteReactionResponse(_ response: Com_Octopuscommunity_DeleteReactionResponse) {
+        deleteReactionResponses.insert(response, at: 0)
     }
 
     func injectNextVoteOnPollResponse(_ response: Com_Octopuscommunity_PutPollVoteResponse) {

@@ -68,22 +68,21 @@ extension PollResult.OptionVote {
     init(from entity: PollOptionResultEntity) {
         optionId = entity.optionId
         voteCount = entity.voteCount
-
     }
 }
 
 public struct AggregatedInfo: Equatable, Sendable {
-    public let likeCount: Int
+    public let reactions: [ReactionCount]
     public let childCount: Int
     public let viewCount: Int
     public let pollResult: PollResult?
 }
 
 extension AggregatedInfo {
-    public static let empty: AggregatedInfo = .init(likeCount: 0, childCount: 0, viewCount: 0, pollResult: nil)
+    public static let empty: AggregatedInfo = .init(reactions: [], childCount: 0, viewCount: 0, pollResult: nil)
 
     init(from aggregate: Com_Octopuscommunity_Aggregate) {
-        likeCount = Int(aggregate.likeCount)
+        reactions = aggregate.reactions.map { .init(from: $0) }
         childCount = Int(aggregate.childrenCount)
         viewCount = Int(aggregate.viewCount)
         if aggregate.hasPollResult {
@@ -94,7 +93,7 @@ extension AggregatedInfo {
     }
 
     init(from entity: OctoObjectEntity) {
-        likeCount = entity.likeCount
+        reactions = entity.reactions.map { .init(from: $0) }
         childCount = entity.childCount
         viewCount = entity.viewCount
         if let pollResults = entity.pollResults {

@@ -70,3 +70,32 @@ extension String {
             .replacingOccurrences(of: "\n{2,}", with: "\n", options: .regularExpression)
     }
 }
+
+extension String {
+    static func formattedCount(_ count: Int) -> String {
+        let num = Double(count)
+
+        func format(_ value: Double, suffix: String) -> String {
+            if value < 10 {
+                let formatted = String(format: "%.1f", value)
+                return formatted.hasSuffix(".0") ? "\(Int(value))\(suffix)" : "\(formatted)\(suffix)"
+            } else {
+                return "\(Int(round(value)))\(suffix)"
+            }
+        }
+
+        switch num {
+        case 0..<1000:
+            return "\(count)"
+
+        case 1000..<1_000_000:
+            return format(num / 1000, suffix: "K")
+
+        case 1_000_000..<1_000_000_000:
+            return format(num / 1_000_000, suffix: "M")
+
+        default:
+            return format(num / 1_000_000_000, suffix: "B")
+        }
+    }
+}

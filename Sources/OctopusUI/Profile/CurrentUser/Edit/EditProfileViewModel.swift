@@ -35,9 +35,9 @@ class EditProfileViewModel: ObservableObject {
         }
     }
 
-    let nicknameEditConfig: FieldEditConfig
-    let bioEditConfig: FieldEditConfig
-    let pictureEditConfig: FieldEditConfig
+    @Published private(set) var nicknameEditConfig: FieldEditConfig = .editInOctopus
+    @Published private(set) var bioEditConfig: FieldEditConfig = .editInOctopus
+    @Published private(set) var pictureEditConfig: FieldEditConfig = .editInOctopus
 
     @Published private(set) var isLoading = false
     @Published private(set) var dismiss = false
@@ -56,14 +56,14 @@ class EditProfileViewModel: ObservableObject {
 
     let octopus: OctopusSDK
     private let validator: Validators.CurrentUserProfile
+    private let preventDismissAfterUpdate: Bool
+
 
     private var storage = [AnyCancellable]()
     private var savedProfile: CurrentUserProfile?
 
     // nil if no changes
     private var editableProfile: EditableProfile? {
-        guard saveAvailable else { return nil }
-
         let nicknameUpdate: EditableProfile.FieldUpdate<String> =
             savedProfile?.nickname.nilIfEmpty != nickname.nilIfEmpty ?
             .updated(nickname) : .notUpdated
@@ -83,28 +83,49 @@ class EditProfileViewModel: ObservableObject {
         return EditableProfile(
             nickname: nicknameUpdate,
             bio: bioUpdate,
-            picture: pictureUpdate)
+            picture: pictureUpdate,
+            hasConfirmedNickname: .updated(true),
+            hasConfirmedBio: .updated(true),
+            hasConfirmedPicture: .updated(true)
+        )
     }
 
-    init(octopus: OctopusSDK) {
+    // Editable profile used when there is no changes but when the fields have not been confirmed yet. This way,
+    // saving the profile will mark the fields as confirmed
+    private var fieldsConfirmedProfile: EditableProfile? {
+        guard let savedProfile else { return nil }
+        guard !savedProfile.hasConfirmedNickname || !savedProfile.hasConfirmedBio || !savedProfile.hasConfirmedPicture
+        else {
+            return nil
+        }
+
+        return EditableProfile(
+            hasConfirmedNickname: .updated(true),
+            hasConfirmedBio: .updated(true),
+            hasConfirmedPicture: .updated(true)
+        )
+    }
+
+    init(octopus: OctopusSDK, preventDismissAfterUpdate: Bool) {
         self.octopus = octopus
         validator = octopus.core.validators.currentUserProfile
+        self.preventDismissAfterUpdate = preventDismissAfterUpdate
 
-        if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode {
-            nicknameEditConfig = configuration.appManagedFields.contains(.nickname) ?
-                .editInApp({ configuration.modifyUser(.nickname) }) :
-                .editInOctopus
-            bioEditConfig = configuration.appManagedFields.contains(.bio) ?
-                .editInApp({ configuration.modifyUser(.bio) }) :
-                .editInOctopus
-            pictureEditConfig = configuration.appManagedFields.contains(.picture) ?
-                .editInApp({ configuration.modifyUser(.picture) }) :
-                .editInOctopus
+        octopus.core.profileRepository.profilePublisher
+            .compactMap { $0 }
+            .sink { [unowned self] profile in
+                if !profile.isGuest, case let .sso(configuration) = octopus.core.connectionRepository.connectionMode {
+                    nicknameEditConfig = configuration.appManagedFields.contains(.nickname) ?
+                        .editInApp({ configuration.modifyUser(.nickname) }) :
+                        .editInOctopus
+                    bioEditConfig = configuration.appManagedFields.contains(.bio) ?
+                        .editInApp({ configuration.modifyUser(.bio) }) :
+                        .editInOctopus
+                    pictureEditConfig = configuration.appManagedFields.contains(.picture) ?
+                        .editInApp({ configuration.modifyUser(.picture) }) :
+                        .editInOctopus
 
-            // update app managed fields
-            octopus.core.profileRepository.profilePublisher
-                .compactMap { $0 }
-                .sink { [unowned self] profile in
+                    // update app managed fields
                     savedProfile = profile
                     if configuration.appManagedFields.contains(.nickname) {
                         nickname = profile.nickname
@@ -116,12 +137,12 @@ class EditProfileViewModel: ObservableObject {
                     if configuration.appManagedFields.contains(.picture) {
                         picture = .unchanged(profile.pictureUrl)
                     }
-                }.store(in: &storage)
-        } else {
-            nicknameEditConfig = .editInOctopus
-            bioEditConfig = .editInOctopus
-            pictureEditConfig = .editInOctopus
-        }
+                } else {
+                    nicknameEditConfig = .editInOctopus
+                    bioEditConfig = .editInOctopus
+                    pictureEditConfig = .editInOctopus
+                }
+            }.store(in: &storage)
 
         // feed the values with the first profile we get
         octopus.core.profileRepository.profilePublisher
@@ -147,12 +168,13 @@ class EditProfileViewModel: ObservableObject {
             .removeDuplicates()
             .dropFirst()
             .sink { [unowned self] nickname in
-                switch validator.validate(nickname: nickname) {
+                switch validator.validate(nickname: nickname,
+                                          isGuest: octopus.core.profileRepository.profile?.isGuest ?? true) {
                 case let .failure(error):
                     switch error {
                     case .tooShort, .tooLong:
                         nicknameError = .localizationKey(
-                            "Profile.Create.Error.Nickname_minLength:\(validator.minNicknameLength)_maxLength:\(validator.maxNicknameLength)")
+                            "Profile.Edit.Error.Nickname_minLength:\(validator.minNicknameLength)_maxLength:\(validator.maxNicknameLength)")
                     }
                 case .success:
                     nicknameError = nil
@@ -162,7 +184,8 @@ class EditProfileViewModel: ObservableObject {
         $bio
             .removeDuplicates()
             .sink { [unowned self] bio in
-                switch validator.validate(bio: bio) {
+                switch validator.validate(bio: bio,
+                                          isGuest: octopus.core.profileRepository.profile?.isGuest ?? true) {
                 case let .failure(error):
                     switch error {
                     case .tooLong:
@@ -206,7 +229,7 @@ class EditProfileViewModel: ObservableObject {
 
     func updateProfile() {
         guard saveAvailable else { return }
-        guard let editableProfile else {
+        guard let editableProfile = editableProfile ?? fieldsConfirmedProfile else {
             dismiss = true
             return
         }
@@ -219,7 +242,9 @@ class EditProfileViewModel: ObservableObject {
                 if let imageData, let image = UIImage(data: imageData), let imageUrl = profile.pictureUrl {
                     try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: imageUrl)
                 }
-                dismiss = true
+                if !preventDismissAfterUpdate {
+                    dismiss = true
+                }
             } catch let error as UpdateProfile.Error {
                 switch error {
                 case let .validation(argumentError):
@@ -248,12 +273,14 @@ class EditProfileViewModel: ObservableObject {
     }
 
     private func nicknameValid() -> Bool {
-        guard case .success = validator.validate(nickname: nickname) else { return false }
+        guard case .success = validator.validate(
+            nickname: nickname, isGuest: octopus.core.profileRepository.profile?.isGuest ?? true) else { return false }
         return true
     }
 
     private func bioValid() -> Bool {
-        guard case .success = validator.validate(bio: bio) else { return false }
+        guard case .success = validator.validate(
+            bio: bio, isGuest: octopus.core.profileRepository.profile?.isGuest ?? true) else { return false }
         return true
     }
 }

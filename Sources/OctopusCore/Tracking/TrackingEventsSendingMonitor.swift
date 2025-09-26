@@ -191,8 +191,17 @@ private extension Event {
                             $0.firstSession = firstSession
                         }
                     })
-            case let .bridgePostOpened(success):
-                    .bridgePostOpened(.with {
+            case let .postOpened(origin, success):
+                    .postOpened(.with {
+                        $0.origin = .with {
+                            switch origin {
+                            case .clientApp: $0.fromClientApp = .init()
+                            case let .sdk(hasFeaturedComment):
+                                $0.fromOctopusSdk = .with {
+                                    $0.hasFeaturedComment_p = hasFeaturedComment
+                                }
+                            }
+                        }
                         $0.success = success
                     })
             case .openClientObjectFromBridge:

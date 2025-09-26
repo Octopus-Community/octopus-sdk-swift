@@ -34,6 +34,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     private let replyFeedsStore: ReplyFeedsStore
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Comment
+    private let userInteractionsDelegate: UserInteractionsDelegate
 
     init(injector: Injector) {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
@@ -43,6 +44,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         replyFeedsStore = injector.getInjected(identifiedBy: Injected.replyFeedsStore)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
         validator = injector.getInjected(identifiedBy: Injected.validators).comment
+        userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
 
     public func getComment(uuid: String) -> AnyPublisher<Comment?, Error> {
@@ -179,64 +181,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    public func toggleLike(comment: Comment) async throws(ToggleLike.Error) {
-        guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
-        do {
-            if let likeId = comment.userInteractions.userLikeId, likeId != UserInteractions.temporaryLikeId {
-                do {
-                    // first, remove the like in the db to have an immediate result.
-                    try await commentsDatabase.updateLikeId(newId: nil, commentId: comment.uuid)
-                    _ = try await remoteClient.octoService.unlike(
-                        likeId: likeId,
-                        authenticationMethod: try authCallProvider.authenticatedMethod())
-                } catch {
-                    guard let error = error as? RemoteClientError,
-                       case .notFound = error else {
-                        // revert the db change in case of error
-                        try await commentsDatabase.updateLikeId(newId: likeId, commentId: comment.uuid)
-                        throw error
-                    }
-                    // nothing to do: we ignore the notFound error, it is thrown because the post is already unliked
-                }
-            } else {
-                do {
-                    // prevent tapping on the like without good connection that increase the like count
-                    if comment.userInteractions.userLikeId != UserInteractions.temporaryLikeId {
-                        // first, add a fake like in the db to have an immediate result.
-                        try await commentsDatabase.updateLikeId(newId: UserInteractions.temporaryLikeId,
-                                                                commentId: comment.uuid)
-                    }
-                    let response = try await remoteClient.octoService.like(
-                        objectId: comment.uuid,
-                        authenticationMethod: try authCallProvider.authenticatedMethod())
-                    switch response.result {
-                    case let .success(content):
-                        guard content.hasLike else {
-                            throw ToggleLike.Error.serverCall(.other(nil))
-                        }
-                        // no need to update like count because it has been with the temporaryLikeId
-                        try await commentsDatabase.updateLikeId(newId: content.like.id,
-                                                                commentId: comment.uuid,
-                                                                updateLikeCount: false)
-                    case let .fail(failure):
-                        throw ToggleLike.Error.validation(.init(from: failure))
-                    case .none:
-                        throw ToggleLike.Error.serverCall(.other(nil))
-                    }
-                } catch {
-                    // revert the db change in case of error
-                    try await commentsDatabase.updateLikeId(newId: nil, commentId: comment.uuid)
-                    throw error
-                }
-            }
-        } catch {
-            if let error = error as? ToggleLike.Error {
-                throw error
-            } else if let error = error as? RemoteClientError {
-                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
-            } else {
-                throw .serverCall(.other(error))
-            }
-        }
+    public func set(reaction: ReactionKind?, comment: Comment) async throws(Reaction.Error) {
+        try await userInteractionsDelegate.set(reaction: reaction, content: comment)
     }
 }

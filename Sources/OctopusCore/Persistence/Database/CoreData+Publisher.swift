@@ -3,13 +3,13 @@
 //
 
 import Foundation
-import CoreData
+@preconcurrency import CoreData
 import Combine
 
 extension NSManagedObjectContext {
     func publisher<Entity: NSManagedObject, MappedEntity>(
         request: NSFetchRequest<Entity>,
-        transform: @escaping ([Entity]) -> [MappedEntity])
+        transform: @escaping @Sendable ([Entity]) -> [MappedEntity])
     -> AnyPublisher<[MappedEntity], Error> {
             return NotificationCenter.default
                 .publisher(for: .NSManagedObjectContextDidSave, object: self)

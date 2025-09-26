@@ -11,7 +11,7 @@ import Combine
 public struct RootFeed: Equatable, Hashable {
     public let label: String
     public let feedId: String
-    public let feed: Feed<Post>
+    public let feed: Feed<Post, Comment>
 
     init(label: String, feedId: String, postFeedsStore: PostFeedsStore) {
         self.label = label

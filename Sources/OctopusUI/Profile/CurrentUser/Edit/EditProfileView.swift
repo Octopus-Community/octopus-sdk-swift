@@ -19,8 +19,10 @@ struct EditProfileView: View {
     private let bioFocused: Bool
     private let photoPickerFocused: Bool
 
-    init(octopus: OctopusSDK, bioFocused: Bool = false, photoPickerFocused: Bool = false) {
-        _viewModel = Compat.StateObject(wrappedValue: EditProfileViewModel(octopus: octopus))
+    init(octopus: OctopusSDK, bioFocused: Bool = false, photoPickerFocused: Bool = false,
+         preventDismissAfterUpdate: Bool = false) {
+        _viewModel = Compat.StateObject(wrappedValue: EditProfileViewModel(
+            octopus: octopus, preventDismissAfterUpdate: preventDismissAfterUpdate))
         self.bioFocused = bioFocused
         self.photoPickerFocused = photoPickerFocused
     }
@@ -86,7 +88,7 @@ struct EditProfileView: View {
             Button(action: viewModel.updateProfile) {
                 Text("Common.Save", bundle: .module)
             }
-            .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: viewModel.saveAvailable))
+            .buttonStyle(OctopusButtonStyle(.mid, enabled: viewModel.saveAvailable))
             .disabled(!viewModel.saveAvailable)
         } else {
             if #available(iOS 14.0, *) {
@@ -95,7 +97,7 @@ struct EditProfileView: View {
                 Button(action: viewModel.updateProfile) {
                     Text("Common.Save", bundle: .module)
                 }
-                .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: false))
+                .buttonStyle(OctopusButtonStyle(.mid, enabled: false))
                 .disabled(true)
             }
         }
@@ -203,7 +205,8 @@ private struct EditProfileFormView: View {
                 Spacer().frame(height: 6)
                 HStack {
                     Spacer()
-                    PictureView(picture: $picture, nickname: nicknameForAvatar, openPhotosPicker: photoPickerFocused)
+                    PictureView(picture: $picture, nickname: nicknameForAvatar, openPhotosPicker: photoPickerFocused,
+                                pictureSize: pictureSize)
                         .frame(width: pictureSize, height: pictureSize)
                         .disabled(!pictureEditConfig.fieldIsEditable)
                         .opacity(1.0) // Prevents fading due to disabled
@@ -328,6 +331,7 @@ private struct PictureView: View {
     @Environment(\.octopusTheme) private var theme
     @Binding var picture: EditProfileViewModel.Picture
     let nickname: String
+    let pictureSize: CGFloat
 
     @State private var selectedItems: [ImageAndData] = []
     @State private var imagePickingError: Error?
@@ -335,10 +339,12 @@ private struct PictureView: View {
     @State private var openActionList = false
     @State private var openPhotosPicker = false
 
-    init(picture: Binding<EditProfileViewModel.Picture>, nickname: String, openPhotosPicker: Bool) {
+    init(picture: Binding<EditProfileViewModel.Picture>, nickname: String, openPhotosPicker: Bool,
+         pictureSize: CGFloat) {
         _picture = picture
         self.nickname = nickname
         _openPhotosPicker = .init(initialValue: openPhotosPicker)
+        self.pictureSize = pictureSize
     }
 
     var body: some View {
@@ -360,6 +366,7 @@ private struct PictureView: View {
                             .frame(width: 28, height: 28)
                             .offset(x: 30, y: 30)
                     )
+                    .frame(width: pictureSize, height: pictureSize)
             }
             .buttonStyle(.borderless)
             .actionSheet(isPresented: $openActionList) {

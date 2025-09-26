@@ -29,6 +29,7 @@ enum InternalError: Error {
     case wrongConnectionMode
     case incorrectState
     case timeout
+    case explainedError(String)
 }
 
 /// Errors that can be returned by the server. Most of the time, they are technicall errors, either developer based

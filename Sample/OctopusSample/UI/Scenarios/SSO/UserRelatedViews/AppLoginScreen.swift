@@ -10,13 +10,12 @@ import SwiftUI
 /// in user (see `SSOView`).
 struct AppLoginScreen: View {
     @Environment(\.presentationMode) private var presentationMode
-    @Binding var appUser: AppUser?
+    @StateObjectCompat private var viewModel = AppUserViewModel()
 
     @State private var email: String = ""
     @State private var nickname: String = ""
     @State private var bio: String = ""
     @State private var picture: Data?
-    @State private var ageInformation: AppUser.AgeInfo?
 
     @State private var emailEmptyError = false
 
@@ -35,19 +34,17 @@ struct AppLoginScreen: View {
                 }
                 .padding(.horizontal)
                 .padding(.top)
-                AppEditUserView(displayAge: true,
-                             nickname: $nickname, bio: $bio, picture: $picture, ageInformation: $ageInformation)
+                AppEditUserView(nickname: $nickname, bio: $bio, picture: $picture)
                 Spacer()
                 Button("Login") {
                     guard !email.isEmpty else {
                         emailEmptyError = true
                         return
                     }
-                    appUser = .init(userId: email.lowercased(),
-                                    nickname: nickname,
-                                    bio: bio,
-                                    picture: picture,
-                                    ageInformation: ageInformation)
+                    viewModel.appUser = .init(userId: email.lowercased(),
+                                              nickname: nickname,
+                                              bio: bio,
+                                              picture: picture)
                     presentationMode.wrappedValue.dismiss()
                 }
                 Spacer()
@@ -61,9 +58,9 @@ struct AppLoginScreen: View {
                     }
             )
             .onAppear {
-                nickname = appUser?.nickname ?? ""
-                bio = appUser?.bio ?? ""
-                picture = appUser?.picture
+                nickname = viewModel.appUser?.nickname ?? ""
+                bio = viewModel.appUser?.bio ?? ""
+                picture = viewModel.appUser?.picture
             }
             .modify {
                 if #available(iOS 15.0, *) {

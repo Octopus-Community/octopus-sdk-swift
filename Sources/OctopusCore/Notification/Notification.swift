@@ -5,8 +5,8 @@
 import Foundation
 import OctopusGrpcModels
 
-public struct OctoNotification {
-    public enum Thumbnail: Equatable {
+public struct OctoNotification: Sendable {
+    public enum Thumbnail: Equatable, Sendable {
         case profile(MinimalProfile)
     }
     public let uuid: String

@@ -18,7 +18,7 @@ class NotificationsTests: XCTestCase {
     private var mockNetworkMonitor: MockNetworkMonitor!
     private var mockAppStateMonitor: MockAppStateMonitor!
     private var mockUserNotifCenter: MockUserNotificationCenterProvider!
-    private var postsFeedManager: FeedManager<Post>!
+    private var postsFeedManager: FeedManager<Post, Comment>!
     private var storage = [AnyCancellable]()
 
     override func setUp() {
@@ -131,7 +131,11 @@ class NotificationsTests: XCTestCase {
 
     private func createProfile(id: String, userId: String, nickname: String) -> CurrentUserProfile {
         CurrentUserProfile(
-            id: id, userId: userId, nickname: nickname, email: nil, bio: nil, pictureUrl: nil,
+            id: id, userId: userId, nickname: nickname, originalNickname: nil, email: nil, bio: nil, pictureUrl: nil,
+            hasSeenOnboarding: false, hasAcceptedCgu: false, hasConfirmedNickname: false,
+            hasConfirmedBio: false,
+            hasConfirmedPicture: false,
+            isGuest: true,
             notificationBadgeCount: 0, blockedProfileIds: [],
             newestFirstPostsFeed: Feed(id: "", feedManager: postsFeedManager))
     }
@@ -151,11 +155,6 @@ private class MockProfileRepository: ProfileRepository, InjectableObject, @unche
     }
 
     func fetchCurrentUserProfile() async throws(AuthenticatedActionError) { }
-
-    func createCurrentUserProfile(with profile: EditableProfile) async throws(UpdateProfile.Error)
-    -> (CurrentUserProfile, Data?) {
-        fatalError("Not implemented")
-    }
 
     func updateCurrentUserProfile(with profile: EditableProfile) async throws(UpdateProfile.Error)
     -> (CurrentUserProfile, Data?) {
@@ -185,14 +184,16 @@ private class MockProfileRepository: ProfileRepository, InjectableObject, @unche
 
 /// Extension to PostsFeedManager that provides a factory for a mock implementation
 private extension PostsFeedManager {
-    static func mockFactory(injector: Injector) -> FeedManager<Post> {
-        return FeedManager<Post>(
+    static func mockFactory(injector: Injector) -> FeedManager<Post, Comment> {
+        return FeedManager<Post, Comment>(
             injector: injector,
             feedItemDatabase: MockPostItemDatabase(),
+            childFeedItemDatabase: nil,
             getOptions: .all,
             mapper: { _, _, _ in
                 return nil
-            })
+            },
+            childMapper: nil)
     }
 
     private class MockPostItemDatabase: FeedItemsDatabase {
@@ -202,11 +203,11 @@ private extension PostsFeedManager {
             fatalError("Not implemented")
         }
 
-        func getFeedItems(ids: [String]) async throws -> [Post] {
+        func getFeedItems(ids: [FeedItemInfoData]) async throws -> [Post] {
             fatalError("Not implemented")
         }
 
-        func feedItemsPublisher(ids: [String]) throws -> AnyPublisher<[Post], any Error> {
+        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Post], any Error> {
             fatalError("Not implemented")
         }
 

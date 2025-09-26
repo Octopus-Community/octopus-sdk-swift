@@ -15,8 +15,7 @@ public protocol MagicLinkStreamService {
 class MagicLinkStreamingServiceClient: ServiceClient, MagicLinkStreamService {
     private let client: Com_Octopuscommunity_MagicLinkStreamServiceAsyncClient
 
-    init(streamingChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
-         updateTokenBlock: @escaping (String) -> Void) {
+    init(streamingChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String) {
         client = Com_Octopuscommunity_MagicLinkStreamServiceAsyncClient(channel: streamingChannel)
         super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
     }

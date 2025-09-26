@@ -19,15 +19,12 @@ public struct MagicLinkRequest {
 }
 
 public enum ConnectionState {
-    case notConnected
-    case magicLinkSent(MagicLinkRequest)
-    case clientConnected(ClientUser, ExchangeTokenError?)
-    case profileCreationRequired(clientProfile: ClientUserProfile, lockedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>?)
-    case connected(User)
+    case notConnected(Error?)
+    case connected(User, Error?)
 
     public var user: User? {
         switch self {
-        case .connected(let user):
+        case let .connected(user, _):
             return user
         default: return nil
         }
@@ -40,7 +37,10 @@ extension Injected {
 
 public protocol ConnectionRepository: Sendable {
     var connectionStatePublisher: AnyPublisher<ConnectionState, Never> { get }
+    var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> { get }
     var connectionState: ConnectionState { get }
+    var magicLinkRequest: MagicLinkRequest? { get }
+    var clientUserConnected: Bool { get }
     var connectionMode: ConnectionMode { get }
     func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError)
     func cancelMagicLink()
@@ -111,9 +111,70 @@ public enum ExchangeTokenError: Error {
                 .unknown
             }
         }
+
+        init(from error: ConnectionError.DetailedError) {
+            message = error.message
+            reason = switch error.reason {
+            case .userBanned: .userBanned
+            case .unknown: .unknown
+            }
+        }
     }
     case noNetwork
     case detailedErrors([DetailedError])
     case server(ServerError)
     case unknown(Error?)
+}
+
+extension ExchangeTokenError {
+    init(from error: ConnectionError) {
+        self = switch error {
+        case .noNetwork: .noNetwork
+        case let .detailedErrors(detailedErrors): .detailedErrors(detailedErrors.map { .init(from: $0) })
+        case let .server(serverError): .server(serverError)
+        case let .unknown(underlyingError): .unknown(underlyingError)
+        }
+    }
+}
+
+public enum ConnectionError: Error {
+    public struct DetailedError: Sendable {
+        public enum Reason: Sendable {
+            case userBanned
+            case unknown
+        }
+        public let reason: Reason
+        public let message: String
+
+        init(from error: Com_Octopuscommunity_GetGuestJwtResponse.Error) {
+            message = error.message
+            reason = switch error.errorCode {
+            case .unknownError, .UNRECOGNIZED:
+                .unknown
+            }
+        }
+
+        init(from error: ExchangeTokenError.DetailedError) {
+            message = error.message
+            reason = switch error.reason {
+            case .userBanned: .userBanned
+            case .unknown: .unknown
+            }
+        }
+    }
+    case noNetwork
+    case detailedErrors([DetailedError])
+    case server(ServerError)
+    case unknown(Error?)
+}
+
+extension ConnectionError {
+    init(from error: ExchangeTokenError) {
+        self = switch error {
+        case .noNetwork: .noNetwork
+        case let .detailedErrors(detailedErrors): .detailedErrors(detailedErrors.map { .init(from: $0) })
+        case let .server(serverError): .server(serverError)
+        case let .unknown(underlyingError): .unknown(underlyingError)
+        }
+    }
 }

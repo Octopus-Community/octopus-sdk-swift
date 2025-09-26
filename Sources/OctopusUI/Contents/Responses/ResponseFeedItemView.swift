@@ -4,22 +4,26 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 struct ResponseFeedItemView: View {
     @Environment(\.octopusTheme) private var theme
     let response: DisplayableFeedResponse
+    var displayChildCount: Bool = true
+    var tapToOpenDetail: Bool = false
     @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let displayResponseDetail: (String) -> Void
-    let replyToResponse: (String) -> Void
+    let displayResponseDetail: (_ id: String, _ reply: Bool) -> Void
+    let displayParentDetail: (String) -> Void
     let displayProfile: (String) -> Void
     let deleteResponse: (String) -> Void
-    let toggleLike: (String) -> Void
+    let reactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
 
     @State private var openActions = false
     @State private var displayDeleteAlert = false
 
-    @State private var liveMeasures: LiveMeasures = .init(aggregatedInfo: .empty, userInteractions: .empty)
+    @State private var liveMeasures: LiveMeasures?
+    @State private var showReactionPicker = false
 
     private let minAspectRatio: CGFloat = 4 / 5
 
@@ -70,11 +74,26 @@ struct ResponseFeedItemView: View {
                             }
                         }
                         if let text = response.text?.nilIfEmpty {
-                            RichText(text)
-                                .font(theme.fonts.body2)
-                                .lineSpacing(4)
-                                .foregroundColor(theme.colors.gray900)
-                                .fixedSize(horizontal: false, vertical: true)
+                            Button(action: { displayParentDetail(response.uuid )}) {
+                                Group {
+                                    if response.textIsEllipsized {
+                                        Text(verbatim: "\(text)... ")
+                                        +
+                                        Text("Common.ReadMore", bundle: .module)
+                                            .bold()
+                                    } else {
+                                        RichText(text)
+                                    }
+                                }
+                                .multilineTextAlignment(.leading)
+                                .contentShape(Rectangle())
+                            }
+                            .font(theme.fonts.body2)
+                            .lineSpacing(4)
+                            .foregroundColor(theme.colors.gray900)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .allowsHitTesting(tapToOpenDetail)
+                            .buttonStyle(.plain)
                         }
 
                     }
@@ -118,33 +137,18 @@ struct ResponseFeedItemView: View {
                         .foregroundColor(theme.colors.gray200)
                 )
 
-                let userInteractions = liveMeasures.userInteractions
-                let aggregatedInfo = liveMeasures.aggregatedInfo
-                HStack(spacing: 24) {
-                    Button(action: { toggleLike(response.uuid) }) {
-                        AggregateView(image: userInteractions.hasLiked ? .AggregatedInfo.likeActivated : .AggregatedInfo.like,
-                                      imageForegroundColor: userInteractions.hasLiked ?
-                                      theme.colors.like : theme.colors.gray700,
-                                      count: aggregatedInfo.likeCount,
-                                      nullDisplayValue: "Content.AggregatedInfo.Like")
-                    }
-                    .buttonStyle(.plain)
+                let userInteractions = liveMeasures?.userInteractions ?? response.liveMeasuresValue.userInteractions
+                let aggregatedInfo = liveMeasures?.aggregatedInfo ?? response.liveMeasuresValue.aggregatedInfo
+                ResponseReactionBarView(
+                    userReaction: userInteractions.reaction,
+                    canReply: response.kind.canReply,
+                    reactions: aggregatedInfo.reactions,
+                    reactionTapped: { reactionTapped($0, response.uuid) },
+                    openCreateReply: { displayResponseDetail(response.uuid, true) }
+                )
 
-                    if response.kind.canReply {
-                        Button(action: { replyToResponse(response.uuid) }) {
-                            AggregateView(image: .AggregatedInfo.comment, count: 0,
-                                          nullDisplayValue: "Content.AggregatedInfo.Answer")
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 8)
-                .padding(.top, 6)
-                .padding(.bottom, 8)
-
-                if response.kind.canReply && aggregatedInfo.childCount > 0 {
-                    Button(action: { displayResponseDetail(response.uuid) }) {
+                if response.kind.canReply && displayChildCount && aggregatedInfo.childCount > 0 {
+                    Button(action: { displayResponseDetail(response.uuid, false) }) {
                         HStack {
                             Image(systemName: "arrow.right")
                             Text("Reply.See_count:\(aggregatedInfo.childCount)", bundle: .module)

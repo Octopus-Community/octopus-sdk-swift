@@ -207,12 +207,23 @@ public struct Com_Octopuscommunity_FeedItemInfo: Sendable {
 
   public var octoObjectID: String = String()
 
-  ///TODO string octoObjecCreatedBy
   public var octoObjectUpdatedAt: UInt64 = 0
+
+  ///TODO string octoObjecCreatedBy
+  public var highlightedChildID: String {
+    get {return _highlightedChildID ?? String()}
+    set {_highlightedChildID = newValue}
+  }
+  /// Returns true if `highlightedChildID` has been explicitly set.
+  public var hasHighlightedChildID: Bool {return self._highlightedChildID != nil}
+  /// Clears the value of `highlightedChildID`. Subsequent reads from it will return its default value.
+  public mutating func clearHighlightedChildID() {self._highlightedChildID = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _highlightedChildID: String? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -565,6 +576,7 @@ extension Com_Octopuscommunity_FeedItemInfo: SwiftProtobuf.Message, SwiftProtobu
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "octoObjectId"),
     2: .same(proto: "octoObjectUpdatedAt"),
+    3: .same(proto: "highlightedChildId"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -575,24 +587,33 @@ extension Com_Octopuscommunity_FeedItemInfo: SwiftProtobuf.Message, SwiftProtobu
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.octoObjectID) }()
       case 2: try { try decoder.decodeSingularUInt64Field(value: &self.octoObjectUpdatedAt) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._highlightedChildID) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.octoObjectID.isEmpty {
       try visitor.visitSingularStringField(value: self.octoObjectID, fieldNumber: 1)
     }
     if self.octoObjectUpdatedAt != 0 {
       try visitor.visitSingularUInt64Field(value: self.octoObjectUpdatedAt, fieldNumber: 2)
     }
+    try { if let v = self._highlightedChildID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_FeedItemInfo, rhs: Com_Octopuscommunity_FeedItemInfo) -> Bool {
     if lhs.octoObjectID != rhs.octoObjectID {return false}
     if lhs.octoObjectUpdatedAt != rhs.octoObjectUpdatedAt {return false}
+    if lhs._highlightedChildID != rhs._highlightedChildID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

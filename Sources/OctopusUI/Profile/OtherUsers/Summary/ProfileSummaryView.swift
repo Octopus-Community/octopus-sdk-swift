@@ -37,8 +37,13 @@ struct ProfileSummaryView: View {
                         viewModel: postFeedViewModel,
                         zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
-                            navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: nil,
-                                                       scrollToMostRecentComment: $2))
+                            navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
+                                                       scrollToMostRecentComment: $2, origin: .sdk,
+                                                       hasFeaturedComment: $4))
+                        },
+                        displayCommentDetail: {
+                            navigator.push(.commentDetail(
+                                commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
                         },
                         displayProfile: { _ in },
                         displayContentModeration: {
@@ -74,11 +79,11 @@ struct ProfileSummaryView: View {
         .actionSheet(isPresented: $openActions) {
             ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: [
                 ActionSheet.Button.destructive(Text("Moderation.Profile.Button", bundle: .module)) {
-                    guard viewModel.ensureConnected() else { return }
+                    guard viewModel.ensureConnected(action: .moderation) else { return }
                     navigator.push(.reportProfile(profileId: viewModel.profileId))
                 },
                 ActionSheet.Button.destructive(Text("Block.Profile.Button", bundle: .module)) {
-                    guard viewModel.ensureConnected() else { return }
+                    guard viewModel.ensureConnected(action: .blockUser) else { return }
                     displayBlockUserAlert = true
                 },
                 .cancel()
@@ -139,13 +144,13 @@ struct ProfileSummaryView: View {
         if #available(iOS 14.0, *) {
             Menu(content: {
                 Button(action: {
-                    guard viewModel.ensureConnected() else { return }
+                    guard viewModel.ensureConnected(action: .moderation) else { return }
                     navigator.push(.reportProfile(profileId: viewModel.profileId))
                 }) {
                     Label(L10n("Moderation.Profile.Button"), systemImage: "flag")
                 }
                 Button(action: {
-                    guard viewModel.ensureConnected() else { return }
+                    guard viewModel.ensureConnected(action: .blockUser) else { return }
                     displayBlockUserAlert = true
                 }) {
                     Label(L10n("Block.Profile.Button"), systemImage: "person.slash")
@@ -154,12 +159,17 @@ struct ProfileSummaryView: View {
                 VStack {
                     Image(systemName: "ellipsis")
                         .modify {
+#if compiler(>=6.2)
                             if #available(iOS 26.0, *) {
                                 $0
                             } else {
                                 $0.padding(.vertical)
-                                .padding(.leading)
+                                    .padding(.leading)
                             }
+#else
+                            $0.padding(.vertical)
+                                .padding(.leading)
+#endif
 
                         }
                         .font(theme.fonts.navBarItem)
@@ -188,6 +198,7 @@ private struct ContentView<PostsView: View>: View {
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
+#if compiler(>=6.2)
                 // Disable nav bar opacity on iOS 26 to have the same behavior as before.
                 // TODO: See with product team if we need to keep it.
                 if #available(iOS 26.0, *) {
@@ -195,6 +206,7 @@ private struct ContentView<PostsView: View>: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 1)
                 }
+#endif
                 ProfileContentView(profile: profile, zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
                     postsView
                 }
@@ -235,7 +247,7 @@ private struct ProfileContentView<PostsView: View>: View {
 
                     Spacer().frame(height: 10)
                     if let bio = profile.bio?.nilIfEmpty {
-                        Text(bio)
+                        Text(bio.cleanedBio)
                             .font(theme.fonts.body2)
                             .foregroundColor(theme.colors.gray500)
                             .modify {

@@ -8,5 +8,5 @@ import Foundation
 /// This is usefull to make it easy your discovery of the Samples
 enum DefaultValuesProvider {
     /// Whether the app is in demo mode (internal tests only).
-    static let demoMode = !(Bundle.main.infoDictionary?["OCTOPUS_INTERNAL_DEMO_MODE"] as? String ?? "").isEmpty
+    static let internalDemoMode = !(Bundle.main.infoDictionary?["OCTOPUS_INTERNAL_DEMO_MODE"] as? String ?? "").isEmpty
 }

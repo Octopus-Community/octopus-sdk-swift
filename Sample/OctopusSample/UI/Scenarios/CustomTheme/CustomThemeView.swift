@@ -49,7 +49,7 @@ struct CustomThemeView: View {
                 // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                 showFullScreen {
                     if let octopus = viewModel.octopus {
-                        OctopusHomeScreen(
+                        OctopusUIView(
                             octopus: octopus,
                             // customize the leading nav bar item of the main screen.
                             // Either pass `.logo` to display the logo you provided in the theme, or `.text` to display
@@ -68,9 +68,6 @@ struct CustomThemeView: View {
             Spacer()
         }
         .padding()
-        .onAppear {
-            viewModel.createSDK()
-        }
     }
 }
 

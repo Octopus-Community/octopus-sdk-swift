@@ -27,8 +27,9 @@ public struct ClientUser: Sendable {
         /// Its picture. This Data will be transformed into an UIImage using `UIImage(data:)` so it must be compatible.
         let picture: Data?
         /// The age information. Nil if unknown.
-        let ageInformation: AgeInformation?
-        
+        @available(*, deprecated, message: "Age information is not used anymore. It will always be nil")
+        var ageInformation: AgeInformation? { nil }
+
         /// Constructor.
         ///
         /// - Parameters:
@@ -37,6 +38,7 @@ public struct ClientUser: Sendable {
         ///   - picture: Picture data of your user. Default value is nil.
         ///              This Data will be transformed into an UIImage using `UIImage(data:)` so it must be compatible.
         ///   - ageInformation: Age information of your user. Nil if unknown. Default value is nil.
+        @available(*, deprecated, message: "Use instead init(nickname: String?, bio: String?, picture: Data?). Age information is not used anymore.")
         public init(nickname: String? = nil,
                     bio: String? = nil,
                     picture: Data? = nil,
@@ -44,7 +46,21 @@ public struct ClientUser: Sendable {
             self.nickname = nickname
             self.bio = bio
             self.picture = picture
-            self.ageInformation = ageInformation
+        }
+
+        /// Constructor.
+        ///
+        /// - Parameters:
+        ///   - nickname: Nickname of your user. Default value is nil.
+        ///   - bio: Description of your user. Default value is nil.
+        ///   - picture: Picture data of your user. Default value is nil.
+        ///              This Data will be transformed into an UIImage using `UIImage(data:)` so it must be compatible.
+        public init(nickname: String? = nil,
+                    bio: String? = nil,
+                    picture: Data? = nil) {
+            self.nickname = nickname
+            self.bio = bio
+            self.picture = picture
         }
     }
 
@@ -64,18 +80,9 @@ public struct ClientUser: Sendable {
     }
 }
 
-extension ClientUser.AgeInformation {
-    var coreValue: OctopusCore.ClientUserProfile.AgeInformation? {
-        return switch self {
-        case .legalAgeReached:  .legalAgeReached
-        case .underaged:        .underaged
-        }
-    }
-}
-
 extension ClientUser.Profile {
     var coreValue: OctopusCore.ClientUserProfile {
-        .init(nickname: nickname, bio: bio, picture: picture, ageInformation: ageInformation?.coreValue)
+        .init(nickname: nickname, bio: bio, picture: picture)
     }
 }
 

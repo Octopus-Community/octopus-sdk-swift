@@ -15,11 +15,12 @@ struct CreateReplyView: View {
 
     @Binding var textFocused: Bool
     @Binding var hasChanges: Bool
-    let ensureConnected: () -> Bool
+    let ensureConnected: (UserAction) -> Bool
 
     init(octopus: OctopusSDK, commentId: String, textFocused: Binding<Bool>, hasChanges: Binding<Bool>,
-         ensureConnected: @escaping () -> Bool) {
-        _viewModel = Compat.StateObject(wrappedValue: CreateReplyViewModel(octopus: octopus, commentId: commentId))
+         ensureConnected: @escaping (UserAction) -> Bool) {
+        _viewModel = Compat.StateObject(wrappedValue: CreateReplyViewModel(octopus: octopus, commentId: commentId,
+                                                                           ensureConnected: ensureConnected))
         self._textFocused = textFocused
         self._hasChanges = hasChanges
         self.ensureConnected = ensureConnected

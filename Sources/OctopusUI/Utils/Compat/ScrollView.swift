@@ -106,11 +106,11 @@ extension Compat {
         var body: some View {
             ScrollViewReader { reader in
                 SwiftUI.ScrollView(axes, showsIndicators: showIndicators) {
-                    Color(UIColor.systemBackground)
+                    Color.white.opacity(0.0001)
                         .frame(height: 1)
                         .id(topId)
                     content
-                    Color(UIColor.systemBackground)
+                    Color.white.opacity(0.0001)
                         .frame(height: 1)
                         .id(bottomId)
                 }

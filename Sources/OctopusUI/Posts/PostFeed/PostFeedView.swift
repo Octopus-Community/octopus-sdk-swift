@@ -16,7 +16,8 @@ struct PostFeedView<EmptyPostView: View>: View {
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
-    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let displayContentModeration: (String) -> Void
 
@@ -25,15 +26,19 @@ struct PostFeedView<EmptyPostView: View>: View {
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
 
+    @State private var displayReactionCount = false
+
     init(viewModel: PostFeedViewModel,
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
-         displayPostDetail: @escaping (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void,
+         displayPostDetail: @escaping (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void,
+         displayCommentDetail: @escaping (_ id: String, _ reply: Bool) -> Void,
          displayProfile: @escaping (String) -> Void,
          displayContentModeration: @escaping (String) -> Void,
          @ViewBuilder _ emptyPostView: () -> EmptyPostView){
         _viewModel = Compat.StateObject(wrappedValue: viewModel)
         _zoomableImageInfo = zoomableImageInfo
         self.displayPostDetail = displayPostDetail
+        self.displayCommentDetail = displayCommentDetail
         self.displayProfile = displayProfile
         self.displayContentModeration = displayContentModeration
         self.emptyPostView = emptyPostView()
@@ -46,19 +51,22 @@ struct PostFeedView<EmptyPostView: View>: View {
                 zoomableImageInfo: $zoomableImageInfo,
                 loadPreviousItems: viewModel.loadPreviousItems,
                 displayPostDetail: displayPostDetail,
+                displayCommentDetail: displayCommentDetail,
                 displayProfile: displayProfile,
                 deletePost: viewModel.deletePost(postId:),
-                toggleLike: viewModel.toggleLike(postId:),
+                deleteComment: viewModel.deleteComment(commentId:),
+                reactionTapped: viewModel.setReaction(_:postId:),
+                commentReactionTapped: viewModel.setCommentReaction(_:commentId:),
                 voteOnPoll: viewModel.vote(pollAnswerId:postId:),
                 displayContentModeration: {
-                    if viewModel.ensureConnected() {
+                    if viewModel.ensureConnected(.moderation) {
                         displayContentModeration($0)
                     }
                 },
                 displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId:$0) } : nil),
                 emptyPostView: { emptyPostView }
             )
-            if viewModel.isDeletingPost {
+            if viewModel.isDeletingContent {
                 Compat.ProgressView()
                     .padding(20)
                     .background(
@@ -86,9 +94,9 @@ struct PostFeedView<EmptyPostView: View>: View {
             if #available(iOS 15.0, *) {
                 $0.alert(
                     Text("Post.Delete.Done", bundle: .module),
-                    isPresented: $viewModel.postDeleted, actions: { })
+                    isPresented: $viewModel.contentDeleted, actions: { })
             } else {
-                $0.alert(isPresented: $viewModel.postDeleted) {
+                $0.alert(isPresented: $viewModel.contentDeleted) {
                     Alert(title: Text("Post.Delete.Done", bundle: .module))
                 }
             }
@@ -106,10 +114,13 @@ private struct ContentView<EmptyPostView: View>: View {
     let hasMoreData: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
-    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
-    let toggleLike: (String) -> Void
+    let deleteComment: (String) -> Void
+    let reactionTapped: (ReactionKind?, String) -> Void
+    let commentReactionTapped: (ReactionKind?, String) -> Void
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
@@ -122,8 +133,13 @@ private struct ContentView<EmptyPostView: View>: View {
                           zoomableImageInfo: $zoomableImageInfo,
                           loadPreviousItems: loadPreviousItems,
                           displayPostDetail: displayPostDetail,
+                          displayCommentDetail: displayCommentDetail,
                           displayProfile: displayProfile,
-                          deletePost: deletePost, toggleLike: toggleLike, voteOnPoll: voteOnPoll,
+                          deletePost: deletePost,
+                          deleteComment: deleteComment,
+                          reactionTapped: reactionTapped,
+                          commentReactionTapped: commentReactionTapped,
+                          voteOnPoll: voteOnPoll,
                           displayContentModeration: displayContentModeration,
                           displayClientObject: displayClientObject,
                           emptyPostView: { emptyPostView })
@@ -141,10 +157,13 @@ private struct PostsView<EmptyPostView: View>: View {
     let hasMoreData: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
-    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool) -> Void
+    let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
+    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
-    let toggleLike: (String) -> Void
+    let deleteComment: (String) -> Void
+    let reactionTapped: (ReactionKind?, String) -> Void
+    let commentReactionTapped: (ReactionKind?, String) -> Void
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
@@ -159,8 +178,13 @@ private struct PostsView<EmptyPostView: View>: View {
                     PostSummaryView(post: post, width: width,
                                     zoomableImageInfo: $zoomableImageInfo,
                                     displayPostDetail: displayPostDetail,
-                                    displayProfile: displayProfile, deletePost: deletePost,
-                                    toggleLike: toggleLike, voteOnPoll: voteOnPoll,
+                                    displayCommentDetail: displayCommentDetail,
+                                    displayProfile: displayProfile,
+                                    deletePost: deletePost,
+                                    deleteComment: deleteComment,
+                                    reactionTapped: reactionTapped,
+                                    commentReactionTapped: commentReactionTapped,
+                                    voteOnPoll: voteOnPoll,
                                     displayContentModeration: displayContentModeration,
                                     displayClientObject: displayClientObject)
                         .contentShape(Rectangle())

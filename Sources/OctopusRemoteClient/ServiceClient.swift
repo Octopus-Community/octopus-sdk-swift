@@ -38,7 +38,9 @@ class ServiceClient {
             return try await block()
         } catch {
             if case let .authenticated(_, authFailed) = authenticationMethod,
-               let grpcStatus = error as? GRPCStatus, grpcStatus.code == .unauthenticated {
+               let grpcStatus = error as? GRPCStatus, grpcStatus.code == .unauthenticated,
+               // do not call authFailed in case of user banned
+               !(grpcStatus.message?.contains("Your account has been blocked") ?? false) {
                 authFailed()
             }
             throw RemoteClientError(error: error)

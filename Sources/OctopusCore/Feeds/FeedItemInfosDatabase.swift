@@ -24,7 +24,13 @@ class FeedItemInfosDatabase: InjectableObject {
     func getAllItemIds() async throws -> [String] {
         return try await context.performAsync { [context] in
             try context.fetch(FeedItemInfoEntity.fetchAll())
-                .map { $0.itemId }
+                .flatMap {
+                    guard let featuredChildId = $0.featuredChildId else {
+                        return [$0.itemId]
+                    }
+                    return [$0.itemId, featuredChildId]
+
+                }
         }
     }
 
@@ -63,6 +69,7 @@ class FeedItemInfosDatabase: InjectableObject {
                 feedItemInfoEntity.feedId = feedItemInfo.feedId
                 feedItemInfoEntity.itemId = feedItemInfo.itemId
                 feedItemInfoEntity.updateTimestamp = feedItemInfo.updateDate.timeIntervalSince1970
+                feedItemInfoEntity.featuredChildId = feedItemInfo.featuredChildId
                 feedItemInfoEntity.position = existingFeedItemInfosCount + index
             }
 

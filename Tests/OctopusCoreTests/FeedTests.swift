@@ -17,7 +17,7 @@ class FeedTests: XCTestCase {
     private var mockFeedService: MockFeedService!
     private var postsDatabase: PostsDatabase!
     private var feedsDatabase: FeedItemInfosDatabase!
-    private var postFeedManager: FeedManager<Post>!
+    private var postFeedManager: FeedManager<Post, Comment>!
     private var networkMonitor: MockNetworkMonitor!
     private var blockedUserIdsProvider: MockBlockedUserIdsProvider!
     private var storage = [AnyCancellable]()
@@ -122,11 +122,11 @@ class FeedTests: XCTestCase {
         // Preconditions: some items and items infos are already in db
         try await feedsDatabase.upsert(
             feedItemInfos: [
-                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "4", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "5", updateDate: Date()),
+                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "4", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "5", updateDate: Date(), featuredChildId: nil),
             ],
             feedId: "1")
 
@@ -194,11 +194,11 @@ class FeedTests: XCTestCase {
         // Preconditions: some items and items infos are already in db
         try await feedsDatabase.upsert(
             feedItemInfos: [
-                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "4", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "5", updateDate: Date()),
+                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "4", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "5", updateDate: Date(), featuredChildId: nil),
             ],
             feedId: "1")
 
@@ -224,8 +224,8 @@ class FeedTests: XCTestCase {
         // Preconditions: some items and items infos are already in db
         try await feedsDatabase.upsert(
             feedItemInfos: [
-                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date()),
+                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date(), featuredChildId: nil),
             ],
             feedId: "1")
 
@@ -247,9 +247,9 @@ class FeedTests: XCTestCase {
         // Preconditions: some items and items infos are already in db
         try await feedsDatabase.upsert(
             feedItemInfos: [
-                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date()),
+                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date(), featuredChildId: nil),
             ],
             feedId: "1")
 
@@ -310,11 +310,11 @@ class FeedTests: XCTestCase {
         // be sure to have feedItemInfos in db to avoid items being cleaned
         try await feedsDatabase.upsert(
             feedItemInfos: [
-                FeedItemInfo(feedId: "1", itemId: "0", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "9", updateDate: Date()),
+                FeedItemInfo(feedId: "1", itemId: "0", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "9", updateDate: Date(), featuredChildId: nil),
             ],
             feedId: "1")
         let posts = [
@@ -327,10 +327,10 @@ class FeedTests: XCTestCase {
 
         // Create request
         let feedItemInfos = [
-            FeedItemInfo(feedId: "x", itemId: "0", updateDate: refDate),
-            FeedItemInfo(feedId: "x", itemId: "1", updateDate: refDate),
-            FeedItemInfo(feedId: "x", itemId: "2", updateDate: refDate),
-            FeedItemInfo(feedId: "x", itemId: "3", updateDate: refDate),
+            FeedItemInfo(feedId: "x", itemId: "0", updateDate: refDate, featuredChildId: nil),
+            FeedItemInfo(feedId: "x", itemId: "1", updateDate: refDate, featuredChildId: nil),
+            FeedItemInfo(feedId: "x", itemId: "2", updateDate: refDate, featuredChildId: nil),
+            FeedItemInfo(feedId: "x", itemId: "3", updateDate: refDate, featuredChildId: nil),
         ]
 
         let missingPosts = try await postsDatabase.getMissingPosts(infos: feedItemInfos)
@@ -343,11 +343,11 @@ class FeedTests: XCTestCase {
         // put some data in the db
         try await feedsDatabase.upsert(
             feedItemInfos: [
-                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "4", updateDate: Date()),
-                FeedItemInfo(feedId: "1", itemId: "5", updateDate: Date()),
+                FeedItemInfo(feedId: "1", itemId: "1", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "2", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "3", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "4", updateDate: Date(), featuredChildId: nil),
+                FeedItemInfo(feedId: "1", itemId: "5", updateDate: Date(), featuredChildId: nil),
             ],
             feedId: "1")
 
@@ -381,12 +381,12 @@ class FeedTests: XCTestCase {
 
         // initial refresh will ask for the feed item infos and the items since they are not in the db
         mockFeedService.injectNextInitializeFeed(.with {
-            $0.items = (1..<123).map { identifier in
+            $0.items = (1..<98).map { identifier in
                 Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
            }
             $0.nextPageCursor = ""
         })
-        injectBatchItems((1..<123).map { "\($0)" })
+        injectBatchItems((1..<98).map { "\($0)" })
 
         var publishedItems: [Post]?
         var updateCount = 0
@@ -400,7 +400,7 @@ class FeedTests: XCTestCase {
         let hasMoreData = feed.hasMoreData
         let items = feed.items
         XCTAssertEqual(hasMoreData, false)
-        XCTAssertEqual(items?.map { $0.uuid }, (1..<123).map { "\($0)" })
+        XCTAssertEqual(items?.map { $0.uuid }, (1..<98).map { "\($0)" })
         XCTAssertEqual(publishedItems, items)
         XCTAssertEqual(updateCount, 2)
     }
@@ -411,27 +411,30 @@ class FeedTests: XCTestCase {
 
         // initial refresh will ask for the feed item infos and the items since they are not in the db
         mockFeedService.injectNextInitializeFeed(.with {
-            $0.items = (1..<50).map { identifier in
+            $0.items = (1...50).map { identifier in
                 Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
            }
             $0.nextPageCursor = "page2"
         })
-        injectBatchItems((1..<123).map { "\($0)" })
+        injectBatchItems((1...25).map { "\($0)" })
 
-        try await feed.refresh(pageSize: 15)
+        try await feed.refresh(pageSize: 25)
 
         mockFeedService.injectNextGetNextFeedPage(.with {
-            $0.items = (50..<80).map { identifier in
+            $0.items = (51...80).map { identifier in
                 Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
            }
             $0.nextPageCursor = "page3"
         })
+        injectBatchItems((26...80).map { "\($0)" })
+
         mockFeedService.injectNextGetNextFeedPage(.with {
-            $0.items = (80..<123).map { identifier in
+            $0.items = (81...123).map { identifier in
                 Com_Octopuscommunity_FeedItemInfo.with { $0.octoObjectID = "\(identifier)" }
            }
             $0.nextPageCursor = ""
         })
+        injectBatchItems((81...123).map { "\($0)" })
 
         var publishedItems: [Post]?
         var updateCount = 0
@@ -445,7 +448,7 @@ class FeedTests: XCTestCase {
         let hasMoreData = feed.hasMoreData
         let items = feed.items
         XCTAssertEqual(hasMoreData, false)
-        XCTAssertEqual(items?.map { $0.uuid }, (1..<123).map { "\($0)" })
+        XCTAssertEqual(items?.map { $0.uuid }, (1...123).map { "\($0)" })
         XCTAssertEqual(publishedItems, items)
         XCTAssertEqual(updateCount, 2)
     }
@@ -489,6 +492,145 @@ class FeedTests: XCTestCase {
         XCTAssertEqual(publishedItems, items)
         XCTAssertEqual(updateCount, 2)
     }
+
+    func testWithFeaturedComment() async throws {
+        let feed = Feed(id: "1", feedManager: postFeedManager)
+
+        // initial refresh will ask for the feed item infos and the items since they are not in the db
+        mockFeedService.injectNextInitializeFeed(.with {
+            $0.items = [
+                .with {
+                    $0.octoObjectID = "1"
+                    $0.octoObjectUpdatedAt = 1
+                    $0.highlightedChildID = "child_1"
+                },
+                .with { $0.octoObjectID = "2" },
+            ]
+            $0.nextPageCursor = "page2"
+        })
+
+        mockOctoService.injectNextGetBatchResponse(.with {
+            $0.responses = [
+                .with {
+                    $0.octoObjectID = "1"
+                    $0.octoObject = Com_Octopuscommunity_OctoObject.with {
+                        $0.createdAt = 0
+                        $0.id = "1"
+                        $0.parentID = ""
+                        $0.createdBy = .with {
+                            $0.profileID = "authorId"
+                            $0.nickname = "me"
+                        }
+                        $0.content = .with {
+                            $0.post = .with {
+                                $0.text = "title"
+                            }
+                        }
+                    }
+                },
+                .with {
+                    $0.octoObjectID = "2"
+                    $0.octoObject = Com_Octopuscommunity_OctoObject.with {
+                        $0.createdAt = 0
+                        $0.id = "2"
+                        $0.parentID = ""
+                        $0.createdBy = .with {
+                            $0.profileID = "authorId"
+                            $0.nickname = "me"
+                        }
+                        $0.content = .with {
+                            $0.post = .with {
+                                $0.text = "title"
+                            }
+                        }
+                    }
+                },
+                .with {
+                    $0.octoObjectID = "child_1"
+                    $0.octoObject = Com_Octopuscommunity_OctoObject.with {
+                        $0.createdAt = 0
+                        $0.id = "child_1"
+                        $0.parentID = ""
+                        $0.createdBy = .with {
+                            $0.profileID = "authorId"
+                            $0.nickname = "me"
+                        }
+                        $0.content = .with {
+                            $0.comment = .with {
+                                $0.text = "comment"
+                            }
+                        }
+                    }
+                }
+            ]
+        })
+
+        try await feed.refresh(pageSize: 2)
+
+        var hasMoreData = await feed.hasMoreData
+        var items = await feed.items
+        XCTAssertEqual(hasMoreData, true)
+        XCTAssertNotNil(items?[0].featuredComment)
+        XCTAssertNil(items?[1].featuredComment)
+
+        mockFeedService.injectNextGetNextFeedPage(.with {
+            $0.items = [
+                .with {
+                    $0.octoObjectID = "3"
+                    $0.octoObjectUpdatedAt = 1
+                    $0.highlightedChildID = "child_3"
+                },
+                .with { $0.octoObjectID = "3" },
+            ]
+        })
+        mockOctoService.injectNextGetBatchResponse(.with {
+            $0.responses = [
+                .with {
+                    $0.octoObjectID = "3"
+                    $0.octoObject = Com_Octopuscommunity_OctoObject.with {
+                        $0.createdAt = 0
+                        $0.id = "3"
+                        $0.parentID = ""
+                        $0.createdBy = .with {
+                            $0.profileID = "authorId"
+                            $0.nickname = "me"
+                        }
+                        $0.content = .with {
+                            $0.post = .with {
+                                $0.text = "title"
+                            }
+                        }
+                    }
+                },
+                .with {
+                    $0.octoObjectID = "child_3"
+                    $0.octoObject = Com_Octopuscommunity_OctoObject.with {
+                        $0.createdAt = 0
+                        $0.id = "child_3"
+                        $0.parentID = ""
+                        $0.createdBy = .with {
+                            $0.profileID = "authorId"
+                            $0.nickname = "me"
+                        }
+                        $0.content = .with {
+                            $0.comment = .with {
+                                $0.text = "comment"
+                            }
+                        }
+                    }
+                }
+            ]
+        })
+        try await feed.loadPreviousItems(pageSize: 2)
+
+        hasMoreData = await feed.hasMoreData
+        items = await feed.items
+        XCTAssertEqual(hasMoreData, false)
+        XCTAssertNotNil(items?[0].featuredComment)
+        XCTAssertNil(items?[1].featuredComment)
+        XCTAssertNotNil(items?[2].featuredComment)
+    }
+
 
     func testClean() async throws {
         // precondition: fill the db with data that will be cleaned
@@ -563,6 +705,7 @@ class FeedTests: XCTestCase {
         mockOctoService.injectNextGetBatchResponse(.with {
             $0.responses = posts.map { post in
                 .with {
+                    $0.octoObjectID = post.id
                     $0.octoObject = post
                 }
             }
@@ -588,7 +731,7 @@ class FeedTests: XCTestCase {
 
     private func insert(feedItems: [String], feedId: String, db: FeedItemInfosDatabase) async throws {
         try await feedsDatabase.upsert(
-            feedItemInfos: feedItems.map { FeedItemInfo(feedId: feedId, itemId: $0, updateDate: Date()) },
+            feedItemInfos: feedItems.map { FeedItemInfo(feedId: feedId, itemId: $0, updateDate: Date(), featuredChildId: nil) },
             feedId: feedId)
     }
 }

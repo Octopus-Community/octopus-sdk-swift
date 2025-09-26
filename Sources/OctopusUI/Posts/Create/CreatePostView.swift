@@ -20,29 +20,29 @@ struct CreatePostView: View {
     @State private var showChangesWillBeLostAlert = false
     @State private var height: CGFloat = 0
 
-    init(octopus: OctopusSDK) {
-        _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(octopus: octopus))
+    init(octopus: OctopusSDK, withPoll: Bool) {
+        _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(octopus: octopus, withPoll: withPoll))
     }
 
     var body: some View {
-        NavigationView {
-            ContentView(isLoading: viewModel.isLoading,
-                        text: $viewModel.text,
-                        attachment: $viewModel.attachment,
-                        textError: viewModel.textError,
-                        pictureError: viewModel.pictureError,
-                        pollError: viewModel.pollError,
-                        userAvatar: viewModel.userAvatar ?? .defaultImage(name: "?"),
-                        selectedTopic: viewModel.selectedTopic,
-                        showTopicPicker: $showTopicPicker,
-                        createPoll: viewModel.createPoll)
-            .presentationBackground(Color(.systemBackground))
-            .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
-            .toolbar(leading: cancelButton, trailing: postButton,
-                     trailingSharedBackgroundVisibility: .hidden)
-            .sheet(isPresented: $showTopicPicker) {
-                if #available(iOS 16.0, *) {
-                    TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
+        ContentView(isLoading: viewModel.isLoading,
+                    text: $viewModel.text,
+                    attachment: $viewModel.attachment,
+                    textError: viewModel.textError,
+                    pictureError: viewModel.pictureError,
+                    pollError: viewModel.pollError,
+                    userAvatar: viewModel.userAvatar ?? .defaultImage(name: "?"),
+                    selectedTopic: viewModel.selectedTopic,
+                    showTopicPicker: $showTopicPicker,
+                    createPoll: viewModel.createPoll)
+        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+        .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
+        .navigationBarBackButtonHidden(viewModel.hasChanges)
+        .toolbar(leading: cancelButton, trailing: postButton,
+                             trailingSharedBackgroundVisibility: .hidden)
+        .sheet(isPresented: $showTopicPicker) {
+            if #available(iOS 16.0, *) {
+                TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
                     .readHeight($height)
                     .onValueChanged(of: height) { [$topicPickerDetentHeight] height in
                         $topicPickerDetentHeight.wrappedValue = height
@@ -57,75 +57,66 @@ struct CreatePostView: View {
                         }
                     }
 
-                } else {
-                    Picker("Post.Create.Topic.Selection.Button", selection: $viewModel.selectedTopic) {
-                        ForEach(viewModel.topics, id: \.self) {
-                            Text($0.name)
-                                .tag($0)
-                        }
-                    }.pickerStyle(.wheel)
-                }
-            }
-            .compatAlert(
-                "Common.Error",
-                isPresented: $displayError,
-                presenting: displayableError,
-                actions: { _ in
-
-                }, message: { error in
-                    error.textView
-                })
-            .modify {
-                if #available(iOS 15.0, *) {
-                    $0.alert(
-                        Text("Common.CancelModifications", bundle: .module),
-                        isPresented: $showChangesWillBeLostAlert) {
-                            Button(L10n("Common.No"), role: .cancel, action: {})
-                            Button(L10n("Common.Yes"), role: .destructive, action: { presentationMode.wrappedValue.dismiss() })
-                        }
-                } else {
-                    $0.alert(isPresented: $showChangesWillBeLostAlert) {
-                        Alert(title: Text("Common.CancelModifications", bundle: .module),
-                              primaryButton: .default(Text("Common.No", bundle: .module)),
-                              secondaryButton: .destructive(
-                                Text("Common.Yes", bundle: .module),
-                                action: { presentationMode.wrappedValue.dismiss() }
-                              )
-                        )
+            } else {
+                Picker("Post.Create.Topic.Selection.Button", selection: $viewModel.selectedTopic) {
+                    ForEach(viewModel.topics, id: \.self) {
+                        Text($0.name)
+                            .tag($0)
                     }
-                }
-            }
-            .onReceive(viewModel.$dismiss) { shouldDismiss in
-                guard shouldDismiss else { return }
-                presentationMode.wrappedValue.dismiss()
-            }
-            .onReceive(viewModel.$alertError) { displayableError in
-                guard let displayableError else { return }
-                self.displayableError = displayableError
-                displayError = true
-            }
-            .onValueChanged(of: displayError) {
-                guard !$0 else { return }
-                viewModel.alertError = nil
+                }.pickerStyle(.wheel)
             }
         }
-        .accentColor(theme.colors.primary)
+        .compatAlert(
+            "Common.Error",
+            isPresented: $displayError,
+            presenting: displayableError,
+            actions: { _ in
+
+            }, message: { error in
+                error.textView
+            })
+        .modify {
+            if #available(iOS 15.0, *) {
+                $0.alert(
+                    Text("Common.CancelModifications", bundle: .module),
+                    isPresented: $showChangesWillBeLostAlert) {
+                        Button(L10n("Common.No"), role: .cancel, action: {})
+                        Button(L10n("Common.Yes"), role: .destructive, action: { presentationMode.wrappedValue.dismiss() })
+                    }
+            } else {
+                $0.alert(isPresented: $showChangesWillBeLostAlert) {
+                    Alert(title: Text("Common.CancelModifications", bundle: .module),
+                          primaryButton: .default(Text("Common.No", bundle: .module)),
+                          secondaryButton: .destructive(
+                            Text("Common.Yes", bundle: .module),
+                            action: { presentationMode.wrappedValue.dismiss() }
+                          )
+                    )
+                }
+            }
+        }
+        .onReceive(viewModel.$dismiss) { shouldDismiss in
+            guard shouldDismiss else { return }
+            presentationMode.wrappedValue.dismiss()
+        }
+        .onReceive(viewModel.$alertError) { displayableError in
+            guard let displayableError else { return }
+            self.displayableError = displayableError
+            displayError = true
+        }
+        .onValueChanged(of: displayError) {
+            guard !$0 else { return }
+            viewModel.alertError = nil
+        }
     }
 
     @ViewBuilder
     private var cancelButton: some View {
-        Button(action: {
-            if viewModel.hasChanges {
-                showChangesWillBeLostAlert = true
-            } else {
-                presentationMode.wrappedValue.dismiss()
-            }
-        }) {
-            Image(systemName: "xmark")
-                .font(theme.fonts.navBarItem)
-                .contentShape(Rectangle())
+        if viewModel.hasChanges {
+            BackButton(action: { showChangesWillBeLostAlert = true })
+        } else {
+            EmptyView()
         }
-        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -140,7 +131,7 @@ struct CreatePostView: View {
             }) {
                 Text("Post.Create.Button", bundle: .module)
             }
-            .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: viewModel.sendButtonAvailable))
+            .buttonStyle(OctopusButtonStyle(.mid, enabled: viewModel.sendButtonAvailable))
             .disabled(!viewModel.sendButtonAvailable)
         } else {
             if #available(iOS 14.0, *) {
@@ -149,7 +140,7 @@ struct CreatePostView: View {
                 Button(action: { }) {
                     Text("Post.Create.Button", bundle: .module)
                 }
-                .buttonStyle(OctopusButtonStyle(.mid(.main), enabled: true))
+                .buttonStyle(OctopusButtonStyle(.mid, enabled: true))
                 .disabled(true)
             }
         }
@@ -225,7 +216,7 @@ private struct WritingPostForm: View {
                                     Image(systemName: "chevron.down")
                                 }
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid(.secondary), hasTrailingIcon: true))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .secondary, hasTrailingIcon: true))
                         }
                         Spacer()
                             .frame(height: 24)
@@ -370,7 +361,7 @@ private struct WritingPostForm: View {
                                     Text("Content.Create.AddPicture", bundle: .module)
                                 }
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid(.outline), hasLeadingIcon: true))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
                         }
                         if attachment == nil {
                             Button(action: {
@@ -386,7 +377,7 @@ private struct WritingPostForm: View {
                                     Text("Content.Create.AddPoll", bundle: .module)
                                 }
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid(.outline), hasLeadingIcon: true))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
                         }
                         Spacer()
                     }

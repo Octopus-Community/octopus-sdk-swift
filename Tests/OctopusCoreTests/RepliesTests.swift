@@ -28,6 +28,7 @@ class RepliesTests: XCTestCase {
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ReplyFeedsStore(injector: $0) }
         injector.register { RepliesDatabase(injector: $0) }
+        injector.register { PostsDatabase(injector: $0) }
 
         repliesRepository = RepliesRepository(injector: injector)
         repliesDatabase = injector.getInjected(identifiedBy: Injected.repliesDatabase)
@@ -50,7 +51,7 @@ class RepliesTests: XCTestCase {
                                      status: .published, statusReasons: [],
                                      parentId: "commentId",
                                      aggregatedInfo: .empty,
-                                     userInteractions: UserInteractions(userLikeId: nil, pollVoteId: nil)
+                                     userInteractions: UserInteractions(reaction: nil, pollVoteId: nil)
                                     ))
         let reply = WritableReply(commentId: "commentId", text: "My Reply", imageData: nil)
         try await repliesRepository.send(reply)
@@ -66,7 +67,7 @@ class RepliesTests: XCTestCase {
                           status: .published, statusReasons: [],
                           parentId: "commentId",
                           aggregatedInfo: .empty,
-                          userInteractions: UserInteractions(userLikeId: nil, pollVoteId: nil))
+                          userInteractions: UserInteractions(reaction: nil, pollVoteId: nil))
         ])
 
         mockOctoService.injectNextDeleteReplyResponse(Com_Octopuscommunity_DeleteReplyResponse())

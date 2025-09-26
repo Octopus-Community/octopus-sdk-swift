@@ -40,6 +40,11 @@ public protocol Com_Octopuscommunity_NotificationServiceClientProtocol: GRPCClie
     _ request: Com_Octopuscommunity_GetNotificationSettingsRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>
+
+  func sendCommunityNotification(
+    _ request: Com_Octopuscommunity_SendCommunityNotificationRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_SendCommunityNotificationRequest, Com_Octopuscommunity_SendCommunityNotificationResponse>
 }
 
 extension Com_Octopuscommunity_NotificationServiceClientProtocol {
@@ -47,7 +52,7 @@ extension Com_Octopuscommunity_NotificationServiceClientProtocol {
     return "com.octopuscommunity.NotificationService"
   }
 
-  /// Unary call to GetUserNotifications
+  ///Notif center
   ///
   /// - Parameters:
   ///   - request: Request to send to GetUserNotifications.
@@ -83,7 +88,7 @@ extension Com_Octopuscommunity_NotificationServiceClientProtocol {
     )
   }
 
-  /// Unary call to RegisterPushToken
+  ///Push notif
   ///
   /// - Parameters:
   ///   - request: Request to send to RegisterPushToken.
@@ -134,6 +139,24 @@ extension Com_Octopuscommunity_NotificationServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? []
+    )
+  }
+
+  ///Community notif
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to SendCommunityNotification.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func sendCommunityNotification(
+    _ request: Com_Octopuscommunity_SendCommunityNotificationRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_SendCommunityNotificationRequest, Com_Octopuscommunity_SendCommunityNotificationResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.sendCommunityNotification.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendCommunityNotificationInterceptors() ?? []
     )
   }
 }
@@ -224,6 +247,11 @@ public protocol Com_Octopuscommunity_NotificationServiceAsyncClientProtocol: GRP
     _ request: Com_Octopuscommunity_GetNotificationSettingsRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>
+
+  func makeSendCommunityNotificationCall(
+    _ request: Com_Octopuscommunity_SendCommunityNotificationRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SendCommunityNotificationRequest, Com_Octopuscommunity_SendCommunityNotificationResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -295,6 +323,18 @@ extension Com_Octopuscommunity_NotificationServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? []
     )
   }
+
+  public func makeSendCommunityNotificationCall(
+    _ request: Com_Octopuscommunity_SendCommunityNotificationRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SendCommunityNotificationRequest, Com_Octopuscommunity_SendCommunityNotificationResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.sendCommunityNotification.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendCommunityNotificationInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -358,6 +398,18 @@ extension Com_Octopuscommunity_NotificationServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetNotificationSettingsInterceptors() ?? []
     )
   }
+
+  public func sendCommunityNotification(
+    _ request: Com_Octopuscommunity_SendCommunityNotificationRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_SendCommunityNotificationResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.sendCommunityNotification.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendCommunityNotificationInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -393,6 +445,9 @@ public protocol Com_Octopuscommunity_NotificationServiceClientInterceptorFactory
 
   /// - Returns: Interceptors to use when invoking 'getNotificationSettings'.
   func makeGetNotificationSettingsInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'sendCommunityNotification'.
+  func makeSendCommunityNotificationInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_SendCommunityNotificationRequest, Com_Octopuscommunity_SendCommunityNotificationResponse>]
 }
 
 public enum Com_Octopuscommunity_NotificationServiceClientMetadata {
@@ -405,6 +460,7 @@ public enum Com_Octopuscommunity_NotificationServiceClientMetadata {
       Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.registerPushToken,
       Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.setNotificationSettings,
       Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.getNotificationSettings,
+      Com_Octopuscommunity_NotificationServiceClientMetadata.Methods.sendCommunityNotification,
     ]
   )
 
@@ -438,6 +494,12 @@ public enum Com_Octopuscommunity_NotificationServiceClientMetadata {
       path: "/com.octopuscommunity.NotificationService/GetNotificationSettings",
       type: GRPCCallType.unary
     )
+
+    public static let sendCommunityNotification = GRPCMethodDescriptor(
+      name: "SendCommunityNotification",
+      path: "/com.octopuscommunity.NotificationService/SendCommunityNotification",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -445,15 +507,20 @@ public enum Com_Octopuscommunity_NotificationServiceClientMetadata {
 public protocol Com_Octopuscommunity_NotificationServiceProvider: CallHandlerProvider {
   var interceptors: Com_Octopuscommunity_NotificationServiceServerInterceptorFactoryProtocol? { get }
 
+  ///Notif center
   func getUserNotifications(request: Com_Octopuscommunity_GetUserNotificationsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetUserNotificationsResponse>
 
   func markNotificationsAsRead(request: Com_Octopuscommunity_MarkNotificationsAsReadRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_MarkNotificationsAsReadResponse>
 
+  ///Push notif
   func registerPushToken(request: Com_Octopuscommunity_RegisterPushTokenRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_RegisterPushTokenResponse>
 
   func setNotificationSettings(request: Com_Octopuscommunity_SetNotificationSettingsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_NotificationSettingsResponse>
 
   func getNotificationSettings(request: Com_Octopuscommunity_GetNotificationSettingsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_NotificationSettingsResponse>
+
+  ///Community notif
+  func sendCommunityNotification(request: Com_Octopuscommunity_SendCommunityNotificationRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_SendCommunityNotificationResponse>
 }
 
 extension Com_Octopuscommunity_NotificationServiceProvider {
@@ -513,6 +580,15 @@ extension Com_Octopuscommunity_NotificationServiceProvider {
         userFunction: self.getNotificationSettings(request:context:)
       )
 
+    case "SendCommunityNotification":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SendCommunityNotificationRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SendCommunityNotificationResponse>(),
+        interceptors: self.interceptors?.makeSendCommunityNotificationInterceptors() ?? [],
+        userFunction: self.sendCommunityNotification(request:context:)
+      )
+
     default:
       return nil
     }
@@ -525,6 +601,7 @@ public protocol Com_Octopuscommunity_NotificationServiceAsyncProvider: CallHandl
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: Com_Octopuscommunity_NotificationServiceServerInterceptorFactoryProtocol? { get }
 
+  ///Notif center
   func getUserNotifications(
     request: Com_Octopuscommunity_GetUserNotificationsRequest,
     context: GRPCAsyncServerCallContext
@@ -535,6 +612,7 @@ public protocol Com_Octopuscommunity_NotificationServiceAsyncProvider: CallHandl
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_MarkNotificationsAsReadResponse
 
+  ///Push notif
   func registerPushToken(
     request: Com_Octopuscommunity_RegisterPushTokenRequest,
     context: GRPCAsyncServerCallContext
@@ -549,6 +627,12 @@ public protocol Com_Octopuscommunity_NotificationServiceAsyncProvider: CallHandl
     request: Com_Octopuscommunity_GetNotificationSettingsRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_NotificationSettingsResponse
+
+  ///Community notif
+  func sendCommunityNotification(
+    request: Com_Octopuscommunity_SendCommunityNotificationRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_SendCommunityNotificationResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -615,6 +699,15 @@ extension Com_Octopuscommunity_NotificationServiceAsyncProvider {
         wrapping: { try await self.getNotificationSettings(request: $0, context: $1) }
       )
 
+    case "SendCommunityNotification":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SendCommunityNotificationRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SendCommunityNotificationResponse>(),
+        interceptors: self.interceptors?.makeSendCommunityNotificationInterceptors() ?? [],
+        wrapping: { try await self.sendCommunityNotification(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -642,6 +735,10 @@ public protocol Com_Octopuscommunity_NotificationServiceServerInterceptorFactory
   /// - Returns: Interceptors to use when handling 'getNotificationSettings'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetNotificationSettingsInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetNotificationSettingsRequest, Com_Octopuscommunity_NotificationSettingsResponse>]
+
+  /// - Returns: Interceptors to use when handling 'sendCommunityNotification'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSendCommunityNotificationInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_SendCommunityNotificationRequest, Com_Octopuscommunity_SendCommunityNotificationResponse>]
 }
 
 public enum Com_Octopuscommunity_NotificationServiceServerMetadata {
@@ -654,6 +751,7 @@ public enum Com_Octopuscommunity_NotificationServiceServerMetadata {
       Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.registerPushToken,
       Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.setNotificationSettings,
       Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.getNotificationSettings,
+      Com_Octopuscommunity_NotificationServiceServerMetadata.Methods.sendCommunityNotification,
     ]
   )
 
@@ -685,6 +783,12 @@ public enum Com_Octopuscommunity_NotificationServiceServerMetadata {
     public static let getNotificationSettings = GRPCMethodDescriptor(
       name: "GetNotificationSettings",
       path: "/com.octopuscommunity.NotificationService/GetNotificationSettings",
+      type: GRPCCallType.unary
+    )
+
+    public static let sendCommunityNotification = GRPCMethodDescriptor(
+      name: "SendCommunityNotification",
+      path: "/com.octopuscommunity.NotificationService/SendCommunityNotification",
       type: GRPCCallType.unary
     )
   }

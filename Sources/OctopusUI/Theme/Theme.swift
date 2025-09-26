@@ -89,11 +89,13 @@ public struct OctopusTheme: Sendable {
         // Editable values
         /// Your logo. Default value is Octopus logo
         public let logo: UIImage
-        
+        let logoIsCustomized: Bool
+
         /// Constructor of assets
         /// - Parameter logo: the logo. Nil if you want the default value (Octopus logo) to be used.
         public init(logo: UIImage? = nil) {
             self.logo = logo ?? .Gen.Theme.logo
+            logoIsCustomized = logo != nil
         }
     }
 

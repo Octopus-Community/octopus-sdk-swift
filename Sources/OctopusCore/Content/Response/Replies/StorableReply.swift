@@ -33,7 +33,7 @@ extension StorableReply {
                               storableMessages: entity.statusReasonMessages)
         parentId = entity.parentId
         aggregatedInfo = AggregatedInfo(from: entity)
-        userInteractions = UserInteractions(userLikeId: entity.userLikeId, pollVoteId: nil) // no poll on replies
+        userInteractions = UserInteractions(from: entity)
     }
 
     init?(octoReply: Com_Octopuscommunity_OctoObject, aggregate: Com_Octopuscommunity_Aggregate?,

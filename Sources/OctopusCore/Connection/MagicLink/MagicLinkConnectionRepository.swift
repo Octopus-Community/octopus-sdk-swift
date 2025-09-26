@@ -14,56 +14,96 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
     public var connectionStatePublisher: AnyPublisher<ConnectionState, Never> {
         $connectionState.receive(on: DispatchQueue.main).eraseToAnyPublisher()
     }
-    @Published private(set) public var connectionState = ConnectionState.notConnected
+    @Published private(set) public var connectionState = ConnectionState.notConnected(nil)
+
+    public var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> {
+        $magicLinkRequest.receive(on: DispatchQueue.main).eraseToAnyPublisher()
+    }
+    @Published private(set) public var magicLinkRequest: MagicLinkRequest?
+
+    public let clientUserConnected = false
 
     public let connectionMode: ConnectionMode
-    private let remoteClient: OctopusRemoteClient
-    private let userDataStorage: UserDataStorage
-    private let authCallProvider: AuthenticatedCallProvider
-    private let networkMonitor: NetworkMonitor
-    private let magicLinkMonitor: MagicLinkMonitor
     private let profileRepository: ProfileRepository
+    private let userDataStorage: UserDataStorage
+    private let remoteClient: OctopusRemoteClient
+    private let networkMonitor: NetworkMonitor
     private let userProfileDatabase: CurrentUserProfileDatabase
-    private let postFeedsStore: PostFeedsStore
-    private var storage: Set<AnyCancellable> = []
+    private let magicLinkMonitor: MagicLinkMonitor
+    private let authCallProvider: AuthenticatedCallProvider
     private var userInDbCancellable: AnyCancellable?
 
-    private var receivedProfile: CurrentUserProfile?
-    private var latestDisconnectionReason: String?
+    private var storage: Set<AnyCancellable> = []
+    private var connectionStateIsSet = false
+    @Published private var isConnecting = false
+    @Published private var clientIsConnecting = false
+    private var isLoggingOutAfterUnauthenticatedError = false
+
+    private var clientUserTokenProvider: (() async throws -> String)?
 
     init(connectionMode: ConnectionMode, injector: Injector) {
         self.connectionMode = connectionMode
-        remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
-        userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
-        authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
-        networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
-        magicLinkMonitor = injector.getInjected(identifiedBy: Injected.magicLinkMonitor)
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
+        userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
+        remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
+        networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
-        postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
+        magicLinkMonitor = injector.getInjected(identifiedBy: Injected.magicLinkMonitor)
+        authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
 
-        Publishers.CombineLatest3(
-            userDataStorage.$magicLinkData.removeDuplicates().receive(on: DispatchQueue.main),
+        Publishers.CombineLatest(
             userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
-            profileRepository.profilePublisher.removeDuplicates().receive(on: DispatchQueue.main)
+            // ensure that profile value is not the initial one
+            Publishers.CombineLatest(
+                profileRepository.profilePublisher,
+                profileRepository.hasLoadedProfilePublisher.filter { $0 }
+            ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main)
         )
-        .sink { [unowned self] magicLinkData, userData, profile in
-            let newConnectionState: ConnectionState
-            if let userData {
-                if let profile = profile ?? receivedProfile, userData.id == profile.userId,
-                   profile.nickname.nilIfEmpty != nil {
-                    newConnectionState = .connected(User(profile: profile, jwtToken: userData.jwtToken))
-                } else {
-                    newConnectionState = .profileCreationRequired(clientProfile: .empty, lockedFields: nil)
-                }
-            } else if let magicLinkData {
-                newConnectionState = .magicLinkSent(MagicLinkRequest(email: magicLinkData.email, error: nil))
-            } else {
-                newConnectionState = .notConnected
+        .map { [weak self] userData, profile in
+            guard let self else {
+                return Just<(UserDataStorage.UserData?, CurrentUserProfile?)>((nil, nil))
+                    .eraseToAnyPublisher()
             }
-            connectionState = newConnectionState
-        }.store(in: &storage)
+            return $isConnecting
+                .filter { !$0 }
+                .map { _ in
+                    return (userData, profile)
+                }
+                .eraseToAnyPublisher()
+        }
+        .switchToLatest()
+        .removeDuplicates { $0 == $1 }
+        .sink { [weak self] userData, profile in
+            guard let self else { return }
+            if let profile, let userData {
+                connectionState = .connected(User(profile: profile, jwtToken: userData.jwtToken), nil)
+                connectionStateIsSet = true
+            }
+        }
+        .store(in: &storage)
 
+        Publishers.CombineLatest(
+            userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
+            // ensure that profile value is not the initial one
+            Publishers.CombineLatest(
+                profileRepository.profilePublisher,
+                profileRepository.hasLoadedProfilePublisher.filter { $0 }
+            ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main)
+        )
+        .first()
+        .sink { [unowned self] userData, profile in
+            if profile == nil && userData == nil {
+                connectAsync()
+            }
+        }
+        .store(in: &storage)
+
+        userDataStorage.$magicLinkData
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [unowned self] magicLinkData in
+                magicLinkRequest = magicLinkData.map { MagicLinkRequest(email: $0.email, error: nil) }
+            }.store(in: &storage)
 
         magicLinkMonitor
             .magicLinkAuthenticationResponsePublisher
@@ -122,18 +162,18 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
     }
 
     public func logout() async throws {
-        let profileId: String? = if case let .connected(user) = connectionState {
+        let profileId: String? = if case let .connected(user, _) = connectionState {
             user.profile.id
         } else { nil }
-        receivedProfile = nil
         userDataStorage.store(userData: nil)
         if let profileId {
             try await profileRepository.deleteCurrentUserProfile(profileId: profileId)
         }
+        await connect()
     }
 
     public func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) {
-        guard case let .connected(user) = connectionState else { throw .userNotAuthenticated }
+        guard case let .connected(user, _) = connectionState else { throw .userNotAuthenticated }
         do {
             guard case .octopus = connectionMode else { throw InternalError.wrongConnectionMode }
             _ = try await remoteClient.userService.deleteAccount(
@@ -152,14 +192,71 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
         }
     }
 
+    private func connectAsync() {
+        Task {
+            // since guest connection might be currently happening, wait for it to end
+            try? await TaskUtils.wait(for: !isConnecting)
+            await connect()
+
+        }
+    }
+
+    private func connect() async {
+        guard !isConnecting else { return }
+        isConnecting = true
+        do {
+            try await connectAsGuest()
+        } catch {
+            switch connectionState {
+            case .notConnected:
+                connectionState = .notConnected(error)
+            case let .connected(user, _):
+                connectionState = .connected(user, error)
+            }
+            connectionStateIsSet = true
+        }
+        isConnecting = false
+    }
+
+    private func connectAsGuest() async throws(ConnectionError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        do {
+            let response = try await remoteClient.userService.getGuestJwt()
+
+            switch response.result {
+            case let .success(connectionData):
+                if let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID) {
+                    try await userProfileDatabase.upsert(profile: profile)
+                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
+                } else {
+                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
+                    throw InternalError.objectMalformed
+                }
+            case let .fail(failure):
+                let detailedErrors = failure.errors.map { ConnectionError.DetailedError(from: $0) }
+                throw ConnectionError.detailedErrors(detailedErrors)
+            case .none:
+                // this will happen only if we add new values to the `result`. Since they are not supported in this version, throw an error
+                throw InternalError.invalidArgument
+            }
+        } catch {
+            if let connectionError = error as? ConnectionError {
+                throw connectionError
+            } else if let error = error as? RemoteClientError {
+                throw .server(ServerError(remoteClientError: error))
+            } else {
+                throw .unknown(error)
+            }
+        }
+    }
+
     @discardableResult
     private func processMagicLinkConfirmation(
         _ response: Com_Octopuscommunity_IsAuthenticatedResponse) throws(MagicLinkConfirmationError) -> Bool {
-            guard case let .magicLinkSent(magicLinkRequest) = connectionState else { return false }
+            guard let magicLinkRequest else { return false }
             switch response.result {
             case .success(let success):
                 if let profile = StorableCurrentUserProfile(from: success.profile, userId: success.userID) {
-                    receivedProfile = CurrentUserProfile(storableProfile: profile, postFeedsStore: postFeedsStore)
                     Task {
                         try await userProfileDatabase.upsert(profile: profile)
                         // wait for the db to be sure to have all information about the profile in the db to avoid
@@ -187,30 +284,39 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
                     return false
                 case .expiredLink:
                     let error = MagicLinkConfirmationError.magicLinkExpired
-                    connectionState = .magicLinkSent(MagicLinkRequest(email: magicLinkRequest.email, error: error))
+                    self.magicLinkRequest = MagicLinkRequest(email: magicLinkRequest.email, error: error)
                     throw error
                 case .linkNotFound, .userNotFound, .invalidLink:
                     let error = MagicLinkConfirmationError.needNewMagicLink
-                    connectionState = .magicLinkSent(MagicLinkRequest(email: magicLinkRequest.email, error: error))
+                    self.magicLinkRequest = MagicLinkRequest(email: magicLinkRequest.email, error: error)
                     throw error
                 case .userBanned:
                     let error = MagicLinkConfirmationError.userBanned(error.message)
-                    connectionState = .magicLinkSent(MagicLinkRequest(email: magicLinkRequest.email, error: error))
+                    self.magicLinkRequest = MagicLinkRequest(email: magicLinkRequest.email, error: error)
                     throw error
                 case .unknownError, .UNRECOGNIZED(_):
                     let error = MagicLinkConfirmationError.unknown(nil)
-                    connectionState = .magicLinkSent(MagicLinkRequest(email: magicLinkRequest.email, error: error))
+                    self.magicLinkRequest = MagicLinkRequest(email: magicLinkRequest.email, error: error)
                     throw error
                 }
             case .none:
                 let error = MagicLinkConfirmationError.unknown(nil)
-                connectionState = .magicLinkSent(MagicLinkRequest(email: magicLinkRequest.email, error: error))
+                self.magicLinkRequest = MagicLinkRequest(email: magicLinkRequest.email, error: error)
                 throw error
             }
         }
 
     func onAuthenticatedCallFailed() async throws {
         try await logout()
+        guard !isLoggingOutAfterUnauthenticatedError else { return }
+        isLoggingOutAfterUnauthenticatedError = true
+        defer { isLoggingOutAfterUnauthenticatedError = false }
+        // Wait to be in the correct state to try to re-connect the user
+        try? await TaskUtils.wait(for: {
+            if case .notConnected = connectionState { return true }
+            return false
+        }())
+        await connect()
     }
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws {

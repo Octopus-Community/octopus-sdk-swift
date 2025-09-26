@@ -13,8 +13,8 @@ public struct Comment: Equatable, Sendable {
     public let creationDate: Date
     public let updateDate: Date
     public let parentId: String
-    public let newestFirstRepliesFeed: Feed<Reply>?
-    public let oldestFirstRepliesFeed: Feed<Reply>?
+    public let newestFirstRepliesFeed: Feed<Reply, Never>?
+    public let oldestFirstRepliesFeed: Feed<Reply, Never>?
 
     public let aggregatedInfo: AggregatedInfo
     public let userInteractions: UserInteractions

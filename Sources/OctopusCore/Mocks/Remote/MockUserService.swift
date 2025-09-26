@@ -25,9 +25,19 @@ class MockUserService: UserService {
     /// Fifo of the responses to `blockUser`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var blockUserResponses = [Com_Octopuscommunity_BlockUserResponse]()
-    /// Fifo of the responses to `getJwt`.
+    /// Fifo of the responses to `getJwtFromClientToken`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var getJwtFromClientTokenResponses = [Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse]()
+    /// Fifo of the responses to `getGuestJwt`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var getGuestJwtResponses = [Com_Octopuscommunity_GetGuestJwtResponse]()
+    /// Fifo of the responses to `canAccessCommunity`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var canAccessCommunityResponses = [Com_Octopuscommunity_CanAccessCommunityResponse]()
+    /// Fifo of the responses to `bypassABTesting`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var bypassABTestingResponses = [Com_Octopuscommunity_ByPassAbTestingResponse]()
+
 
     func getPublicProfile(profileId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetPublicProfileResponse {
@@ -46,10 +56,7 @@ class MockUserService: UserService {
     }
 
     func updateProfile(userId: String,
-                       nickname: FieldUpdate<String>,
-                       bio: FieldUpdate<String?>,
-                       picture: FieldUpdate<(imgData: Data, isCompressed: Bool)?>,
-                       isProfileCreation: Bool,
+                       profile: UpdateProfileData,
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {
         guard let response = updateProfileResponses.popLast() else {
@@ -89,10 +96,37 @@ class MockUserService: UserService {
         return response
     }
 
-    func getJwt(clientToken: String) async throws(RemoteClientError)
+    func getJwt(clientToken: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse {
+        try? await Task.sleep(nanoseconds: UInt64.random(in: 0..<10) * 1_000_000)
         guard let response = getJwtFromClientTokenResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetJwtFromClientResponse must be called before"))
+        }
+        return response
+    }
+
+    func getGuestJwt() async throws(RemoteClientError) -> Com_Octopuscommunity_GetGuestJwtResponse {
+        do {
+            try await Task.sleep(nanoseconds: UInt64.random(in: 0..<10) * 1_000_000)
+        } catch { throw .unknown(MockError("Unknown error")) }
+        guard let response = getGuestJwtResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextGetGuestJwt must be called before"))
+        }
+        return response
+    }
+
+    func canAccessCommunity(authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_CanAccessCommunityResponse {
+        guard let response = canAccessCommunityResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextBlockUserResponse must be called before"))
+        }
+        return response
+    }
+
+    func bypassABTestingAccess(userId: String, canAccessCommunity: Bool, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_ByPassAbTestingResponse {
+        guard let response = bypassABTestingResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextBlockUserResponse must be called before"))
         }
         return response
     }
@@ -125,5 +159,9 @@ extension MockUserService {
 
     func injectNextGetJwtFromClientResponse(_ response: Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse) {
         getJwtFromClientTokenResponses.insert(response, at: 0)
+    }
+
+    func injectNextGetGuestJwtResponse(_ response: Com_Octopuscommunity_GetGuestJwtResponse) {
+        getGuestJwtResponses.insert(response, at: 0)
     }
 }

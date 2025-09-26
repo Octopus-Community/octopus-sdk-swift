@@ -138,17 +138,73 @@ extension OctopusSDK {
 
 // MARK: - A/B Testing
 extension OctopusSDK {
-    /// Sets whether the access to the Octopus community is enabled or not.
+    /// Sets whether access to the Octopus community is enabled or not (analytics only).
     ///
-    /// This method indicates whether the app should have access to community features,
-    /// typically used in A/B testing scenarios where some users may be excluded from the community
-    /// experience. This information is used internally for analytics and tracking purposes to
-    /// understand user engagement patterns.
+    /// This method is typically used when the host app manages its own A/B testing logic.
+    /// It tells the Octopus backend whether the user has access to community features,
+    /// but it does **not** actually grant or restrict access within the SDK itself.
+    /// Instead, this information is only recorded internally for analytics and tracking,
+    /// to better understand engagement patterns across test groups.
     ///
-    /// - Parameter hasAccessToCommunity: True if the app has access to the community features, false if it
-    ///                                   should be excluded (e.g., in A/B testing control groups)
+    /// - When to use:
+    ///   Call this if your app is running its own A/B test and you want Octopus to
+    ///   log whether a given user is in the "community-enabled" or "control" group.
+    ///   This is useful for reporting and engagement analytics, but does not change
+    ///   the SDK’s runtime behavior.
+    ///
+    /// - Parameter hasAccessToCommunity: `true` if the user is part of a group with access
+    ///                                   to the community (per the host app’s A/B test),
+    ///                                   `false` otherwise (e.g., control group).
+    ///
+    /// - See also: ``overrideCommunityAccess(_:)``
+    @available(*, deprecated, renamed: "track(hasAccessToCommunity:)", message: "This function has been renamed track(hasAccessToCommunity:).")
     public func set(hasAccessToCommunity: Bool) {
         core.trackingRepository.set(hasAccessToCommunity: hasAccessToCommunity)
+    }
+
+    /// Sets whether access to the Octopus community is enabled or not (analytics only).
+    ///
+    /// This method is typically used when the host app manages its own A/B testing logic.
+    /// It tells the Octopus backend whether the user has access to community features,
+    /// but it does **not** actually grant or restrict access within the SDK itself.
+    /// Instead, this information is only recorded internally for analytics and tracking,
+    /// to better understand engagement patterns across test groups.
+    ///
+    /// - When to use:
+    ///   Call this if your app is running its own A/B test and you want Octopus to
+    ///   log whether a given user is in the "community-enabled" or "control" group.
+    ///   This is useful for reporting and engagement analytics, but does not change
+    ///   the SDK’s runtime behavior.
+    ///
+    /// - Parameter hasAccessToCommunity: `true` if the user is part of a group with access
+    ///                                   to the community (per the host app’s A/B test),
+    ///                                   `false` otherwise (e.g., control group).
+    ///
+    /// - See also: ``overrideCommunityAccess(_:)``
+    public func track(hasAccessToCommunity: Bool) {
+        core.trackingRepository.set(hasAccessToCommunity: hasAccessToCommunity)
+    }
+
+    /// Overrides the community access status managed by Octopus.
+    ///
+    /// This method bypasses both the SDK’s internal A/B test configuration **and** any
+    /// status previously set via ``track(hasAccessToCommunity:)``. It explicitly determines
+    /// whether the user can access the community features, and takes **full precedence**
+    /// over all other access control mechanisms.
+    ///
+    /// - When to use:
+    ///   Call this if you want Octopus to control access to the community directly,
+    ///   instead of (or in addition to) managing A/B test groups in your own app.
+    ///   Use this method when you need to guarantee that the user’s community access
+    ///   is enforced by Octopus, regardless of analytics-only settings or internal
+    ///   A/B testing rules.
+    ///
+    /// - Parameter access: `true` to grant access to the community, `false` to block it.
+    /// - Throws: An error if the access override cannot be applied.
+    ///
+    /// - See also: ``track(hasAccessToCommunity:)``
+    public func overrideCommunityAccess(_ access: Bool) async throws {
+        try await core.configRepository.overrideCommunityAccess(access)
     }
 }
 

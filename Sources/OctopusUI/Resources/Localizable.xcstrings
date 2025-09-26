@@ -511,6 +511,29 @@
         }
       }
     },
+    "Common.ReadMore" : {
+      "comment" : "Displayed after an ellipsized text",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr lesen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read more"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire plus"
+          }
+        }
+      }
+    },
     "Common.Retry" : {
       "localizations" : {
         "de" : {
@@ -981,28 +1004,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "J'aime"
-          }
-        }
-      }
-    },
-    "Content.AggregatedInfo.View" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "–"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "-"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "-"
           }
         }
       }
@@ -1934,6 +1935,160 @@
         }
       }
     },
+    "Onboarding.Button" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weiter"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
+          }
+        }
+      }
+    },
+    "Onboarding.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit dem Klick auf „Weiter“ stimmen Sie unseren [Nutzungsbedingungen](https://%1$@), der [Datenschutzrichtlinie](https://%2$@) und den [Community-Regeln](https://%3$@) zu."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By tapping “Continue”, you agree to our [Terms of Use](%1$@), [Privacy Policy](%2$@), and [Community Guidelines](%3$@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cliquant sur “Continuer”, j’accepte les [CGUs](https://%1$@), la [politique de confidentialité](https://%2$@) et les [règles de la communauté](https://%3$@)."
+          }
+        }
+      }
+    },
+    "Onboarding.Text.Fire" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilen Sie Ihre Erfahrungen, Meinungen & Tipps"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share your stories, thoughts & experiences"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partagez votre avis et vos expériences"
+          }
+        }
+      }
+    },
+    "Onboarding.Text.Idea" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lernen Sie von anderen Mitgliedern & deren Insights"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learn tips from other members"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Découvrez les conseils de la communauté"
+          }
+        }
+      }
+    },
+    "Onboarding.Text.Shield" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bleiben Sie respektvoll und freundlich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Be kind & respectful, always"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exprimez-vous dans le respect de chacun"
+          }
+        }
+      }
+    },
+    "Onboarding.Text.Talk" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellen Sie Fragen und erhalten Sie schnelle Antworten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask anything, get quick answers"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posez vos questions"
+          }
+        }
+      }
+    },
+    "Onboarding.Title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Willkommen in der\nCommunity 👋"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welcome to the\ncommunity 👋"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bienvenue dans la\ncommunauté 👋"
+          }
+        }
+      }
+    },
     "Picture.Selection.Error_maxRatio:%@_minSize:%lld" : {
       "localizations" : {
         "de" : {
@@ -2103,24 +2258,134 @@
         }
       }
     },
-    "Post.Create.Incentive.Button" : {
+    "Post.Create.Incentive.Button1" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ich schreibe eine Nachricht"
+            "value" : "Teile einen Tipp"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I write a post"
+            "value" : "Share a tip"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "J'écris un message"
+            "value" : "Partagez un conseil"
+          }
+        }
+      }
+    },
+    "Post.Create.Incentive.Button2" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stell dich vor"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce yourself"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Présentez-vous"
+          }
+        }
+      }
+    },
+    "Post.Create.Incentive.Button3" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sag deine Meinung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Give your opinion"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donnez votre avis"
+          }
+        }
+      }
+    },
+    "Post.Create.Incentive.Button4" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erzähl von einer Erfahrung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share an experience"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partagez une expérience"
+          }
+        }
+      }
+    },
+    "Post.Create.Incentive.Button5" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstelle eine Umfrage"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a poll"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créez un sondage"
+          }
+        }
+      }
+    },
+    "Post.Create.Incentive.Button6" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schreibe einen Beitrag"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write a post"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rédigez une publication"
           }
         }
       }
@@ -2130,19 +2395,19 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sie haben noch keinen Beitrag veröffentlicht.\nTeilen Sie Ihre Gedanken mit der Community!"
+            "value" : "Teile deine ersten Ideen mit der Community!"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You haven't posted anything yet.\nShare your first ideas with the community!"
+            "value" : "Share your first ideas with the community!"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous n'avez encore publié aucun message.\nPartagez vos premières idées avec la communauté !"
+            "value" : "Partagez vos premières idées avec la communauté !"
           }
         }
       }
@@ -2438,29 +2703,6 @@
         }
       }
     },
-    "Post.List.ReadMore" : {
-      "comment" : "Displayed after an ellipsized text",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mehr lesen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Read more"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lire plus"
-          }
-        }
-      }
-    },
     "Post.Status.Moderated" : {
       "localizations" : {
         "de" : {
@@ -2483,288 +2725,24 @@
         }
       }
     },
-    "Profile.Create.BirthDate.Description" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geburtsdatum :"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your birth date:"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date de naissance :"
-          }
-        }
-      }
-    },
-    "Profile.Create.BirthDate.Explanation" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese Information wird nicht öffentlich angezeigt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This information will remain private."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cette information ne sera pas rendue publique."
-          }
-        }
-      }
-    },
-    "Profile.Create.BirthDate.Placeholder" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ihr Geburtsdatum"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your birth date"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date de naissance"
-          }
-        }
-      }
-    },
-    "Profile.Create.BirthDate.Underaged" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sie müssen mindestens 16 Jahre alt sein, um ein Konto zu erstellen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You must be at least 16 years old to create an account."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cet utilisateur n'a pas encore partagé de publication."
-          }
-        }
-      }
-    },
-    "Profile.Create.Button" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        }
-      }
-    },
-    "Profile.Create.Error.Nickname_minLength:%lld_maxLength:%lld" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Benutzername muss zwischen %1$lld und %2$lld Zeichen enthalten."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The username must be between %1$lld and %2$lld characters long."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le pseudo doit contenir entre %1$lld et %2$lld caractères"
-          }
-        }
-      }
-    },
-    "Profile.Create.Error.TooYoung_minAge:%lld" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sie müssen älter als %lld Jahre sein, um dieser Community beizutreten."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You must be over %lld years old to join the community."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous devez avoir plus de %lld ans pour rejoindre la communauté"
-          }
-        }
-      }
-    },
-    "Profile.Create.Legal" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mit dem Klick auf 'OK' akzeptieren Sie die Nutzungsbedingungen, die Datenschutzerklärung und die Community-Richtlinien."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "By clicking on 'OK' you agree to the Terms of Use, the Privacy Policy, and the Community Guidelines."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cliquer sur OK confirme l'acceptation des Conditions Générales d’Utilisation, de la Politique de Confidentialité et des Règles de la Communauté."
-          }
-        }
-      }
-    },
-    "Profile.Create.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mit dem Klick auf 'OK' akzeptieren Sie die [Nutzungsbedingungen](https://%1$@), die [Datenschutzerklärung](https://%2$@) und die [Community-Richtlinien](https://%3$@)."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "By clicking on 'OK' you agree to the [Terms of Use](https://%1$@), the [Privacy Policy](https://%2$@), and the [Community Guidelines](https://%3$@)."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cliquer sur OK confirme l'acceptation des [Conditions Générales d’Utilisation](https://%1$@), de la [politique de confidentialité](https://%2$@) et des [Règles de la Communauté](https://%3$@)."
-          }
-        }
-      }
-    },
-    "Profile.Create.Nickname.Description" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ihr Benutzername:"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your username:"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Votre pseudo :"
-          }
-        }
-      }
-    },
-    "Profile.Create.Nickname.Explanation" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sie können ihn später in Ihrem Profil ändern."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can change it later in your profile."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous pourrez le modifier plus tard dans votre profil."
-          }
-        }
-      }
-    },
-    "Profile.Create.Title" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ein letzter Schritt, bevor Sie teilnehmen können"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One final step before interacting"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un dernier détail avant de pouvoir participer"
-          }
-        }
-      }
-    },
     "Profile.Detail.EmptyBio.Button" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fügen Sie eine Kurzbeschreibung hinzu, um sich hervorzuheben!"
+            "value" : "Fügen Sie eine Kurzbeschreibung hinzu"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add a bio to differentiate yourself!"
+            "value" : "Add a bio"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajoutez une bio pour vous différencier !"
+            "value" : "Ajoutez une bio"
           }
         }
       }
@@ -2853,6 +2831,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nous allons vous rediriger vers la page dédiée pour modifier cet élément."
+          }
+        }
+      }
+    },
+    "Profile.Edit.Error.Nickname_minLength:%lld_maxLength:%lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Benutzername muss zwischen %1$lld und %2$lld Zeichen enthalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The username must be between %1$lld and %2$lld characters long."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le pseudo doit contenir entre %1$lld et %2$lld caractères"
           }
         }
       }
@@ -3604,19 +3604,19 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sie können nicht mehr an der Community teilnehmen. Ihr Profil wird dauerhaft gelöscht und Ihre Beiträge werden anonymisiert. Diese Aktion ist unwiderruflich. Möchten Sie fortfahren?"
+            "value" : "Wenn Sie Ihr Konto löschen, können Sie nicht mehr an der Community teilnehmen. Ihr Profil wird dauerhaft gelöscht, und Ihre Beiträge werden anonymisiert. Diese Aktion ist unwiderruflich. Möchten Sie fortfahren?"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You will no longer be able to participate in the community. Your profile will be permanently deleted, and your posts will be anonymized. This action is irreversible. Do you wish to proceed?"
+            "value" : "By deleting your account, you will no longer be able to participate in the community. Your profile will be permanently deleted, and your posts will be anonymized. This action is irreversible. Do you wish to proceed?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous ne pourrez plus participer à la communauté. Votre profil sera définitivement supprimé et vos publications seront anonymisées. Cette action est irréversible. Souhaitez-vous continuer ?"
+            "value" : "En supprimant votre compte, vous ne pourrez plus participer à la communauté. Votre profil sera définitivement supprimé et vos publications seront anonymisées. Cette action est irréversible. Souhaitez-vous continuer ?"
           }
         }
       }
@@ -4000,19 +4000,19 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1. Gehen Sie zu dem Inhalt, den Sie melden möchten (Beitrag, Kommentar oder Nutzer).\n2. Tippen Sie oben rechts auf die drei Punkte des Elements.\n3. Wählen Sie \\\"Melden\\\".\n4. Wählen Sie einen Grund aus der Liste und bestätigen Sie."
+            "value" : "1. Gehen Sie zu dem Inhalt, den Sie melden möchten (Beitrag, Kommentar oder Nutzer).\n2. Tippen Sie oben rechts auf die drei Punkte des Elements.\n3. Wählen Sie \\\"Melden\\\".\n4. Wählen Sie einen Grund aus der Liste und bestätigen Sie.\n"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1. Go to the content you want to report (post, comment, or user).\n2. Tap the three dots in the top right corner of the item.\n3. Select \\\"Report\\\".\n4. Choose a reason from the list.\n5. Add a comment if needed, then confirm.\n"
+            "value" : "1. Go to the content you want to report (post, comment, or user).\n2. Tap the three dots in the top right corner of the item.\n3. Select \\\"Report\\\".\n4. Choose a reason from the list, then confirm.\n"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1. Allez sur le contenu que vous souhaitez signaler (message, commentaire ou un utilisateur).\n2. Appuyez sur les 3 petits points en haut à droite de l\\'élément à signaler.\n3. Choisissez l\\’option \\\"Signaler\\\"\n4. Indiquez la raison du signalement en sélectionnant une option dans la liste proposée.\n5. Ajoutez un commentaire si nécessaire, puis validez.\n"
+            "value" : "1. Aller sur le contenu problématique (un message, un commentaire ou un profil utilisateur).\n2. Appuyer sur les 3 petits points en haut à droite de l'élément à signaler.\n3. Choisir l’option \\\"Signaler\\\"\n4. Indiquer la raison du signalement en sélectionnant une option dans la liste proposée puis valider.\n"
           }
         }
       }
@@ -4101,6 +4101,116 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mise à jour requise pour rejoindre la communauté"
+          }
+        }
+      }
+    },
+    "ValidateNickname.Action.Later" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Später"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Later"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
+          }
+        }
+      }
+    },
+    "ValidateNickname.Action.Modify" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzernamen bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit my username"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je personnalise mon pseudo"
+          }
+        }
+      }
+    },
+    "ValidateNickname.Modification" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie können ihn jetzt in Ihrem Profil bearbeiten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can personalize it now from your profile."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez le modifier dès maintenant depuis votre profil."
+          }
+        }
+      }
+    },
+    "ValidateNickname.Nickname" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihr Benutzername ist:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your username is:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre pseudo est :"
+          }
+        }
+      }
+    },
+    "ValidateNickname.Title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glückwunsch zu Ihrem ersten Beitrag!"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Congratulations on your first post!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bravo pour votre premier message !"
           }
         }
       }

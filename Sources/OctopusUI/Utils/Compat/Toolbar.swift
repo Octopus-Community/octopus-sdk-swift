@@ -12,6 +12,7 @@ extension View {
         leadingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         trailingSharedBackgroundVisibility: Compat.Visibility = .automatic
     ) -> some View {
+#if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             self.toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -27,5 +28,8 @@ extension View {
         } else {
             self.navigationBarItems(leading: leading, trailing: trailing)
         }
+#else
+        self.navigationBarItems(leading: leading, trailing: trailing)
+#endif
     }
 }

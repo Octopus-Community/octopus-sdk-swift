@@ -12,27 +12,23 @@ import SwiftProtobuf
 @testable import OctopusCore
 
 class SSOConnectionTests: XCTestCase {
-    /// Object that is tested
-    private var connectionRepository: ConnectionRepository!
-
+    private var injector: Injector!
     private var mockUserService: MockUserService!
-    private var mockUserProfileFetchMonitor: MockUserProfileFetchMonitor!
     private var userDataStorage: UserDataStorage!
     private var userProfileDatabase: CurrentUserProfileDatabase!
     private var storage = [AnyCancellable]()
 
     override func setUp() {
         let connectionMode = ConnectionMode.sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
-        let injector = Injector()
+        injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
-        injector.register { ClientUserProfileDatabase(injector: $0) }
-        injector.register { PublicProfileDatabase(injector: $0) }
         injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
                                .userProfileFetchMonitor, .blockedUserIdsProvider)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
+        injector.register { PublicProfileDatabase(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
         injector.register { PostFeedsStore(injector: $0) }
         injector.register { CommentFeedsStore(injector: $0) }
@@ -42,202 +38,323 @@ class SSOConnectionTests: XCTestCase {
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
+        injector.register { ClientUserProfileDatabase(injector: $0) }
 
-
-        connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
             .userService as! MockUserService)
-        mockUserProfileFetchMonitor = (injector.getInjected(
-            identifiedBy: Injected.userProfileFetchMonitor) as! MockUserProfileFetchMonitor)
 
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
+
     }
 
-    func testConnectedAfterClientTokenExchanged() async throws {
-        let clientConnectedExpectation = XCTestExpectation(description: "Client is connected")
-        let loggedInExpectation = XCTestExpectation(description: "User is logged in")
+    func testDefaultStateIsNotConnectedWhenNothingIsPresent() async throws {
+        // Precondition: no client user data, no user id, no profile in db
+        try await setupWithNonConnectedWithoutErrorState()
 
-        // Simulate a long lasting call from the client to get the client user token
-        var simulateGetClientTokenFinished = false
-        var clientUserTokenAsked = false
-        var user: User?
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        switch connectionRepository.connectionState {
+        case .notConnected(nil):
+            break
+        default:
+            XCTFail("State is \(connectionRepository.connectionState). Expecting .notConnected(nil)")
+        }
+    }
 
-        connectionRepository.connectionStatePublisher.sink { connectionState in
-            switch connectionState {
-            case .notConnected: break
-            case let .clientConnected(_, error):
-                guard error == nil else { return }
-                clientConnectedExpectation.fulfill()
-            case let .connected(connectedUser):
-                user = connectedUser
-                loggedInExpectation.fulfill()
-            default: break
+    func testDefaultStateIsGuestIfProfileIsPresent() async throws {
+        let guestExpectation = XCTestExpectation(description: "Guest profile present")
+
+        // Precondition: user id and guest profile in db and no client user data
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        connectionRepository.$connectionState.sink { state in
+            switch state {
+            case let .connected(user, nil) where user.profile.isGuest:
+                guestExpectation.fulfill()
+            default:
+                break
             }
         }.store(in: &storage)
 
-        guard case .notConnected = connectionRepository.connectionState else {
-            XCTFail("Connection state is expected to be '.notConnected'")
-            return
-        }
+        await fulfillment(of: [guestExpectation], timeout: 0.5)
+    }
 
-        try await connectionRepository.connectUser(
-            .init(userId: "clientUserId", profile: .empty),
-            tokenProvider: {
-                clientUserTokenAsked = true
-                // If a fetch is currently happening, wait for its end
-                while !simulateGetClientTokenFinished {
-                    try? await Task.sleep(nanoseconds: 10)
-                }
-                return "fake_client_token"
-            })
+    func testFromNonConnectedToGuest() async throws {
+        let notConnectedExpectation = XCTestExpectation(description: "State is not connected")
+        let guestExpectation = XCTestExpectation(description: "Guest profile present")
 
-        await fulfillment(of: [clientConnectedExpectation], timeout: 0.5)
-        XCTAssert(clientUserTokenAsked)
+        // Precondition: no client user data, no user id, no profile in db
+        try await setupWithNonConnectedWithoutErrorState()
 
-        // simulate that the backend has sent the token
-        mockUserService.injectNextGetJwtFromClientResponse(.with {
+        // The connect function will be called right after init since all preconditions are fullfilled. Mock backend response
+        mockUserService.injectNextGetGuestJwtResponse(.with {
             $0.result = .success(.with {
-                $0.jwt = "fake_jwt"
+                $0.jwt = "fakeJWT"
                 $0.userID = "userId"
                 $0.profile = .with {
                     $0.id = "profileId"
-                    $0.nickname = "nickname"
+                    $0.nickname = "Guest"
+                    $0.hasSeenOnboarding_p = false
+                    $0.hasAcceptedCgu_p = false
+                    $0.hasConfirmedNickname_p = false
+                    $0.isGuest = true
                 }
             })
         })
 
-        // Simulate the fact that the client received the client user token. The monitor should automatically fetch
-        // the token
-        simulateGetClientTokenFinished = true
-
-        await fulfillment(of: [loggedInExpectation], timeout: 0.5)
-        XCTAssertNotNil(user)
-        XCTAssert(user?.profile.id == "profileId")
-        XCTAssert(user?.profile.userId == "userId")
-        XCTAssert(user?.jwtToken == "fake_jwt")
-    }
-
-    func testTokenExchangeError() async throws {
-        let errorExpectation = XCTestExpectation(description: "An error has been catched")
-
-        connectionRepository.connectionStatePublisher.sink { connectionState in
-            switch connectionState {
-            case .notConnected: break
-            case let .clientConnected(_, error):
-                if error != nil {
-                    errorExpectation.fulfill()
-                }
-            default: break
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        connectionRepository.$connectionState.sink { state in
+            switch state {
+            case .notConnected(nil):
+                notConnectedExpectation.fulfill()
+            case let .connected(user, nil) where user.profile.isGuest:
+                guestExpectation.fulfill()
+            default:
+                XCTFail("State is \(connectionRepository.connectionState).")
             }
         }.store(in: &storage)
 
-        guard case .notConnected = connectionRepository.connectionState else {
-            XCTFail("Connection state is expected to be '.notConnected'")
-            return
-        }
+        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 0.5, enforceOrder: true)
+    }
 
-        // simulate that the monitor has fetched the token
+    func testFromNonConnectedToGuestWithError() async throws {
+        let notConnectedExpectation = XCTestExpectation(description: "State is not connected")
+        let notConnectedWithErrorExpectation = XCTestExpectation(description: "State is not connected with error")
+
+        // Precondition: no client user data, no user id, no profile in db
+        try await setupWithNonConnectedWithoutErrorState()
+
+        // The getGuestJwt service will be called right after init since all preconditions are fullfilled.
+        // Mock backend response.
+        mockUserService.injectNextGetGuestJwtResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = []
+            })
+        })
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        connectionRepository.$connectionState.sink { state in
+            switch state {
+            case .notConnected(nil):
+                notConnectedExpectation.fulfill()
+            case .notConnected:
+                notConnectedWithErrorExpectation.fulfill()
+            default:
+                XCTFail("State is \(connectionRepository.connectionState).")
+            }
+        }.store(in: &storage)
+
+        await fulfillment(of: [notConnectedExpectation, notConnectedWithErrorExpectation], timeout: 0.5,
+                          enforceOrder: true)
+    }
+
+    func testFromGuestToNonGuestAfterClientUserConnected() async throws {
+        let notConnectedExpectation = XCTestExpectation(description: "State is not connected")
+        let guestExpectation = XCTestExpectation(description: "Guest profile present")
+        let authProfileExpectation = XCTestExpectation(description: "Authenticated profile present")
+
+        // Precondition: user id and guest profile in db and no client user data
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        connectionRepository.$connectionState.sink { state in
+            switch state {
+            case .notConnected(nil):
+                notConnectedExpectation.fulfill()
+            case let .connected(user, nil) where user.profile.isGuest:
+                guestExpectation.fulfill()
+            case let .connected(user, nil) where !user.profile.isGuest:
+                authProfileExpectation.fulfill()
+            default:
+                XCTFail("State is \(connectionRepository.connectionState).")
+            }
+        }.store(in: &storage)
+
+        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 0.5,
+                          enforceOrder: true)
+
+        // The getFrictionlessJwt service will be called right after the connectUser
+        // Mock backend response.
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "fakeJWT"
+                $0.userID = "userId"
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "ClientNickName"
+                    $0.hasSeenOnboarding_p = false
+                    $0.hasAcceptedCgu_p = false
+                    $0.hasConfirmedNickname_p = false
+                    $0.isGuest = false
+                }
+            })
+        })
+
+        try await connectionRepository.connectUser(
+            .init(userId: "clientUserId",
+                  profile: .init(
+                    nickname: "ClientNickName",
+                    bio: "ClientBio",
+                    picture: nil)),
+            tokenProvider: { "CLIENT_TOKEN" }
+        )
+
+        await fulfillment(of: [authProfileExpectation], timeout: 0.5)
+    }
+
+    func testFromGuestToNonGuestAfterClientUserConnectedWithError() async throws {
+        let notConnectedExpectation = XCTestExpectation(description: "State is not connected")
+        let guestExpectation = XCTestExpectation(description: "Guest profile present")
+        let guestWithErrorExpectation = XCTestExpectation(description: "Guest profile present with auth error")
+
+        // Precondition: user id and guest profile in db and no client user data
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        connectionRepository.$connectionState.sink { state in
+            switch state {
+            case .notConnected(nil):
+                notConnectedExpectation.fulfill()
+            case let .connected(user, nil) where user.profile.isGuest:
+                guestExpectation.fulfill()
+            case let .connected(user, _) where user.profile.isGuest:
+                guestWithErrorExpectation.fulfill()
+            default:
+                XCTFail("State is \(connectionRepository.connectionState).")
+            }
+        }.store(in: &storage)
+
+        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 0.5,
+                          enforceOrder: true)
+
+        // The getFrictionlessJwt service will be called right after the connectUser
+        // Mock backend response.
         mockUserService.injectNextGetJwtFromClientResponse(.with {
             $0.result = .fail(.with {
-                $0.errors = [
-                    .with {
-                        $0.message = "Invalid client token"
-                        $0.errorCode = .userBanned
-                    }
-                ]
+                $0.errors = []
             })
         })
 
         try await connectionRepository.connectUser(
-            .init(userId: "clientUserId", profile: .empty),
-            tokenProvider: {
-                return "invalid_client_token"
-            })
+            .init(userId: "clientUserId",
+                  profile: .init(
+                    nickname: "ClientNickName",
+                    bio: "ClientBio",
+                    picture: nil)),
+            tokenProvider: { "CLIENT_TOKEN" }
+        )
 
-        await fulfillment(of: [errorExpectation], timeout: 0.5)
+        await fulfillment(of: [guestWithErrorExpectation], timeout: 0.5)
     }
 
-    func testOnUnauthenticatedAskForNewToken() async throws {
-        // Precondition: user is connected
-        let precondLoggedInExpectation = XCTestExpectation(description: "User is logged in")
+    func testFromClientUserConnectedToAnotherClientConnected() async throws {
+        let notConnectedExpectation = XCTestExpectation(description: "State is not connected")
+        let connected1Expectation = XCTestExpectation(description: "Client user connected and profile present")
+        let connected2Expectation = XCTestExpectation(description: "Another client user connected and profile present")
 
-        // Simulate a long lasting call from the client to get the client user token
-        var simulateGetClientTokenFinished = false
-        var clientUserTokenAsked = false
+        // Precondition: user id and guest profile in db and no client user data
+        try await setupWithClientUserProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "firstUserId", nickname: "ClientUser1", isGuest: false),
+        clientUserId: "clientUser1")
 
-        var preconditionCancellable: AnyCancellable? = connectionRepository.connectionStatePublisher
-            .sink { connectionState in
-            switch connectionState {
-            case .notConnected: break
-            case .connected:
-                precondLoggedInExpectation.fulfill()
-            default: break
-            }
-        }
-        try await connectionRepository.connectUser(
-            .init(userId: "clientUserId", profile: .empty),
-            tokenProvider: {
-                clientUserTokenAsked = true
-                // If a fetch is currently happening, wait for its end
-                while !simulateGetClientTokenFinished {
-                    try? await Task.sleep(nanoseconds: 10)
-                }
-                return "fake_client_token"
-            })
-        mockUserService.injectNextGetJwtFromClientResponse(.with {
-            $0.result = .success(.with {
-                $0.jwt = "fake_jwt"
-                $0.userID = "userId"
-                $0.profile = .with {
-                    $0.id = "profileId"
-                    $0.nickname = "nickname"
-                }
-            })
-        })
-        simulateGetClientTokenFinished = true
-
-        await fulfillment(of: [precondLoggedInExpectation], timeout: 0.5)
-        XCTAssert(clientUserTokenAsked)
-        try await delay()
-        clientUserTokenAsked = false
-        if preconditionCancellable != nil { // only put the if to avoid lint warning about variable never read
-            preconditionCancellable = nil
-        }
-
-        // Now that the user is connected, the test can begin
-        let clientConnectedExpectation = XCTestExpectation(description: "Client is connected")
-        let loggedInExpectation = XCTestExpectation(description: "User is logged in")
-
-        connectionRepository.connectionStatePublisher.sink { connectionState in
-            switch connectionState {
-            case .notConnected: break
-            case let .clientConnected(_, error):
-                guard error == nil else { return }
-                clientConnectedExpectation.fulfill()
-            case .connected:
-                loggedInExpectation.fulfill()
-            default: break
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        connectionRepository.$connectionState.sink { state in
+            switch state {
+            case .notConnected(nil):
+                notConnectedExpectation.fulfill()
+            case let .connected(user, nil) where user.profile.userId == "firstUserId":
+                connected1Expectation.fulfill()
+            case let .connected(user, nil) where user.profile.userId == "newUserId":
+                connected2Expectation.fulfill()
+            default:
+                XCTFail("State is \(connectionRepository.connectionState).")
             }
         }.store(in: &storage)
 
-        // When receiving an authentication failure expect the repository to logout and try another jwt exchange
-        // to connect again the user
+        await fulfillment(of: [notConnectedExpectation, connected1Expectation], timeout: 0.5,
+                          enforceOrder: true)
+
+        // The getFrictionlessJwt service will be called right after the connectUser
+        // Mock backend response.
         mockUserService.injectNextGetJwtFromClientResponse(.with {
             $0.result = .success(.with {
-                $0.jwt = "fake_jwt"
-                $0.userID = "userId"
+                $0.jwt = "fakeJWT"
+                $0.userID = "newUserId"
                 $0.profile = .with {
                     $0.id = "profileId"
-                    $0.nickname = "nickname"
+                    $0.nickname = "ClientNickName"
+                    $0.hasSeenOnboarding_p = false
+                    $0.hasAcceptedCgu_p = false
+                    $0.hasConfirmedNickname_p = false
+                    $0.isGuest = false
                 }
             })
         })
-        try await connectionRepository.onAuthenticatedCallFailed()
 
-        // Logging out should set the state to clientConnected, immediatly after that, the token exchange is expected
-        await fulfillment(of: [clientConnectedExpectation], timeout: 0.5)
-        await fulfillment(of: [loggedInExpectation], timeout: 0.5)
-        XCTAssert(clientUserTokenAsked)
+        try await connectionRepository.connectUser(
+            .init(userId: "newClientUserId",
+                  profile: .init(
+                    nickname: "ClientNickName",
+                    bio: "ClientBio",
+                    picture: nil)),
+            tokenProvider: { "CLIENT_TOKEN" }
+        )
+
+        await fulfillment(of: [connected2Expectation], timeout: 0.5)
+    }
+
+    private func setupWithNonConnectedWithoutErrorState(previousProfileId: String? = nil) async throws {
+        userDataStorage.store(clientUserData: nil)
+        userDataStorage.store(userData: nil)
+        if let previousProfileId {
+            try await userProfileDatabase.delete(profileId: previousProfileId)
+        }
+    }
+
+    private func setupWithExistingGuestProfile(_ profile: StorableCurrentUserProfile) async throws {
+        guard profile.isGuest else {
+            XCTFail("Profile must be a guest profile")
+            return
+        }
+        userDataStorage.store(userData: .init(id: profile.userId, jwtToken: "fakeJwt"))
+        XCTAssertNil(userDataStorage.clientUserData)
+        try await userProfileDatabase.upsert(profile: profile)
+        let guestInDbExpectation = XCTestExpectation(description: "Guest profile present in db")
+
+        userProfileDatabase.profilePublisher(userId: profile.userId)
+            .replaceError(with: nil)
+            .sink { profile in
+                if let profile, profile.isGuest {
+                    guestInDbExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [guestInDbExpectation], timeout: 0.5)
+    }
+
+    private func setupWithClientUserProfile(_ profile: StorableCurrentUserProfile, clientUserId: String)
+    async throws {
+        guard !profile.isGuest else {
+            XCTFail("Profile must not be a guest profile")
+            return
+        }
+        userDataStorage.store(userData: .init(id: profile.userId, jwtToken: "fakeJwt"))
+        userDataStorage.store(clientUserData: .init(id: clientUserId))
+        try await userProfileDatabase.upsert(profile: profile)
+        let profileInDbExpectation = XCTestExpectation(description: "Profile present in db")
+
+        userProfileDatabase.profilePublisher(userId: profile.userId)
+            .replaceError(with: nil)
+            .sink { profile in
+                if let profile, !profile.isGuest {
+                    profileInDbExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [profileInDbExpectation], timeout: 0.5)
     }
 }

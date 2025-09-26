@@ -23,14 +23,11 @@ struct SheetCell: View {
             // Display the SDK in a sheet but outside the navigation view (see Architecture.md for more info)
             showInSheet {
                 if let octopus = viewModel.octopus {
-                    OctopusHomeScreen(octopus: octopus)
+                    OctopusUIView(octopus: octopus)
                 } else {
                     EmptyView()
                 }
             }
-        }
-        .onAppear {
-            viewModel.createSDK()
         }
     }
 }
