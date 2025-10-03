@@ -20,11 +20,11 @@ struct ForceOctopusABTestsView: View {
             Text("The following switch will permanently override the internal cohort attribution for the current user.")
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Toggle(isOn: $canAccessCommunity) {
+            Toggle(isOn: $viewModel.hasCommunityAccess) {
                 Text("Can access the community")
             }
 
-            Button(action: { viewModel.overrideCommunityAccess(enabled: canAccessCommunity) }) {
+            Button(action: { viewModel.overrideCommunityAccess(enabled: viewModel.hasCommunityAccess) }) {
                 Text("Override cohort attribution")
                     .padding()
             }.background(

@@ -74,7 +74,7 @@ class APITests {
         _ = OctopusSDK.isAnOctopusNotification(notification: UNNotification(coder: NSCoder())!) != false
     }
 
-    @Test func testHasCommunityAccess() async throws {
+    @Test func testTrackCommunityAccess() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
         octopus.track(hasAccessToCommunity: true)
     }
@@ -83,6 +83,13 @@ class APITests {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
         try await octopus.overrideCommunityAccess(true)
     }
+
+    @Test func testHasCommunityAccess() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        _ = octopus.hasAccessToCommunity
+        _ = octopus.$hasAccessToCommunity
+    }
+
 
     @Test func testTrackCustomEvent() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")

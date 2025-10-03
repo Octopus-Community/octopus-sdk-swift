@@ -10,6 +10,7 @@ import Octopus
 /// View model of ForceOctopusABTestsView
 class ForceOctopusABTestsViewModel: ObservableObject {
     @Published private(set) var octopus: OctopusSDK?
+    @Published var hasCommunityAccess = false
     @Published var error: Error?
 
     private var storage = [AnyCancellable]()
@@ -20,6 +21,7 @@ class ForceOctopusABTestsViewModel: ObservableObject {
         octopusSDKProvider.$octopus
             .sink { [unowned self] in
                 octopus = $0
+                hasCommunityAccess = octopus?.hasAccessToCommunity ?? false
             }.store(in: &storage)
     }
 

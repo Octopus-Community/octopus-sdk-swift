@@ -18,6 +18,12 @@ public class OctopusSDK: ObservableObject {
     /// Even if you do not call `fetchTopics()`, the update might be done internally by the SDK at any time.
     @Published public private(set) var topics: [Topic] = []
 
+    /// Published value that indicates whether the current user has access to the community features.
+    ///
+    /// This respects both the SDK's internal A/B test configuration and any status set via `overrideCommunityAccess`.
+    /// It is `true` when the user can access community features, `false` otherwise.
+    @Published public private(set) var hasAccessToCommunity: Bool = false
+
     /// The block that will be called when a user taps on the bridge post button to display the client object
     public private(set) var displayClientObjectCallback: ((String) throws -> Void)?
 
@@ -48,6 +54,14 @@ public class OctopusSDK: ObservableObject {
         core.topicsRepository.$topics
             .sink { [unowned self] in
                 topics = $0.map { Topic(from: $0) }
+            }
+            .store(in: &storage)
+
+        core.configRepository.userConfigPublisher
+            .sink { [unowned self] in
+                let newValue = $0?.canAccessCommunity ?? false
+                guard newValue != hasAccessToCommunity else { return }
+                hasAccessToCommunity = newValue
             }
             .store(in: &storage)
     }
