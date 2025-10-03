@@ -39,6 +39,7 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
     private let networkMonitor: NetworkMonitor
     private let userDataStorage: UserDataStorage
     private let authenticatedCallProvider: AuthenticatedCallProvider
+    private let userCommunityAccessSyncStore = UserCommunityAccessSyncStore()
 
     /// Failing attempts in a row. Used to delay the next attempt.
     private var nbFailingAttempts = 0
@@ -54,6 +55,12 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
 
+        // because the userConfig.canAccessCommunity can be read by the client,
+        // try to synchronously set the correct value in order to have the correct value right after the SDK init.
+        if let hasAccessToCommunity = userCommunityAccessSyncStore.hasAccessToCommunity {
+            userConfig = UserConfig(canAccessCommunity: hasAccessToCommunity, accessDeniedMessage: nil)
+        }
+
         communityConfigDatabase
             .configPublisher()
             .replaceError(with: nil)
@@ -66,6 +73,9 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
             .replaceError(with: nil)
             .sink { [unowned self] config in
                 userConfig = config
+                if let config {
+                    userCommunityAccessSyncStore.set(hasAccessToCommunity: config.canAccessCommunity)
+                }
             }.store(in: &storage)
 
         networkMonitor.connectionAvailablePublisher
