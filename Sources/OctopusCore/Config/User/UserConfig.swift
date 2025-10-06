@@ -6,7 +6,7 @@ import Foundation
 import OctopusGrpcModels
 
 /// The configuration of the current community (identified by the API key).
-public struct UserConfig {
+public struct UserConfig: Equatable {
     /// Whether the user can access the community
     public let canAccessCommunity: Bool
     public let accessDeniedMessage: String?

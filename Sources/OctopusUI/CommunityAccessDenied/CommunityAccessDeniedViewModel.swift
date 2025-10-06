@@ -6,6 +6,7 @@ import Foundation
 import Combine
 import Octopus
 import OctopusCore
+import os
 
 @MainActor
 class CommunityAccessDeniedViewModel: ObservableObject {
@@ -19,11 +20,20 @@ class CommunityAccessDeniedViewModel: ObservableObject {
     init(octopus: OctopusSDK) {
         self.octopus = octopus
 
-        if let userConfig = octopus.core.configRepository.userConfig, !userConfig.canAccessCommunity {
-            accessDeniedMessage = userConfig.accessDeniedMessage
-        } else {
-            dismiss = true
-        }
+        octopus.core.configRepository.userConfigPublisher.sink { [unowned self] in
+            if let userConfig = $0, !userConfig.canAccessCommunity {
+                accessDeniedMessage = userConfig.accessDeniedMessage
+            } else {
+                dismiss = true
+            }
+        }.store(in: &storage)
 
+        Task {
+            do {
+                try await octopus.core.configRepository.refreshCommunityAccess()
+            } catch {
+                if #available(iOS 14, *) { Logger.config.trace("Error while refreshing community access: \(error)") }
+            }
+        }
     }
 }

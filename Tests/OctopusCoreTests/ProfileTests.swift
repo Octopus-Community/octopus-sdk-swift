@@ -24,6 +24,7 @@ class ProfileTests: XCTestCase {
     override func setUp() {
         let injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .magicLinkMonitor,
@@ -38,6 +39,9 @@ class ProfileTests: XCTestCase {
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ClientUserProvider(connectionMode: .octopus(deepLink: nil), injector: $0) }
+        injector.register { UserConfigDatabase(injector: $0) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        injector.register { ConfigRepositoryDefault(injector: $0) }
 
         profileRepository = ProfileRepositoryDefault(appManagedFields: [], injector: injector)
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)

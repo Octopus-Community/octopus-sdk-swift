@@ -22,6 +22,7 @@ class SSOConnectionTests: XCTestCase {
         let connectionMode = ConnectionMode.sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
         injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
@@ -39,6 +40,9 @@ class SSOConnectionTests: XCTestCase {
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
         injector.register { ClientUserProfileDatabase(injector: $0) }
+        injector.register { UserConfigDatabase(injector: $0) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        injector.register { ConfigRepositoryDefault(injector: $0) }
 
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
             .userService as! MockUserService)

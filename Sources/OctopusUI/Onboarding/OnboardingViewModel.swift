@@ -32,6 +32,7 @@ class OnboardingViewModel: ObservableObject {
             .profilePublisher
             .sink { [unowned self] profile in
                 guard let profile, profile.hasSeenOnboarding, profile.hasAcceptedCgu else { return }
+                isLoading = false
                 dismiss = true
             }.store(in: &storage)
     }

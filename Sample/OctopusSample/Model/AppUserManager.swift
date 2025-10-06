@@ -18,9 +18,11 @@ class AppUserManager {
     private var storage = [AnyCancellable]()
 
     private init() {
-        appUserStore.$user.sink { [unowned self] in
-            appUser = $0
-        }.store(in: &storage)
+        appUserStore.$user
+            .removeDuplicates()
+            .sink { [unowned self] in
+                appUser = $0
+            }.store(in: &storage)
 
         // As soon as the user changes, inform the SDK
         Publishers.CombineLatest3(
