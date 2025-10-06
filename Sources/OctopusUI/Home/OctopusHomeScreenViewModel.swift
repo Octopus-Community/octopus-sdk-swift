@@ -29,9 +29,11 @@ class OctopusHomeScreenViewModel: ObservableObject {
         ).sink { [unowned self] profile, userConfig, isLocked in
             guard !isLocked else { return }
             guard userConfig?.canAccessCommunity ?? true else {
+                displayOnboarding = false
                 displayCommunityAccessDenied = true
                 return
             }
+            displayCommunityAccessDenied = false
             if let profile, !profile.hasSeenOnboarding {
                 displayOnboarding = true
             } else {

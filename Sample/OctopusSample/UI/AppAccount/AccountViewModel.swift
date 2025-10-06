@@ -29,6 +29,7 @@ class AccountViewModel: ObservableObject {
             }.store(in: &storage)
 
         $appUser
+            .removeDuplicates()
             .sink {
                 AppUserManager.instance.set(appUser: $0)
             }.store(in: &storage)

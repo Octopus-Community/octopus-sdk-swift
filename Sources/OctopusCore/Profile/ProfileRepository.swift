@@ -66,6 +66,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     private let validator: Validators.CurrentUserProfile
     private let postFeedsStore: PostFeedsStore
     private let clientUserProvider: ClientUserProvider
+    private let configRepository: ConfigRepository
     private var storage: Set<AnyCancellable> = []
 
     init(appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>, injector: Injector) {
@@ -80,6 +81,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         validator = injector.getInjected(identifiedBy: Injected.validators).currentUserProfile
         postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
         clientUserProvider = injector.getInjected(identifiedBy: Injected.clientUserProvider)
+        configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
 
         userDataStorage.$userData
             .receive(on: DispatchQueue.main)
@@ -103,25 +105,30 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 hasLoadedProfile = true
             }.store(in: &storage)
 
-        userProfileFetchMonitor.userProfileResponsePublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [unowned self] response, userId in
-                Task {
-                    do {
-                        try await processCurrentUserProfileResponse(response, userId: userId)
-                    } catch {
-                        if #available(iOS 14, *) { Logger.profile.debug("Error while processing user profile response: \(error)") }
-                    }
+        Publishers.CombineLatest(
+            userProfileFetchMonitor.userProfileResponsePublisher,
+            configRepository.userConfigPublisher.map { $0?.canAccessCommunity ?? false }.removeDuplicates().filter { $0 }
+        )
+        .map { ($0.0, $0.1, $1) }
+        .receive(on: DispatchQueue.main)
+        .sink { [unowned self] response, userId, _ in
+            Task {
+                do {
+                    try await processCurrentUserProfileResponse(response, userId: userId)
+                } catch {
+                    if #available(iOS 14, *) { Logger.profile.debug("Error while processing user profile response: \(error)") }
                 }
             }
-            .store(in: &storage)
+        }
+        .store(in: &storage)
 
-        Publishers.CombineLatest3(
+        Publishers.CombineLatest4(
             $profile.removeDuplicates(),
             clientUserProvider.$clientUser,
-            networkMonitor.connectionAvailablePublisher
+            networkMonitor.connectionAvailablePublisher,
+            configRepository.userConfigPublisher.map { $0?.canAccessCommunity ?? false }.removeDuplicates().filter { $0 }
         )
-        .sink { [unowned self] profile, clientUser, connectionAvailable in
+        .sink { [unowned self] profile, clientUser, connectionAvailable, _ in
             guard connectionAvailable, let profile, let clientUser, !profile.isGuest else { return }
             Task {
                 try await updateProfileWithClientUser(clientUser, profile: profile)

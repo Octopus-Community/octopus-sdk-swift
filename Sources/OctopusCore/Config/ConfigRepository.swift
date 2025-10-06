@@ -17,6 +17,8 @@ public protocol ConfigRepository: Sendable {
     var userConfigPublisher: AnyPublisher<UserConfig?, Never> { get }
 
     func refreshCommunityConfig() async throws(ServerCallError)
+
+    func refreshCommunityAccess() async throws(ServerCallError)
     func overrideCommunityAccess(_ access: Bool) async throws
 }
 
@@ -109,10 +111,23 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
             case .none:
             throw InternalError.incorrectState
         }
-        let communityAccessResponse = try await remoteClient.userService.canAccessCommunity(
-            authenticationMethod: try authenticatedCallProvider.authenticatedMethod())
-        try await userConfigDatabase.upsert(canAccessCommunity: communityAccessResponse.canAccessCommunity,
-                                            message: communityAccessResponse.communityDisabledMessage.nilIfEmpty)
+        try await refreshCommunityAccess()
+    }
+
+    public func refreshCommunityAccess() async throws(ServerCallError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        do {
+            let communityAccessResponse = try await remoteClient.userService.canAccessCommunity(
+                authenticationMethod: try authenticatedCallProvider.authenticatedMethod())
+            try await userConfigDatabase.upsert(canAccessCommunity: communityAccessResponse.canAccessCommunity,
+                                                message: communityAccessResponse.communityDisabledMessage.nilIfEmpty)
+        } catch {
+            if let error = error as? RemoteClientError {
+                throw .serverError(ServerError(remoteClientError: error))
+            } else {
+                throw .other(error)
+            }
+        }
     }
 
     private func doRefreshCommunityConfig() async throws(ServerCallError) {

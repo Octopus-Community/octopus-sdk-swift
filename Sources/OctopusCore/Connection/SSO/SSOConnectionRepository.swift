@@ -29,12 +29,15 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     private let userProfileDatabase: CurrentUserProfileDatabase
     private let clientUserProfileDatabase: ClientUserProfileDatabase
     private let authenticatedCallProvider: AuthenticatedCallProvider
+    private let configRepository: ConfigRepository
 
     private var storage: Set<AnyCancellable> = []
     private var connectionStateIsSet = false
     @Published private var isConnecting = false
     @Published private var clientIsConnecting = false
     private var isLoggingOutAfterUnauthenticatedError = false
+
+    @Published private var isWaitingForCommunityAccessToConnectClient = false
 
     private var clientUserTokenProvider: (() async throws -> String)?
 
@@ -47,6 +50,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
         clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
         authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
+        configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
 
         Publishers.CombineLatest(
             userDataStorage.$userData.removeDuplicates()
@@ -82,21 +86,41 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         .store(in: &storage)
 
         Publishers.CombineLatest3(
-            userDataStorage.$userData.removeDuplicates().receive(on: DispatchQueue.main),
+            userDataStorage.$userData.map { $0 == nil }.removeDuplicates().receive(on: DispatchQueue.main),
             // ensure that profile value is not the initial one
             Publishers.CombineLatest(
                 profileRepository.profilePublisher,
                 profileRepository.hasLoadedProfilePublisher.filter { $0 }
-            ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main),
-            networkMonitor.connectionAvailablePublisher.filter { $0 }
+            ).map { $0.0 == nil }.removeDuplicates().receive(on: DispatchQueue.main),
+            networkMonitor.connectionAvailablePublisher.filter { $0 },
         )
         .first()
-        .sink { [unowned self] userData, profile, _ in
-            if profile == nil && userData == nil {
+        .sink { [unowned self] userDataIsNil, profileIsNil, _ in
+            if profileIsNil && userDataIsNil {
                 connectAsync()
             }
         }
         .store(in: &storage)
+
+        // When community access is disabled, exchanging the client token for an Octopus one won't work.
+        // Hence, wait for the community access to be enabled to connect the client user.
+        $isWaitingForCommunityAccessToConnectClient
+            .map { [unowned self] in
+                guard $0 else {
+                    return Empty<Void, Never>().eraseToAnyPublisher()
+                }
+
+                return configRepository.userConfigPublisher
+                    .filter { $0?.canAccessCommunity ?? false }
+                    .removeDuplicates()
+                    .map { _ in }
+                    .eraseToAnyPublisher()
+            }
+            .switchToLatest()
+            .sink { [unowned self] in
+                isWaitingForCommunityAccessToConnectClient = false
+                connectAsync()
+            }.store(in: &storage)
     }
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws {
@@ -107,12 +131,12 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         // it has been init with.
         try? await TaskUtils.wait(for: connectionStateIsSet)
         let currentState = connectionState
-        self.clientUserTokenProvider = tokenProvider
         // if client user changed, logout
         if let previousClientUserId, previousClientUserId != user.userId {
             try await logout()
             try await clientUserProfileDatabase.delete(clientUserId: previousClientUserId)
         }
+        self.clientUserTokenProvider = tokenProvider
 
         try await clientUserProfileDatabase.upsert(profile: user.profile, clientUserId: user.userId)
         // if state is not connected to the same user, ask for a token
@@ -132,19 +156,24 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     }
 
     func disconnectUser() async throws {
-        let previousClientUserId = userDataStorage.clientUserData?.id
-        self.clientUserTokenProvider = nil
-        userDataStorage.store(clientUserData: nil)
-        if let previousClientUserId {
-            try await clientUserProfileDatabase.delete(clientUserId: previousClientUserId)
-        }
+        guard userDataStorage.clientUserData != nil else { return }
+        clientIsConnecting = true
+        defer { clientIsConnecting = false }
+        try await logout()
+        try await connect()
     }
 
     func logout() async throws {
         let profileId: String? = if case let .connected(user, _) = connectionState {
             user.profile.id
         } else { nil }
+        let previousClientUserId = userDataStorage.clientUserData?.id
+        self.clientUserTokenProvider = nil
+        userDataStorage.store(clientUserData: nil)
         userDataStorage.store(userData: nil)
+        if let previousClientUserId {
+            try await clientUserProfileDatabase.delete(clientUserId: previousClientUserId)
+        }
         if let profileId {
             try await profileRepository.deleteCurrentUserProfile(profileId: profileId)
         }
@@ -167,6 +196,9 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
                     try await connectWithClientUser(clientUserId: clientUserData.id)
                 } catch {
                     if #available(iOS 14, *) { Logger.connection.debug("Error while connecting with client user: \(error)") }
+                    if configRepository.userConfig?.canAccessCommunity == false {
+                        isWaitingForCommunityAccessToConnectClient = true
+                    }
                     if case .notConnected = connectionState {
                         try await connectAsGuest()
                     } else {
@@ -245,7 +277,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             case let .success(connectionData):
                 if let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID) {
                     // do it before setting the profile because we might need the token in updateProfileWithClientUser
-                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
+                    userDataStorage.store(userData: .init(id: connectionData.userID, clientId: clientUserId, jwtToken: connectionData.jwt))
                     var newProfile: StorableCurrentUserProfile?
                     if let clientUserProfile = try? await clientUserProfileDatabase.getProfile(clientUserId: clientUserId) {
                         let clientUser = ClientUser(userId: clientUserId, profile: clientUserProfile)
@@ -322,7 +354,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         let findAvailableNickname: Bool
         // update the field if is appManaged or if the user has not yet confirmed it
         if (appManagedFields.contains(.nickname) || !(profile.hasConfirmedNickname ?? true)),
-           let clientNickname = clientUser.profile.nickname,
+           let clientNickname = clientUser.profile.nickname?.nilIfEmpty,
            // check with the original nickname first because the nickname can vary from the one requested
            (profile.originalNickname ?? profile.nickname) != clientNickname {
             if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profile.nickname), new: \(clientNickname))") }

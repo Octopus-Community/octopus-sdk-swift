@@ -20,6 +20,8 @@ struct OctopusUIView: View {
     @State private var displayAppUserLogin = false
     @State private var displayEditAppUserProfile = false
 
+    @State private var isDisplayed = false
+
     init(
         octopus: OctopusSDK,
         bottomSafeAreaInset: CGFloat = 0,
@@ -51,6 +53,7 @@ struct OctopusUIView: View {
             AppEditUserScreen()
         }
         .onReceive(OctopusSDKProvider.instance.$clientLoginRequired) {
+            guard isDisplayed else { return }
             guard $0 else { return }
             displayAppUserLogin = true
         }
@@ -59,12 +62,19 @@ struct OctopusUIView: View {
             OctopusSDKProvider.instance.clientLoginRequired = false
         }
         .onReceive(OctopusSDKProvider.instance.$clientModifyUserAsked) {
+            guard isDisplayed else { return }
             guard $0 else { return }
             displayEditAppUserProfile = true
         }
         .onValueChanged(of: displayEditAppUserProfile) {
             guard !$0 else { return }
             OctopusSDKProvider.instance.clientModifyUserAsked = false
+        }
+        .onAppear {
+            isDisplayed = true
+        }
+        .onDisappear {
+            isDisplayed = false
         }
     }
 }

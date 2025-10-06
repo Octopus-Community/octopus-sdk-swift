@@ -65,9 +65,8 @@ struct ConnectionRouter: ViewModifier {
                     Text(error, bundle: .module)
                 })
             .onReceive(viewModel.$ssoError) { error in
-                guard let error else { return }
                 displayableSSOError = error
-                displaySSOError = true
+                displaySSOError = error != nil
             }
             .onReceive(viewModel.$displayLoadConfigError) { display in
                 guard display else { return }
@@ -82,6 +81,7 @@ struct ConnectionRouter: ViewModifier {
                 case let .error(error):
                     displayableSSOError = error
                     displaySSOError = true
+                    viewModel.linkClientUserToOctopusUser()
                 case .none: break
                 }
             }
@@ -119,6 +119,7 @@ class ConnectionRouterViewModel: ObservableObject {
     private func linkClientUserToOctopusUser() async {
         do {
             try await octopus.core.connectionRepository.linkClientUserToOctopusUser()
+            ssoError = nil
         } catch {
             switch error {
             case let .detailedErrors(errors):
