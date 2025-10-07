@@ -92,7 +92,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
                 profileRepository.profilePublisher,
                 profileRepository.hasLoadedProfilePublisher.filter { $0 }
             ).map { $0.0 == nil }.removeDuplicates().receive(on: DispatchQueue.main),
-            networkMonitor.connectionAvailablePublisher.filter { $0 },
+            networkMonitor.connectionAvailablePublisher.filter { $0 }
         )
         .first()
         .sink { [unowned self] userDataIsNil, profileIsNil, _ in
