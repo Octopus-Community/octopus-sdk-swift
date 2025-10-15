@@ -30,6 +30,7 @@ enum InternalError: Error {
     case incorrectState
     case timeout
     case explainedError(String)
+    case userIdNotMatching
 }
 
 /// Errors that can be returned by the server. Most of the time, they are technicall errors, either developer based

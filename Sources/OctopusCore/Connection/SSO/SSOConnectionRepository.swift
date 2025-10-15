@@ -160,7 +160,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         clientIsConnecting = true
         defer { clientIsConnecting = false }
         try await logout()
-        try await connect()
+        connectAsync()
     }
 
     func logout() async throws {
@@ -371,7 +371,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         let bio: EditableProfile.FieldUpdate<String?>
         let hasConfirmedBio: EditableProfile.FieldUpdate<Bool>
         if (appManagedFields.contains(.bio) || !(profile.hasConfirmedBio ?? true)),
-           profile.bio != clientUser.profile.bio {
+           profile.bio?.nilIfEmpty != clientUser.profile.bio?.nilIfEmpty {
             if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profile.bio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
             bio = .updated(clientUser.profile.bio)
             hasConfirmedBio = appManagedFields.contains(.bio) ? .updated(true) : .notUpdated
@@ -383,7 +383,8 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
 
         let picture: EditableProfile.FieldUpdate<Data?>
         let hasConfirmedPicture: EditableProfile.FieldUpdate<Bool>
-        if (appManagedFields.contains(.picture) || !(profile.hasConfirmedPicture ?? true)) {
+        if (appManagedFields.contains(.picture) || !(profile.hasConfirmedPicture ?? true)),
+           clientUser.profile.picture != nil || profile.pictureUrl != nil {
             if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
             picture = .updated(clientUser.profile.picture)
             hasConfirmedPicture = appManagedFields.contains(.picture) ? .updated(true) : .notUpdated
@@ -396,9 +397,13 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         if hasUpdate {
             do {
                 var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated
-                if case let .updated(imageData) = picture, let imageData {
-                    let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
-                    pictureUpdate = .updated((imgData: resizedImgData, isCompressed: isCompressed))
+                if case let .updated(imageData) = picture {
+                    if let imageData {
+                        let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                        pictureUpdate = .updated((imgData: resizedImgData, isCompressed: isCompressed))
+                    } else {
+                        pictureUpdate = .updated(nil)
+                    }
                 }
                 let response = try await remoteClient.userService.updateProfile(
                     userId: userId,

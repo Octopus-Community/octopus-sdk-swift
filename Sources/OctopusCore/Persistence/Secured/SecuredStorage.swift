@@ -12,6 +12,7 @@ extension Injected {
 
 protocol SecuredStorage: AnyObject {
     subscript(_ key: String) -> String? { get set }
+    func set(_ value: String?, key: String) throws
 }
 
 class SecuredStorageDefault: SecuredStorage, InjectableObject {
@@ -26,6 +27,14 @@ class SecuredStorageDefault: SecuredStorage, InjectableObject {
             try? keychain.removeAll()
         }
 
+    }
+
+    func set(_ value: String?, key: String) throws {
+        if let value {
+            try keychain.set(value, key: key)
+        } else {
+            try keychain.remove(key)
+        }
     }
 
     subscript(_ key: String) -> String? {

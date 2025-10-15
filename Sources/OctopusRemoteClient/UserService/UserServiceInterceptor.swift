@@ -72,7 +72,7 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
     }
 
     func makeByPassAbTestingInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ByPassAbTestingRequest, OctopusGrpcModels.Com_Octopuscommunity_ByPassAbTestingResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(verbose: true)]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
     func makeShadowBanUserInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ShadowBanUserRequest, OctopusGrpcModels.Com_Octopuscommunity_ShadowBanUserResponse>] {

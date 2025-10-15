@@ -37,7 +37,7 @@ struct EditablePoll: Equatable {
         }
 
         static func == (lhs: EditablePoll.Option, rhs: EditablePoll.Option) -> Bool {
-            return lhs.text == rhs.text && lhs.error == rhs.error
+            return lhs.text == rhs.text && lhs.error == rhs.error && lhs.uuid == rhs.uuid
         }
     }
 
@@ -55,12 +55,16 @@ struct EditablePoll: Equatable {
 
     mutating func removeOption(at index: Int) {
         guard canRemoveOptions else { return }
-        options.remove(at: index)
+        let option = options.remove(at: index)
     }
-
-    mutating func addOption() {
-        guard canAddOptions else { return }
-        options.append(Option(validator: validator))
+    
+    /// Add a new empty option
+    /// - Returns: returns the UUID of the newly added option. Nil if the option has not been added
+    mutating func addOption() -> UUID? {
+        guard canAddOptions else { return nil }
+        let newOption = Option(validator: validator)
+        options.append(newOption)
+        return newOption.id
     }
 
     static func == (lhs: EditablePoll, rhs: EditablePoll) -> Bool {
@@ -73,7 +77,13 @@ struct CreatePollView: View {
     @Binding var poll: EditablePoll
     let deletePoll: () -> Void
 
-    @State private var focusOptionIndex: Int? = 0
+    @State private var focusOptionId: UUID?
+
+    init(poll: Binding<EditablePoll>, deletePoll: @escaping () -> Void) {
+        self._poll = poll
+        self.deletePoll = deletePoll
+        _focusOptionId = State(initialValue: poll.wrappedValue.options.first?.uuid)
+    }
 
     var body: some View {
         VStack {
@@ -94,13 +104,12 @@ struct CreatePollView: View {
                             .foregroundColor(theme.colors.gray900)
                     }
                 }
-                ForEach($poll.options) { $option in
-                    let index = poll.options.firstIndex(where: { $0.id == option.id }) ?? 0
+                ForEach(Array(poll.options.indices), id: \.self) { index in
                     OptionView(
                         index: index,
-                        option: $option,
-                        focusIdentifier: index,
-                        focus: $focusOptionIndex,
+                        option: $poll.options[index],
+                        focus: $focusOptionId,
+                        nextFocusId: poll.options.count > index + 1 ? poll.options[index + 1].uuid : nil,
                         canDelete: poll.canRemoveOptions,
                         deleteOption: {
                             withAnimation {
@@ -112,7 +121,8 @@ struct CreatePollView: View {
                 if poll.canAddOptions {
                     AddOptionView(addOption: {
                         withAnimation {
-                            poll.addOption()
+                            let newOptionId = poll.addOption()
+                            focusOptionId = newOptionId
                         }
                     })
                 }
@@ -123,13 +133,6 @@ struct CreatePollView: View {
             RoundedRectangle(cornerRadius: 24)
                 .stroke(theme.colors.gray300, lineWidth: 1)
         )
-        .onValueChanged(of: poll) { newValue in
-            if newValue.options.count > poll.options.count  {
-                focusOptionIndex = newValue.options.count - 1
-            } else if newValue.options.count < poll.options.count  {
-                focusOptionIndex = nil
-            }
-        }
     }
 }
 
@@ -137,8 +140,8 @@ private struct OptionView: View {
     @Environment(\.octopusTheme) private var theme
     let index: Int
     @Binding var option: EditablePoll.Option
-    let focusIdentifier: Int
-    @Binding var focus: Int?
+    @Binding var focus: UUID?
+    let nextFocusId: UUID?
     let canDelete: Bool
     let deleteOption: () -> Void
 
@@ -150,8 +153,8 @@ private struct OptionView: View {
                     placeholder: "Poll.Create.Option.Text.Placeholder_index:\(index+1)",
                     error: option.error,
                     lineLimit: nil,
-                    isFocused: focus == focusIdentifier)
-                .focused(id: focusIdentifier, $focus)
+                    isFocused: focus == option.id)
+                .focused(id: option.id, $focus)
                 // keep the text without any new line character
                 .onValueChanged(of: option) {
                     // be sure that it is the same option. Needed in case an option has just been deleted
@@ -159,7 +162,7 @@ private struct OptionView: View {
                     var newText = $0.text
                     if newText.last?.isNewline == true {
                         newText.removeLast()
-                        focus = nil
+                        focus = nextFocusId
                     }
                     // finally, remove all the new lines (in case of a copy/paste)
                     newText.removeAll { $0.isNewline }

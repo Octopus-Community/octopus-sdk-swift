@@ -9,6 +9,7 @@ import OctopusDependencyInjection
 
 protocol AuthenticatedCallProvider {
     func authenticatedMethod() throws(AuthenticatedActionError) -> AuthenticationMethod
+    func authenticatedMethod(forceJwt: String) throws(AuthenticatedActionError) -> AuthenticationMethod
     func authenticatedIfPossibleMethod() -> AuthenticationMethod
 }
 
@@ -34,8 +35,12 @@ class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObj
         guard let userData = userDataStorage.userData else {
             throw .userNotAuthenticated
         }
+        return try authenticatedMethod(forceJwt: userData.jwtToken)
+    }
+
+    func authenticatedMethod(forceJwt: String) throws(AuthenticatedActionError) -> AuthenticationMethod {
         return .authenticated(
-            token: userData.jwtToken,
+            token: forceJwt,
             authFailure: { [weak self] in
                 guard let self else { return }
                 if #available(iOS 14, *) { Logger.connection.debug("Authentication error received from server, logging out the user") }

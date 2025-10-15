@@ -15,6 +15,11 @@ class MockAuthenticatedCallProvider: AuthenticatedCallProvider, InjectableObject
         return .authenticated(token: "fake_token", authFailure: { })
     }
 
+    func authenticatedMethod(forceJwt: String) throws(AuthenticatedActionError) -> AuthenticationMethod {
+        guard isConnected else { throw .userNotAuthenticated }
+        return .authenticated(token: forceJwt, authFailure: { })
+    }
+
     func authenticatedIfPossibleMethod() -> AuthenticationMethod {
         guard isConnected else { return .notAuthenticated }
         return .authenticated(token: "fake_token", authFailure: { })

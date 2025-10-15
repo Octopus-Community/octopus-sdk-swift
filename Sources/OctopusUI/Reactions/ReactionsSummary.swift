@@ -26,6 +26,7 @@ struct ReactionsSummary: View {
                 HStack(spacing: 2) {
                     if countPlacement == .leading {
                         countView
+                            .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
                     }
                     HStack(spacing: -5) {
                         ForEach(reactionsToDisplay, id: \.self) { reactionKind in
@@ -36,6 +37,7 @@ struct ReactionsSummary: View {
                     }
                     if countPlacement == .trailing {
                         countView
+                            .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
                     }
                 }
             }
