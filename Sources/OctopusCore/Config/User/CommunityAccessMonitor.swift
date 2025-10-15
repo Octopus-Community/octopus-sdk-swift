@@ -96,7 +96,9 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
     }
 
     private func planGetCommunityAccess(in timeInterval: TimeInterval) async throws {
-        try await Task.sleep(nanoseconds: UInt64(timeInterval * 1_000_000_000))
+        let nanoTimeInterval = timeInterval * 1_000_000_000
+        guard nanoTimeInterval <= Double(UInt64.max) else { return }
+        try await Task.sleep(nanoseconds: UInt64(nanoTimeInterval))
         guard !Task.isCancelled else { return }
         try await doGetCommunityAccess()
     }

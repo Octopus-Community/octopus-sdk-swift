@@ -22,23 +22,49 @@ struct ResponseReactionBarView: View {
                 image: userReaction != nil ? .emoji(userReaction!.kind) : .resource(.AggregatedInfo.like),
                 text: "Content.AggregatedInfo.Like")
             .opacity(reactionInteractionViewOpacity)
-            .gesture(
-                LongPressGesture()
-                    .exclusively(before: TapGesture())
-                    .onEnded { value in
-                        reactionInteractionViewOpacity = 1.0
-                        switch value {
-                        case .first: // long press
-                            showReactionPicker.toggle()
-                        case .second: // tap
-                            guard !showReactionPicker else {
-                                showReactionPicker = false
-                                return
+            .modify {
+                if #available(iOS 18.0, *) {
+                    $0.gesture(
+                        LongPressGesture()
+                            .exclusively(before: TapGesture())
+                            .onEnded { value in
+                                reactionInteractionViewOpacity = 1.0
+                                switch value {
+                                case .first: // long press
+                                    showReactionPicker.toggle()
+                                case .second: // tap
+                                    guard !showReactionPicker else {
+                                        showReactionPicker = false
+                                        return
+                                    }
+                                    reactionTapped(userReaction == nil ? ReactionKind.heart : nil)
+                                }
                             }
-                            reactionTapped(userReaction == nil ? ReactionKind.heart : nil)
-                        }
-                    }
-            )
+                    )
+                } else {
+                    $0.simultaneousGesture(
+                        LongPressGesture()
+                            .onChanged { _ in
+                                reactionInteractionViewOpacity = 0.6
+                            }
+                            .onEnded { _ in
+                                showReactionPicker.toggle()
+                                reactionInteractionViewOpacity = 1.0
+                            }
+                    )
+                    .highPriorityGesture(
+                        TapGesture()
+                            .onEnded { _ in
+                                reactionInteractionViewOpacity = 1.0
+                                guard !showReactionPicker else {
+                                    showReactionPicker = false
+                                    return
+                                }
+                                reactionTapped(userReaction == nil ? ReactionKind.heart : nil)
+                            }
+                    )
+                }
+            }
             .simultaneousGesture(DragGesture(minimumDistance: 0)
                 .onChanged { _ in
                     // simulate button opacity change when the view is pressed

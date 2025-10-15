@@ -138,7 +138,14 @@ public struct OctopusHomeScreen: View {
                     .navigationBarItems(trailing: closeModalButton)
             }
         }
-        .presentationBackground(Color(.systemBackground))
+        .modify {
+            // do not use presentationBackground on iOS 17 because it breaks the layout when the view is presented
+            if #available(iOS 18.0, *) {
+                $0.presentationBackground(Color(.systemBackground))
+            } else {
+                $0
+            }
+        }
         .accentColor(theme.colors.primary)
         .navigationViewStyle(.stack)
         .onAppear {

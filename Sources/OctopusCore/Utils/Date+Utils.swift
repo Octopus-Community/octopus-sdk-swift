@@ -8,7 +8,7 @@ extension Date {
     /// Unix timestamp from a date. Everything before unix epoch is considered to be unix epoch
     var timestampMs: UInt64 {
         let timestamp = self.timeIntervalSince1970 * 1000
-        if timestamp >= 0 {
+        if timestamp >= 0 && timestamp <= Double(UInt64.max) {
             return UInt64(timestamp)
         } else {
             return 0

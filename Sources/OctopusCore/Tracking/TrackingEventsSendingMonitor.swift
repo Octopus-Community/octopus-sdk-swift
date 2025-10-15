@@ -174,7 +174,7 @@ private extension Event {
                         $0.sessionSummary = .with {
                             $0.startedAt = startDate.timestampMs
                             $0.endedAt = endDate.timestampMs
-                            $0.duration = $0.endedAt - $0.startedAt
+                            $0.duration = ($0.endedAt >= $0.startedAt) ? $0.endedAt - $0.startedAt : 0
                             $0.firstSession = firstSession
                         }
                     })
@@ -187,7 +187,7 @@ private extension Event {
                         $0.sessionSummary = .with {
                             $0.startedAt = startDate.timestampMs
                             $0.endedAt = endDate.timestampMs
-                            $0.duration = $0.endedAt - $0.startedAt
+                            $0.duration = ($0.endedAt >= $0.startedAt) ? $0.endedAt - $0.startedAt : 0
                             $0.firstSession = firstSession
                         }
                     })

@@ -5,12 +5,13 @@
 import Foundation
 import KeychainAccess
 import OctopusDependencyInjection
+import os
 
 extension Injected {
     static let userDataStorage = Injector.InjectedIdentifier<UserDataStorage>()
 }
 
-class UserDataStorage: InjectableObject {
+final class UserDataStorage: InjectableObject, @unchecked Sendable {
     static let injectedIdentifier = Injected.userDataStorage
 
     struct UserData: Equatable {
@@ -76,23 +77,70 @@ class UserDataStorage: InjectableObject {
     }
     
     func store(userData: UserData?) {
-        securedStorage[UserKeys.id] = userData?.id
-        securedStorage[UserKeys.jwtToken] = userData?.jwtToken
-        securedStorage[UserKeys.clientId] = userData?.clientId
+        do {
+            try securedStorage.set(userData?.id, key: UserKeys.id)
+            try securedStorage.set(userData?.jwtToken, key: UserKeys.jwtToken)
+            try securedStorage.set(userData?.clientId, key: UserKeys.clientId)
 
-        self.userData = userData
+            self.userData = userData
+        } catch {
+            if #available(iOS 14, *) { Logger.connection.debug("Error while storing userData: \(error)") }
+            // rollback the changes
+            do {
+                let rollbackUserData = self.userData
+                try securedStorage.set(rollbackUserData?.id, key: UserKeys.id)
+                try securedStorage.set(rollbackUserData?.jwtToken, key: UserKeys.jwtToken)
+                try securedStorage.set(rollbackUserData?.clientId, key: UserKeys.clientId)
+            } catch {
+                if #available(iOS 14, *) { Logger.connection.debug("Error again while storing userData: \(error)") }
+                // if rollback did not work, retry the rollback with a delay
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    let rollbackUserData = self.userData
+                    do {
+                        try securedStorage.set(rollbackUserData?.id, key: UserKeys.id)
+                        try securedStorage.set(rollbackUserData?.jwtToken, key: UserKeys.jwtToken)
+                        try securedStorage.set(rollbackUserData?.clientId, key: UserKeys.clientId)
+                    } catch {
+                        if #available(iOS 14, *) { Logger.connection.debug("Error again again while storing userData: \(error)") }
+                    }
+                }
+            }
+        }
     }
 
     func store(clientUserData: ClientUserData?) {
-        securedStorage[ClientUserKeys.id] = clientUserData?.id
+        do {
+            try securedStorage.set(clientUserData?.id, key: ClientUserKeys.id)
 
-        self.clientUserData = clientUserData
+            self.clientUserData = clientUserData
+        } catch {
+            if #available(iOS 14, *) { Logger.connection.debug("Error while storing client user data: \(error)") }
+        }
     }
 
     func store(magicLinkData: MagicLinkData?) {
-        securedStorage[MagicLinkKeys.identifier] = magicLinkData?.magicLinkId
-        securedStorage[MagicLinkKeys.email] = magicLinkData?.email
+        do {
+            try securedStorage.set(magicLinkData?.magicLinkId, key: MagicLinkKeys.identifier)
+            try securedStorage.set(magicLinkData?.email, key: MagicLinkKeys.email)
 
-        self.magicLinkData = magicLinkData
+            self.magicLinkData = magicLinkData
+        } catch {
+            if #available(iOS 14, *) { Logger.connection.debug("Error while storing userData: \(error)") }
+            // rollback the changes
+            do {
+                let rollbackMagicLinkData = self.magicLinkData
+                try securedStorage.set(rollbackMagicLinkData?.magicLinkId, key: MagicLinkKeys.identifier)
+                try securedStorage.set(rollbackMagicLinkData?.email, key: MagicLinkKeys.email)
+            } catch {
+                // if rollback did not work, retry the rollback with a delay
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    let rollbackMagicLinkData = self.magicLinkData
+                    try? securedStorage.set(rollbackMagicLinkData?.magicLinkId, key: MagicLinkKeys.identifier)
+                    try? securedStorage.set(rollbackMagicLinkData?.email, key: MagicLinkKeys.email)
+                }
+            }
+        }
     }
 }

@@ -11,6 +11,10 @@ class MockSecuredStorage: SecuredStorage, InjectableObject {
     private var storage: [String: String] = [:]
     init() { }
 
+    func set(_ value: String?, key: String) throws {
+        storage[key] = value
+    }
+
     subscript(key: String) -> String? {
         get { storage[key] }
         set { storage[key] = newValue }

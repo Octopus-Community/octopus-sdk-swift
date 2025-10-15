@@ -309,10 +309,14 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         do {
             var resizedPicture: Data?
             var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated
-            if case let .updated(imageData) = profile.picture, let imageData {
-                let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
-                resizedPicture = resizedImgData
-                pictureUpdate = .updated((imgData: resizedImgData, isCompressed: isCompressed))
+            if case let .updated(imageData) = profile.picture {
+                if let imageData {
+                    let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
+                    resizedPicture = resizedImgData
+                    pictureUpdate = .updated((imgData: resizedImgData, isCompressed: isCompressed))
+                } else {
+                    pictureUpdate = .updated(nil)
+                }
             }
             let response = try await remoteClient.userService.updateProfile(
                 userId: userData.id,
@@ -384,7 +388,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         let bio: EditableProfile.FieldUpdate<String?>
         let hasConfirmedBio: EditableProfile.FieldUpdate<Bool>
         if (appManagedFields.contains(.bio) || !profile.hasConfirmedBio),
-            profile.bio != clientUser.profile.bio {
+           profile.bio?.nilIfEmpty != clientUser.profile.bio?.nilIfEmpty {
             if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profile.bio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
             bio = .updated(clientUser.profile.bio)
             hasConfirmedBio = appManagedFields.contains(.bio) ? .updated(true) : .notUpdated
@@ -397,7 +401,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         let picture: EditableProfile.FieldUpdate<Data?>
         let hasConfirmedPicture: EditableProfile.FieldUpdate<Bool>
         if (appManagedFields.contains(.picture) || !profile.hasConfirmedPicture),
-            latestClientUserPicture != clientUser.profile.picture {
+           latestClientUserPicture != clientUser.profile.picture,
+           clientUser.profile.picture != nil || profile.pictureUrl != nil {
             if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
             picture = .updated(clientUser.profile.picture)
             hasConfirmedPicture = appManagedFields.contains(.picture) ? .updated(true) : .notUpdated

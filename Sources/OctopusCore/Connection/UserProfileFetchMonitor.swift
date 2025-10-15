@@ -52,27 +52,31 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
 
     func start() {
         Publishers.CombineLatest(
-            userDataStorage.$userData.map { $0?.id }.removeDuplicates(),
+            userDataStorage.$userData.removeDuplicates(by: { $0?.id == $1?.id }),
             networkMonitor.connectionAvailablePublisher
         )
-        .map { userId, connectionAvailable -> String? in
+        .map { userData, connectionAvailable -> UserDataStorage.UserData? in
             guard connectionAvailable else { return nil }
-            guard let userId else { return nil }
-            return userId
+            guard let userData else { return nil }
+            return userData
         }
         // do it only once when all requirements are met
         .removeDuplicates()
-        .sink { userId in
-            guard let userId else { return }
+        .sink { userData in
+            guard let userData else { return }
             Task { [self] in
                 do {
                     let response = try await remoteClient.userService
                         .getPrivateProfile(
-                            userId: userId,
-                            authenticationMethod: try authCallProvider.authenticatedMethod())
+                            userId: userData.id,
+                            authenticationMethod: try authCallProvider.authenticatedMethod(forceJwt: userData.jwtToken))
+                    guard userDataStorage.userData?.id == userData.id else {
+                        throw InternalError.userIdNotMatching
+                    }
                     // Pass the user id that triggered the response to be sure to have consistent data.
-                    userProfileResponse = (response, userId)
+                    userProfileResponse = (response, userData.id)
                 } catch {
+                    if #available(iOS 14, *) { Logger.profile.debug("Error while fetching user profile: \(error)") }
                     if let error = error as? RemoteClientError {
                         if case .notFound = error {
                             if #available(iOS 14, *) { Logger.profile.debug("NotFound received from server, logging out the user") }
