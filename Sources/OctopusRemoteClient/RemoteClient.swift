@@ -112,6 +112,8 @@ public class GrpcClient: OctopusRemoteClient {
     }
 
     deinit {
-        try? group.syncShutdownGracefully()
+        Task { [group] in
+            try? await group.shutdownGracefully()
+        }
     }
 }

@@ -33,7 +33,7 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
     }
     @Published private var userProfileResponse: (Com_Octopuscommunity_GetPrivateProfileResponse, String)?
 
-    private let injector: Injector
+    private weak var injector: Injector?
     private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
     private let authCallProvider: AuthenticatedCallProvider
@@ -80,9 +80,9 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
                     if let error = error as? RemoteClientError {
                         if case .notFound = error {
                             if #available(iOS 14, *) { Logger.profile.debug("NotFound received from server, logging out the user") }
-                            let connectionRepository = injector.getInjected(identifiedBy: Injected.connectionRepository)
+                            let connectionRepository = injector?.getInjected(identifiedBy: Injected.connectionRepository)
                             Task {
-                                try await connectionRepository.logout()
+                                try await connectionRepository?.logout()
                             }
                         }
                     }

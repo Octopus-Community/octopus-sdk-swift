@@ -55,7 +55,7 @@ struct EditablePoll: Equatable {
 
     mutating func removeOption(at index: Int) {
         guard canRemoveOptions else { return }
-        let option = options.remove(at: index)
+        options.remove(at: index)
     }
     
     /// Add a new empty option

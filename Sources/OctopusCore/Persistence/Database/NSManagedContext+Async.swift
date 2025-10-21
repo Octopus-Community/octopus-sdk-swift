@@ -7,6 +7,9 @@ import CoreData
 
 extension NSManagedObjectContext {
     func performAsync<T>(_ block: @escaping () throws -> T) async throws -> T {
+        // Ensure stores are loaded before making a query
+        try await TaskUtils.wait(for: persistentStoreCoordinator?.persistentStores.isEmpty == false, timeout: 0.1)
+
         if #available(iOS 15.0, *) {
             return try await perform(block)
         } else {

@@ -29,7 +29,7 @@ class BlockedUserIdsProviderDefault: BlockedUserIdsProvider, InjectableObject {
     }
     @Published private(set) var blockedUserIds = [String]()
 
-    private let injector: Injector
+    private weak var injector: Injector?
     private var storage = [AnyCancellable]()
 
     init(injector: Injector) {
@@ -37,7 +37,7 @@ class BlockedUserIdsProviderDefault: BlockedUserIdsProvider, InjectableObject {
     }
 
     func start() {
-        injector.getInjected(identifiedBy: Injected.profileRepository)
+        injector?.getInjected(identifiedBy: Injected.profileRepository)
             .profilePublisher
             .map {
                 guard let profile = $0 else { return [] }

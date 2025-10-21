@@ -43,6 +43,8 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
 
     func stop() {
         cancellable = nil
+        plannedTask?.cancel()
+        plannedTask = nil
     }
 
     private func getCommunityAccessWhenNecessary() {
@@ -54,8 +56,8 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
                 .first(where: { $0 })
         )
         .sink { [unowned self] _ in
-            Task {
-                try await getCommunityAccess()
+            Task { [weak self] in
+                try await self?.getCommunityAccess()
             }
         }
     }
@@ -77,8 +79,10 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
             nbFailingAttempts = 0
 
             // if everything went well, plan a new call in one day
-            try? await Task.sleep(nanoseconds: UInt64(TimeInterval.days(1) * 1_000_000_000))
-            getCommunityAccessWhenNecessary()
+            Task.detached { [weak self] in
+                try? await Task.sleep(nanoseconds: UInt64(TimeInterval.days(1) * 1_000_000_000))
+                self?.getCommunityAccessWhenNecessary()
+            }
         } catch {
             if #available(iOS 14, *) { Logger.profile.debug("Fetching community access failed: \(error)") }
             nbFailingAttempts += 1

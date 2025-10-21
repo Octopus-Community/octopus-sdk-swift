@@ -20,10 +20,10 @@ extension Injected {
 class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObject {
     static let injectedIdentifier = Injected.authenticatedCallProvider
 
-    private let injector: Injector
+    private weak var injector: Injector?
     private let userDataStorage: UserDataStorage
-    private lazy var connectionRepository: ConnectionRepository = {
-        injector.getInjected(identifiedBy: Injected.connectionRepository)
+    private lazy var connectionRepository: ConnectionRepository? = {
+        injector?.getInjected(identifiedBy: Injected.connectionRepository)
     }()
 
     init(injector: Injector) {
@@ -46,7 +46,7 @@ class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObj
                 if #available(iOS 14, *) { Logger.connection.debug("Authentication error received from server, logging out the user") }
                 let connectionRepository = self.connectionRepository
                 Task {
-                    try await connectionRepository.onAuthenticatedCallFailed()
+                    try await connectionRepository?.onAuthenticatedCallFailed()
                 }
             })
     }
@@ -62,7 +62,7 @@ class AuthenticatedCallProviderDefault: AuthenticatedCallProvider, InjectableObj
                 if #available(iOS 14, *) { Logger.connection.debug("Authentication error received from server, logging out the user") }
                 let connectionRepository = self.connectionRepository
                 Task {
-                    try await connectionRepository.onAuthenticatedCallFailed()
+                    try await connectionRepository?.onAuthenticatedCallFailed()
                 }
             })
     }
