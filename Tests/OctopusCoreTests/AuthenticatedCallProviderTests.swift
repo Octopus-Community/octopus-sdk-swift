@@ -13,11 +13,12 @@ class AuthenticatedCallProviderTests: XCTestCase {
     /// Object that is tested
     private var authenticatedCallProvider: AuthenticatedCallProvider!
 
+    private var injector: Injector! // need to store it because AuthenticatedCallProviderDefault has a weak var of it
     private var userDataStorage: UserDataStorage!
     private var connectionRepository: MockConnectionRepository!
 
     override func setUp() {
-        let injector = Injector()
+        injector = Injector()
         injector.register { MockConnectionRepository(injector: $0) }
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.registerMocks(.securedStorage, .remoteClient, .networkMonitor, .blockedUserIdsProvider)

@@ -46,30 +46,22 @@ struct RootFeedsView: View {
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarPrimaryColor: navBarPrimaryColor)
         .sheet(isPresented: $showRootFeedPicker) {
-            if #available(iOS 16.0, *) {
-                RootFeedPicker(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed)
-                .readHeight($height)
-                .onValueChanged(of: height) { [$rootFeedPickerDetentHeight] height in
-                    $rootFeedPickerDetentHeight.wrappedValue = height
+            RootFeedPicker(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed)
+                .modify {
+                    if #available(iOS 16.4, *) {
+                        $0.readHeight($height)
+                            .onValueChanged(of: height) { [$rootFeedPickerDetentHeight] height in
+                                $rootFeedPickerDetentHeight.wrappedValue = height
+                            }
+                            .presentationDetents([.height(rootFeedPickerDetentHeight)])
+                            .presentationDragIndicator(.visible)
+                    } else { $0 }
                 }
-                .presentationDetents([.height(rootFeedPickerDetentHeight)])
-                .presentationDragIndicator(.visible)
                 .modify {
                     if #available(iOS 16.4, *) {
                         $0.presentationContentInteraction(.scrolls)
-                    } else {
-                        $0
-                    }
+                    } else { $0 }
                 }
-
-            } else {
-                Picker(L10n("Filter by topic"), selection: $viewModel.selectedRootFeed) {
-                    ForEach(viewModel.rootFeeds, id: \.self) {
-                        Text($0.label)
-                            .tag($0)
-                    }
-                }.pickerStyle(.wheel)
-            }
         }
         .compatAlert(
             "Common.Error",

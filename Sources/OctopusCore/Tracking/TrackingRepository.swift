@@ -42,13 +42,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                 if #available(iOS 14, *) { Logger.tracking.trace("UI session started with uuid: \(session.uuid)") }
                 // first, set the new session id to the remote client
                 remoteClient.set(octopusUISessionId: session.uuid)
-                Task {
-                    do {
-                        try await triggerEnteringOctopusEvent(octoUISession: session)
-                    } catch {
-                        if #available(iOS 14, *) { Logger.tracking.debug("Error triggering entering UI event: \(error)") }
-                    }
-                }
+                triggerEnteringOctopusEvent(octoUISession: session)
             }.store(in: &storage)
 
         // listen to previous UI session in order to create `leavingUI` event
@@ -57,14 +51,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                 guard let session = $0 else { return }
                 if #available(iOS 14, *) { Logger.tracking.trace("UI session stopped with uuid: \(session.uuid)") }
                 remoteClient.set(octopusUISessionId: nil)
-                Task {
-                    do {
-                        try await triggerLeavingOctopusEvent(octoUISession: session)
-                        octopusUISessionManager.clearPreviousSession()
-                    } catch {
-                        if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving UI event: \(error)") }
-                    }
-                }
+                triggerLeavingOctopusEvent(octoUISession: session)
             }.store(in: &storage)
 
         // listen to current app session in order to create `enteringApp` event
@@ -75,13 +62,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                 if #available(iOS 14, *) { Logger.tracking.trace("App session started with uuid: \(session.uuid)") }
                 // first, set the new session id to the remote client
                 remoteClient.set(appSessionId: session.uuid)
-                Task {
-                    do {
-                        try await triggerEnteringAppEvent(appSession: session)
-                    } catch {
-                        if #available(iOS 14, *) { Logger.tracking.trace("Error triggering entering app event: \(error)") }
-                    }
-                }
+                triggerEnteringAppEvent(appSession: session)
             }.store(in: &storage)
 
         // listen to previous app session in order to create `leavingApp` event
@@ -90,14 +71,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                 guard let session = $0 else { return }
                 if #available(iOS 14, *) { Logger.tracking.trace("App session stopped with uuid: \(session.uuid)") }
                 remoteClient.set(appSessionId: nil)
-                Task {
-                    do {
-                        try await triggerLeavingAppEvent(appSession: session)
-                        appSessionManager.clearPreviousSession()
-                    } catch {
-                        if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving app event: \(error)") }
-                    }
-                }
+                triggerLeavingAppEvent(appSession: session)
             }.store(in: &storage)
     }
     
@@ -157,45 +131,71 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         appSessionManager.sessionEnded()
     }
 
-    private func triggerEnteringAppEvent(appSession session: Session) async throws {
-        try await database.upsert(
-            event: Event(
-                date: session.startDate,
-                appSessionId: session.uuid,
-                uiSessionId: octopusUISessionManager.currentSession?.uuid,
-                content: .enteringApp(firstSession: session.firstSession))
-        )
+    private func triggerEnteringAppEvent(appSession session: Session) {
+        Task {
+            do {
+                try await database.upsert(
+                    event: Event(
+                        date: session.startDate,
+                        appSessionId: session.uuid,
+                        uiSessionId: octopusUISessionManager.currentSession?.uuid,
+                        content: .enteringApp(firstSession: session.firstSession))
+                )
+            } catch {
+                if #available(iOS 14, *) { Logger.tracking.trace("Error triggering entering app event: \(error)") }
+            }
+        }
     }
 
-    private func triggerLeavingAppEvent(appSession session: CompleteSession) async throws {
-        try await database.upsert(
-            event: Event(
-                date: session.endDate,
-                appSessionId: session.uuid,
-                uiSessionId: octopusUISessionManager.currentSession?.uuid,
-                content: .leavingApp(startDate: session.startDate, endDate: session.endDate,
-                                     firstSession: session.firstSession))
-        )
+    private func triggerLeavingAppEvent(appSession session: CompleteSession) {
+        Task {
+            do {
+                try await database.upsert(
+                    event: Event(
+                        date: session.endDate,
+                        appSessionId: session.uuid,
+                        uiSessionId: octopusUISessionManager.currentSession?.uuid,
+                        content: .leavingApp(startDate: session.startDate, endDate: session.endDate,
+                                             firstSession: session.firstSession))
+                )
+                appSessionManager.clearPreviousSession()
+            } catch {
+                if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving app event: \(error)") }
+            }
+        }
     }
 
-    private func triggerEnteringOctopusEvent(octoUISession session: Session) async throws {
-        try await database.upsert(
-            event: Event(
-                date: session.startDate,
-                appSessionId: appSessionManager.currentSession?.uuid,
-                uiSessionId: session.uuid,
-                content: .enteringUI(firstSession: session.firstSession))
-        )
+    private func triggerEnteringOctopusEvent(octoUISession session: Session) {
+        Task {
+            do {
+                try await database.upsert(
+                    event: Event(
+                        date: session.startDate,
+                        appSessionId: appSessionManager.currentSession?.uuid,
+                        uiSessionId: session.uuid,
+                        content: .enteringUI(firstSession: session.firstSession))
+                )
+            } catch {
+                if #available(iOS 14, *) { Logger.tracking.debug("Error triggering entering UI event: \(error)") }
+            }
+        }
     }
 
-    private func triggerLeavingOctopusEvent(octoUISession session: CompleteSession) async throws {
-        try await database.upsert(
-            event: Event(
-                date: session.endDate,
-                appSessionId: appSessionManager.currentSession?.uuid,
-                uiSessionId: session.uuid,
-                content: .leavingUI(startDate: session.startDate, endDate: session.endDate,
-                                    firstSession: session.firstSession))
-        )
+    private func triggerLeavingOctopusEvent(octoUISession session: CompleteSession) {
+        Task {
+            do {
+                try await database.upsert(
+                    event: Event(
+                        date: session.endDate,
+                        appSessionId: appSessionManager.currentSession?.uuid,
+                        uiSessionId: session.uuid,
+                        content: .leavingUI(startDate: session.startDate, endDate: session.endDate,
+                                            firstSession: session.firstSession))
+                )
+                octopusUISessionManager.clearPreviousSession()
+            } catch {
+                if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving UI event: \(error)") }
+            }
+        }
     }
 }

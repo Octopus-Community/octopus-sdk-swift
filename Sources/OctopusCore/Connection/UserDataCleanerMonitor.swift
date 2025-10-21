@@ -18,7 +18,6 @@ extension Injected {
 class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.userDataCleanerMonitor
 
-    private let injector: Injector
     private let userDataStorage: UserDataStorage
     private let octoObjectsDatabase: OctoObjectsDatabase
     private let notificationsDatabase: NotificationsDatabase
@@ -28,7 +27,6 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
     private var magicLinkSubscription: Task<Void, Error>?
 
     init(injector: Injector) {
-        self.injector = injector
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         // Take the postsDatabase as octoObjectsDatabase
         octoObjectsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)

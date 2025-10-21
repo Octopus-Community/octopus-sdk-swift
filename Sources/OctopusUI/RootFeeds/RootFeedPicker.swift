@@ -7,35 +7,31 @@ import SwiftUI
 import Octopus
 import OctopusCore
 
-@available(iOS 16.0, *)
 struct RootFeedPicker: View {
-    @Environment(\.octopusTheme) private var theme
-    @Environment(\.presentationMode) private var presentationMode
-
     let rootFeeds: [RootFeed]
     @Binding var selectedRootFeed: RootFeed?
 
     @State private var contentHeight: CGFloat = .zero
 
     var body: some View {
-        VStack { // Ensures the content wraps its natural height
-            ContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
-                .readHeight($contentHeight)
-                .opacity(contentHeight <= UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Hide if scrolling is needed
-        }
-        .frame(height: min(contentHeight, UIScreen.main.bounds.height * 0.8)) // Limit height
-        .overlay(
+        if #available(iOS 16.0, *) {
+            VStack { // Ensures the content wraps its natural height
+                ContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
+                    .readHeight($contentHeight)
+                    .opacity(contentHeight <= UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Hide if scrolling is needed
+            }
+            .frame(height: min(contentHeight, UIScreen.main.bounds.height * 0.8)) // Limit height
+            .overlay(
+                ScrollingContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
+                    .opacity(contentHeight > UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Enable scrolling only if needed
+            )
+        } else {
             ScrollingContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
-                .opacity(contentHeight > UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Enable scrolling only if needed
-        )
+        }
     }
 }
 
-@available(iOS 16.0, *)
 private struct ContentView: View {
-    @Environment(\.octopusTheme) private var theme
-    @Environment(\.presentationMode) private var presentationMode
-
     let rootFeeds: [RootFeed]
     @Binding var selectedRootFeed: RootFeed?
 
@@ -49,15 +45,19 @@ private struct ContentView: View {
     }
 }
 
-@available(iOS 16.0, *)
 private struct ScrollingContentView: View {
-    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.octopusTheme) private var theme
 
     let rootFeeds: [RootFeed]
     @Binding var selectedRootFeed: RootFeed?
 
     var body: some View {
         VStack(spacing: 10) {
+            if #unavailable(iOS 16.0) {
+                Capsule()
+                    .fill(theme.colors.gray300)
+                    .frame(width: 50, height: 8)
+            }
             TitleView()
             ScrollView {
                 RootFeedsGridView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
@@ -81,27 +81,44 @@ private struct TitleView: View {
     }
 }
 
-@available(iOS 16.0, *)
 private struct RootFeedsGridView: View {
     @Environment(\.octopusTheme) private var theme
+
+    let rootFeeds: [RootFeed]
+    @Binding var selectedRootFeed: RootFeed?
+
+    var body: some View {
+        if #available(iOS 16.0, *) {
+            FreeGridLayout {
+                RootFeedsListView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
+            }
+            .padding(.horizontal)
+        } else {
+            VStack {
+                RootFeedsListView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal)
+        }
+    }
+}
+
+private struct RootFeedsListView: View {
     @Environment(\.presentationMode) private var presentationMode
 
     let rootFeeds: [RootFeed]
     @Binding var selectedRootFeed: RootFeed?
 
     var body: some View {
-        FreeGridLayout {
-            ForEach(rootFeeds, id: \.self) { rootFeed in
-                Button(action: {
-                    selectedRootFeed = rootFeed
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text(rootFeed.label)
-                }
-                .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedRootFeed == rootFeed ? .on : .off))
-                .padding(4)
+        ForEach(rootFeeds, id: \.self) { rootFeed in
+            Button(action: {
+                selectedRootFeed = rootFeed
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                Text(rootFeed.label)
             }
+            .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedRootFeed == rootFeed ? .on : .off))
+            .padding(4)
         }
-        .padding(.horizontal)
     }
 }

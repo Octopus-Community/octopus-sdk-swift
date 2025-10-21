@@ -5,7 +5,7 @@ name: Build SDK
 
 on:
   push:
-    branches: [ "main", "next" ]
+    branches: [ "main", "next", "hotfix" ]
   pull_request:
     branches: [ ] # build on all branches
 

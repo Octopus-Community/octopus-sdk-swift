@@ -41,30 +41,22 @@ struct CreatePostView: View {
         .toolbar(leading: cancelButton, trailing: postButton,
                              trailingSharedBackgroundVisibility: .hidden)
         .sheet(isPresented: $showTopicPicker) {
-            if #available(iOS 16.0, *) {
-                TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
-                    .readHeight($height)
-                    .onValueChanged(of: height) { [$topicPickerDetentHeight] height in
-                        $topicPickerDetentHeight.wrappedValue = height
-                    }
-                    .presentationDetents([.height(topicPickerDetentHeight)])
-                    .presentationDragIndicator(.visible)
-                    .modify {
-                        if #available(iOS 16.4, *) {
-                            $0.presentationContentInteraction(.scrolls)
-                        } else {
-                            $0
-                        }
-                    }
-
-            } else {
-                Picker("Post.Create.Topic.Selection.Button", selection: $viewModel.selectedTopic) {
-                    ForEach(viewModel.topics, id: \.self) {
-                        Text($0.name)
-                            .tag($0)
-                    }
-                }.pickerStyle(.wheel)
-            }
+            TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
+                .modify {
+                    if #available(iOS 16.4, *) {
+                        $0.readHeight($height)
+                            .onValueChanged(of: height) { [$topicPickerDetentHeight] height in
+                                $topicPickerDetentHeight.wrappedValue = height
+                            }
+                            .presentationDetents([.height(topicPickerDetentHeight)])
+                            .presentationDragIndicator(.visible)
+                    } else { $0 }
+                }
+                .modify {
+                    if #available(iOS 16.4, *) {
+                        $0.presentationContentInteraction(.scrolls)
+                    } else { $0 }
+                }
         }
         .compatAlert(
             "Common.Error",

@@ -7,8 +7,6 @@ import SwiftUI
 import OctopusCore
 
 struct ReactionsSummary: View {
-    @Environment(\.octopusTheme) private var theme
-    
     enum CountPlacement {
         case leading
         case trailing
@@ -22,31 +20,16 @@ struct ReactionsSummary: View {
 
     var body: some View {
         if reactionsCount > 0 {
-            Button(action: { displayReactionsCount = true }) {
-                HStack(spacing: 2) {
-                    if countPlacement == .leading {
-                        countView
-                            .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
-                    }
-                    HStack(spacing: -5) {
-                        ForEach(reactionsToDisplay, id: \.self) { reactionKind in
-                            Text(reactionKind.unicode)
-                                .font(.system(size: 12))
-                                .shadow(color: Color(UIColor.systemBackground), radius: 0, x: -1, y: 0)
-                        }
-                    }
-                    if countPlacement == .trailing {
-                        countView
-                            .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
-                    }
+            if #available(iOS 16.0, *) {
+                Button(action: { displayReactionsCount = true }) {
+                    ContentView(reactions: reactions, countPlacement: countPlacement, maxReactionsKind: maxReactionsKind)
                 }
-            }
-            .sheet(isPresented: $displayReactionsCount) {
-                if #available(iOS 16.0, *) {
+                .buttonStyle(.plain)
+                .sheet(isPresented: $displayReactionsCount) {
                     ReactionsCountSheetScreen(reactions: reactions)
-                } else {
-                    EmptyView()
                 }
+            } else {
+                ContentView(reactions: reactions, countPlacement: countPlacement, maxReactionsKind: maxReactionsKind)
             }
         } else {
             EmptyView()
@@ -56,9 +39,42 @@ struct ReactionsSummary: View {
     var reactionsCount: Int {
         reactions.reduce(0, { $0 + $1.count })
     }
+}
+
+private struct ContentView: View {
+
+    @Environment(\.octopusTheme) private var theme
+
+    let reactions: [ReactionCount]
+    let countPlacement: ReactionsSummary.CountPlacement
+    let maxReactionsKind: Int
+
+    var body: some View {
+        HStack(spacing: 2) {
+            if countPlacement == .leading {
+                countView
+                    .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
+            }
+            HStack(spacing: -5) {
+                ForEach(reactionsToDisplay, id: \.self) { reactionKind in
+                    Text(reactionKind.unicode)
+                        .font(.system(size: 12))
+                        .shadow(color: Color(UIColor.systemBackground), radius: 0, x: -1, y: 0)
+                }
+            }
+            if countPlacement == .trailing {
+                countView
+                    .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
+            }
+        }
+    }
+
+    var reactionsCount: Int {
+        reactions.reduce(0, { $0 + $1.count })
+    }
 
     var reactionsToDisplay: [ReactionKind] {
-        reactions.filter { $0.count > 0 }.prefix(3).map(\.reaction)
+        reactions.filter { $0.count > 0 }.prefix(maxReactionsKind).map(\.reaction)
     }
 
     var countView: some View {
