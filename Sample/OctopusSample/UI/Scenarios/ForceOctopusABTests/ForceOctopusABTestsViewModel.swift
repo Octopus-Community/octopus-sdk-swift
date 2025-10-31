@@ -9,7 +9,7 @@ import Octopus
 
 /// View model of ForceOctopusABTestsView
 class ForceOctopusABTestsViewModel: ObservableObject {
-    @Published private(set) var octopus: OctopusSDK?
+    let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
     @Published var hasCommunityAccess = false
     @Published var error: Error?
 
@@ -18,20 +18,9 @@ class ForceOctopusABTestsViewModel: ObservableObject {
     private let octopusSDKProvider = OctopusSDKProvider.instance
 
     init() {
-        octopusSDKProvider.$octopus
-            .sink { [unowned self] in
-                octopus = $0
-                hasCommunityAccess = octopus?.hasAccessToCommunity ?? false
-            }.store(in: &storage)
+        hasCommunityAccess = octopus.hasAccessToCommunity
 
-        octopusSDKProvider.$octopus
-            .map {
-                guard let octopus = $0 else {
-                    return Just<Bool>(false).eraseToAnyPublisher()
-                }
-                return octopus.$hasAccessToCommunity.eraseToAnyPublisher()
-            }
-            .switchToLatest()
+        octopus.$hasAccessToCommunity
             .sink { [unowned self] in
                 hasCommunityAccess = $0
             }.store(in: &storage)
@@ -45,7 +34,7 @@ class ForceOctopusABTestsViewModel: ObservableObject {
 
     private func overrideCommunityAccess(enabled: Bool) async {
         do {
-            try await octopus?.overrideCommunityAccess(enabled)
+            try await octopus.overrideCommunityAccess(enabled)
         } catch {
             self.error = error
         }

@@ -25,19 +25,23 @@ public protocol OctoService {
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse
 
     func put(comment: Com_Octopuscommunity_RwOctoObject,
+             parentIsTranslated: Bool,
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutCommentResponse
 
     func put(reply: Com_Octopuscommunity_RwOctoObject,
+             parentIsTranslated: Bool,
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutReplyResponse
 
-    func like(objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutLikeResponse
-    func unlike(likeId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteLikeResponse
+    func react(reactionKind: String,
+               objectId: String,
+               parentIsTranslated: Bool,
+               authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse
 
-    func react(reactionKind: String, objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse
+    func deleteReaction(reactionId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteReactionResponse
 
-    func deleteReaction(reactionId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteReactionResponse
-
-    func voteOnPoll(objectId: String, answerId: String, authenticationMethod: AuthenticationMethod)
+    func voteOnPoll(objectId: String, answerId: String, parentIsTranslated: Bool, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse
 
     func delete(post postId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
@@ -133,9 +137,11 @@ class OctoServiceClient: ServiceClient, OctoService {
     }
 
     public func put(comment: Com_Octopuscommunity_RwOctoObject,
+                    parentIsTranslated: Bool,
                     authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutCommentResponse {
         let request = Com_Octopuscommunity_PutRequest.with {
             $0.octoObject = comment
+            $0.translatedContent = parentIsTranslated
         }
         return try await callRemote(authenticationMethod) {
             try await client.putComment(
@@ -144,9 +150,11 @@ class OctoServiceClient: ServiceClient, OctoService {
     }
 
     public func put(reply: Com_Octopuscommunity_RwOctoObject,
+                    parentIsTranslated: Bool,
                     authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutReplyResponse {
         let request = Com_Octopuscommunity_PutRequest.with {
             $0.octoObject = reply
+            $0.translatedContent = parentIsTranslated
         }
         return try await callRemote(authenticationMethod) {
             try await client.putReply(
@@ -187,34 +195,8 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
     }
 
-    func like(objectId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> Com_Octopuscommunity_PutLikeResponse {
-        let request = Com_Octopuscommunity_PutRequest.with {
-            $0.octoObject = .with {
-                $0.parentID = objectId
-                $0.content = .with {
-                    $0.like = Com_Octopuscommunity_Like()
-                }
-            }
-        }
-        return try await callRemote(authenticationMethod) {
-            try await client.putLike(
-                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
-        }
-    }
-
-    func unlike(likeId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> Com_Octopuscommunity_DeleteLikeResponse {
-        let request = Com_Octopuscommunity_DeleteLikeRequest.with {
-            $0.octoObjectID = likeId
-        }
-        return try await callRemote(authenticationMethod) {
-            try await client.deleteLike(
-                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
-        }
-    }
-
-    func react(reactionKind: String, objectId: String, authenticationMethod: AuthenticationMethod)
+    func react(reactionKind: String, objectId: String, parentIsTranslated: Bool,
+               authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse {
         let request = Com_Octopuscommunity_PutRequest.with {
             $0.octoObject = .with {
@@ -225,6 +207,7 @@ class OctoServiceClient: ServiceClient, OctoService {
                     }
                 }
             }
+            $0.translatedContent = parentIsTranslated
         }
         return try await callRemote(authenticationMethod) {
             try await client.putReaction(
@@ -243,7 +226,8 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
     }
 
-    func voteOnPoll(objectId: String, answerId: String, authenticationMethod: AuthenticationMethod)
+    func voteOnPoll(objectId: String, answerId: String, parentIsTranslated: Bool,
+                    authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse {
         let request = Com_Octopuscommunity_PutRequest.with {
             $0.octoObject = .with {
@@ -254,6 +238,7 @@ class OctoServiceClient: ServiceClient, OctoService {
                     }
                 }
             }
+            $0.translatedContent = parentIsTranslated
         }
         return try await callRemote(authenticationMethod) {
             try await client.putPollVote(

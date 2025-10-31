@@ -923,12 +923,23 @@ public struct Com_Octopuscommunity_BridgeToClientObject: Sendable {
   /// Clears the value of `cta`. Subsequent reads from it will return its default value.
   public mutating func clearCta() {self._cta = nil}
 
+  ///Returned if language header value <> original language and translation exist (in requested language or default english)
+  public var translatedCatchPhrase: String {
+    get {return _translatedCatchPhrase ?? String()}
+    set {_translatedCatchPhrase = newValue}
+  }
+  /// Returns true if `translatedCatchPhrase` has been explicitly set.
+  public var hasTranslatedCatchPhrase: Bool {return self._translatedCatchPhrase != nil}
+  /// Clears the value of `translatedCatchPhrase`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedCatchPhrase() {self._translatedCatchPhrase = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _catchPhrase: String? = nil
   fileprivate var _cta: Com_Octopuscommunity_CTA? = nil
+  fileprivate var _translatedCatchPhrase: String? = nil
 }
 
 public struct Com_Octopuscommunity_CTA: Sendable {
@@ -938,9 +949,21 @@ public struct Com_Octopuscommunity_CTA: Sendable {
 
   public var text: String = String()
 
+  ///Returned if language header value <> original language and translation exist (in requested language or default english)
+  public var translatedText: String {
+    get {return _translatedText ?? String()}
+    set {_translatedText = newValue}
+  }
+  /// Returns true if `translatedText` has been explicitly set.
+  public var hasTranslatedText: Bool {return self._translatedText != nil}
+  /// Clears the value of `translatedText`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedText() {self._translatedText = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _translatedText: String? = nil
 }
 
 public struct Com_Octopuscommunity_PollAnswer: Sendable {
@@ -961,56 +984,97 @@ public struct Com_Octopuscommunity_PollAnswer: Sendable {
   ///Max length 100
   public var text: String = String()
 
+  ///Returned if language header value <> original language and translation exist (in requested language or default english)
+  public var translatedText: String {
+    get {return _translatedText ?? String()}
+    set {_translatedText = newValue}
+  }
+  /// Returns true if `translatedText` has been explicitly set.
+  public var hasTranslatedText: Bool {return self._translatedText != nil}
+  /// Clears the value of `translatedText`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedText() {self._translatedText = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _id: String? = nil
+  fileprivate var _translatedText: String? = nil
 }
 
-public struct Com_Octopuscommunity_Post: Sendable {
+public struct Com_Octopuscommunity_Post: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var text: String = String()
+  ///Children should be Comment
+  public var text: String {
+    get {return _storage._text}
+    set {_uniqueStorage()._text = newValue}
+  }
 
   /// field 2 was "optional string text = 2;", now removed.
   public var media: Com_Octopuscommunity_StrictMedia {
-    get {return _media ?? Com_Octopuscommunity_StrictMedia()}
-    set {_media = newValue}
+    get {return _storage._media ?? Com_Octopuscommunity_StrictMedia()}
+    set {_uniqueStorage()._media = newValue}
   }
   /// Returns true if `media` has been explicitly set.
-  public var hasMedia: Bool {return self._media != nil}
+  public var hasMedia: Bool {return _storage._media != nil}
   /// Clears the value of `media`. Subsequent reads from it will return its default value.
-  public mutating func clearMedia() {self._media = nil}
+  public mutating func clearMedia() {_uniqueStorage()._media = nil}
 
-  ///Children should be Comment
+  ///Either poll or media. Not a oneOf to manage retro compatibility
   public var poll: Com_Octopuscommunity_Poll {
-    get {return _poll ?? Com_Octopuscommunity_Poll()}
-    set {_poll = newValue}
+    get {return _storage._poll ?? Com_Octopuscommunity_Poll()}
+    set {_uniqueStorage()._poll = newValue}
   }
   /// Returns true if `poll` has been explicitly set.
-  public var hasPoll: Bool {return self._poll != nil}
+  public var hasPoll: Bool {return _storage._poll != nil}
   /// Clears the value of `poll`. Subsequent reads from it will return its default value.
-  public mutating func clearPoll() {self._poll = nil}
+  public mutating func clearPoll() {_uniqueStorage()._poll = nil}
 
   public var bridgeToClientObject: Com_Octopuscommunity_BridgeToClientObject {
-    get {return _bridgeToClientObject ?? Com_Octopuscommunity_BridgeToClientObject()}
-    set {_bridgeToClientObject = newValue}
+    get {return _storage._bridgeToClientObject ?? Com_Octopuscommunity_BridgeToClientObject()}
+    set {_uniqueStorage()._bridgeToClientObject = newValue}
   }
   /// Returns true if `bridgeToClientObject` has been explicitly set.
-  public var hasBridgeToClientObject: Bool {return self._bridgeToClientObject != nil}
+  public var hasBridgeToClientObject: Bool {return _storage._bridgeToClientObject != nil}
   /// Clears the value of `bridgeToClientObject`. Subsequent reads from it will return its default value.
-  public mutating func clearBridgeToClientObject() {self._bridgeToClientObject = nil}
+  public mutating func clearBridgeToClientObject() {_uniqueStorage()._bridgeToClientObject = nil}
+
+  ///Returned if language header value <> original language and translation exist (in requested language or default english)
+  public var translatedText: String {
+    get {return _storage._translatedText ?? String()}
+    set {_uniqueStorage()._translatedText = newValue}
+  }
+  /// Returns true if `translatedText` has been explicitly set.
+  public var hasTranslatedText: Bool {return _storage._translatedText != nil}
+  /// Clears the value of `translatedText`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedText() {_uniqueStorage()._translatedText = nil}
+
+  public var originalLanguage: String {
+    get {return _storage._originalLanguage ?? String()}
+    set {_uniqueStorage()._originalLanguage = newValue}
+  }
+  /// Returns true if `originalLanguage` has been explicitly set.
+  public var hasOriginalLanguage: Bool {return _storage._originalLanguage != nil}
+  /// Clears the value of `originalLanguage`. Subsequent reads from it will return its default value.
+  public mutating func clearOriginalLanguage() {_uniqueStorage()._originalLanguage = nil}
+
+  public var translatedLanguage: String {
+    get {return _storage._translatedLanguage ?? String()}
+    set {_uniqueStorage()._translatedLanguage = newValue}
+  }
+  /// Returns true if `translatedLanguage` has been explicitly set.
+  public var hasTranslatedLanguage: Bool {return _storage._translatedLanguage != nil}
+  /// Clears the value of `translatedLanguage`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedLanguage() {_uniqueStorage()._translatedLanguage = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _media: Com_Octopuscommunity_StrictMedia? = nil
-  fileprivate var _poll: Com_Octopuscommunity_Poll? = nil
-  fileprivate var _bridgeToClientObject: Com_Octopuscommunity_BridgeToClientObject? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct Com_Octopuscommunity_Comment: Sendable {
@@ -1018,9 +1082,9 @@ public struct Com_Octopuscommunity_Comment: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  ///Children should be Reply
   public var text: String = String()
 
-  ///Children should be Reply
   public var media: Com_Octopuscommunity_StrictMedia {
     get {return _media ?? Com_Octopuscommunity_StrictMedia()}
     set {_media = newValue}
@@ -1030,11 +1094,42 @@ public struct Com_Octopuscommunity_Comment: Sendable {
   /// Clears the value of `media`. Subsequent reads from it will return its default value.
   public mutating func clearMedia() {self._media = nil}
 
+  ///Returned if language header value <> original language and translation exist (in requested language or default english)
+  public var translatedText: String {
+    get {return _translatedText ?? String()}
+    set {_translatedText = newValue}
+  }
+  /// Returns true if `translatedText` has been explicitly set.
+  public var hasTranslatedText: Bool {return self._translatedText != nil}
+  /// Clears the value of `translatedText`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedText() {self._translatedText = nil}
+
+  public var originalLanguage: String {
+    get {return _originalLanguage ?? String()}
+    set {_originalLanguage = newValue}
+  }
+  /// Returns true if `originalLanguage` has been explicitly set.
+  public var hasOriginalLanguage: Bool {return self._originalLanguage != nil}
+  /// Clears the value of `originalLanguage`. Subsequent reads from it will return its default value.
+  public mutating func clearOriginalLanguage() {self._originalLanguage = nil}
+
+  public var translatedLanguage: String {
+    get {return _translatedLanguage ?? String()}
+    set {_translatedLanguage = newValue}
+  }
+  /// Returns true if `translatedLanguage` has been explicitly set.
+  public var hasTranslatedLanguage: Bool {return self._translatedLanguage != nil}
+  /// Clears the value of `translatedLanguage`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedLanguage() {self._translatedLanguage = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _media: Com_Octopuscommunity_StrictMedia? = nil
+  fileprivate var _translatedText: String? = nil
+  fileprivate var _originalLanguage: String? = nil
+  fileprivate var _translatedLanguage: String? = nil
 }
 
 public struct Com_Octopuscommunity_Reply: Sendable {
@@ -1053,11 +1148,42 @@ public struct Com_Octopuscommunity_Reply: Sendable {
   /// Clears the value of `media`. Subsequent reads from it will return its default value.
   public mutating func clearMedia() {self._media = nil}
 
+  ///Returned if language header value <> original language and translation exist (in requested language or default english)
+  public var translatedText: String {
+    get {return _translatedText ?? String()}
+    set {_translatedText = newValue}
+  }
+  /// Returns true if `translatedText` has been explicitly set.
+  public var hasTranslatedText: Bool {return self._translatedText != nil}
+  /// Clears the value of `translatedText`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedText() {self._translatedText = nil}
+
+  public var originalLanguage: String {
+    get {return _originalLanguage ?? String()}
+    set {_originalLanguage = newValue}
+  }
+  /// Returns true if `originalLanguage` has been explicitly set.
+  public var hasOriginalLanguage: Bool {return self._originalLanguage != nil}
+  /// Clears the value of `originalLanguage`. Subsequent reads from it will return its default value.
+  public mutating func clearOriginalLanguage() {self._originalLanguage = nil}
+
+  public var translatedLanguage: String {
+    get {return _translatedLanguage ?? String()}
+    set {_translatedLanguage = newValue}
+  }
+  /// Returns true if `translatedLanguage` has been explicitly set.
+  public var hasTranslatedLanguage: Bool {return self._translatedLanguage != nil}
+  /// Clears the value of `translatedLanguage`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedLanguage() {self._translatedLanguage = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _media: Com_Octopuscommunity_StrictMedia? = nil
+  fileprivate var _translatedText: String? = nil
+  fileprivate var _originalLanguage: String? = nil
+  fileprivate var _translatedLanguage: String? = nil
 }
 
 public struct Com_Octopuscommunity_Notification: Sendable {
@@ -2261,6 +2387,7 @@ extension Com_Octopuscommunity_BridgeToClientObject: SwiftProtobuf.Message, Swif
     1: .same(proto: "clientObjectId"),
     2: .same(proto: "catchPhrase"),
     3: .same(proto: "cta"),
+    4: .same(proto: "translatedCatchPhrase"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2272,6 +2399,7 @@ extension Com_Octopuscommunity_BridgeToClientObject: SwiftProtobuf.Message, Swif
       case 1: try { try decoder.decodeSingularStringField(value: &self.clientObjectID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._catchPhrase) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._cta) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self._translatedCatchPhrase) }()
       default: break
       }
     }
@@ -2291,6 +2419,9 @@ extension Com_Octopuscommunity_BridgeToClientObject: SwiftProtobuf.Message, Swif
     try { if let v = self._cta {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._translatedCatchPhrase {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2298,6 +2429,7 @@ extension Com_Octopuscommunity_BridgeToClientObject: SwiftProtobuf.Message, Swif
     if lhs.clientObjectID != rhs.clientObjectID {return false}
     if lhs._catchPhrase != rhs._catchPhrase {return false}
     if lhs._cta != rhs._cta {return false}
+    if lhs._translatedCatchPhrase != rhs._translatedCatchPhrase {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2307,6 +2439,7 @@ extension Com_Octopuscommunity_CTA: SwiftProtobuf.Message, SwiftProtobuf._Messag
   public static let protoMessageName: String = _protobuf_package + ".CTA"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "text"),
+    2: .same(proto: "translatedText"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2316,20 +2449,29 @@ extension Com_Octopuscommunity_CTA: SwiftProtobuf.Message, SwiftProtobuf._Messag
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._translatedText) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.text.isEmpty {
       try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
     }
+    try { if let v = self._translatedText {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_CTA, rhs: Com_Octopuscommunity_CTA) -> Bool {
     if lhs.text != rhs.text {return false}
+    if lhs._translatedText != rhs._translatedText {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2340,6 +2482,7 @@ extension Com_Octopuscommunity_PollAnswer: SwiftProtobuf.Message, SwiftProtobuf.
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "id"),
     2: .same(proto: "text"),
+    3: .same(proto: "translatedText"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2350,6 +2493,7 @@ extension Com_Octopuscommunity_PollAnswer: SwiftProtobuf.Message, SwiftProtobuf.
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self._id) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._translatedText) }()
       default: break
       }
     }
@@ -2366,12 +2510,16 @@ extension Com_Octopuscommunity_PollAnswer: SwiftProtobuf.Message, SwiftProtobuf.
     if !self.text.isEmpty {
       try visitor.visitSingularStringField(value: self.text, fieldNumber: 2)
     }
+    try { if let v = self._translatedText {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PollAnswer, rhs: Com_Octopuscommunity_PollAnswer) -> Bool {
     if lhs._id != rhs._id {return false}
     if lhs.text != rhs.text {return false}
+    if lhs._translatedText != rhs._translatedText {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2384,48 +2532,118 @@ extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._Messa
     3: .same(proto: "media"),
     4: .same(proto: "poll"),
     5: .same(proto: "bridgeToClientObject"),
+    20: .same(proto: "translatedText"),
+    21: .same(proto: "originalLanguage"),
+    22: .same(proto: "translatedLanguage"),
   ]
 
+  fileprivate class _StorageClass {
+    var _text: String = String()
+    var _media: Com_Octopuscommunity_StrictMedia? = nil
+    var _poll: Com_Octopuscommunity_Poll? = nil
+    var _bridgeToClientObject: Com_Octopuscommunity_BridgeToClientObject? = nil
+    var _translatedText: String? = nil
+    var _originalLanguage: String? = nil
+    var _translatedLanguage: String? = nil
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _text = source._text
+      _media = source._media
+      _poll = source._poll
+      _bridgeToClientObject = source._bridgeToClientObject
+      _translatedText = source._translatedText
+      _originalLanguage = source._originalLanguage
+      _translatedLanguage = source._translatedLanguage
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._media) }()
-      case 4: try { try decoder.decodeSingularMessageField(value: &self._poll) }()
-      case 5: try { try decoder.decodeSingularMessageField(value: &self._bridgeToClientObject) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._text) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._media) }()
+        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._poll) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._bridgeToClientObject) }()
+        case 20: try { try decoder.decodeSingularStringField(value: &_storage._translatedText) }()
+        case 21: try { try decoder.decodeSingularStringField(value: &_storage._originalLanguage) }()
+        case 22: try { try decoder.decodeSingularStringField(value: &_storage._translatedLanguage) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.text.isEmpty {
-      try visitor.visitSingularStringField(value: self.text, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._text.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._text, fieldNumber: 1)
+      }
+      try { if let v = _storage._media {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._poll {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._bridgeToClientObject {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      } }()
+      try { if let v = _storage._translatedText {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 20)
+      } }()
+      try { if let v = _storage._originalLanguage {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 21)
+      } }()
+      try { if let v = _storage._translatedLanguage {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 22)
+      } }()
     }
-    try { if let v = self._media {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    try { if let v = self._poll {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    } }()
-    try { if let v = self._bridgeToClientObject {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_Post, rhs: Com_Octopuscommunity_Post) -> Bool {
-    if lhs.text != rhs.text {return false}
-    if lhs._media != rhs._media {return false}
-    if lhs._poll != rhs._poll {return false}
-    if lhs._bridgeToClientObject != rhs._bridgeToClientObject {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._text != rhs_storage._text {return false}
+        if _storage._media != rhs_storage._media {return false}
+        if _storage._poll != rhs_storage._poll {return false}
+        if _storage._bridgeToClientObject != rhs_storage._bridgeToClientObject {return false}
+        if _storage._translatedText != rhs_storage._translatedText {return false}
+        if _storage._originalLanguage != rhs_storage._originalLanguage {return false}
+        if _storage._translatedLanguage != rhs_storage._translatedLanguage {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2436,6 +2654,9 @@ extension Com_Octopuscommunity_Comment: SwiftProtobuf.Message, SwiftProtobuf._Me
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "text"),
     2: .same(proto: "media"),
+    20: .same(proto: "translatedText"),
+    21: .same(proto: "originalLanguage"),
+    22: .same(proto: "translatedLanguage"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2446,6 +2667,9 @@ extension Com_Octopuscommunity_Comment: SwiftProtobuf.Message, SwiftProtobuf._Me
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._media) }()
+      case 20: try { try decoder.decodeSingularStringField(value: &self._translatedText) }()
+      case 21: try { try decoder.decodeSingularStringField(value: &self._originalLanguage) }()
+      case 22: try { try decoder.decodeSingularStringField(value: &self._translatedLanguage) }()
       default: break
       }
     }
@@ -2462,12 +2686,24 @@ extension Com_Octopuscommunity_Comment: SwiftProtobuf.Message, SwiftProtobuf._Me
     try { if let v = self._media {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._translatedText {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 20)
+    } }()
+    try { if let v = self._originalLanguage {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 21)
+    } }()
+    try { if let v = self._translatedLanguage {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 22)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_Comment, rhs: Com_Octopuscommunity_Comment) -> Bool {
     if lhs.text != rhs.text {return false}
     if lhs._media != rhs._media {return false}
+    if lhs._translatedText != rhs._translatedText {return false}
+    if lhs._originalLanguage != rhs._originalLanguage {return false}
+    if lhs._translatedLanguage != rhs._translatedLanguage {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2478,6 +2714,9 @@ extension Com_Octopuscommunity_Reply: SwiftProtobuf.Message, SwiftProtobuf._Mess
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "text"),
     2: .same(proto: "media"),
+    20: .same(proto: "translatedText"),
+    21: .same(proto: "originalLanguage"),
+    22: .same(proto: "translatedLanguage"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2488,6 +2727,9 @@ extension Com_Octopuscommunity_Reply: SwiftProtobuf.Message, SwiftProtobuf._Mess
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._media) }()
+      case 20: try { try decoder.decodeSingularStringField(value: &self._translatedText) }()
+      case 21: try { try decoder.decodeSingularStringField(value: &self._originalLanguage) }()
+      case 22: try { try decoder.decodeSingularStringField(value: &self._translatedLanguage) }()
       default: break
       }
     }
@@ -2504,12 +2746,24 @@ extension Com_Octopuscommunity_Reply: SwiftProtobuf.Message, SwiftProtobuf._Mess
     try { if let v = self._media {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._translatedText {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 20)
+    } }()
+    try { if let v = self._originalLanguage {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 21)
+    } }()
+    try { if let v = self._translatedLanguage {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 22)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_Reply, rhs: Com_Octopuscommunity_Reply) -> Bool {
     if lhs.text != rhs.text {return false}
     if lhs._media != rhs._media {return false}
+    if lhs._translatedText != rhs._translatedText {return false}
+    if lhs._originalLanguage != rhs._originalLanguage {return false}
+    if lhs._translatedLanguage != rhs._translatedLanguage {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

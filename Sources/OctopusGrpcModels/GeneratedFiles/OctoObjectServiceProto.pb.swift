@@ -66,79 +66,85 @@ public struct Com_Octopuscommunity_UpdatePostRequest: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public struct Update: @unchecked Sendable {
+  public struct Update: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     public var topicID: String {
-      get {return _storage._topicID ?? String()}
-      set {_uniqueStorage()._topicID = newValue}
+      get {return _topicID ?? String()}
+      set {_topicID = newValue}
     }
     /// Returns true if `topicID` has been explicitly set.
-    public var hasTopicID: Bool {return _storage._topicID != nil}
+    public var hasTopicID: Bool {return self._topicID != nil}
     /// Clears the value of `topicID`. Subsequent reads from it will return its default value.
-    public mutating func clearTopicID() {_uniqueStorage()._topicID = nil}
+    public mutating func clearTopicID() {self._topicID = nil}
 
     public var postContent: Com_Octopuscommunity_Post {
-      get {return _storage._postContent ?? Com_Octopuscommunity_Post()}
-      set {_uniqueStorage()._postContent = newValue}
+      get {return _postContent ?? Com_Octopuscommunity_Post()}
+      set {_postContent = newValue}
     }
     /// Returns true if `postContent` has been explicitly set.
-    public var hasPostContent: Bool {return _storage._postContent != nil}
+    public var hasPostContent: Bool {return self._postContent != nil}
     /// Clears the value of `postContent`. Subsequent reads from it will return its default value.
-    public mutating func clearPostContent() {_uniqueStorage()._postContent = nil}
+    public mutating func clearPostContent() {self._postContent = nil}
 
     public var maxActivityScore: UInt64 {
-      get {return _storage._maxActivityScore ?? 0}
-      set {_uniqueStorage()._maxActivityScore = newValue}
+      get {return _maxActivityScore ?? 0}
+      set {_maxActivityScore = newValue}
     }
     /// Returns true if `maxActivityScore` has been explicitly set.
-    public var hasMaxActivityScore: Bool {return _storage._maxActivityScore != nil}
+    public var hasMaxActivityScore: Bool {return self._maxActivityScore != nil}
     /// Clears the value of `maxActivityScore`. Subsequent reads from it will return its default value.
-    public mutating func clearMaxActivityScore() {_uniqueStorage()._maxActivityScore = nil}
+    public mutating func clearMaxActivityScore() {self._maxActivityScore = nil}
 
     public var deleteMaxActivityScore: Bool {
-      get {return _storage._deleteMaxActivityScore ?? false}
-      set {_uniqueStorage()._deleteMaxActivityScore = newValue}
+      get {return _deleteMaxActivityScore ?? false}
+      set {_deleteMaxActivityScore = newValue}
     }
     /// Returns true if `deleteMaxActivityScore` has been explicitly set.
-    public var hasDeleteMaxActivityScore: Bool {return _storage._deleteMaxActivityScore != nil}
+    public var hasDeleteMaxActivityScore: Bool {return self._deleteMaxActivityScore != nil}
     /// Clears the value of `deleteMaxActivityScore`. Subsequent reads from it will return its default value.
-    public mutating func clearDeleteMaxActivityScore() {_uniqueStorage()._deleteMaxActivityScore = nil}
+    public mutating func clearDeleteMaxActivityScore() {self._deleteMaxActivityScore = nil}
 
     public var minActivityScore: UInt64 {
-      get {return _storage._minActivityScore ?? 0}
-      set {_uniqueStorage()._minActivityScore = newValue}
+      get {return _minActivityScore ?? 0}
+      set {_minActivityScore = newValue}
     }
     /// Returns true if `minActivityScore` has been explicitly set.
-    public var hasMinActivityScore: Bool {return _storage._minActivityScore != nil}
+    public var hasMinActivityScore: Bool {return self._minActivityScore != nil}
     /// Clears the value of `minActivityScore`. Subsequent reads from it will return its default value.
-    public mutating func clearMinActivityScore() {_uniqueStorage()._minActivityScore = nil}
+    public mutating func clearMinActivityScore() {self._minActivityScore = nil}
 
     public var deleteMinActivityScore: Bool {
-      get {return _storage._deleteMinActivityScore ?? false}
-      set {_uniqueStorage()._deleteMinActivityScore = newValue}
+      get {return _deleteMinActivityScore ?? false}
+      set {_deleteMinActivityScore = newValue}
     }
     /// Returns true if `deleteMinActivityScore` has been explicitly set.
-    public var hasDeleteMinActivityScore: Bool {return _storage._deleteMinActivityScore != nil}
+    public var hasDeleteMinActivityScore: Bool {return self._deleteMinActivityScore != nil}
     /// Clears the value of `deleteMinActivityScore`. Subsequent reads from it will return its default value.
-    public mutating func clearDeleteMinActivityScore() {_uniqueStorage()._deleteMinActivityScore = nil}
+    public mutating func clearDeleteMinActivityScore() {self._deleteMinActivityScore = nil}
 
     public var shadowBanned: Bool {
-      get {return _storage._shadowBanned ?? false}
-      set {_uniqueStorage()._shadowBanned = newValue}
+      get {return _shadowBanned ?? false}
+      set {_shadowBanned = newValue}
     }
     /// Returns true if `shadowBanned` has been explicitly set.
-    public var hasShadowBanned: Bool {return _storage._shadowBanned != nil}
+    public var hasShadowBanned: Bool {return self._shadowBanned != nil}
     /// Clears the value of `shadowBanned`. Subsequent reads from it will return its default value.
-    public mutating func clearShadowBanned() {_uniqueStorage()._shadowBanned = nil}
+    public mutating func clearShadowBanned() {self._shadowBanned = nil}
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
 
-    fileprivate var _storage = _StorageClass.defaultInstance
+    fileprivate var _topicID: String? = nil
+    fileprivate var _postContent: Com_Octopuscommunity_Post? = nil
+    fileprivate var _maxActivityScore: UInt64? = nil
+    fileprivate var _deleteMaxActivityScore: Bool? = nil
+    fileprivate var _minActivityScore: UInt64? = nil
+    fileprivate var _deleteMinActivityScore: Bool? = nil
+    fileprivate var _shadowBanned: Bool? = nil
   }
 
   public init() {}
@@ -458,11 +464,22 @@ public struct Com_Octopuscommunity_PutRequest: Sendable {
   /// Clears the value of `octoObject`. Subsequent reads from it will return its default value.
   public mutating func clearOctoObject() {self._octoObject = nil}
 
+  /// Whether the interaction happened on a translated or original content. Default false
+  public var translatedContent: Bool {
+    get {return _translatedContent ?? false}
+    set {_translatedContent = newValue}
+  }
+  /// Returns true if `translatedContent` has been explicitly set.
+  public var hasTranslatedContent: Bool {return self._translatedContent != nil}
+  /// Clears the value of `translatedContent`. Subsequent reads from it will return its default value.
+  public mutating func clearTranslatedContent() {self._translatedContent = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _octoObject: Com_Octopuscommunity_RwOctoObject? = nil
+  fileprivate var _translatedContent: Bool? = nil
 }
 
 public struct Com_Octopuscommunity_PutCommentResponse: Sendable {
@@ -1714,30 +1731,40 @@ public struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Sendable {
 
   }
 
-  public struct Success: Sendable {
+  public struct Success: @unchecked Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     /// The created post
     public var postBridge: Com_Octopuscommunity_OctoObject {
-      get {return _postBridge ?? Com_Octopuscommunity_OctoObject()}
-      set {_postBridge = newValue}
+      get {return _storage._postBridge ?? Com_Octopuscommunity_OctoObject()}
+      set {_uniqueStorage()._postBridge = newValue}
     }
     /// Returns true if `postBridge` has been explicitly set.
-    public var hasPostBridge: Bool {return self._postBridge != nil}
+    public var hasPostBridge: Bool {return _storage._postBridge != nil}
     /// Clears the value of `postBridge`. Subsequent reads from it will return its default value.
-    public mutating func clearPostBridge() {self._postBridge = nil}
+    public mutating func clearPostBridge() {_uniqueStorage()._postBridge = nil}
+
+    /// The aggregate for the created post
+    public var aggregate: Com_Octopuscommunity_Aggregate {
+      get {return _storage._aggregate ?? Com_Octopuscommunity_Aggregate()}
+      set {_uniqueStorage()._aggregate = newValue}
+    }
+    /// Returns true if `aggregate` has been explicitly set.
+    public var hasAggregate: Bool {return _storage._aggregate != nil}
+    /// Clears the value of `aggregate`. Subsequent reads from it will return its default value.
+    public mutating func clearAggregate() {_uniqueStorage()._aggregate = nil}
 
     /// Used for analytics only
     public var status: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus {
-      get {return _status ?? .unknown}
-      set {_status = newValue}
+      get {return _storage._status ?? .unknown}
+      set {_uniqueStorage()._status = newValue}
     }
     /// Returns true if `status` has been explicitly set.
-    public var hasStatus: Bool {return self._status != nil}
+    public var hasStatus: Bool {return _storage._status != nil}
     /// Clears the value of `status`. Subsequent reads from it will return its default value.
-    public mutating func clearStatus() {self._status = nil}
+    public mutating func clearStatus() {_uniqueStorage()._status = nil}
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1785,8 +1812,7 @@ public struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Sendable {
 
     public init() {}
 
-    fileprivate var _postBridge: Com_Octopuscommunity_OctoObject? = nil
-    fileprivate var _status: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus? = nil
+    fileprivate var _storage = _StorageClass.defaultInstance
   }
 
   public struct Fail: Sendable {
@@ -2115,113 +2141,61 @@ extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, 
     5: .same(proto: "shadowBanned"),
   ]
 
-  fileprivate class _StorageClass {
-    var _topicID: String? = nil
-    var _postContent: Com_Octopuscommunity_Post? = nil
-    var _maxActivityScore: UInt64? = nil
-    var _deleteMaxActivityScore: Bool? = nil
-    var _minActivityScore: UInt64? = nil
-    var _deleteMinActivityScore: Bool? = nil
-    var _shadowBanned: Bool? = nil
-
-    #if swift(>=5.10)
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _topicID = source._topicID
-      _postContent = source._postContent
-      _maxActivityScore = source._maxActivityScore
-      _deleteMaxActivityScore = source._deleteMaxActivityScore
-      _minActivityScore = source._minActivityScore
-      _deleteMinActivityScore = source._deleteMinActivityScore
-      _shadowBanned = source._shadowBanned
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularStringField(value: &_storage._topicID) }()
-        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._postContent) }()
-        case 3: try { try decoder.decodeSingularUInt64Field(value: &_storage._maxActivityScore) }()
-        case 4: try { try decoder.decodeSingularUInt64Field(value: &_storage._minActivityScore) }()
-        case 5: try { try decoder.decodeSingularBoolField(value: &_storage._shadowBanned) }()
-        case 31: try { try decoder.decodeSingularBoolField(value: &_storage._deleteMaxActivityScore) }()
-        case 41: try { try decoder.decodeSingularBoolField(value: &_storage._deleteMinActivityScore) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self._topicID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._postContent) }()
+      case 3: try { try decoder.decodeSingularUInt64Field(value: &self._maxActivityScore) }()
+      case 4: try { try decoder.decodeSingularUInt64Field(value: &self._minActivityScore) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self._shadowBanned) }()
+      case 31: try { try decoder.decodeSingularBoolField(value: &self._deleteMaxActivityScore) }()
+      case 41: try { try decoder.decodeSingularBoolField(value: &self._deleteMinActivityScore) }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      try { if let v = _storage._topicID {
-        try visitor.visitSingularStringField(value: v, fieldNumber: 1)
-      } }()
-      try { if let v = _storage._postContent {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-      try { if let v = _storage._maxActivityScore {
-        try visitor.visitSingularUInt64Field(value: v, fieldNumber: 3)
-      } }()
-      try { if let v = _storage._minActivityScore {
-        try visitor.visitSingularUInt64Field(value: v, fieldNumber: 4)
-      } }()
-      try { if let v = _storage._shadowBanned {
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
-      } }()
-      try { if let v = _storage._deleteMaxActivityScore {
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 31)
-      } }()
-      try { if let v = _storage._deleteMinActivityScore {
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 41)
-      } }()
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._topicID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._postContent {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._maxActivityScore {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._minActivityScore {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._shadowBanned {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._deleteMaxActivityScore {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 31)
+    } }()
+    try { if let v = self._deleteMinActivityScore {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 41)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_UpdatePostRequest.Update, rhs: Com_Octopuscommunity_UpdatePostRequest.Update) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._topicID != rhs_storage._topicID {return false}
-        if _storage._postContent != rhs_storage._postContent {return false}
-        if _storage._maxActivityScore != rhs_storage._maxActivityScore {return false}
-        if _storage._deleteMaxActivityScore != rhs_storage._deleteMaxActivityScore {return false}
-        if _storage._minActivityScore != rhs_storage._minActivityScore {return false}
-        if _storage._deleteMinActivityScore != rhs_storage._deleteMinActivityScore {return false}
-        if _storage._shadowBanned != rhs_storage._shadowBanned {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs._topicID != rhs._topicID {return false}
+    if lhs._postContent != rhs._postContent {return false}
+    if lhs._maxActivityScore != rhs._maxActivityScore {return false}
+    if lhs._deleteMaxActivityScore != rhs._deleteMaxActivityScore {return false}
+    if lhs._minActivityScore != rhs._minActivityScore {return false}
+    if lhs._deleteMinActivityScore != rhs._deleteMinActivityScore {return false}
+    if lhs._shadowBanned != rhs._shadowBanned {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2773,6 +2747,7 @@ extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf.
   public static let protoMessageName: String = _protobuf_package + ".PutRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "octoObject"),
+    10: .same(proto: "translatedContent"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2782,6 +2757,7 @@ extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf.
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._octoObject) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self._translatedContent) }()
       default: break
       }
     }
@@ -2795,11 +2771,15 @@ extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf.
     try { if let v = self._octoObject {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
+    try { if let v = self._translatedContent {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PutRequest, rhs: Com_Octopuscommunity_PutRequest) -> Bool {
     if lhs._octoObject != rhs._octoObject {return false}
+    if lhs._translatedContent != rhs._translatedContent {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4954,39 +4934,89 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success: SwiftProto
   public static let protoMessageName: String = Com_Octopuscommunity_GetOrCreateBridgePostResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "postBridge"),
+    3: .same(proto: "aggregate"),
     2: .same(proto: "status"),
   ]
 
+  fileprivate class _StorageClass {
+    var _postBridge: Com_Octopuscommunity_OctoObject? = nil
+    var _aggregate: Com_Octopuscommunity_Aggregate? = nil
+    var _status: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus? = nil
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _postBridge = source._postBridge
+      _aggregate = source._aggregate
+      _status = source._status
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._postBridge) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self._status) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._postBridge) }()
+        case 2: try { try decoder.decodeSingularEnumField(value: &_storage._status) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._aggregate) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._postBridge {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    try { if let v = self._status {
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
-    } }()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._postBridge {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._status {
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._aggregate {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success, rhs: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success) -> Bool {
-    if lhs._postBridge != rhs._postBridge {return false}
-    if lhs._status != rhs._status {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._postBridge != rhs_storage._postBridge {return false}
+        if _storage._aggregate != rhs_storage._aggregate {return false}
+        if _storage._status != rhs_storage._status {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

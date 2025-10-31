@@ -22,11 +22,10 @@ class OctopusHomeScreenViewModel: ObservableObject {
     init(octopus: OctopusSDK) {
         self.octopus = octopus
 
-        Publishers.CombineLatest3(
-            octopus.core.profileRepository.profilePublisher,
+        Publishers.CombineLatest(
             octopus.core.configRepository.userConfigPublisher,
             mainFlowPath.$isLocked
-        ).sink { [unowned self] profile, userConfig, isLocked in
+        ).sink { [unowned self] userConfig, isLocked in
             guard !isLocked else { return }
             guard userConfig?.canAccessCommunity ?? true else {
                 displayOnboarding = false
@@ -34,11 +33,6 @@ class OctopusHomeScreenViewModel: ObservableObject {
                 return
             }
             displayCommunityAccessDenied = false
-            if let profile, !profile.hasSeenOnboarding {
-                displayOnboarding = true
-            } else {
-                displayOnboarding = false
-            }
         }.store(in: &storage)
     }
 }

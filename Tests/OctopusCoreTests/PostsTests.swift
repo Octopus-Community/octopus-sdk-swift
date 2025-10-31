@@ -50,7 +50,8 @@ class PostsTests: XCTestCase {
             }.store(in: &storage)
 
         injectPutPost(StorablePost(
-            uuid: "newPost", text: "My Post with long text", medias: [], poll: nil,
+            uuid: "newPost", text: .init(originalText: "My Post with long text", originalLanguage: nil, translatedText: nil),
+            medias: [], poll: nil,
             author: .init(uuid: "me", nickname: "Me", avatarUrl: nil), creationDate: Date(), updateDate: Date(),
             status: .published, statusReasons: [],
             parentId: "topicId",
@@ -74,7 +75,8 @@ class PostsTests: XCTestCase {
             }.store(in: &storage)
 
         injectGetPost(
-            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
+            .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
+                  medias: [], poll: nil,
                   author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
@@ -89,7 +91,8 @@ class PostsTests: XCTestCase {
     func testGetPostIsFilteredOutIfAuthorIsBlocked() async throws {
         // precondition: a post with an author is in the db
         try await postsDatabase.upsert(posts: [
-            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
+            .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
+                  medias: [], poll: nil,
                   author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
@@ -128,7 +131,8 @@ class PostsTests: XCTestCase {
 
     func testDeletePost() async throws {
         try await postsDatabase.upsert(posts: [
-            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
+            .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
+                  medias: [], poll: nil,
                   author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
@@ -156,7 +160,8 @@ class PostsTests: XCTestCase {
     func testPostFromGetOrCreateBridgeDoesNotEraseAggregates() async throws {
         // precondition: a post with aggregates and user interactions is in db
         try await postsDatabase.upsert(posts: [
-            .init(uuid: "1", text: "First Post", medias: [], poll: nil,
+            .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
+                  medias: [], poll: nil,
                   author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
@@ -164,11 +169,11 @@ class PostsTests: XCTestCase {
                   descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
                   aggregatedInfo: .init(
                     reactions: [
-                        ReactionCount(reaction: .init(unicode: "❤️"), count: 4),
-                        ReactionCount(reaction: .init(unicode: "👏"), count: 5),
+                        ReactionCount(reactionKind: .heart, count: 4),
+                        ReactionCount(reactionKind: .clap, count: 5),
                     ],
                     childCount: 20, viewCount: 30, pollResult: nil),
-                  userInteractions: .init(reaction: .init(kind: .init(unicode: "👏"), id: "REACT_ID"),
+                  userInteractions: .init(reaction: .init(kind: .clap, id: "REACT_ID"),
                                           pollVoteId: "VOTE_ID"))
         ])
 
@@ -214,10 +219,10 @@ class PostsTests: XCTestCase {
         postsRepository.getPost(uuid: "1")
             .replaceError(with: nil)
             .sink { post in
-                if let post, post.text == "new Text",
+                if let post, post.text.originalText == "new Text",
                    post.aggregatedInfo.reactions == [
-                    .init(reaction: .init(unicode: "❤️"), count: 4),
-                    .init(reaction: .init(unicode: "👏"), count: 5),
+                    .init(reactionKind: .heart, count: 4),
+                    .init(reactionKind: .clap, count: 5),
                    ],
                    post.aggregatedInfo.childCount == 20,
                    post.aggregatedInfo.viewCount == 30,
@@ -275,7 +280,7 @@ class PostsTests: XCTestCase {
             }
             $0.content = .with {
                 $0.post = .with {
-                    $0.text = item.text
+                    $0.text = item.text.originalText
                     $0.media = .with {
                         $0.images = [
                             .with {

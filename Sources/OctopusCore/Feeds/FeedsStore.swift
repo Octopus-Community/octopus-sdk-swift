@@ -17,11 +17,16 @@ class PostFeedsStore: InjectableObject {
     private let postsFeedManager: FeedManager<Post, Comment>
     private var feeds = NSMapTable<NSString, Feed<Post, Comment>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
 
+    private let lock = NSRecursiveLock()
+
     init(injector: Injector) {
         postsFeedManager = PostsFeedManager.factory(injector: injector)
     }
 
     func getOrCreate(feedId: String) -> Feed<Post, Comment> {
+        lock.lock()
+        defer { lock.unlock() }
+
         if let feed = feeds.object(forKey: feedId as NSString) {
             return feed
         } else {
@@ -38,11 +43,16 @@ class CommentFeedsStore: InjectableObject {
     private let commentsFeedManager: FeedManager<Comment, Never>
     private var feeds = NSMapTable<NSString, Feed<Comment, Never>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
 
+    private let lock = NSRecursiveLock()
+
     init(injector: Injector) {
         commentsFeedManager = CommentsFeedManager.factory(injector: injector)
     }
 
     func getOrCreate(feedId: String) -> Feed<Comment, Never> {
+        lock.lock()
+        defer { lock.unlock() }
+
         if let feed = feeds.object(forKey: feedId as NSString) {
             return feed
         } else {
@@ -59,11 +69,16 @@ class ReplyFeedsStore: InjectableObject {
     private let repliesFeedManager: FeedManager<Reply, Never>
     private var feeds = NSMapTable<NSString, Feed<Reply, Never>>(keyOptions: .strongMemory, valueOptions: .weakMemory)
 
+    private let lock = NSRecursiveLock()
+
     init(injector: Injector) {
         repliesFeedManager = RepliesFeedManager.factory(injector: injector)
     }
 
     func getOrCreate(feedId: String) -> Feed<Reply, Never> {
+        lock.lock()
+        defer { lock.unlock() }
+
         if let feed = feeds.object(forKey: feedId as NSString) {
             return feed
         } else {

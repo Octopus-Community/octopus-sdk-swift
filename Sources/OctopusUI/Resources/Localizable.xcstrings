@@ -578,6 +578,72 @@
         }
       }
     },
+    "Common.ViewOriginal" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See original"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir l’original"
+          }
+        }
+      }
+    },
+    "Common.ViewOriginal_language:%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original anzeigen (%@)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See original (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir l’original (%@)"
+          }
+        }
+      }
+    },
+    "Common.ViewTranslation" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übersetzung anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See translation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir la traduction"
+          }
+        }
+      }
+    },
     "Common.Yes" : {
       "localizations" : {
         "de" : {
@@ -1071,6 +1137,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sondage"
+          }
+        }
+      }
+    },
+    "Content.Create.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit dem Veröffentlichen meiner Nachricht akzeptiere ich die [Nutzungsbedingungen](%1$@), die [Datenschutzrichtlinie](%2$@) und die [Community-Regeln](%3$@)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By posting my message, I accept the [Terms of Use](%1$@), [Privacy Policy](%2$@), and [Community Guidelines](%3$@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En publiant mon message, j’accepte les [CGUs](%1$@), la [politique de confidentialité](%2$@) et les [règles de la communauté](%3$@)."
           }
         }
       }
@@ -1931,160 +2019,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activer les notifications push"
-          }
-        }
-      }
-    },
-    "Onboarding.Button" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weiter"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Continue"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Continuer"
-          }
-        }
-      }
-    },
-    "Onboarding.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mit dem Klick auf „Weiter“ stimmen Sie unseren [Nutzungsbedingungen](https://%1$@), der [Datenschutzrichtlinie](https://%2$@) und den [Community-Regeln](https://%3$@) zu."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "By tapping “Continue”, you agree to our [Terms of Use](%1$@), [Privacy Policy](%2$@), and [Community Guidelines](%3$@)"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En cliquant sur “Continuer”, j’accepte les [CGUs](https://%1$@), la [politique de confidentialité](https://%2$@) et les [règles de la communauté](https://%3$@)."
-          }
-        }
-      }
-    },
-    "Onboarding.Text.Fire" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teilen Sie Ihre Erfahrungen, Meinungen & Tipps"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Share your stories, thoughts & experiences"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Partagez votre avis et vos expériences"
-          }
-        }
-      }
-    },
-    "Onboarding.Text.Idea" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lernen Sie von anderen Mitgliedern & deren Insights"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Learn tips from other members"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Découvrez les conseils de la communauté"
-          }
-        }
-      }
-    },
-    "Onboarding.Text.Shield" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bleiben Sie respektvoll und freundlich"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Be kind & respectful, always"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exprimez-vous dans le respect de chacun"
-          }
-        }
-      }
-    },
-    "Onboarding.Text.Talk" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stellen Sie Fragen und erhalten Sie schnelle Antworten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ask anything, get quick answers"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posez vos questions"
-          }
-        }
-      }
-    },
-    "Onboarding.Title" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Willkommen in der\nCommunity 👋"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Welcome to the\ncommunity 👋"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bienvenue dans la\ncommunauté 👋"
           }
         }
       }

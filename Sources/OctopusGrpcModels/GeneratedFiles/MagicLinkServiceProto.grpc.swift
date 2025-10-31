@@ -218,6 +218,16 @@ extension Com_Octopuscommunity_MagicLinkServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetJWTInterceptors() ?? []
     )
   }
+
+  public func makeGetJWTCall(
+    _ request: Com_Octopuscommunity_IsAuthenticatedRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_IsAuthenticatedRequest, Com_Octopuscommunity_IsAuthenticatedResponse> {
+    return self.makeGetJwtCall(
+      request,
+      callOptions: callOptions
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)

@@ -6,6 +6,6 @@ import Foundation
 import OctopusGrpcModels
 
 protocol StorableResponse: StorableContent {
-    var text: String? { get }
+    var text: TranslatableText? { get }
     var medias: [Media] { get }
 }

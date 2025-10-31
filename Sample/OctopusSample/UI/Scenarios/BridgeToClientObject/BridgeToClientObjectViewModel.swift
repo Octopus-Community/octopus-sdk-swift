@@ -9,7 +9,9 @@ import Octopus
 
 /// A view model that shows how to add the `displayClientObjectCallback` to the SDK to be informed when the user tapped
 /// on a button that should display one of your objects
+@MainActor
 class BridgeToClientObjectViewModel: ObservableObject {
+    let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
 
     @Published var recipePushed: Recipe?
     @Published var recipePresented: Recipe?
@@ -22,22 +24,11 @@ class BridgeToClientObjectViewModel: ObservableObject {
         }
     }
 
-    @Published private(set) var octopus: OctopusSDK?
-
     private var storage = [AnyCancellable]()
-
-    private let octopusSDKProvider = OctopusSDKProvider.instance
-
-    init() {
-        octopusSDKProvider.$octopus
-            .sink { [unowned self] in
-                octopus = $0
-            }.store(in: &storage)
-    }
 
     func configureSDK() {
         // Set the callback that will be called when the user tapped on a button that should display one of your objects
-        octopusSDKProvider.octopus?.set(displayClientObjectCallback: { [weak self] objectId in
+        octopus.set(displayClientObjectCallback: { [weak self] objectId in
             guard let self else { return }
             // we only display the stableRecipe
             guard objectId == stableRecipe.id else { throw NSError(domain: "", code: 0) }

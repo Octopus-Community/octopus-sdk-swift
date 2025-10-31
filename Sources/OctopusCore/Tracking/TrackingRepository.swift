@@ -78,7 +78,10 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     /// Inform the SDK that the OctopusUI is displayed
     public func octopusUISessionStarted() {
         octopusUIIsDisplayed = true
-        octopusUISessionManager.sessionStarted()
+        // only start an OctopusUI session if the app session is started
+        if appSessionManager.currentSession != nil {
+            octopusUISessionManager.sessionStarted()
+        }
     }
 
     /// Inform the SDK that the OctopusUI is not displayed anymore
@@ -105,6 +108,16 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
             appSessionId: appSessionManager.currentSession?.uuid,
             uiSessionId: octopusUISessionManager.currentSession?.uuid,
             content: .openClientObjectFromBridge))
+    }
+
+    public func trackTranslationButtonHit(translationDisplayed: Bool) {
+        Task {
+            try await database.upsert(event: Event(
+                date: Date(),
+                appSessionId: appSessionManager.currentSession?.uuid,
+                uiSessionId: octopusUISessionManager.currentSession?.uuid,
+                content: .translationButtonHit(translationDisplayed: translationDisplayed)))
+        }
     }
 
     public func track(customEvent: CustomEvent) async throws {

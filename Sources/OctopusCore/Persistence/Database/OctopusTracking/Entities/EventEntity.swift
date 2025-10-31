@@ -50,6 +50,10 @@ class EventEntity: NSManagedObject, Identifiable {
         case .openClientObjectFromBridge:
             let specializedEntity = OpenClientObjectFromBridgeEventEntity(context: context)
             entity = specializedEntity
+        case let .translationButtonHit(translationDisplayed):
+            let specializedEntity = TranslationButtonHitEventEntity(context: context)
+            specializedEntity.translationDisplayed = translationDisplayed
+            entity = specializedEntity
         case let .custom(customEvent):
             let specializedEntity = CustomEventEntity(context: context)
             specializedEntity.name = customEvent.name

@@ -45,7 +45,9 @@ class RepliesTests: XCTestCase {
                 sendExpectation.fulfill()
             }.store(in: &storage)
 
-        injectPutReply(StorableReply(uuid: "newReply", text: "My Comment", medias: [],
+        injectPutReply(StorableReply(uuid: "newReply",
+                                     text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
+                                     medias: [],
                                      author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                                      creationDate: Date(), updateDate: Date(),
                                      status: .published, statusReasons: [],
@@ -54,14 +56,16 @@ class RepliesTests: XCTestCase {
                                      userInteractions: UserInteractions(reaction: nil, pollVoteId: nil)
                                     ))
         let reply = WritableReply(commentId: "commentId", text: "My Reply", imageData: nil)
-        try await repliesRepository.send(reply)
+        try await repliesRepository.send(reply, parentIsTranslated: false)
 
         await fulfillment(of: [sendExpectation], timeout: 0.5)
     }
 
     func testDeleteReply() async throws {
         try await repliesDatabase.upsert(replies: [
-            StorableReply(uuid: "1", text: "My Reply", medias: [],
+            StorableReply(uuid: "1",
+                          text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
+                          medias: [],
                           author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                           creationDate: Date(), updateDate: Date(),
                           status: .published, statusReasons: [],
@@ -91,7 +95,7 @@ class RepliesTests: XCTestCase {
             $0.content = .with {
                 $0.reply = .with {
                     if let text = reply.text {
-                        $0.text = text
+                        $0.text = text.originalText
                     }
                 }
             }

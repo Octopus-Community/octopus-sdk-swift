@@ -24,11 +24,11 @@ class PostDetailViewModel: ObservableObject {
             case poll(DisplayablePoll)
         }
         struct BridgeCTA: Equatable {
-            let text: String
+            let text: TranslatableText
             let clientObjectId: String
         }
         let uuid: String
-        let text: String
+        let text: TranslatableText
         let attachment: Attachment?
         let author: Author
         let relativeDate: String
@@ -37,7 +37,7 @@ class PostDetailViewModel: ObservableObject {
         let userInteractions: UserInteractions
         let canBeDeleted: Bool
         let canBeModerated: Bool
-        let catchPhrase: String?
+        let catchPhrase: TranslatableText?
         let bridgeCTA: BridgeCTA?
     }
 
@@ -89,6 +89,7 @@ class PostDetailViewModel: ObservableObject {
     let octopus: OctopusSDK
     let postUuid: String
     let connectedActionChecker: ConnectedActionChecker
+    private let translationStore: ContentTranslationPreferenceStore
     private var newestFirstCommentsFeed: Feed<Comment, Never>?
     private var commentToScrollTo: String?
     private var scrollToMostRecentComment: Bool
@@ -118,7 +119,8 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String, commentToScrollTo: String?,
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
+         postUuid: String, commentToScrollTo: String?,
          scrollToMostRecentComment: Bool,
          origin: PostDetailNavigationOrigin,
          hasFeaturedComment: Bool) {
@@ -128,6 +130,7 @@ class PostDetailViewModel: ObservableObject {
         self.scrollToMostRecentComment = scrollToMostRecentComment
         self.origin = origin
         self.hasFeaturedComment = hasFeaturedComment
+        self.translationStore = translationStore
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         Publishers.CombineLatest3(
@@ -677,7 +680,9 @@ class PostDetailViewModel: ObservableObject {
 
     private func vote(pollAnswerId: String, post: OctopusCore.Post) async {
         do {
-            try await octopus.core.postsRepository.vote(pollAnswerId: pollAnswerId, post: post)
+            try await octopus.core.postsRepository.vote(
+                pollAnswerId: pollAnswerId, post: post,
+                parentIsTranslated: translationStore.displayTranslation(for: post.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -727,7 +732,9 @@ class PostDetailViewModel: ObservableObject {
 
     private func set(reaction: ReactionKind?, post: OctopusCore.Post) async {
         do {
-            try await octopus.core.postsRepository.set(reaction: reaction, post: post)
+            try await octopus.core.postsRepository.set(
+                reaction: reaction, post: post,
+                parentIsTranslated: translationStore.displayTranslation(for: post.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -758,7 +765,9 @@ class PostDetailViewModel: ObservableObject {
 
     private func set(reaction: ReactionKind?, comment: Comment) async {
         do {
-            try await octopus.core.commentsRepository.set(reaction: reaction, comment: comment)
+            try await octopus.core.commentsRepository.set(
+                reaction: reaction, comment: comment,
+                parentIsTranslated: translationStore.displayTranslation(for: comment.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):

@@ -32,12 +32,14 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     let notifCenterViewModel: NotificationCenterViewModel
 
     let octopus: OctopusSDK
+    private let translationStore: ContentTranslationPreferenceStore
     private var previousProfileId: String?
 
     private var storage = [AnyCancellable]()
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore) {
         self.octopus = octopus
+        self.translationStore = translationStore
         notifCenterViewModel = NotificationCenterViewModel(octopus: octopus)
 
         hasInitialNotSeenNotifications = (octopus.core.profileRepository.profile?.notificationBadgeCount ?? 0) > 0
@@ -52,22 +54,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             $isFetchingProfile,
             mainFlowPath.$isLocked
         ).sink { [unowned self] profile, currentError, isFetchingProfile, isLocked in
-            guard let profile else {
-//                if currentError == nil && !isFetchingProfile && !isLocked {
-//                    dismiss = true
-//                }
-                return
-            }
-//            if let previousProfileId, previousProfileId != profile.id {
-//                if currentError == nil && !isFetchingProfile && !isLocked {
-//                    self.previousProfileId = profile.id
-//                    dismiss = true
-//                    return
-//                }
-//            } else {
-//                // do it in the else to avoid replacing the previousProfileId if isFetchingProfile || isLocked
-//                previousProfileId = profile.id
-//            }
+            guard let profile else { return }
             self.profile = profile
 
             if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode,
@@ -86,6 +73,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             if postFeedViewModel?.feed.id != newestFirstPostsFeed.id {
                 postFeedViewModel = PostFeedViewModel(octopus: octopus, postFeed: newestFirstPostsFeed,
                                                       displayModeratedPosts: true,
+                                                      translationStore: translationStore,
                                                       ensureConnected: { _ in true }) // TODO Djavan: can we be sure that we are fully authorized to post?
             }
         }.store(in: &storage)

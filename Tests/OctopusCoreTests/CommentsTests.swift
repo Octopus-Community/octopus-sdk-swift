@@ -46,7 +46,9 @@ class CommentsTests: XCTestCase {
                 sendExpectation.fulfill()
             }.store(in: &storage)
 
-        injectPutComment(StorableComment(uuid: "newComment", text: "My Comment", medias: [],
+        injectPutComment(StorableComment(uuid: "newComment",
+                                         text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
+                                         medias: [],
                                          author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                                          creationDate: Date(), updateDate: Date(),
                                          status: .published, statusReasons: [],
@@ -57,14 +59,16 @@ class CommentsTests: XCTestCase {
                                          userInteractions: UserInteractions(reaction: nil, pollVoteId: nil)
                                          ))
         let comment = WritableComment(postId: "postId", text: "My Comment", imageData: nil)
-        try await commentsRepository.send(comment)
+        try await commentsRepository.send(comment, parentIsTranslated: false)
 
         await fulfillment(of: [sendExpectation], timeout: 0.5)
     }
 
     func testDeleteComment() async throws {
         try await commentsDatabase.upsert(comments: [
-            StorableComment(uuid: "1", text: "My Comment", medias: [],
+            StorableComment(uuid: "1",
+                            text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
+                            medias: [],
                             author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
                             creationDate: Date(), updateDate: Date(),
                             status: .published, statusReasons: [],
@@ -96,7 +100,7 @@ class CommentsTests: XCTestCase {
             $0.content = .with {
                 $0.comment = .with {
                     if let text = comment.text {
-                        $0.text = text
+                        $0.text = text.originalText
                     }
                 }
             }

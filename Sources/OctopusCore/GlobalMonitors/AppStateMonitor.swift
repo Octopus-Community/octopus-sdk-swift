@@ -28,8 +28,8 @@ enum AppState {
 }
 
 protocol AppStateMonitor {
-    var appStatePublisher: AnyPublisher<AppState, Never> { get }
-    var appState: AppState { get }
+    var appStatePublisher: AnyPublisher<AppState?, Never> { get }
+    var appState: AppState? { get }
 
     func start()
     func stop()
@@ -38,9 +38,9 @@ protocol AppStateMonitor {
 final class AppStateMonitorDefault: AppStateMonitor, InjectableObject, @unchecked Sendable {
     static let injectedIdentifier = Injected.appStateMonitor
 
-    var appStatePublisher: AnyPublisher<AppState, Never> { $appState.eraseToAnyPublisher() }
+    var appStatePublisher: AnyPublisher<AppState?, Never> { $appState.eraseToAnyPublisher() }
     /// Current state of the app
-    @Published private(set) var appState = AppState(applicationState: .active)
+    @Published private(set) var appState: AppState?
 
     private var storage: Set<AnyCancellable> = []
 

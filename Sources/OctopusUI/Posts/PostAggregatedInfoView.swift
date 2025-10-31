@@ -14,6 +14,8 @@ struct PostAggregatedInfoView: View {
 
     @State private var isShowingPopover = false
 
+    @State private var animate = false
+
     init(aggregatedInfo: AggregatedInfo,
          childrenTapped: @escaping () -> Void) {
         self.aggregatedInfo = aggregatedInfo
@@ -49,6 +51,12 @@ struct PostAggregatedInfoView: View {
                         }
                     }
                 }
+            }.animation(.default, value: animate)
+        }
+        .onValueChanged(of: aggregatedInfo) { _ in
+            animate = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                animate = false
             }
         }
     }

@@ -12,6 +12,7 @@ struct PollView: View {
 
     let aggregatedInfo: AggregatedInfo
     let userInteractions: UserInteractions
+    let parentId: String
     let vote: (String) -> Bool
 
     @State private var simulateVote: String?
@@ -22,7 +23,7 @@ struct PollView: View {
                 Group {
                     let state = state(for: pollOption.id)
                     if simulateVote != nil || state.displayResult {
-                        PollOptionView(pollOption: pollOption, state: state)
+                        PollOptionView(pollOption: pollOption, state: state, parentId: parentId)
                             .animation(.easeInOut, value: state) // Animates changes
                     } else {
                         Button(action: {
@@ -32,7 +33,7 @@ struct PollView: View {
                                 simulateVote = nil
                             }
                         }) {
-                            PollOptionView(pollOption: pollOption, state: state)
+                            PollOptionView(pollOption: pollOption, state: state, parentId: parentId)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -72,6 +73,7 @@ struct PollView: View {
 
 struct PollOptionView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     enum VoteState: Equatable {
         case waitForUserVote
@@ -87,18 +89,14 @@ struct PollOptionView: View {
 
     let pollOption: DisplayablePoll.Option
     let state: VoteState
+    let parentId: String
 
     @State private var width: CGFloat = 0
-
-    init(pollOption: DisplayablePoll.Option, state: VoteState) {
-        self.pollOption = pollOption
-        self.state = state
-    }
 
     var body: some View {
         HStack {
             HStack {
-                Text(pollOption.text)
+                Text(pollOption.text.getText(translated: translationStore.displayTranslation(for: parentId)))
                     .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)
                     .lineLimit(nil)

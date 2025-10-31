@@ -80,7 +80,7 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
             viewCount = aggregatedInfo.viewCount
             reactionsRelationship = NSOrderedSet(array: aggregatedInfo.reactions.map {
                 let reactionEntity = ContentReactionEntity(context: context)
-                reactionEntity.reactionKind = $0.reaction.unicode
+                reactionEntity.reactionKind = $0.reactionKind.unicode
                 reactionEntity.count = $0.count
                 return reactionEntity
             })

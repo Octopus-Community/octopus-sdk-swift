@@ -206,6 +206,10 @@ private extension Event {
                     })
             case .openClientObjectFromBridge:
                     .openClientObjectFromBridge(Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge())
+            case let .translationButtonHit(viewTranslated):
+                    .viewTranslationButtonHit(.with {
+                        $0.viewTranslated = viewTranslated
+                    })
             case let .custom(customEvent):
                     .customEvent(.with {
                         $0.name = customEvent.name

@@ -9,8 +9,8 @@ import OctopusDependencyInjection
 class MockAppStateMonitor: AppStateMonitor, InjectableObject {
     static let injectedIdentifier = Injected.appStateMonitor
 
-    var appStatePublisher: AnyPublisher<AppState, Never> { $appState.eraseToAnyPublisher() }
-    @Published var appState = AppState.active
+    var appStatePublisher: AnyPublisher<AppState?, Never> { $appState.eraseToAnyPublisher() }
+    @Published var appState: AppState? = AppState.active
 
     func start() { }
 

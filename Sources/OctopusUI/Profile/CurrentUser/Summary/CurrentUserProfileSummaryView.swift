@@ -24,9 +24,9 @@ struct CurrentUserProfileSummaryView: View {
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore) {
         _viewModel = Compat.StateObject(wrappedValue: CurrentUserProfileSummaryViewModel(
-            octopus: octopus, mainFlowPath: mainFlowPath))
+            octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore))
     }
 
     var body: some View {

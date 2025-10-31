@@ -10,7 +10,7 @@ import Octopus
 /// A view model that provides an Octopus SDK and sets as soon as possible whether the user has access to the community
 /// UI.
 class TrackABTestsViewModel: ObservableObject {
-    @Published private(set) var octopus: OctopusSDK?
+    let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
     @Published var canAccessCommunity: Bool
 
     private var storage = [AnyCancellable]()
@@ -30,22 +30,12 @@ class TrackABTestsViewModel: ObservableObject {
                 UserDefaults.standard.set($0, forKey: canAccessCommunityKey)
         }.store(in: &storage)
 
-        octopusSDKProvider.$octopus
-            .sink { [unowned self] in
-                octopus = $0
+        // Update the sdk with the canAccessCommunity at init and every time the value changes.
+        $canAccessCommunity
+            .sink { [unowned self] canAccessCommunity in
+                guard isDisplayed else { return }
+                octopus.track(hasAccessToCommunity: canAccessCommunity)
             }.store(in: &storage)
-
-        // Each time octopus changes or canAccessCommunity, update the SDK with the new value
-        // This is done as soon as the Octopus SDK is set (and you should so).
-        Publishers.CombineLatest(
-            octopusSDKProvider.$octopus,
-            $canAccessCommunity
-        )
-        .sink { [unowned self] octopus, canAccessCommunity in
-            guard isDisplayed else { return }
-            guard let octopus else { return }
-            octopus.track(hasAccessToCommunity: canAccessCommunity)
-        }.store(in: &storage)
     }
 
     func createSDK() {

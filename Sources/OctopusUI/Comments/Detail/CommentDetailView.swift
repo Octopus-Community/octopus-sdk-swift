@@ -11,6 +11,7 @@ import OctopusCore
 struct CommentDetailView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     @Compat.StateObject private var viewModel: CommentDetailViewModel
 
@@ -33,11 +34,13 @@ struct CommentDetailView: View {
 
     init(
         octopus: OctopusSDK,
+        translationStore: ContentTranslationPreferenceStore,
         commentUuid: String, displayGoToParentButton: Bool,
         reply: Bool = false,
         replyToScrollTo: String? = nil) {
             _viewModel = Compat.StateObject(wrappedValue: CommentDetailViewModel(
-                octopus: octopus, commentUuid: commentUuid, reply: reply, replyToScrollTo: replyToScrollTo))
+                octopus: octopus, translationStore: translationStore, commentUuid: commentUuid,
+                reply: reply, replyToScrollTo: replyToScrollTo))
             _replyTextFocused = .init(initialValue: reply)
             self.displayGoToParentButton = displayGoToParentButton
         }
@@ -81,6 +84,7 @@ struct CommentDetailView: View {
                     })
 
                 CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
+                                translationStore: translationStore,
                                 textFocused: $replyTextFocused,
                                 hasChanges: $replyHasChanges,
                                 ensureConnected: viewModel.ensureConnected)
@@ -278,6 +282,7 @@ private struct ContentView: View {
 
 private struct CommentDetailContentView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     let comment: CommentDetailViewModel.CommentDetail
     let replies: [DisplayableFeedResponse]?
@@ -301,6 +306,8 @@ private struct CommentDetailContentView: View {
     @State private var showReactionPicker = false
 
     private let minAspectRatio: CGFloat = 4 / 5
+
+    var displayTranslation: Bool { translationStore.displayTranslation(for: comment.uuid) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -327,8 +334,8 @@ private struct CommentDetailContentView: View {
                         .frame(width: 32, height: 32)
                 }
                 VStack(spacing: 0) {
-                    VStack {
-                        VStack(alignment: .leading) {
+                    VStack(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 0) {
                             HStack(spacing: 4) {
                                 AuthorAndDateHeaderView(author: comment.author, relativeDate: comment.relativeDate,
                                                         displayProfile: displayProfile)
@@ -366,11 +373,20 @@ private struct CommentDetailContentView: View {
                                     }
                                 }
                             }
-                            if let text = comment.text?.nilIfEmpty {
+                            if let translatableText = comment.text,
+                               let text = translatableText.getText(translated: displayTranslation).nilIfEmpty {
+                                Spacer().frame(height: 8)
+
                                 RichText(text)
                                     .font(theme.fonts.body2)
                                     .lineSpacing(4)
                                     .foregroundColor(theme.colors.gray900)
+
+                                if translatableText.hasTranslation {
+                                    ToggleTextTranslationButton(
+                                        contentId: comment.uuid, originalLanguage: translatableText.originalLanguage)
+                                    .padding(.top, 6)
+                                }
                             }
                         }.padding(8)
                         if let image = comment.image {
@@ -405,6 +421,7 @@ private struct CommentDetailContentView: View {
                                 })
                             .fixedSize(horizontal: false, vertical: true)
                             .cornerRadius(12)
+                            .padding(.top, 4)
                         }
                     }
                     .frame(maxWidth: .infinity)

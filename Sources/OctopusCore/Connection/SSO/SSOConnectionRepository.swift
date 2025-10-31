@@ -30,12 +30,16 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     private let clientUserProfileDatabase: ClientUserProfileDatabase
     private let authenticatedCallProvider: AuthenticatedCallProvider
     private let configRepository: ConfigRepository
+    private let userProfileFetchMonitor: UserProfileFetchMonitor
+    private let clientUserProfileMerger: ClientUserProfileMerger
+    private let frictionlessProfileMigrator: FrictionlessProfileMigrator
 
     private var storage: Set<AnyCancellable> = []
     private var connectionStateIsSet = false
     @Published private var isConnecting = false
     @Published private var clientIsConnecting = false
     private var isLoggingOutAfterUnauthenticatedError = false
+    private var lastConnectionError: Error?
 
     @Published private var isWaitingForCommunityAccessToConnectClient = false
 
@@ -51,6 +55,9 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
         authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
+        userProfileFetchMonitor = injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor)
+        clientUserProfileMerger = injector.getInjected(identifiedBy: Injected.clientUserProfileMerger)
+        frictionlessProfileMigrator = injector.getInjected(identifiedBy: Injected.frictionlessProfileMigrator)
 
         Publishers.CombineLatest(
             userDataStorage.$userData.removeDuplicates()
@@ -79,7 +86,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         .sink { [weak self] userData, profile in
             guard let self else { return }
             if let profile = profileRepository.profile, let userData = userDataStorage.userData {
-                connectionState = .connected(User(profile: profile, jwtToken: userData.jwtToken), nil)
+                connectionState = .connected(User(profile: profile, jwtToken: userData.jwtToken), lastConnectionError)
                 connectionStateIsSet = true
             }
         }
@@ -129,7 +136,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         let previousClientUserId = userDataStorage.clientUserData?.id
         // since connection state is not set immediatly, we need to wait for its first "real" value, not the one that
         // it has been init with.
-        try? await TaskUtils.wait(for: connectionStateIsSet)
+        try? await TaskUtils.wait(for: connectionStateIsSet, timeout: 4)
         let currentState = connectionState
         // if client user changed, logout
         if let previousClientUserId, previousClientUserId != user.userId {
@@ -142,8 +149,8 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         // if state is not connected to the same user, ask for a token
         let tokenNeeded: Bool
         switch currentState {
-        case .connected:
-            tokenNeeded = previousClientUserId != user.userId
+        case let .connected(currentUser, error):
+            tokenNeeded = previousClientUserId != user.userId || currentUser.profile.isGuest || error != nil
         default:
             tokenNeeded = true
         }
@@ -190,6 +197,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     private func connect() async throws(ConnectionError) {
         guard !isConnecting else { return }
         isConnecting = true
+        lastConnectionError = nil
         do {
             if let clientUserData = userDataStorage.clientUserData {
                 do {
@@ -223,6 +231,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             case let .connected(user, _):
                 connectionState = .connected(user, connectionError)
             }
+            lastConnectionError = connectionError
             connectionStateIsSet = true
             isConnecting = false
             throw connectionError
@@ -237,18 +246,15 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
 
             switch response.result {
             case let .success(connectionData):
-                if let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID) {
-                    try await userProfileDatabase.upsert(profile: profile)
-                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
-                } else {
-                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
-                    throw InternalError.objectMalformed
-                }
+                let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID)
+                try await userProfileDatabase.upsert(profile: profile)
+                userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
             case let .fail(failure):
                 let detailedErrors = failure.errors.map { ConnectionError.DetailedError(from: $0) }
                 throw ConnectionError.detailedErrors(detailedErrors)
             case .none:
-                // this will happen only if we add new values to the `result`. Since they are not supported in this version, throw an error
+                // this will happen only if we add new values to the `result`.
+                // Since they are not supported in this version, throw an error
                 throw InternalError.invalidArgument
             }
         } catch {
@@ -266,6 +272,9 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         // a client user with a callback to get token should have been set prior to this call
         guard let clientUserTokenProvider else { throw .unknown(InternalError.incorrectState) }
+        // avoid the user profile fetch monitor to fetch the profile until all actions on the profile are done
+        userProfileFetchMonitor.set(connectionInProgress: true)
+        defer { userProfileFetchMonitor.set(connectionInProgress: false) }
         do {
             if #available(iOS 14, *) { Logger.connection.trace("Asking for client user token") }
             let token = try await clientUserTokenProvider()
@@ -275,19 +284,20 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
                 authenticationMethod: authenticatedCallProvider.authenticatedIfPossibleMethod())
             switch response.result {
             case let .success(connectionData):
-                if let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID) {
-                    // do it before setting the profile because we might need the token in updateProfileWithClientUser
-                    userDataStorage.store(userData: .init(id: connectionData.userID, clientId: clientUserId, jwtToken: connectionData.jwt))
-                    var newProfile: StorableCurrentUserProfile?
-                    if let clientUserProfile = try? await clientUserProfileDatabase.getProfile(clientUserId: clientUserId) {
-                        let clientUser = ClientUser(userId: clientUserId, profile: clientUserProfile)
-                        newProfile = try? await updateProfileWithClientUser(profile: profile, clientUser: clientUser, userId: connectionData.userID)
-                    }
-                    try await userProfileDatabase.upsert(profile: newProfile ?? profile)
-                } else {
-                    userDataStorage.store(userData: .init(id: connectionData.userID, clientId: clientUserId, jwtToken: connectionData.jwt))
-                    throw InternalError.objectMalformed
+                // do it before setting the profile because we might need the token in updateProfileWithClientUser
+                userDataStorage.store(userData: .init(id: connectionData.userID, clientId: clientUserId, jwtToken: connectionData.jwt))
+
+                // migrate if needed
+                let frictionlessProfile = try await frictionlessProfileMigrator.migrateUserToFrictionlessUserIfNeeded(
+                    profile: connectionData.profile, userId: connectionData.userID)
+
+                var profileFilledWithClientUserInfo: StorableCurrentUserProfile?
+                if let clientUserProfile = try? await clientUserProfileDatabase.getProfile(clientUserId: clientUserId) {
+                    let clientUser = ClientUser(userId: clientUserId, profile: clientUserProfile)
+                    profileFilledWithClientUserInfo = try await clientUserProfileMerger.updateProfileWithClientUser(
+                        clientUser, profile: frictionlessProfile, userId: connectionData.userID)
                 }
+                try await userProfileDatabase.upsert(profile: profileFilledWithClientUserInfo ?? frictionlessProfile)
             case let .fail(failure):
                 let detailedErrors = failure.errors.map { ExchangeTokenError.DetailedError(from: $0) }
                 throw ExchangeTokenError.detailedErrors(detailedErrors)
@@ -342,100 +352,4 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     public func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) {
         preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
     }
-
-    private func updateProfileWithClientUser(profile: StorableCurrentUserProfile, clientUser: ClientUser, userId: String) async throws -> StorableCurrentUserProfile? {
-        let appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField> = switch connectionMode {
-        case let .sso(config): config.appManagedFields
-        default: []
-        }
-        var hasUpdate = false
-        let nickname: EditableProfile.FieldUpdate<String>
-        let hasConfirmedNickname: EditableProfile.FieldUpdate<Bool>
-        let findAvailableNickname: Bool
-        // update the field if is appManaged or if the user has not yet confirmed it
-        if (appManagedFields.contains(.nickname) || !(profile.hasConfirmedNickname ?? true)),
-           let clientNickname = clientUser.profile.nickname?.nilIfEmpty,
-           // check with the original nickname first because the nickname can vary from the one requested
-           (profile.originalNickname ?? profile.nickname) != clientNickname {
-            if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profile.nickname), new: \(clientNickname))") }
-            nickname = .updated(clientNickname)
-            hasConfirmedNickname = appManagedFields.contains(.nickname) ? .updated(true) : .notUpdated
-            findAvailableNickname = !appManagedFields.contains(.nickname)
-            hasUpdate = true
-        } else {
-            nickname = .notUpdated
-            hasConfirmedNickname = .notUpdated
-            findAvailableNickname = false
-        }
-
-        let bio: EditableProfile.FieldUpdate<String?>
-        let hasConfirmedBio: EditableProfile.FieldUpdate<Bool>
-        if (appManagedFields.contains(.bio) || !(profile.hasConfirmedBio ?? true)),
-           profile.bio?.nilIfEmpty != clientUser.profile.bio?.nilIfEmpty {
-            if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profile.bio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
-            bio = .updated(clientUser.profile.bio)
-            hasConfirmedBio = appManagedFields.contains(.bio) ? .updated(true) : .notUpdated
-            hasUpdate = true
-        } else {
-            bio = .notUpdated
-            hasConfirmedBio = .notUpdated
-        }
-
-        let picture: EditableProfile.FieldUpdate<Data?>
-        let hasConfirmedPicture: EditableProfile.FieldUpdate<Bool>
-        if (appManagedFields.contains(.picture) || !(profile.hasConfirmedPicture ?? true)),
-           clientUser.profile.picture != nil || profile.pictureUrl != nil {
-            if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
-            picture = .updated(clientUser.profile.picture)
-            hasConfirmedPicture = appManagedFields.contains(.picture) ? .updated(true) : .notUpdated
-            hasUpdate = true
-        } else {
-            picture = .notUpdated
-            hasConfirmedPicture = .notUpdated
-        }
-
-        if hasUpdate {
-            do {
-                var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated
-                if case let .updated(imageData) = picture {
-                    if let imageData {
-                        let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
-                        pictureUpdate = .updated((imgData: resizedImgData, isCompressed: isCompressed))
-                    } else {
-                        pictureUpdate = .updated(nil)
-                    }
-                }
-                let response = try await remoteClient.userService.updateProfile(
-                    userId: userId,
-                    profile: .init(
-                        nickname: nickname.backendValue,
-                        bio: bio.backendValue,
-                        picture: pictureUpdate.backendValue,
-                        hasConfirmedNickname: hasConfirmedNickname.backendValue,
-                        hasConfirmedBio: hasConfirmedBio.backendValue,
-                        hasConfirmedPicture: hasConfirmedPicture.backendValue,
-                        optFindAvailableNickname: findAvailableNickname
-                    ),
-                    authenticationMethod: try authenticatedCallProvider.authenticatedMethod())
-                switch response.result {
-                case let .success(content):
-                    if let profile = StorableCurrentUserProfile(from: content.profile, userId: userId) {
-                        return profile
-                    } else {
-                        throw UpdateProfile.Error.serverCall(.other(nil))
-                    }
-
-                case let .fail(failure):
-                    throw UpdateProfile.Error.validation(.init(from: failure))
-                case .none:
-                    throw UpdateProfile.Error.serverCall(.other(nil))
-                }
-            } catch {
-                // rollback client picture hash
-                if #available(iOS 14, *) { Logger.profile.debug("Error syncing profile: \(error)") }
-            }
-        }
-        return nil
-    }
-
 }

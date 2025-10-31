@@ -48,21 +48,17 @@ struct CustomThemeView: View {
             Button("Open Octopus Home Screen as full screen modal") {
                 // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                 showFullScreen {
-                    if let octopus = viewModel.octopus {
-                        OctopusUIView(
-                            octopus: octopus,
-                            // customize the leading nav bar item of the main screen.
-                            // Either pass `.logo` to display the logo you provided in the theme, or `.text` to display
-                            // a text you provide.
-                            navBarLeadingItem: titleAsLogo ? .logo : .text(.init(text: "Bake It")),
-                            // pass true to use the primary color you provided in the theme on the nav bar of the main
-                            // screen. Otherwise it will be the default nav bar color.
-                            navBarPrimaryColor: navBarWithColor)
-                            /// Pass the custom theme
-                            .environment(\.octopusTheme, appTheme)
-                    } else {
-                        EmptyView()
-                    }
+                    OctopusUIView(
+                        octopus: viewModel.octopus,
+                        // customize the leading nav bar item of the main screen.
+                        // Either pass `.logo` to display the logo you provided in the theme, or `.text` to display
+                        // a text you provide.
+                        navBarLeadingItem: titleAsLogo ? .logo : .text(.init(text: "Bake It")),
+                        // pass true to use the primary color you provided in the theme on the nav bar of the main
+                        // screen. Otherwise it will be the default nav bar color.
+                        navBarPrimaryColor: navBarWithColor)
+                    /// Pass the custom theme
+                    .environment(\.octopusTheme, appTheme)
                 }
             }
             Spacer()

@@ -22,30 +22,25 @@ class AppUserManager {
             .removeDuplicates()
             .sink { [unowned self] in
                 appUser = $0
-            }.store(in: &storage)
 
-        // As soon as the user changes, inform the SDK
-        Publishers.CombineLatest3(
-            SDKConfigManager.instance.$sdkConfig,
-            OctopusSDKProvider.instance.$octopus,
-            $appUser
-        ).sink { sdkConfig, octopus, appUser in
-            guard case .sso = sdkConfig?.authKind, let octopus else { return }
-            if let appUser {
-                let clientUser = ClientUser(
-                    userId: appUser.userId,
-                    profile: .init(nickname: appUser.nickname, bio: appUser.bio,
-                                   picture: appUser.picture))
-                octopus.connectUser(
-                    clientUser,
-                    tokenProvider: { [weak self] in
-                        guard let self else { throw NSError(domain: "", code: 0, userInfo: nil) }
-                        return try await self.tokenProvider.getClientUserToken(userId: appUser.userId)
-                    })
-            } else {
-                octopus.disconnectUser()
-            }
-        }.store(in: &storage)
+                let octopus = OctopusSDKProvider.instance.octopus
+                let sdkConfig = SDKConfigManager.instance.sdkConfig
+                guard case .sso = sdkConfig?.authKind, let octopus else { return }
+                if let appUser {
+                    let clientUser = ClientUser(
+                        userId: appUser.userId,
+                        profile: .init(nickname: appUser.nickname, bio: appUser.bio,
+                                       picture: appUser.picture))
+                    octopus.connectUser(
+                        clientUser,
+                        tokenProvider: { [weak self] in
+                            guard let self else { throw NSError(domain: "", code: 0, userInfo: nil) }
+                            return try await self.tokenProvider.getClientUserToken(userId: appUser.userId)
+                        })
+                } else {
+                    octopus.disconnectUser()
+                }
+            }.store(in: &storage)
     }
 
     func set(appUser: AppUser?) {

@@ -14,10 +14,12 @@ struct BridgeToClientObjectView: View {
     @StateObjectCompat private var viewModel = BridgeToClientObjectViewModel()
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             Button(action: { viewModel.recipePushed = stableRecipe }) {
                 Text("Canele Recipe")
             }
+
+            Spacer().frame(height: 40)
 
             Button(action: { viewModel.recipePushed = newRecipe }) {
                 Text("Random identifier (new each time the sample is launched)")
@@ -26,14 +28,10 @@ struct BridgeToClientObjectView: View {
 
             Button(action: {
                 showFullScreen {
-                    if let octopus = viewModel.octopus {
-                        OctopusUIView(octopus: octopus)
-                            .fullScreenCover(item: $viewModel.recipePresented) { recipe in
-                                RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
-                            }
-                    } else {
-                        EmptyView()
-                    }
+                    OctopusUIView(octopus: viewModel.octopus)
+                        .fullScreenCover(item: $viewModel.recipePresented) { recipe in
+                            RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
+                        }
                 }
             }) {
                 Text("Open Octopus Home Screen")
@@ -57,12 +55,10 @@ struct BridgeToClientObjectView: View {
             )
         )
         .sheet(isPresented: $viewModel.displayOctopusAsSheet) {
-            if let octopus = viewModel.octopus {
-                OctopusUIView(octopus: octopus, postId: viewModel.octopusPostId)
-                    .fullScreenCover(item: $viewModel.recipePresented) { recipe in
-                        RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
-                    }
-            }
+            OctopusUIView(octopus: viewModel.octopus, postId: viewModel.octopusPostId)
+                .fullScreenCover(item: $viewModel.recipePresented) { recipe in
+                    RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
+                }
         }
         .onAppear {
             viewModel.configureSDK()
@@ -95,14 +91,20 @@ private struct RecipeView: View {
     let recipe: Recipe
     @Binding var postIdToDisplay: String?
 
-    @StateObjectCompat private var viewModel = RecipeViewModel()
+    @StateObjectCompat private var viewModel: RecipeViewModel
+    @State private var shouldDisplayPost = false
+
+    init(recipe: Recipe, postIdToDisplay: Binding<String?>) {
+        self.recipe = recipe
+        self._postIdToDisplay = postIdToDisplay
+        self._viewModel = StateObjectCompat(wrappedValue: RecipeViewModel(recipe: recipe))
+    }
 
     var body: some View {
         GeometryReader { geometry in
             VStack {
                 Text(recipe.title)
                     .font(.headline.bold())
-                    .padding()
                 ScrollView {
                     VStack {
                         switch recipe.img {
@@ -132,7 +134,12 @@ private struct RecipeView: View {
                         }
                         ZStack {
                             Button(action: {
-                                viewModel.getBridgePostId(recipe: recipe)
+                                if let post = viewModel.post {
+                                    postIdToDisplay = post.id
+                                } else {
+                                    shouldDisplayPost = true
+                                    viewModel.getBridgePost(recipe: recipe)
+                                }
                             }) {
                                 Text(recipe.cta)
                                     .padding(.horizontal)
@@ -148,23 +155,39 @@ private struct RecipeView: View {
                                 ProgressView()
                             }
                         }
+                        if let post = viewModel.post {
+                            HStack {
+                                Text("\(post.commentCount) comments")
+                                    .font(.caption)
+                                Text("\(post.viewCount) views")
+                                    .font(.caption)
+                                Spacer()
+                                ForEach(post.reactions.indices, id:\.self) { index in
+                                    let reactionCount = post.reactions[index]
+                                    Text("\(reactionCount.count)\(reactionCount.reaction.unicode)")
+                                        .font(.caption)
+                                }
+                            }
+                            .padding(.vertical)
+                        }
                         if #available(iOS 15, *) {
                             Text((try? AttributedString(
                                 markdown: recipe.text,
                                 options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))
                             ) ?? AttributedString(recipe.text))
-                            .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .multilineTextAlignment(.leading)
                         } else {
                             Text(recipe.text)
-                                .padding()
                         }
                     }
                 }
             }
-            .onValueChanged(of: viewModel.octopusPostId) {
-                guard $0 != nil else { return }
-                postIdToDisplay = $0
-                viewModel.octopusPostId = nil
+            .padding()
+            .onReceive(viewModel.$post) {
+                guard let post = $0, shouldDisplayPost else { return }
+                postIdToDisplay = post.id
+                shouldDisplayPost = false
             }
             .modify {
                 if #available(iOS 15.0, *) {

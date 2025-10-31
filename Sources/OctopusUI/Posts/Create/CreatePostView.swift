@@ -26,11 +26,14 @@ struct CreatePostView: View {
 
     var body: some View {
         ContentView(isLoading: viewModel.isLoading,
+                    displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendButtonAvailable,
                     text: $viewModel.text,
                     attachment: $viewModel.attachment,
                     textError: viewModel.textError,
                     pictureError: viewModel.pictureError,
                     pollError: viewModel.pollError,
+                    termsOfUseUrl: viewModel.termsOfUseUrl, privacyPolicyUrl: viewModel.privacyPolicyUrl,
+                    communityGuidelinesUrl: viewModel.communityGuidelinesUrl,
                     userAvatar: viewModel.userAvatar ?? .defaultImage(name: "?"),
                     selectedTopic: viewModel.selectedTopic,
                     showTopicPicker: $showTopicPicker,
@@ -141,12 +144,17 @@ struct CreatePostView: View {
 
 private struct ContentView: View {
     let isLoading: Bool
+    let displayCguText: Bool
     @Binding var text: String
     @Binding var attachment: CreatePostViewModel.Attachment?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
     let pollError: DisplayableString?
+
+    let termsOfUseUrl: URL
+    let privacyPolicyUrl: URL
+    let communityGuidelinesUrl: URL
 
     let userAvatar: Author.Avatar
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
@@ -155,8 +163,10 @@ private struct ContentView: View {
     let createPoll: () -> Void
 
     var body: some View {
-        WritingPostForm(text: $text, attachment: $attachment,
+        WritingPostForm(displayCguText: displayCguText, text: $text, attachment: $attachment,
                         textError: textError, pictureError: pictureError, pollError: pollError,
+                        termsOfUseUrl: termsOfUseUrl, privacyPolicyUrl: privacyPolicyUrl,
+                        communityGuidelinesUrl: communityGuidelinesUrl,
                         userAvatar: userAvatar, selectedTopic: selectedTopic,
                         showTopicPicker: $showTopicPicker,
                         createPoll: createPoll)
@@ -166,12 +176,18 @@ private struct ContentView: View {
 
 private struct WritingPostForm: View {
     @Environment(\.octopusTheme) private var theme
+    let displayCguText: Bool
+
     @Binding var text: String
     @Binding var attachment: CreatePostViewModel.Attachment?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
     let pollError: DisplayableString?
+
+    let termsOfUseUrl: URL
+    let privacyPolicyUrl: URL
+    let communityGuidelinesUrl: URL
 
     let userAvatar: Author.Avatar
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
@@ -184,8 +200,23 @@ private struct WritingPostForm: View {
     @State private var openPhotosPicker = false
     @State private var scrollToBottomOfId: String?
 
+    @State private var keyboardHeight: CGFloat = 0
+
+    var legalTextStr: String {
+        if #available(iOS 15, *) {
+            return String(
+                localized: "Content.Create.Legal_termOfUse:\(termsOfUseUrl.absoluteString)_privacyPolicy:\(privacyPolicyUrl.absoluteString)_communityGuidelines:\(communityGuidelinesUrl.absoluteString)",
+                bundle: .module)
+        } else {
+            return NSLocalizedString(
+                "Content.Create.Legal_termOfUse:\(termsOfUseUrl.absoluteString)_privacyPolicy:\(privacyPolicyUrl.absoluteString)_communityGuidelines:\(communityGuidelinesUrl.absoluteString)",
+                bundle: .module,
+                comment: "")
+        }
+    }
+
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             Color.white.opacity(0.0001)
                 .frame(maxWidth: .infinity)
                 .frame(height: 1)
@@ -340,54 +371,65 @@ private struct WritingPostForm: View {
                     }
                 }
 
-                if !(attachment?.hasPoll ?? false) {
-
-                    HStack(spacing: 8) {
-                        if !(attachment?.hasPoll ?? false) {
-                            Button(action: { openPhotosPicker = true }) {
-                                HStack(spacing: 4) {
-                                    Image(res: .addMedia)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 24, height: 24)
-                                    Text("Content.Create.AddPicture", bundle: .module)
+                VStack(spacing: 0) {
+                    if !(attachment?.hasPoll ?? false) {
+                        HStack(spacing: 8) {
+                            if !(attachment?.hasPoll ?? false) {
+                                Button(action: { openPhotosPicker = true }) {
+                                    HStack(spacing: 4) {
+                                        Image(res: .addMedia)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 24, height: 24)
+                                        Text("Content.Create.AddPicture", bundle: .module)
+                                    }
                                 }
+                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
-                        }
-                        if attachment == nil {
-                            Button(action: {
-                                withAnimation {
-                                    createPoll()
+                            if attachment == nil {
+                                Button(action: {
+                                    withAnimation {
+                                        createPoll()
+                                    }
+                                }) {
+                                    HStack(spacing: 4) {
+                                        Image(res: .poll)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 24, height: 24)
+                                        Text("Content.Create.AddPoll", bundle: .module)
+                                    }
                                 }
-                            }) {
-                                HStack(spacing: 4) {
-                                    Image(res: .poll)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 24, height: 24)
-                                    Text("Content.Create.AddPoll", bundle: .module)
-                                }
+                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
+                            Spacer()
                         }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, textFocused ? 16 : 0)
-                    .background(RoundedRectangle(cornerRadius: 24)
-                        .stroke(theme.colors.gray300, lineWidth: 1)
-                        .padding(.horizontal, -1)
-                        .foregroundColor(Color(.systemBackground))
-                        .overlay(
-                            Rectangle()
-                                .padding(.top, 24)
-                                .padding(.bottom, -1)
-                                .foregroundColor(Color(.systemBackground))
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 16)
+                        .background(RoundedRectangle(cornerRadius: 24)
+                            .stroke(theme.colors.gray300, lineWidth: 1)
+                            .padding(.horizontal, -1)
+                            .foregroundColor(Color(.systemBackground))
+                            .overlay(
+                                Rectangle()
+                                    .padding(.top, 24)
+                                    .padding(.bottom, -1)
+                                    .foregroundColor(Color(.systemBackground))
+                            )
                         )
-                    )
+                    }
+
+                    if displayCguText {
+                        theme.colors.gray300.frame(height: 1)
+                        RichText(legalTextStr)
+                            .font(theme.fonts.caption2.weight(.medium))
+                            .foregroundColor(theme.colors.gray900)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                    }
                 }
+                .animation(.easeInOut(duration: 0.2), value: displayCguText)
             }
         }
         .imagesPicker(isPresented: $openPhotosPicker, selection: $selectedItems, error: $imagePickingError,
@@ -405,8 +447,11 @@ private struct WritingPostForm: View {
 }
 
 #Preview {
-    ContentView(isLoading: false, text: .constant(""), attachment: .constant(nil),
+    ContentView(isLoading: false, displayCguText: true, text: .constant(""), attachment: .constant(nil),
                 textError: nil, pictureError: nil, pollError: nil,
+                termsOfUseUrl: URL(string: "www.google.com")!,
+                privacyPolicyUrl: URL(string: "www.google.com")!,
+                communityGuidelinesUrl: URL(string: "www.google.com")!,
                 userAvatar: .defaultImage(name: "toto"),
                 selectedTopic: nil, showTopicPicker: .constant(false), createPoll: { })
 }

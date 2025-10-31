@@ -74,7 +74,7 @@ private struct ContentView: View {
     }
 
     var reactionsToDisplay: [ReactionKind] {
-        reactions.filter { $0.count > 0 }.prefix(maxReactionsKind).map(\.reaction)
+        reactions.filter { $0.count > 0 }.prefix(maxReactionsKind).map(\.reactionKind)
     }
 
     var countView: some View {

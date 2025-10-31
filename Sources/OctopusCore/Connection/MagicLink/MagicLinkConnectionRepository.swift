@@ -225,13 +225,9 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
 
             switch response.result {
             case let .success(connectionData):
-                if let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID) {
-                    try await userProfileDatabase.upsert(profile: profile)
-                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
-                } else {
-                    userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
-                    throw InternalError.objectMalformed
-                }
+                let profile = StorableCurrentUserProfile(from: connectionData.profile, userId: connectionData.userID)
+                try await userProfileDatabase.upsert(profile: profile)
+                userDataStorage.store(userData: .init(id: connectionData.userID, jwtToken: connectionData.jwt))
             case let .fail(failure):
                 let detailedErrors = failure.errors.map { ConnectionError.DetailedError(from: $0) }
                 throw ConnectionError.detailedErrors(detailedErrors)
@@ -256,26 +252,22 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
             guard let magicLinkRequest else { return false }
             switch response.result {
             case .success(let success):
-                if let profile = StorableCurrentUserProfile(from: success.profile, userId: success.userID) {
-                    Task {
-                        try await userProfileDatabase.upsert(profile: profile)
-                        // wait for the db to be sure to have all information about the profile in the db to avoid
-                        // a race condition where the user data is here but not yet the profile.
-                        // In this case, the create profile is displayed and at the next run loop since the profile is
-                        // here, the screen is popped and the magic link screen is displayed
-                        userInDbCancellable = userProfileDatabase.profilePublisher(userId: success.userID)
-                            .replaceError(with: nil)
-                            .first { $0 != nil }
-                            .receive(on: DispatchQueue.main)
-                            .sink { [unowned self] result in
-                                userDataStorage.store(userData: .init(id: success.userID, jwtToken: success.jwt))
-                                userDataStorage.store(magicLinkData: nil)
-                                userInDbCancellable = nil
-                            }
-                    }
-                } else {
-                    userDataStorage.store(userData: .init(id: success.userID, jwtToken: success.jwt))
-                    userDataStorage.store(magicLinkData: nil)
+                let profile = StorableCurrentUserProfile(from: success.profile, userId: success.userID)
+                Task {
+                    try await userProfileDatabase.upsert(profile: profile)
+                    // wait for the db to be sure to have all information about the profile in the db to avoid
+                    // a race condition where the user data is here but not yet the profile.
+                    // In this case, the create profile is displayed and at the next run loop since the profile is
+                    // here, the screen is popped and the magic link screen is displayed
+                    userInDbCancellable = userProfileDatabase.profilePublisher(userId: success.userID)
+                        .replaceError(with: nil)
+                        .first { $0 != nil }
+                        .receive(on: DispatchQueue.main)
+                        .sink { [unowned self] result in
+                            userDataStorage.store(userData: .init(id: success.userID, jwtToken: success.jwt))
+                            userDataStorage.store(magicLinkData: nil)
+                            userInDbCancellable = nil
+                        }
                 }
                 return true
             case .error(let error):

@@ -16,7 +16,7 @@ class CommentDetailViewModel: ObservableObject {
     struct CommentDetail: Equatable {
         let uuid: String
         let parentId: String
-        let text: String?
+        let text: TranslatableText?
         let image: ImageMedia?
         let author: Author
         let relativeDate: String
@@ -72,6 +72,7 @@ class CommentDetailViewModel: ObservableObject {
     let octopus: OctopusSDK
     let commentUuid: String
     let connectedActionChecker: ConnectedActionChecker
+    private let translationStore: ContentTranslationPreferenceStore
 
     private var newestFirstRepliesFeed: Feed<Reply, Never>?
     private var reply: Bool
@@ -92,8 +93,11 @@ class CommentDetailViewModel: ObservableObject {
         return relativeDateFormatter
     }()
 
-    init(octopus: OctopusSDK, commentUuid: String, reply: Bool, replyToScrollTo: String?) {
+    init(octopus: OctopusSDK,
+         translationStore: ContentTranslationPreferenceStore,
+         commentUuid: String, reply: Bool, replyToScrollTo: String?) {
         self.octopus = octopus
+        self.translationStore = translationStore
         self.commentUuid = commentUuid
         self.reply = reply
         self.replyToScrollTo = replyToScrollTo
@@ -575,7 +579,9 @@ class CommentDetailViewModel: ObservableObject {
 
     private func set(reaction: ReactionKind?, comment: Comment) async {
         do {
-            try await octopus.core.commentsRepository.set(reaction: reaction, comment: comment)
+            try await octopus.core.commentsRepository.set(
+                reaction: reaction, comment: comment,
+                parentIsTranslated: translationStore.displayTranslation(for: comment.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -606,7 +612,9 @@ class CommentDetailViewModel: ObservableObject {
 
     private func set(reaction: ReactionKind?, reply: Reply) async {
         do {
-            try await octopus.core.repliesRepository.set(reaction: reaction, reply: reply)
+            try await octopus.core.repliesRepository.set(
+                reaction: reaction, reply: reply,
+                parentIsTranslated: translationStore.displayTranslation(for: reply.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):

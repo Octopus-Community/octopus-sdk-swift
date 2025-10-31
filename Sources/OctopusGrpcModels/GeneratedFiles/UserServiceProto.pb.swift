@@ -1672,49 +1672,10 @@ public struct Com_Octopuscommunity_SearchUserRequest: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var by: Com_Octopuscommunity_SearchUserRequest.OneOf_By? = nil
-
-  public var userID: String {
-    get {
-      if case .userID(let v)? = by {return v}
-      return String()
-    }
-    set {by = .userID(newValue)}
-  }
-
-  public var clientUserID: String {
-    get {
-      if case .clientUserID(let v)? = by {return v}
-      return String()
-    }
-    set {by = .clientUserID(newValue)}
-  }
-
-  public var nickname: String {
-    get {
-      if case .nickname(let v)? = by {return v}
-      return String()
-    }
-    set {by = .nickname(newValue)}
-  }
-
-  public var email: String {
-    get {
-      if case .email(let v)? = by {return v}
-      return String()
-    }
-    set {by = .email(newValue)}
-  }
+  /// Can be userId, clientUserId, nickname or email
+  public var filterValue: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public enum OneOf_By: Equatable, Sendable {
-    case userID(String)
-    case clientUserID(String)
-    case nickname(String)
-    case email(String)
-
-  }
 
   public init() {}
 }
@@ -1724,20 +1685,11 @@ public struct Com_Octopuscommunity_SearchUserResponse: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var profile: Com_Octopuscommunity_PublicProfile {
-    get {return _profile ?? Com_Octopuscommunity_PublicProfile()}
-    set {_profile = newValue}
-  }
-  /// Returns true if `profile` has been explicitly set.
-  public var hasProfile: Bool {return self._profile != nil}
-  /// Clears the value of `profile`. Subsequent reads from it will return its default value.
-  public mutating func clearProfile() {self._profile = nil}
+  public var profiles: [Com_Octopuscommunity_PublicProfile] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
-
-  fileprivate var _profile: Com_Octopuscommunity_PublicProfile? = nil
 }
 
 public struct Com_Octopuscommunity_SetProfileTagRequest: Sendable {
@@ -4543,10 +4495,7 @@ extension Com_Octopuscommunity_CanAccessCommunityResponse: SwiftProtobuf.Message
 extension Com_Octopuscommunity_SearchUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SearchUserRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "clientUserId"),
-    3: .same(proto: "nickname"),
-    4: .same(proto: "email"),
+    1: .same(proto: "filterValue"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4555,72 +4504,21 @@ extension Com_Octopuscommunity_SearchUserRequest: SwiftProtobuf.Message, SwiftPr
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.by != nil {try decoder.handleConflictingOneOf()}
-          self.by = .userID(v)
-        }
-      }()
-      case 2: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.by != nil {try decoder.handleConflictingOneOf()}
-          self.by = .clientUserID(v)
-        }
-      }()
-      case 3: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.by != nil {try decoder.handleConflictingOneOf()}
-          self.by = .nickname(v)
-        }
-      }()
-      case 4: try {
-        var v: String?
-        try decoder.decodeSingularStringField(value: &v)
-        if let v = v {
-          if self.by != nil {try decoder.handleConflictingOneOf()}
-          self.by = .email(v)
-        }
-      }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self.filterValue) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    switch self.by {
-    case .userID?: try {
-      guard case .userID(let v)? = self.by else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 1)
-    }()
-    case .clientUserID?: try {
-      guard case .clientUserID(let v)? = self.by else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
-    }()
-    case .nickname?: try {
-      guard case .nickname(let v)? = self.by else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
-    }()
-    case .email?: try {
-      guard case .email(let v)? = self.by else { preconditionFailure() }
-      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
-    }()
-    case nil: break
+    if !self.filterValue.isEmpty {
+      try visitor.visitSingularStringField(value: self.filterValue, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_SearchUserRequest, rhs: Com_Octopuscommunity_SearchUserRequest) -> Bool {
-    if lhs.by != rhs.by {return false}
+    if lhs.filterValue != rhs.filterValue {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4629,7 +4527,7 @@ extension Com_Octopuscommunity_SearchUserRequest: SwiftProtobuf.Message, SwiftPr
 extension Com_Octopuscommunity_SearchUserResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SearchUserResponse"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "profile"),
+    1: .same(proto: "profiles"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4638,25 +4536,21 @@ extension Com_Octopuscommunity_SearchUserResponse: SwiftProtobuf.Message, SwiftP
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._profile) }()
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.profiles) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._profile {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
+    if !self.profiles.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.profiles, fieldNumber: 1)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_SearchUserResponse, rhs: Com_Octopuscommunity_SearchUserResponse) -> Bool {
-    if lhs._profile != rhs._profile {return false}
+    if lhs.profiles != rhs.profiles {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

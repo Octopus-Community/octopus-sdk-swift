@@ -4,6 +4,7 @@
 
 import Foundation
 import UIKit
+import Octopus
 
 /// A recipe. This is considered as the `object` of your app.
 struct Recipe: Equatable {
@@ -19,6 +20,42 @@ struct Recipe: Equatable {
     let cta: String
     let octopusCatchPhrase: String
     let octopusViewClientObjectButtonText: String?
+
+    func toClientPost(topics: [Topic] = []) -> ClientPost {
+        // convert the image into an SDK Attachement
+        let attachment: ClientPost.Attachment? = switch img {
+        case let .local(imgResource):
+                .localImage(UIImage(resource: imgResource).jpegData(compressionQuality: 1.0)!)
+        case let .remote(url):
+                .distantImage(url)
+        case .none: nil
+        }
+
+        // Example of how to use the topics API: match the topic name to get the topic id
+        let topicId: String? = if let topicName {
+            topics.first(where: { $0.name == topicName })?.id
+        } else { nil }
+
+        let signature: String? = switch SDKConfigManager.instance.sdkConfig?.authKind {
+        case .sso: try? TokenProvider().getBridgeSignature()
+        default: nil
+        }
+
+        return ClientPost(
+            clientObjectId: id, // this will be used to link your Object to our post.
+            topicId: topicId,
+            text: title,
+            catchPhrase: octopusCatchPhrase,
+            attachment: attachment,
+            viewClientObjectButtonText: octopusViewClientObjectButtonText,
+            // you should use a signature if your community configuration requires it. We recommand configuring
+            // your community to require a signature for security reasons.
+            // An example of how the signature might be constructed is available in `TokenProvider` (without the
+            // need of the `sub` info in the token), but it is safer if it is your backend that provides the
+            // signature.
+            signature: signature
+        )
+    }
 }
 
 let stableRecipe = Recipe(

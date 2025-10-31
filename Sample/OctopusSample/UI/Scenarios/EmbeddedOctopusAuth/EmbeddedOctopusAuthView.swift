@@ -13,12 +13,8 @@ struct EmbeddedOctopusAuthView: View {
 
     var body: some View {
         Group {
-            if let octopus = viewModel.octopus {
-                // You can pass a `bottomSafeAreaInset` in order to add some safe area at the bottom of `OctopusHomeScreen`.
-                OctopusUIView(octopus: octopus, bottomSafeAreaInset: 10)
-            } else {
-                Color.red
-            }
+            // You can pass a `bottomSafeAreaInset` in order to add some safe area at the bottom of `OctopusHomeScreen`.
+            OctopusUIView(octopus: viewModel.octopus, bottomSafeAreaInset: 10)
         }
     }
 }

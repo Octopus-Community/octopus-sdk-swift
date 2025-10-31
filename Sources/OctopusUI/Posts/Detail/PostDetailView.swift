@@ -12,6 +12,7 @@ struct PostDetailView: View {
     @Environment(\.presentationMode) private var presentationMode
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     @Compat.StateObject private var viewModel: PostDetailViewModel
 
@@ -32,7 +33,8 @@ struct PostDetailView: View {
 
     private let canClose: Bool
     
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, postUuid: String,
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
+         postUuid: String,
          comment: Bool,
          commentToScrollTo: String?,
          scrollToMostRecentComment: Bool = false,
@@ -40,7 +42,8 @@ struct PostDetailView: View {
          hasFeaturedComment: Bool,
          canClose: Bool = false) {
         _viewModel = Compat.StateObject(wrappedValue: PostDetailViewModel(
-            octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postUuid,
+            octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
+            postUuid: postUuid,
             commentToScrollTo: commentToScrollTo,
             scrollToMostRecentComment: scrollToMostRecentComment,
             origin: origin,
@@ -87,6 +90,7 @@ struct PostDetailView: View {
                 )
 
                 CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
+                                  translationStore: translationStore,
                                   textFocused: $commentTextFocused,
                                   hasChanges: $commentHasChanges,
                                   ensureConnected: viewModel.ensureConnected)
@@ -324,6 +328,7 @@ private struct ContentView: View {
 
 private struct PostDetailContentView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     let post: PostDetailViewModel.Post
     let comments: [DisplayableFeedResponse]?
@@ -348,6 +353,8 @@ private struct PostDetailContentView: View {
 
     private let horizontalPadding = CGFloat(16)
     private let minAspectRatio: CGFloat = 4 / 5
+
+    var displayTranslation: Bool { translationStore.displayTranslation(for: post.uuid) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -401,17 +408,23 @@ private struct PostDetailContentView: View {
 
                     Spacer().frame(height: 10)
 
-                    RichText(post.text)
+                    RichText(post.text.getText(translated: displayTranslation))
                         .font(theme.fonts.body2)
                         .lineSpacing(4)
                         .foregroundColor(theme.colors.gray900)
                         .fixedSize(horizontal: false, vertical: true)
                     if let catchPhrase = post.catchPhrase {
                         Spacer().frame(height: 4)
-                        Text(catchPhrase)
+                        Text(catchPhrase.getText(translated: displayTranslation))
                             .font(theme.fonts.body2)
                             .fontWeight(.semibold)
                             .foregroundColor(theme.colors.gray900)
+                    }
+
+                    if !hasPoll && post.text.hasTranslation {
+                        ToggleTextTranslationButton(
+                            contentId: post.uuid, originalLanguage: post.text.originalLanguage)
+                            .padding(.top, 6)
                     }
 
                     Spacer().frame(height: 10)
@@ -452,8 +465,15 @@ private struct PostDetailContentView: View {
                     PollView(poll: poll,
                              aggregatedInfo: post.aggregatedInfo,
                              userInteractions: post.userInteractions,
+                             parentId: post.uuid,
                              vote: voteOnPoll)
                     .padding(.horizontal, horizontalPadding)
+
+                    if post.text.hasTranslation {
+                        ToggleTextTranslationButton(contentId: post.uuid, originalLanguage: post.text.originalLanguage)
+                            .padding(.horizontal, horizontalPadding)
+                            .padding(.top, 6)
+                    }
                 case .none:
                     EmptyView()
                 }
@@ -464,7 +484,7 @@ private struct PostDetailContentView: View {
                     HStack {
                         Spacer()
                         Button(action: { displayClientObject(bridgeCTA.clientObjectId) }) {
-                            Text(bridgeCTA.text)
+                            Text(bridgeCTA.text.getText(translated: displayTranslation))
                                 .lineLimit(1)
                         }
                         .buttonStyle(OctopusButtonStyle(.mid))
@@ -479,7 +499,6 @@ private struct PostDetailContentView: View {
                     childrenTapped: { openCreateComment() })
                 .padding(.horizontal, horizontalPadding)
                 .padding(.bottom, 3)
-                .animation(.default)
 
                 Spacer().frame(height: 8)
 
@@ -497,7 +516,6 @@ private struct PostDetailContentView: View {
                     .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
                 }
                 .padding(.horizontal, horizontalPadding)
-                .animation(.default)
             }
             .padding(.bottom, 16)
 
@@ -565,6 +583,14 @@ private struct PostDetailContentView: View {
         buttons.append(.cancel())
         return buttons
     }
+
+    var hasPoll: Bool {
+        switch post.attachment {
+        case .poll: return true
+        default: return false
+        }
+    }
+
 }
 
 private struct CommentsView: View {

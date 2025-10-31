@@ -8,6 +8,8 @@ import OctopusCore
 
 struct ResponseFeedItemView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+
     let response: DisplayableFeedResponse
     var displayChildCount: Bool = true
     var tapToOpenDetail: Bool = false
@@ -27,6 +29,8 @@ struct ResponseFeedItemView: View {
 
     private let minAspectRatio: CGFloat = 4 / 5
 
+    var displayTranslation: Bool { translationStore.displayTranslation(for: response.uuid) }
+
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             OpenProfileButton(author: response.author, displayProfile: displayProfile) {
@@ -34,8 +38,8 @@ struct ResponseFeedItemView: View {
                     .frame(width: 32, height: 32)
             }
             VStack(spacing: 0) {
-                VStack {
-                    VStack(alignment: .leading) {
+                VStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 4) {
                             AuthorAndDateHeaderView(author: response.author, relativeDate: response.relativeDate,
                                                     displayProfile: displayProfile)
@@ -73,10 +77,14 @@ struct ResponseFeedItemView: View {
                                 }
                             }
                         }
-                        if let text = response.text?.nilIfEmpty {
+
+                        if let translatableText = response.text,
+                           let text = translatableText.getText(translated: displayTranslation).nilIfEmpty {
+                            Spacer().frame(height: 8)
+
                             Button(action: { displayParentDetail(response.uuid )}) {
                                 Group {
-                                    if response.textIsEllipsized {
+                                    if translatableText.getIsEllipsized(translated: displayTranslation) {
                                         Text(verbatim: "\(text)... ")
                                         +
                                         Text("Common.ReadMore", bundle: .module)
@@ -94,6 +102,12 @@ struct ResponseFeedItemView: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .allowsHitTesting(tapToOpenDetail)
                             .buttonStyle(.plain)
+
+                            if translatableText.hasTranslation {
+                                ToggleTextTranslationButton(contentId: response.uuid,
+                                                            originalLanguage: translatableText.originalLanguage)
+                                    .padding(.top, 6)
+                            }
                         }
 
                     }
@@ -129,6 +143,7 @@ struct ResponseFeedItemView: View {
                                     }
                             })
                         .cornerRadius(12)
+                        .padding(.top, 4)
                     }
                 }
                 .frame(maxWidth: .infinity)

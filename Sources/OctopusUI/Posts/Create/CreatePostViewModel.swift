@@ -48,6 +48,11 @@ class CreatePostViewModel: ObservableObject {
     @Published private(set) var userAvatar: Author.Avatar?
     @Published private(set) var hasChanges = false
     @Published var authenticationAction: ConnectedActionReplacement?
+    @Published private(set) var userHasAcceptedCgu = false
+
+    let communityGuidelinesUrl: URL
+    let privacyPolicyUrl: URL
+    let termsOfUseUrl: URL
 
     var sendButtonAvailable: Bool {
         !isLoading &&
@@ -80,6 +85,11 @@ class CreatePostViewModel: ObservableObject {
         pollValidator = octopus.core.validators.poll
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
+        let externalLinksRepository = octopus.core.externalLinksRepository
+        communityGuidelinesUrl = externalLinksRepository.communityGuidelines
+        privacyPolicyUrl = externalLinksRepository.privacyPolicy
+        termsOfUseUrl = externalLinksRepository.termsOfUse
+
         if withPoll {
             createPoll()
         }
@@ -105,6 +115,7 @@ class CreatePostViewModel: ObservableObject {
             $isLoading.removeDuplicates()
         ).sink { [unowned self] profile, currentError, isLoading in
             guard let profile else { return }
+            userHasAcceptedCgu = profile.hasAcceptedCgu
             if !profile.isGuest || profile.hasConfirmedNickname {
                 if isWaitingToSendPost {
                     isWaitingToSendPost = false
@@ -193,6 +204,25 @@ class CreatePostViewModel: ObservableObject {
     }
 
     private func send(post: WritablePost) async {
+        do {
+            if let profile = octopus.core.profileRepository.profile, !profile.hasAcceptedCgu {
+                try await octopus.core.profileRepository.updateCurrentUserProfile(with: .init(
+                    hasAcceptedCgu: .updated(true)
+                ))
+            }
+        } catch {
+            switch error {
+            case let .validation(argumentError):
+                for (_, errors) in argumentError.errors {
+                    let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
+                    self.alertError = .localizedString(multiErrorLocalizedString)
+                }
+            case let .serverCall(serverError):
+                self.alertError = serverError.displayableMessage
+            }
+            // do not send the message if we cannot update the profile
+            return
+        }
         do {
             let (createdPost, imageData) = try await octopus.core.postsRepository.send(post)
             if let imageData, let image = UIImage(data: imageData), let imageUrl = createdPost.medias.first?.url {

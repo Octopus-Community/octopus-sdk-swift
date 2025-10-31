@@ -36,11 +36,7 @@ struct ForceOctopusABTestsView: View {
             Button(action: {
                 // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                 showFullScreen {
-                    if let octopus = viewModel.octopus {
-                        OctopusUIView(octopus: octopus)
-                    } else {
-                        EmptyView()
-                    }
+                    OctopusUIView(octopus: viewModel.octopus)
                 }
             }) {
                 Text("Open Octopus Home Screen")

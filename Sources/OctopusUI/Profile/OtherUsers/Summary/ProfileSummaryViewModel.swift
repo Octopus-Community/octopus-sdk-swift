@@ -33,7 +33,7 @@ class ProfileSummaryViewModel: ObservableObject {
 
     private var storage = [AnyCancellable]()
 
-    init(octopus: OctopusSDK, profileId: String) {
+    init(octopus: OctopusSDK, translationStore: ContentTranslationPreferenceStore, profileId: String) {
         self.octopus = octopus
         self.profileId = profileId
         self.connectedActionChecker = ConnectedActionChecker(octopus: octopus)
@@ -48,6 +48,7 @@ class ProfileSummaryViewModel: ObservableObject {
                     if postFeedViewModel?.feed.id != newestFirstPostsFeed.id {
                         postFeedViewModel = PostFeedViewModel(
                             octopus: octopus, postFeed: newestFirstPostsFeed,
+                            translationStore: translationStore,
                             ensureConnected: { [weak self] action in
                                 guard let self else { return false }
                                 return self.ensureConnected(action: action)

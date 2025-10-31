@@ -10,44 +10,44 @@ import Octopus
 /// A view model that displays a recipe and get (or create) the Octopus post related to the recipe
 @MainActor
 class RecipeViewModel: ObservableObject {
-    @Published private(set) var octopus: OctopusSDK?
-    @Published var octopusPostId: String?
     @Published var isLoading = false
     @Published var error: Error?
 
+    @Published private(set) var post: OctopusPost?
+
     private var storage = [AnyCancellable]()
 
-    private let octopusSDKProvider = OctopusSDKProvider.instance
-
+    private let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
     private var topicCancellable: AnyCancellable?
     private var topics: [Topic] = []
 
-    init() {
-        octopusSDKProvider.$octopus
-            .sink { [unowned self] in
-                octopus = $0
+    init(recipe: Recipe) {
+        // Listen to SDK topics changes
+        topicCancellable = octopus.$topics.sink { [unowned self] in
+            self.topics = $0
+        }
 
-                guard let octopus else { return }
-                // Listen to SDK topics changes
-                topicCancellable = octopus.$topics.sink { [unowned self] in
-                    self.topics = $0
-                }
-                // Ask to update the topics
-                Task {
-                    try await octopus.fetchTopics()
-                }
+        // Ask to update the topics
+        Task {
+            try await octopus.fetchTopics()
+            await getBridgePost(recipe: recipe)
+        }
+
+        octopus.getClientObjectRelatedPostPublisher(clientObjectId: recipe.id)
+            .sink { [unowned self] post in
+                self.post = post
             }.store(in: &storage)
     }
 
-    func getBridgePostId(recipe: Recipe) {
+    func getBridgePost(recipe: Recipe) {
         isLoading = true
         Task {
-            await getBridgePostId(recipe: recipe)
+            await getBridgePost(recipe: recipe)
             isLoading = false
         }
     }
 
-    func getBridgePostId(recipe: Recipe) async {
+    func getBridgePost(recipe: Recipe) async {
         // convert the image into an SDK Attachement
         let attachment: ClientPost.Attachment? = switch recipe.img {
         case let .local(imgResource):
@@ -61,8 +61,14 @@ class RecipeViewModel: ObservableObject {
         let topicId: String? = if let topicName = recipe.topicName {
             topics.first(where: { $0.name == topicName })?.id
         } else { nil }
+
+        let signature: String? = switch SDKConfigManager.instance.sdkConfig?.authKind {
+        case .sso: try? TokenProvider().getBridgeSignature()
+        default: nil
+        }
+
         do {
-            let postId = try await octopus?.getOrCreateClientObjectRelatedPostId(
+            post = try await octopus.fetchOrCreateClientObjectRelatedPost(
                 content: ClientPost(
                     clientObjectId: recipe.id,
                     topicId: topicId,
@@ -75,19 +81,11 @@ class RecipeViewModel: ObservableObject {
                     // An example of how the signature might be constructed is available in `TokenProvider` (without the
                     // need of the `sub` info in the token), but it is safer if it is your backend that provides the
                     // signature.
-                    signature: getSignature()
+                    signature: signature
                 )
             )
-            octopusPostId = postId
         } catch {
             self.error = error
-        }
-    }
-
-    private func getSignature() throws -> String? {
-        return switch SDKConfigManager.instance.sdkConfig?.authKind {
-        case .sso: try TokenProvider().getBridgeSignature()
-        default: nil
         }
     }
 }

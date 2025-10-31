@@ -8,7 +8,7 @@ import SwiftProtobuf
 
 struct StorablePost: StorableContent, Equatable {
     let uuid: String
-    let text: String
+    let text: TranslatableText
     let medias: [Media]
     let poll: Poll?
     let author: MinimalProfile?
@@ -20,8 +20,8 @@ struct StorablePost: StorableContent, Equatable {
     let descCommentFeedId: String?
     let ascCommentFeedId: String?
     let clientObjectId: String?
-    let catchPhrase: String?
-    let ctaText: String?
+    let catchPhrase: TranslatableText?
+    let ctaText: TranslatableText?
 
     let aggregatedInfo: AggregatedInfo?
     let userInteractions: UserInteractions?
@@ -30,7 +30,8 @@ struct StorablePost: StorableContent, Equatable {
 extension StorablePost {
     init(from entity: PostEntity) {
         uuid = entity.uuid
-        text = entity.text
+        text = TranslatableText(originalText: entity.text, originalLanguage: entity.originalLanguage,
+                                translatedText: entity.translatedText)
         medias = entity.medias.compactMap { Media(from: $0) }
         poll = Poll(from: entity.pollOptions)
         author = MinimalProfile(from: entity)
@@ -40,8 +41,10 @@ extension StorablePost {
         statusReasons = .init(storableCodes: entity.statusReasonCodes, storableMessages: entity.statusReasonMessages)
         parentId = entity.parentId
         clientObjectId = entity.clientObjectId
-        catchPhrase = entity.catchPhrase
-        ctaText = entity.ctaText
+        catchPhrase = TranslatableText(originalText: entity.catchPhrase, originalLanguage: entity.originalLanguage,
+                                       translatedText: entity.translatedCatchPhrase)
+        ctaText = TranslatableText(originalText: entity.ctaText, originalLanguage: entity.originalLanguage,
+                                   translatedText: entity.translatedCtaText)
         descCommentFeedId = entity.descChildrenFeedId
         ascCommentFeedId = entity.ascChildrenFeedId
         aggregatedInfo = AggregatedInfo(from: entity)
@@ -55,7 +58,8 @@ extension StorablePost {
         }
         uuid = octoPost.id
         let post = octoPost.content.post
-        text = post.text
+        text = TranslatableText(originalText: post.text, originalLanguage: post.originalLanguage.nilIfEmpty,
+                                translatedText: post.translatedText.nilIfEmpty)
         if post.hasMedia {
             var mutableMedias = [Media]()
             if post.media.hasVideo, let videoMedia = Media(from: post.media.video, kind: .video) {
@@ -87,8 +91,14 @@ extension StorablePost {
 
         let bridgeInfo = post.hasBridgeToClientObject ? post.bridgeToClientObject : nil
         clientObjectId = bridgeInfo?.clientObjectID
-        catchPhrase = (bridgeInfo?.hasCatchPhrase ?? false) ? bridgeInfo?.catchPhrase : nil
-        ctaText = (bridgeInfo?.hasCta ?? false) ? bridgeInfo?.cta.text : nil
+        catchPhrase = (bridgeInfo?.hasCatchPhrase ?? false) ?
+            TranslatableText(originalText: bridgeInfo?.catchPhrase, originalLanguage: post.originalLanguage.nilIfEmpty,
+                             translatedText: bridgeInfo?.translatedCatchPhrase)
+            : nil
+        ctaText = (bridgeInfo?.hasCta ?? false) ?
+            TranslatableText(originalText: bridgeInfo?.cta.text, originalLanguage: post.originalLanguage.nilIfEmpty,
+                             translatedText: bridgeInfo?.cta.translatedText)
+            : nil
 
         self.aggregatedInfo = aggregate.map { .init(from: $0) }
         self.userInteractions = userInteraction.map { .init(from: $0) }

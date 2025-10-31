@@ -137,6 +137,8 @@
 				Base,
 				en,
 				fr,
+				"zh-Hant",
+				"fr-BE",
 			);
 			mainGroup = B273BB262CA1A38100715F2F;
 			minimizedProjectReferenceProxies = 1;

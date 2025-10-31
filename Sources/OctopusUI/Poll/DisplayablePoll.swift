@@ -10,7 +10,7 @@ import Combine
 struct DisplayablePoll: Equatable {
     struct Option: Sendable, Equatable {
         let id: String
-        let text: String
+        let text: TranslatableText
     }
     let options: [Option]
 }

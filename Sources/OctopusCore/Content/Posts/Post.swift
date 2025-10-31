@@ -6,7 +6,7 @@ import Foundation
 
 public struct Post: Equatable, Sendable {
     public let uuid: String
-    public let text: String
+    public let text: TranslatableText
     public let medias: [Media]
     public let poll: Poll?
     public let author: MinimalProfile?
@@ -37,8 +37,8 @@ public struct Post: Equatable, Sendable {
 
     public struct ClientObjectBridgeInfo: Equatable, Sendable {
         public let objectId: String
-        public let catchPhrase: String?
-        public let ctaText: String?
+        public let catchPhrase: TranslatableText?
+        public let ctaText: TranslatableText?
     }
 }
 
@@ -57,8 +57,8 @@ extension Post {
         if let clientObjectId = storablePost.clientObjectId {
             clientObjectBridgeInfo = ClientObjectBridgeInfo(
                 objectId: clientObjectId,
-                catchPhrase: storablePost.catchPhrase?.nilIfEmpty,
-                ctaText: storablePost.ctaText?.nilIfEmpty)
+                catchPhrase: storablePost.catchPhrase,
+                ctaText: storablePost.ctaText)
         } else {
             clientObjectBridgeInfo = nil
         }

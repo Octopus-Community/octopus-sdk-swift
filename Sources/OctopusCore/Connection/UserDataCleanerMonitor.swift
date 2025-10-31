@@ -22,6 +22,7 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
     private let octoObjectsDatabase: OctoObjectsDatabase
     private let notificationsDatabase: NotificationsDatabase
     private let userConfigDatabase: UserConfigDatabase
+    private let clientUserProfileMerger: ClientUserProfileMerger
 
     private var storage: Set<AnyCancellable> = []
     private var magicLinkSubscription: Task<Void, Error>?
@@ -32,6 +33,7 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
         octoObjectsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
         notificationsDatabase = injector.getInjected(identifiedBy: Injected.notificationsDatabase)
         userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
+        clientUserProfileMerger = injector.getInjected(identifiedBy: Injected.clientUserProfileMerger)
     }
 
     func start() {
@@ -41,6 +43,7 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
                 Task { [self] in
                     if #available(iOS 14, *) { Logger.profile.trace("Cleaning user based data due to a logout") }
                     do {
+                        clientUserProfileMerger.clearLatestClientUser()
                         try await octoObjectsDatabase.resetUserInteractions()
                         try await notificationsDatabase.replaceAll(notifications: [])
                         try await userConfigDatabase.deleteConfig()

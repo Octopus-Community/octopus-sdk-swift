@@ -38,4 +38,7 @@
         <attribute name="originValue" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="success" attributeType="Boolean" usesScalarValueType="YES"/>
     </entity>
+    <entity name="TranslationButtonHitEvent" representedClassName="TranslationButtonHitEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="translationDisplayed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
 </model>

@@ -53,7 +53,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     }
     private let _onCurrentUserProfileUpdated = PassthroughSubject<Void, Never>()
 
-    @UserDefault(key: "OctopusSDK.client.user.picture") private var latestClientUserPicture: Data?
+    private var profileClientUserId: String?
 
     private let appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>
     private let remoteClient: OctopusRemoteClient
@@ -67,6 +67,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     private let postFeedsStore: PostFeedsStore
     private let clientUserProvider: ClientUserProvider
     private let configRepository: ConfigRepository
+    private let clientUserProfileMerger: ClientUserProfileMerger
+    private let frictionlessProfileMigrator: FrictionlessProfileMigrator
     private var storage: Set<AnyCancellable> = []
 
     init(appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>, injector: Injector) {
@@ -82,26 +84,37 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
         clientUserProvider = injector.getInjected(identifiedBy: Injected.clientUserProvider)
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
+        clientUserProfileMerger = injector.getInjected(identifiedBy: Injected.clientUserProfileMerger)
+        frictionlessProfileMigrator = injector.getInjected(identifiedBy: Injected.frictionlessProfileMigrator)
 
         userDataStorage.$userData
             .receive(on: DispatchQueue.main)
             .map { [unowned self] userData in
                 guard let userData else {
-                    return Just<CurrentUserProfile?>(nil).eraseToAnyPublisher()
+                    return Just<(CurrentUserProfile, String?)?>(nil).eraseToAnyPublisher()
                 }
                 return userProfileDatabase.profilePublisher(userId: userData.id)
                     .replaceError(with: nil)
                     .map { [unowned self] in
                         guard let storableProfile = $0 else { return nil }
-                        return CurrentUserProfile(storableProfile: storableProfile, postFeedsStore: postFeedsStore)
+                        return (CurrentUserProfile(storableProfile: storableProfile, postFeedsStore: postFeedsStore), userData.clientId)
                     }
                     .eraseToAnyPublisher()
             }
             .switchToLatest()
-            .removeDuplicates()
+            .removeDuplicates(by: {
+                let profile1 = $0?.0
+                let profile2 = $1?.0
+                let clientId1 = $0?.1
+                let clientId2 = $1?.1
+                return profile1 == profile2 && clientId1 == clientId2
+            })
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] in
-                self.profile = $0
+                let profile = $0?.0
+                let clientUserId = $0?.1
+                self.profileClientUserId = clientUserId
+                self.profile = profile
                 hasLoadedProfile = true
             }.store(in: &storage)
 
@@ -129,7 +142,14 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
             configRepository.userConfigPublisher.map { $0?.canAccessCommunity ?? false }.removeDuplicates().filter { $0 }
         )
         .sink { [unowned self] profile, clientUser, connectionAvailable, _ in
-            guard connectionAvailable, let profile, let clientUser, !profile.isGuest else { return }
+            guard connectionAvailable,
+                  let profile,
+                  let clientUser,
+                  // ensure the client user is matching the current profile
+                  // if profileClientUserId is nil, consider that it is the same profile,
+                  // just in case there is a version where the client id was not stored
+                  clientUser.userId == (profileClientUserId ?? clientUser.userId),
+                  !profile.isGuest else { return }
             Task {
                 try await updateProfileWithClientUser(clientUser, profile: profile)
             }
@@ -233,67 +253,10 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
 
     private func processCurrentUserProfileResponse(_ response: Com_Octopuscommunity_GetPrivateProfileResponse,
                                                    userId: String) async throws {
-        if !(try await migrateUserToFrictionlessUserIfNeeded(response: response, userId: userId)) {
-            guard response.hasProfile,
-                  let profile = StorableCurrentUserProfile(from: response.profile, userId: userId) else {
-                throw InternalError.objectMalformed
-            }
-            try await userProfileDatabase.upsert(profile: profile)
-        }
-    }
-
-    private func migrateUserToFrictionlessUserIfNeeded(
-        response: Com_Octopuscommunity_GetPrivateProfileResponse,
-        userId: String) async throws -> Bool {
-            guard response.hasProfile else {
-                throw InternalError.objectMalformed
-            }
-            // profile need migration only if hasConfirmedNickname is null
-            guard !response.profile.hasHasConfirmedNickname_p else {
-                return false
-            }
-            if #available(iOS 14, *) { Logger.profile.debug("Migrating user to a frictionless one.") }
-            // if nickname is not present, ask the backend to create one.
-            let profile: UpdateProfileData
-            if response.profile.nickname.nilIfEmpty != nil {
-                // This is the case of a fully created profile but comming from a non-frictionless env
-                profile = .init(
-                    hasSeenOnboarding: .updated(true),
-                    hasAcceptedCgu: .updated(true),
-                    hasConfirmedNickname: .updated(true),
-                    hasConfirmedBio: .updated(true),
-                    hasConfirmedPicture: .updated(true)
-                )
-            } else {
-                // This is the case where the user was logged in before migration but has never passed the profile
-                // creation step.
-                profile = .init(
-                    hasSeenOnboarding: .updated(false),
-                    hasAcceptedCgu: .updated(false),
-                    hasConfirmedNickname: .updated(false),
-                    hasConfirmedBio: .updated(false),
-                    hasConfirmedPicture: .updated(false),
-                    optFindAvailableNickname: true
-                )
-            }
-            let response = try await remoteClient.userService.updateProfile(
-                userId: userId,
-                profile: profile,
-                authenticationMethod: try authCallProvider.authenticatedMethod())
-            switch response.result {
-            case let .success(content):
-                if let profile = StorableCurrentUserProfile(from: content.profile, userId: userId) {
-                    try await userProfileDatabase.upsert(profile: profile)
-                } else {
-                    throw UpdateProfile.Error.serverCall(.other(nil))
-                }
-
-            case let .fail(failure):
-                throw UpdateProfile.Error.validation(.init(from: failure))
-            case .none:
-                throw UpdateProfile.Error.serverCall(.other(nil))
-            }
-            return true
+        guard response.hasProfile else { throw InternalError.objectMalformed }
+        let profile = try await frictionlessProfileMigrator.migrateUserToFrictionlessUserIfNeeded(
+            profile: response.profile, userId: userId)
+        try await userProfileDatabase.upsert(profile: profile)
     }
 
     func internalUpdateUserProfile(with profile: EditableProfile, findAvailableNickname: Bool = false)
@@ -334,13 +297,10 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 authenticationMethod: try authCallProvider.authenticatedMethod())
             switch response.result {
             case let .success(content):
-                if let profile = StorableCurrentUserProfile(from: content.profile, userId: userData.id) {
-                    try await userProfileDatabase.upsert(profile: profile)
-                    _onCurrentUserProfileUpdated.send()
-                    return (profile, resizedPicture)
-                } else {
-                    throw UpdateProfile.Error.serverCall(.other(nil))
-                }
+                let profile = StorableCurrentUserProfile(from: content.profile, userId: userData.id)
+                try await userProfileDatabase.upsert(profile: profile)
+                _onCurrentUserProfileUpdated.send()
+                return (profile, resizedPicture)
 
             case let .fail(failure):
                 throw UpdateProfile.Error.validation(.init(from: failure))
@@ -362,75 +322,12 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     }
 
     func updateProfileWithClientUser(_ clientUser: ClientUser, profile: CurrentUserProfile)
-    async throws(UpdateProfile.Error) -> (StorableCurrentUserProfile, Data?)? {
-        guard !profile.isGuest else { throw .serverCall(.other(InternalError.incorrectState)) }
-
-        var hasUpdate = false
-        let nickname: EditableProfile.FieldUpdate<String>
-        let hasConfirmedNickname: EditableProfile.FieldUpdate<Bool>
-        let findAvailableNickname: Bool
-        // update the field if is appManaged or if the user has not yet confirmed it
-        if (appManagedFields.contains(.nickname) || !profile.hasConfirmedNickname),
-           let clientNickname = clientUser.profile.nickname?.nilIfEmpty,
-           // check with the original nickname first because the nickname can vary from the one requested
-           (profile.originalNickname ?? profile.nickname) != clientNickname {
-            if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profile.nickname), new: \(clientNickname))") }
-            nickname = .updated(clientNickname)
-            hasConfirmedNickname = appManagedFields.contains(.nickname) ? .updated(true) : .notUpdated
-            findAvailableNickname = !appManagedFields.contains(.nickname)
-            hasUpdate = true
-        } else {
-            nickname = .notUpdated
-            hasConfirmedNickname = .notUpdated
-            findAvailableNickname = false
-        }
-
-        let bio: EditableProfile.FieldUpdate<String?>
-        let hasConfirmedBio: EditableProfile.FieldUpdate<Bool>
-        if (appManagedFields.contains(.bio) || !profile.hasConfirmedBio),
-           profile.bio?.nilIfEmpty != clientUser.profile.bio?.nilIfEmpty {
-            if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profile.bio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
-            bio = .updated(clientUser.profile.bio)
-            hasConfirmedBio = appManagedFields.contains(.bio) ? .updated(true) : .notUpdated
-            hasUpdate = true
-        } else {
-            bio = .notUpdated
-            hasConfirmedBio = .notUpdated
-        }
-
-        let picture: EditableProfile.FieldUpdate<Data?>
-        let hasConfirmedPicture: EditableProfile.FieldUpdate<Bool>
-        if (appManagedFields.contains(.picture) || !profile.hasConfirmedPicture),
-           latestClientUserPicture != clientUser.profile.picture,
-           clientUser.profile.picture != nil || profile.pictureUrl != nil {
-            if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
-            picture = .updated(clientUser.profile.picture)
-            hasConfirmedPicture = appManagedFields.contains(.picture) ? .updated(true) : .notUpdated
-            hasUpdate = true
-        } else {
-            picture = .notUpdated
-            hasConfirmedPicture = .notUpdated
-        }
-
-        guard hasUpdate else { return nil }
-        let previousClientUserPicture = latestClientUserPicture
-        do {
-            latestClientUserPicture = clientUser.profile.picture
-            return try await internalUpdateUserProfile(
-                with: EditableProfile(
-                    nickname: nickname,
-                    bio: bio,
-                    picture: picture,
-                    hasConfirmedNickname: hasConfirmedNickname,
-                    hasConfirmedBio: hasConfirmedBio,
-                    hasConfirmedPicture: hasConfirmedPicture
-                ),
-                findAvailableNickname: findAvailableNickname)
-        } catch {
-            // rollback client picture hash
-            latestClientUserPicture = previousClientUserPicture
-            if #available(iOS 14, *) { Logger.profile.debug("Error syncing profile: \(error)") }
-            return nil
+    async throws {
+        guard let userData = userDataStorage.userData else { throw AuthenticatedActionError.userNotAuthenticated }
+        if let updatedProfile = try await clientUserProfileMerger.updateProfileWithClientUser(
+            clientUser, profile: profile, userId: userData.id) {
+            try await userProfileDatabase.upsert(profile: updatedProfile)
+            _onCurrentUserProfileUpdated.send()
         }
     }
 }

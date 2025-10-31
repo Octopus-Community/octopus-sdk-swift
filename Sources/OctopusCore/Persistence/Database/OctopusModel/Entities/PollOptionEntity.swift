@@ -9,4 +9,5 @@ import CoreData
 class PollOptionEntity: NSManagedObject, Identifiable {
     @NSManaged public var uuid: String
     @NSManaged public var text: String
+    @NSManaged public var translatedText: String?
 }
