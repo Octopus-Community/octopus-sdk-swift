@@ -10,7 +10,7 @@ import Octopus
 /// A generic view model that provides an Octopus SDK with Octopus auth connection mode
 @MainActor
 class OctopusAuthSDKViewModel: ObservableObject {
-    @Published private(set) var octopus: OctopusSDK?
+    let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
     @Published private(set) var authorizationStatus: UNAuthorizationStatus?
 
     private var storage = [AnyCancellable]()
@@ -19,11 +19,6 @@ class OctopusAuthSDKViewModel: ObservableObject {
     private let notificationManager = NotificationManager.instance
 
     init() {
-        octopusSDKProvider.$octopus
-            .sink { [unowned self] in
-                octopus = $0
-            }.store(in: &storage)
-
         notificationManager.$authorizationStatus
             .sink { [unowned self] in
                 authorizationStatus = $0

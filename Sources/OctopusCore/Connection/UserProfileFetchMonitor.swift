@@ -20,6 +20,7 @@ protocol UserProfileFetchMonitor {
 
     func start()
     func stop()
+    func set(connectionInProgress: Bool)
 }
 
 class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject, @unchecked Sendable {
@@ -42,6 +43,8 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
     private var storage: Set<AnyCancellable> = []
     private var magicLinkSubscription: Task<Void, Error>?
 
+    @Published private var connectionInProgress = false
+
     init(injector: Injector) {
         self.injector = injector
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
@@ -51,11 +54,13 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
     }
 
     func start() {
-        Publishers.CombineLatest(
+        Publishers.CombineLatest3(
             userDataStorage.$userData.removeDuplicates(by: { $0?.id == $1?.id }),
-            networkMonitor.connectionAvailablePublisher
+            networkMonitor.connectionAvailablePublisher,
+            $connectionInProgress
         )
-        .map { userData, connectionAvailable -> UserDataStorage.UserData? in
+        .map { userData, connectionAvailable, connectionInProgress -> UserDataStorage.UserData? in
+            guard !connectionInProgress else { return nil }
             guard connectionAvailable else { return nil }
             guard let userData else { return nil }
             return userData
@@ -93,5 +98,9 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
 
     func stop() {
         storage.removeAll()
+    }
+
+    func set(connectionInProgress: Bool) {
+        self.connectionInProgress = connectionInProgress
     }
 }

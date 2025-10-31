@@ -17,9 +17,8 @@ struct DisplayablePost: Equatable {
             case image(ImageMedia)
             case poll(DisplayablePoll)
         }
-        let text: String
+        let text: EllipsizableTranslatedText
         let attachment: Attachment?
-        let textIsEllipsized: Bool
         let bridgeCTA: (text: String, clientObjectId: String)?
         fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
         var liveMeasures: AnyPublisher<LiveMeasures, Never> {
@@ -31,13 +30,12 @@ struct DisplayablePost: Equatable {
 
         let featuredComment: DisplayableFeedResponse?
 
-        init(text: String, attachment: Attachment?, textIsEllipsized: Bool,
+        init(text: TranslatableText, attachment: Attachment?,
              bridgeCTA: (text: String, clientObjectId: String)?,
              featuredComment: DisplayableFeedResponse?,
              liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
-            self.text = text
+            self.text = EllipsizableTranslatedText(text: text)
             self.attachment = attachment
-            self.textIsEllipsized = textIsEllipsized
             self.bridgeCTA = bridgeCTA
             self.featuredComment = featuredComment
             self._liveMeasuresPublisher = liveMeasuresPublisher
@@ -46,7 +44,8 @@ struct DisplayablePost: Equatable {
         static func == (lhs: DisplayablePost.PostContent, rhs: DisplayablePost.PostContent) -> Bool {
             return lhs.text == rhs.text &&
             lhs.attachment == rhs.attachment &&
-            lhs.textIsEllipsized == rhs.textIsEllipsized &&
+            lhs.bridgeCTA?.text == rhs.bridgeCTA?.text &&
+            lhs.bridgeCTA?.clientObjectId == rhs.bridgeCTA?.clientObjectId &&
             lhs.featuredComment == rhs.featuredComment
         }
     }
@@ -80,15 +79,9 @@ extension DisplayablePost {
         case .published, .other:
             canBeOpened = true
 
-            // Display max 200 chars and 4 new lines.
-            let displayableText = String(post.text.prefix(200))
-                .split(separator: "\n", omittingEmptySubsequences: false)
-                .prefix(4)
-                .joined(separator: "\n")
-
             let bridgeCTA: (text: String, clientObjectId: String)? = if let bridgeInfo = post.clientObjectBridgeInfo,
                                                                         let ctaText = bridgeInfo.ctaText {
-                (text: ctaText, clientObjectId: bridgeInfo.objectId)
+                (text: ctaText.originalText, clientObjectId: bridgeInfo.objectId)
             } else {
                 nil
             }
@@ -109,9 +102,8 @@ extension DisplayablePost {
             }
 
             content = .published(PostContent(
-                text: displayableText,
+                text: post.text,
                 attachment: PostContent.Attachment(from: post),
-                textIsEllipsized: post.text != displayableText,
                 bridgeCTA: bridgeCTA,
                 featuredComment: featuredComment,
                 liveMeasuresPublisher: liveMeasuresPublisher)

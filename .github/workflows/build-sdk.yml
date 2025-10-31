@@ -23,10 +23,14 @@ jobs:
       with:
         xcode-version: 26.0
 
+    - name: Get active Xcode version
+      id: xcode-version
+      run: echo "version=$(xcodebuild -version | head -n1 | awk '{print $2}')" >> $GITHUB_OUTPUT
+
     - uses: irgaly/xcode-cache@v1
       with:
-        key: xcode-cache-deriveddata-${{ github.workflow }}-${{ github.sha }}
-        restore-keys: xcode-cache-deriveddata-${{ github.workflow }}-
+        key: xcode-cache-deriveddata-xcode-${{ steps.xcode-version.outputs.version }}-${{ github.workflow }}-${{ github.sha }}
+        restore-keys: xcode-cache-deriveddata-xcode-${{ steps.xcode-version.outputs.version }}-${{ github.workflow }}-
 
     - name: Build Package and run tests
       run: |

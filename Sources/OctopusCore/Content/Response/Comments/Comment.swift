@@ -7,7 +7,7 @@ import OctopusGrpcModels
 
 public struct Comment: Equatable, Sendable {
     public let uuid: String
-    public let text: String?
+    public let text: TranslatableText?
     public let medias: [Media]
     public let author: MinimalProfile?
     public let creationDate: Date

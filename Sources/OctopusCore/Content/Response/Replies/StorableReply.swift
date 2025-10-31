@@ -7,7 +7,7 @@ import OctopusGrpcModels
 
 struct StorableReply: StorableResponse, Equatable, Sendable {
     let uuid: String
-    let text: String?
+    let text: TranslatableText?
     let medias: [Media]
     let author: MinimalProfile?
     let creationDate: Date
@@ -23,7 +23,8 @@ struct StorableReply: StorableResponse, Equatable, Sendable {
 extension StorableReply {
     init(from entity: ReplyEntity) {
         uuid = entity.uuid
-        text = entity.text?.nilIfEmpty
+        text = TranslatableText(originalText: entity.text?.nilIfEmpty, originalLanguage: entity.originalLanguage,
+                                translatedText: entity.translatedText)
         medias = entity.medias.compactMap { Media(from: $0) }
         author = MinimalProfile(from: entity)
         creationDate = Date(timeIntervalSince1970: Double(entity.creationTimestamp))
@@ -41,7 +42,9 @@ extension StorableReply {
         guard octoReply.hasContent && octoReply.content.hasReply else { return nil }
         uuid = octoReply.id
         let reply = octoReply.content.reply
-        text = reply.text.nilIfEmpty
+        text = TranslatableText(originalText: reply.text.nilIfEmpty,
+                                originalLanguage: reply.originalLanguage.nilIfEmpty,
+                                translatedText: reply.translatedText.nilIfEmpty)
         if reply.hasMedia {
             var mutableMedias = [Media]()
             if reply.media.hasVideo, let videoMedia = Media(from: reply.media.video, kind: .video) {

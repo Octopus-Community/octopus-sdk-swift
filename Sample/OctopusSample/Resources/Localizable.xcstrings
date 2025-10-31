@@ -4,6 +4,22 @@
     "" : {
 
     },
+    "%lld comments" : {
+
+    },
+    "%lld views" : {
+
+    },
+    "%lld%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld%2$@"
+          }
+        }
+      }
+    },
     "Account" : {
 
     },
@@ -31,6 +47,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Version de l’app: %@"
+          }
+        },
+        "fr-BE" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version : %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "應用版本：%@"
           }
         }
       }

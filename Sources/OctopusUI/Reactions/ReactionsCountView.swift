@@ -37,7 +37,7 @@ struct ReactionsCountView: View {
         FreeGridLayout(alignment: .leading) {
             ForEach(reactions.filter { $0.count > 0 }, id: \.self) { reaction in
                 HStack(spacing: 0) {
-                    Text(reaction.reaction.unicode)
+                    Text(reaction.reactionKind.unicode)
                     Text(String.formattedCount(reaction.count))
                 }
                 .font(theme.fonts.caption1.weight(.medium))

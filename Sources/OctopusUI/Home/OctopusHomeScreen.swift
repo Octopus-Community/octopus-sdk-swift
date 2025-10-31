@@ -46,9 +46,6 @@ public struct OctopusHomeScreen: View {
 
     @Binding var notificationResponse: UNNotificationResponse?
 
-    @State private var displayOnboardingModally: Bool = false
-    @State private var displayOnboarding: Bool = false
-
     private let octopus: OctopusSDK
     private let bottomSafeAreaInset: CGFloat
     private let navBarLeadingItem: NavBarLeadingItemKind
@@ -56,6 +53,8 @@ public struct OctopusHomeScreen: View {
     private let postId: String?
 
     @Compat.StateObject private var viewModel: OctopusHomeScreenViewModel
+    @Compat.StateObject private var translationStore: ContentTranslationPreferenceStore
+    @Compat.StateObject private var trackingApi: TrackingApi
 
     /// Constructor of the `OctopusHomeScreen`.
     /// - Parameters:
@@ -86,6 +85,9 @@ public struct OctopusHomeScreen: View {
                 postId: String? = nil,
                 notificationResponse: Binding<UNNotificationResponse?> = .constant(nil)) {
         _viewModel = Compat.StateObject(wrappedValue: OctopusHomeScreenViewModel(octopus: octopus))
+        _translationStore = Compat.StateObject(wrappedValue: ContentTranslationPreferenceStore(
+            repository: octopus.core.contentTranslationPreferenceRepository))
+        _trackingApi = Compat.StateObject(wrappedValue: TrackingApi(octopus: octopus))
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
         self.navBarLeadingItem = navBarLeadingItem
@@ -104,16 +106,16 @@ public struct OctopusHomeScreen: View {
                 Group {
                     if viewModel.displayCommunityAccessDenied {
                         CommunityAccessDeniedView(octopus: octopus, canClose: presentationMode.wrappedValue.isPresented)
-                    } else if displayOnboarding {
-                        OnboardingView(octopus: octopus)
                     } else if let postId {
-                        PostDetailView(octopus: octopus, mainFlowPath: viewModel.mainFlowPath, postUuid: postId,
-                                       comment: false,
-                                       commentToScrollTo: nil,
-                                       scrollToMostRecentComment: false,
-                                       origin: .clientApp,
-                                       hasFeaturedComment: false,
-                                       canClose: presentationMode.wrappedValue.isPresented)
+                        PostDetailView(
+                            octopus: octopus, mainFlowPath: viewModel.mainFlowPath, translationStore: translationStore,
+                            postUuid: postId,
+                            comment: false,
+                            commentToScrollTo: nil,
+                            scrollToMostRecentComment: false,
+                            origin: .clientApp,
+                            hasFeaturedComment: false,
+                            canClose: presentationMode.wrappedValue.isPresented)
                     } else {
                         RootFeedsView(octopus: octopus,
                                       mainFlowPath: viewModel.mainFlowPath,
@@ -122,11 +124,6 @@ public struct OctopusHomeScreen: View {
                     }
                 }
                 .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
-                .fullScreenCover(isPresented: $displayOnboardingModally) {
-                    OnboardingScreen(octopus: octopus, manuallyDismissed: {
-                        presentationMode.wrappedValue.dismiss()
-                    })
-                }
                 .onAppear {
                     if presentationMode.wrappedValue.isPresented && !isPresentedModally {
                         Logger.general.warning(
@@ -151,7 +148,6 @@ public struct OctopusHomeScreen: View {
         .onAppear {
             octopus.core.trackingRepository.octopusUISessionStarted()
             displayScreenAfterNotificationTapped(notificationResponse: notificationResponse)
-            updateDisplayOnboardingValues(value: viewModel.displayOnboarding)
         }
         .onDisappear {
             octopus.core.trackingRepository.octopusUISessionEnded()
@@ -159,9 +155,8 @@ public struct OctopusHomeScreen: View {
         .onValueChanged(of: notificationResponse) {
             displayScreenAfterNotificationTapped(notificationResponse: $0)
         }
-        .onValueChanged(of: viewModel.displayOnboarding) {
-            updateDisplayOnboardingValues(value: $0)
-        }
+        .environmentObject(translationStore)
+        .environmentObject(trackingApi)
     }
 
     @ViewBuilder
@@ -173,14 +168,6 @@ public struct OctopusHomeScreen: View {
                 Text("Common.Close", bundle: .module)
                     .font(theme.fonts.navBarItem)
             }
-        }
-    }
-
-    private func updateDisplayOnboardingValues(value: Bool) {
-        if presentationMode.wrappedValue.isPresented {
-            displayOnboardingModally = value
-        } else {
-            displayOnboarding = value
         }
     }
 

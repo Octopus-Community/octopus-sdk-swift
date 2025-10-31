@@ -34,6 +34,8 @@ struct Event {
         case postOpened(origin: PostOpenedOrigin, success: Bool)
         /// Triggered when a user opens the client object from a bridge post
         case openClientObjectFromBridge
+        /// Triggered when the "View original" or "View translation" button is tapped
+        case translationButtonHit(translationDisplayed: Bool)
         /// Custom event, set by the client
         case custom(CustomEvent)
     }
@@ -92,6 +94,9 @@ extension Event.Content: CustomStringConvertible {
         case .openClientObjectFromBridge:
             name = "openClientObjectFromBridge"
             extra = nil
+        case let .translationButtonHit(viewTranslated):
+            name = "translationButtonHit"
+            extra = "        viewTranslated: \(viewTranslated)"
         case let .custom(customEvent):
             name = "custom"
             extra = "        name: \(customEvent.name)\n" +
@@ -134,6 +139,8 @@ extension Event {
             }
         case is OpenClientObjectFromBridgeEventEntity:
                 .openClientObjectFromBridge
+        case let evt as TranslationButtonHitEventEntity:
+                .translationButtonHit(translationDisplayed: evt.translationDisplayed)
         case let evt as CustomEventEntity:
                 .custom(CustomEvent(
                     name: evt.name,

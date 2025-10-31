@@ -7,7 +7,7 @@ import os
 
 /// Octopus Community main model object.
 /// This object holds a reference on all the repositories.
-public class OctopusSDK: ObservableObject {
+public final class OctopusSDK: ObservableObject {
     
     /// Number of notifications from the notification center (i.e. internal notifications) that have not been seen yet.
     /// Always 0 if the user is not connected to Octopus Community.
@@ -246,6 +246,7 @@ extension OctopusSDK {
     /// - Parameter content: the content of the post
     /// - Returns: the Octopus post id
     /// - Note: You can use the returned id to display the post using `OctopusHomeScreen(octopus:postId:)`
+    @available(*, deprecated, message: "Use instead fetchOrCreateClientObjectRelatedPost(content: ClientPost). The new function returns more than just an id.")
     public func getOrCreateClientObjectRelatedPostId(content: ClientPost) async throws(ClientPostError) -> String {
         do {
             return try await core.postsRepository.getOrCreateClientObjectRelatedPostId(content: content.coreValue)
@@ -253,7 +254,38 @@ extension OctopusSDK {
             throw ClientPostError(from: error)
         }
     }
+
+    /// Gets the Octopus post related to the given object id.
+    ///
+    /// If the Octopus post does not exist yet, it will be created. The content will only be used if the post does not
+    /// exist yet.
+    ///
+    /// This function is asynchrounous and may take some time, if it is called after a user interaction, you should
+    /// display a loader.
+    /// - Parameter content: the content of the post
+    /// - Returns: the Octopus post
+    /// - Note: You can use the returned post id to display the post using `OctopusHomeScreen(octopus:postId:)`
+    public func fetchOrCreateClientObjectRelatedPost(content: ClientPost) async throws(ClientPostError)
+    -> any OctopusPost {
+        do {
+            return try await core.postsRepository.getOrCreateClientObjectRelatedPost(content: content.coreValue)
+        } catch {
+            throw ClientPostError(from: error)
+        }
+    }
     
+    /// Gets a publisher on a post given a client object id.
+    /// The publisher will be updated when you call the `fetchOrCreateClientObjectRelatedPost` function and also
+    /// sometimes due to internal updates of the post.
+    /// - Parameter clientObjectId: the client object id
+    /// - Returns: a publishers of an optional OctopusPost.
+    public func getClientObjectRelatedPostPublisher(clientObjectId: String) -> AnyPublisher<(any OctopusPost)?, Never> {
+        core.postsRepository.getClientObjectRelatedPost(clientObjectId: clientObjectId)
+            .replaceError(with: nil)
+            .map { $0 as (any OctopusPost)? }
+            .eraseToAnyPublisher()
+    }
+
     /// Set the callback that will be called when a user taps on the `backToObjectButton` that is displayed on a post
     /// related to an client object (article, product...).
     /// - Parameters:

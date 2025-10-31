@@ -44,7 +44,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
     }
 
     @discardableResult
-    public func send(_ reply: WritableReply) async throws(SendReply.Error) -> (Reply, Data?) {
+    public func send(_ reply: WritableReply, parentIsTranslated: Bool,) async throws(SendReply.Error) -> (Reply, Data?) {
         guard validator.validate(reply: reply) else {
             throw .serverCall(.other(InternalError.objectMalformed))
         }
@@ -59,6 +59,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
             }
             let response = try await remoteClient.octoService.put(
                 reply: reply.rwOctoObject(),
+                parentIsTranslated: parentIsTranslated,
                 authenticationMethod: try authCallProvider.authenticatedMethod())
 
             switch response.result {
@@ -135,7 +136,8 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    public func set(reaction: ReactionKind?, reply: Reply) async throws(Reaction.Error) {
-        try await userInteractionsDelegate.set(reaction: reaction, content: reply)
+    public func set(reaction: ReactionKind?, reply: Reply, parentIsTranslated: Bool) async throws(Reaction.Error) {
+        try await userInteractionsDelegate.set(reaction: reaction, content: reply,
+                                               parentIsTranslated: parentIsTranslated)
     }
 }

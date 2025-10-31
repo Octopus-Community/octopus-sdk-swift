@@ -81,6 +81,7 @@ struct ReactionsPickerView: View {
                 }
             }
         }
+        .animation(.default, value: userReaction)
         .onValueChanged(of: showReactionPicker) { _ in
             // weirdly needed in order to display the reaction picker on iOS 26
         }

@@ -38,11 +38,15 @@ class MockUserService: UserService {
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var bypassABTestingResponses = [Com_Octopuscommunity_ByPassAbTestingResponse]()
 
+    private(set) var errorMessage: String?
+
 
     func getPublicProfile(profileId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetPublicProfileResponse {
         guard let response = getPublicProfileResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextGetPublicProfileResponse must be called before"))
+            let message = "Dev error, injectNextGetPublicProfileResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -50,7 +54,9 @@ class MockUserService: UserService {
     func getPrivateProfile(userId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetPrivateProfileResponse {
         guard let response = getPrivateProfileResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextGetPrivateProfileResponse must be called before"))
+            let message = "Dev error, injectNextGetPrivateProfileResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -60,7 +66,9 @@ class MockUserService: UserService {
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {
         guard let response = updateProfileResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextUpdateProfileResponse must be called before"))
+            let message = "Dev error, injectNextUpdateProfileResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -74,7 +82,9 @@ class MockUserService: UserService {
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeleteMyProfileResponse {
         guard let response = deleteAccountResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextDeleteProfileResponse must be called before"))
+            let message = "Dev error, injectNextDeleteProfileResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -83,7 +93,9 @@ class MockUserService: UserService {
                     authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportUserResponse {
         guard let response = reportUserResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextDeleteProfileResponse must be called before"))
+            let message = "Dev error, injectNextDeleteProfileResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -91,7 +103,9 @@ class MockUserService: UserService {
     func blockUser(profileId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_BlockUserResponse {
         guard let response = blockUserResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextBlockUserResponse must be called before"))
+            let message = "Dev error, injectNextBlockUserResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -100,7 +114,9 @@ class MockUserService: UserService {
     -> Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse {
         try? await Task.sleep(nanoseconds: UInt64.random(in: 0..<10) * 1_000_000)
         guard let response = getJwtFromClientTokenResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextGetJwtFromClientResponse must be called before"))
+            let message = "Dev error, injectNextGetJwtFromClientResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -110,7 +126,9 @@ class MockUserService: UserService {
             try await Task.sleep(nanoseconds: UInt64.random(in: 0..<10) * 1_000_000)
         } catch { throw .unknown(MockError("Unknown error")) }
         guard let response = getGuestJwtResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextGetGuestJwt must be called before"))
+            let message = "Dev error, injectNextGetGuestJwt must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -118,7 +136,9 @@ class MockUserService: UserService {
     func canAccessCommunity(authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_CanAccessCommunityResponse {
         guard let response = canAccessCommunityResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextBlockUserResponse must be called before"))
+            let message = "Dev error, injectNextBlockUserResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }
@@ -126,7 +146,9 @@ class MockUserService: UserService {
     func bypassABTestingAccess(userId: String, canAccessCommunity: Bool, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_ByPassAbTestingResponse {
         guard let response = bypassABTestingResponses.popLast() else {
-            throw .unknown(MockError("Dev error, injectNextBlockUserResponse must be called before"))
+            let message = "Dev error, injectNextBlockUserResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
         }
         return response
     }

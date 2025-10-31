@@ -168,6 +168,14 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .searchTopicButtonHit(newValue)}
     }
 
+    public var viewTranslationButtonHit: Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit {
+      get {
+        if case .viewTranslationButtonHit(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit()
+      }
+      set {eventType = .viewTranslationButtonHit(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_EventType: Equatable, Sendable {
@@ -185,6 +193,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case viewTopic(Com_Octopuscommunity_TrackRequest.ViewTopic)
       case viewProfile(Com_Octopuscommunity_TrackRequest.ViewProfile)
       case searchTopicButtonHit(Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit)
+      case viewTranslationButtonHit(Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit)
 
     }
 
@@ -547,6 +556,19 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
+  public struct ViewTranslationButtonHit: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    /// Whether the button hit is to see the translated content or the original one
+    public var viewTranslated: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -615,6 +637,7 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     22: .same(proto: "viewTopic"),
     23: .same(proto: "viewProfile"),
     24: .same(proto: "searchTopicButtonHit"),
+    25: .same(proto: "viewTranslationButtonHit"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -795,6 +818,19 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .searchTopicButtonHit(v)
         }
       }()
+      case 25: try {
+        var v: Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .viewTranslationButtonHit(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .viewTranslationButtonHit(v)
+        }
+      }()
       default: break
       }
     }
@@ -866,6 +902,10 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     case .searchTopicButtonHit?: try {
       guard case .searchTopicButtonHit(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 24)
+    }()
+    case .viewTranslationButtonHit?: try {
+      guard case .viewTranslationButtonHit(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 25)
     }()
     case nil: break
     }
@@ -1587,6 +1627,38 @@ extension Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit: SwiftProtobuf.
   }
 
   public static func ==(lhs: Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit, rhs: Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewTranslationButtonHit"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "viewTranslated"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.viewTranslated) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.viewTranslated != false {
+      try visitor.visitSingularBoolField(value: self.viewTranslated, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit, rhs: Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit) -> Bool {
+    if lhs.viewTranslated != rhs.viewTranslated {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

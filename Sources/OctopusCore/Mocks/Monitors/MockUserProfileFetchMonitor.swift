@@ -21,4 +21,6 @@ class MockUserProfileFetchMonitor: UserProfileFetchMonitor, InjectableObject {
     func start() { }
 
     func stop() { }
+
+    func set(connectionInProgress: Bool) { }
 }

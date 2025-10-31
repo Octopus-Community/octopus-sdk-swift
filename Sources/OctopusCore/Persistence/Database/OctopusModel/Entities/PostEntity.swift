@@ -8,9 +8,13 @@ import CoreData
 @objc(PostEntity)
 class PostEntity: OctoObjectEntity {
     @NSManaged public var text: String
+    @NSManaged public var translatedText: String?
+    @NSManaged public var originalLanguage: String?
     @NSManaged public var clientObjectId: String?
     @NSManaged public var catchPhrase: String?
+    @NSManaged public var translatedCatchPhrase: String?
     @NSManaged public var ctaText: String?
+    @NSManaged public var translatedCtaText: String?
     @NSManaged public var mediasRelationship: NSOrderedSet
     @NSManaged public var pollOptionsRelationship: NSOrderedSet?
 
@@ -27,7 +31,9 @@ class PostEntity: OctoObjectEntity {
 
     func fill(with post: StorablePost, context: NSManagedObjectContext) {
         super.fill(with: post, context: context)
-        text = post.text
+        text = post.text.originalText
+        translatedText = post.text.translatedText
+        originalLanguage = post.text.originalLanguage
         mediasRelationship = NSOrderedSet(array: post.medias.map {
             let mediaEntity = MediaEntity(context: context)
             mediaEntity.url = $0.url
@@ -41,7 +47,8 @@ class PostEntity: OctoObjectEntity {
             pollOptionsRelationship = NSOrderedSet(array: poll.options.map {
                 let pollOptionEntity = PollOptionEntity(context: context)
                 pollOptionEntity.uuid = $0.id
-                pollOptionEntity.text = $0.text
+                pollOptionEntity.text = $0.text.originalText
+                pollOptionEntity.translatedText = $0.text.translatedText
                 return pollOptionEntity
             })
         } else {
@@ -49,8 +56,10 @@ class PostEntity: OctoObjectEntity {
         }
 
         clientObjectId = post.clientObjectId
-        catchPhrase = post.catchPhrase
-        ctaText = post.ctaText
+        catchPhrase = post.catchPhrase?.originalText
+        translatedCatchPhrase = post.catchPhrase?.translatedText
+        ctaText = post.ctaText?.originalText
+        translatedCtaText = post.ctaText?.translatedText
 
         if descChildrenFeedId?.nilIfEmpty == nil || post.descCommentFeedId?.nilIfEmpty != nil {
             descChildrenFeedId = post.descCommentFeedId

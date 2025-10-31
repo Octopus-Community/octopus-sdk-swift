@@ -52,6 +52,21 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
             .eraseToAnyPublisher()
     }
 
+    func clientObjectRelatedPostPublisher(objectId: String) -> AnyPublisher<StorablePost?, Error> {
+        (context
+            .publisher(request: PostEntity.fetchByClientObjectId(id: objectId)) { posts in
+                let mostRecentPost = posts.max { $0.updateTimestamp < $1.updateTimestamp }
+                guard let mostRecentPost else {
+                    return []
+                }
+                return [StorablePost(from: mostRecentPost)]
+            } as AnyPublisher<[StorablePost], Error>
+        )
+        .map(\.first)
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+    }
+
     func getClientObjectRelatedPost(objectId: String) async throws -> StorablePost? {
         return try await context.performAsync { [context] in
             let posts = try context.fetch(PostEntity.fetchByClientObjectId(id: objectId))

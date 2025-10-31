@@ -19,6 +19,7 @@ public class OctopusSDKCore: ObservableObject {
     public let trackingRepository: TrackingRepository
     public let notificationsRepository: NotificationsRepository
     public let configRepository: ConfigRepository
+    public let contentTranslationPreferenceRepository: ContentTranslationPreferenceRepository
 
     public let validators: Validators
 
@@ -55,6 +56,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { UserProfileFetchMonitorDefault(injector: $0) }
         injector.register { PostChildChangeMonitor(injector: $0) }
+        injector.register { LanguageChangedMonitor(injector: $0) }
         injector.register { BlockedUserIdsProviderDefault(injector: $0) }
         injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
 
@@ -67,6 +69,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { TopicsRepository(injector: $0) }
         injector.register { ModerationRepository(injector: $0) }
         injector.register { ExternalLinksRepository(injector: $0, apiKey: apiKey) }
+        injector.register { ContentTranslationPreferenceRepository(injector: $0) }
 
         // Feed
         injector.register { PostFeedsStore(injector: $0) }
@@ -99,6 +102,8 @@ public class OctopusSDKCore: ObservableObject {
         }
         injector.register { UserDataCleanerMonitor(injector: $0) }
         injector.register { ProfileRepositoryDefault(appManagedFields: appManagedFields, injector: $0) }
+        injector.register { ClientUserProfileMerger(appManagedFields: appManagedFields, injector: $0) }
+        injector.register { FrictionlessProfileMigrator(injector: $0) }
 
         // Validators
         injector.register { _ in Validators(appManagedFields: appManagedFields) }
@@ -132,6 +137,7 @@ public class OctopusSDKCore: ObservableObject {
             break
         }
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).start()
+        injector.getInjected(identifiedBy: Injected.languageChangedMonitor).start()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).start()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).start()
         injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).start()
@@ -150,12 +156,14 @@ public class OctopusSDKCore: ObservableObject {
         trackingRepository = injector.getInjected(identifiedBy: Injected.trackingRepository)
         notificationsRepository = injector.getInjected(identifiedBy: Injected.notificationsRepository)
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
+        contentTranslationPreferenceRepository = injector.getInjected(identifiedBy: Injected.contentTranslationPreferenceRepository)
     }
 
     deinit {
         injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).stop()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).stop()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.languageChangedMonitor).stop()
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).stop()
         switch connectionMode {
         case .octopus:

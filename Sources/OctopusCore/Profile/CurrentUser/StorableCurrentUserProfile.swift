@@ -50,11 +50,7 @@ extension StorableCurrentUserProfile {
         blockedProfileIds = entity.blockedProfileIds
     }
 
-    init?(from profile: Com_Octopuscommunity_PrivateProfile, userId: String) {
-//        guard profile.hasNickname, let profileNickname = profile.nickname.nilIfEmpty else {
-//            return nil
-//        }
-
+    init(from profile: Com_Octopuscommunity_PrivateProfile, userId: String) {
         id = profile.id
         self.userId = userId
         nickname = profile.nickname

@@ -16,6 +16,7 @@ enum Mock {
     case userProfileFetchMonitor
     case appStateMonitor
     case blockedUserIdsProvider
+    case configRepository
 }
 
 extension Injector {
@@ -38,6 +39,8 @@ extension Injector {
                 register { _ in MockAppStateMonitor() }
             case .blockedUserIdsProvider:
                 register { _ in MockBlockedUserIdsProvider() }
+            case .configRepository:
+                register { _ in MockConfigRepository() }
             }
         }
     }

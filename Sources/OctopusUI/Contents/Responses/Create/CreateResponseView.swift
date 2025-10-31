@@ -10,13 +10,16 @@ struct CreateResponseView: View {
     let responseKind: ResponseKind
     let isLoading: Bool
     let sendAvailable: Bool
+    let displayCguText: Bool
     @Binding var text: String
     @Binding var picture: ImageAndData?
     @Binding var textFocused: Bool
     let alertError: DisplayableString?
     let textError: DisplayableString?
     let pictureError: DisplayableString?
-
+    let termsOfUseUrl: URL
+    let privacyPolicyUrl: URL
+    let communityGuidelinesUrl: URL
     let send: () -> Void
     let userProfileTapped: () -> Void
     let resetAlertError: () -> Void
@@ -28,14 +31,13 @@ struct CreateResponseView: View {
     var body: some View {
         ContentView(
             responseKind: responseKind, isLoading: isLoading, sendAvailable: sendAvailable,
+            displayCguText: displayCguText,
             text: $text, picture: $picture, textFocused: $textFocused,
             textError: textError, pictureError: pictureError,
+            termsOfUseUrl: termsOfUseUrl,
+            privacyPolicyUrl: privacyPolicyUrl,
+            communityGuidelinesUrl: communityGuidelinesUrl,
             send: send,
-//            {
-//                if ensureConnected(responseKind == .comment ? .comment : .reply) {
-//                    send()
-//                }
-//            },
             userProfileTapped: {
                 if ensureConnected(.viewOwnProfile) {
                     userProfileTapped()
@@ -69,12 +71,17 @@ private struct ContentView: View {
     let responseKind: ResponseKind
     let isLoading: Bool
     let sendAvailable: Bool
+    let displayCguText: Bool
     @Binding var text: String
     @Binding var picture: ImageAndData?
     @Binding var textFocused: Bool
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
+
+    let termsOfUseUrl: URL
+    let privacyPolicyUrl: URL
+    let communityGuidelinesUrl: URL
 
     let send: () -> Void
     let userProfileTapped: () -> Void
@@ -83,92 +90,118 @@ private struct ContentView: View {
     @State private var imagePickingError: Error?
     @State private var openPhotosPicker = false
 
+    var legalTextStr: String {
+        if #available(iOS 15, *) {
+            return String(
+                localized: "Content.Create.Legal_termOfUse:\(termsOfUseUrl.absoluteString)_privacyPolicy:\(privacyPolicyUrl.absoluteString)_communityGuidelines:\(communityGuidelinesUrl.absoluteString)",
+                bundle: .module)
+        } else {
+            return NSLocalizedString(
+                "Content.Create.Legal_termOfUse:\(termsOfUseUrl.absoluteString)_privacyPolicy:\(privacyPolicyUrl.absoluteString)_communityGuidelines:\(communityGuidelinesUrl.absoluteString)",
+                bundle: .module,
+                comment: "")
+        }
+    }
+
     var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            Button(action: {
-                removeFocus()
-                openPhotosPicker = true
-            }) {
-                Image(res: .addMedia)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 24, height: 24)
-            }
-            .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true, hasTrailingIcon: true))
+        VStack(spacing: 0) {
+            HStack(alignment: .bottom, spacing: 8) {
+                Button(action: {
+                    removeFocus()
+                    openPhotosPicker = true
+                }) {
+                    Image(res: .addMedia)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                }
+                .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true, hasTrailingIcon: true))
 
-            OctopusInput(error: pictureError ?? textError, isFocused: textFocused) {
-                VStack(alignment: .leading, spacing: 4) {
+                OctopusInput(error: pictureError ?? textError, isFocused: textFocused) {
+                    VStack(alignment: .leading, spacing: 4) {
 
-                    OctopusTextField(text: $text,
-                                     placeholder: responseKind.createTextPlaceholder,
-                                     lineLimit: picture != nil ? 4 : 5)
-                    .focused($textFocused)
+                        OctopusTextField(text: $text,
+                                         placeholder: responseKind.createTextPlaceholder,
+                                         lineLimit: picture != nil ? 4 : 5)
+                        .focused($textFocused)
 
-                    if let imageAndData = picture {
-                        ZStack(alignment: .topTrailing) {
-                            Image(uiImage: imageAndData.image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(height: 150)
-                                .cornerRadius(12)
-                            Button(action: {
-                                picture = nil
-                                selectedItems = []
-                            }) {
-                                Image(systemName: "xmark")
+                        if let imageAndData = picture {
+                            ZStack(alignment: .topTrailing) {
+                                Image(uiImage: imageAndData.image)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
-                                    .font(theme.fonts.body1.bold())
-                                    .padding(8)
-                                    .foregroundColor(theme.colors.gray500)
-                                    .background(
-                                        Circle()
-                                            .foregroundColor(theme.colors.gray200)
+                                    .frame(height: 150)
+                                    .cornerRadius(12)
+                                Button(action: {
+                                    picture = nil
+                                    selectedItems = []
+                                }) {
+                                    Image(systemName: "xmark")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .font(theme.fonts.body1.bold())
+                                        .padding(8)
+                                        .foregroundColor(theme.colors.gray500)
+                                        .background(
+                                            Circle()
+                                                .foregroundColor(theme.colors.gray200)
 
-                                    )
-                                    .frame(width: 26, height: 26)
-                                    .padding(4)
+                                        )
+                                        .frame(width: 26, height: 26)
+                                        .padding(4)
 
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
-            }
 
-            Button(action: {
-                removeFocus()
-                send()
-            }) {
-                HStack(spacing: 8) {
-                    if isLoading {
-                        Compat.ProgressView(tint: theme.colors.onPrimary)
-                    } else {
-                        Image(res: .send)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 24, height: 24)
+                Button(action: {
+                    removeFocus()
+                    send()
+                }) {
+                    HStack(spacing: 8) {
+                        if isLoading {
+                            Compat.ProgressView(tint: theme.colors.onPrimary)
+                        } else {
+                            Image(res: .send)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                        }
                     }
                 }
+                .buttonStyle(OctopusButtonStyle(.mid, enabled: sendAvailable && !isLoading,
+                                                hasLeadingIcon: true, hasTrailingIcon: true))
+                .disabled(!sendAvailable || isLoading)
             }
-            .buttonStyle(OctopusButtonStyle(.mid, enabled: sendAvailable && !isLoading,
-                                            hasLeadingIcon: true, hasTrailingIcon: true))
-            .disabled(!sendAvailable || isLoading)
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 16)
-        .padding(.bottom, textFocused ? 16 : 0)
-        .background(RoundedRectangle(cornerRadius: 24)
-            .stroke(theme.colors.gray300, lineWidth: 1)
-            .padding(.horizontal, -1)
-            .foregroundColor(Color(.systemBackground))
-            .overlay(
-                Rectangle()
-                    .padding(.top, 24)
-                    .padding(.bottom, -1)
-                    .foregroundColor(Color(.systemBackground))
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, (textFocused || displayCguText) ? 16 : 0)
+            .background(RoundedRectangle(cornerRadius: 24)
+                .stroke(theme.colors.gray300, lineWidth: 1)
+                .padding(.horizontal, -1)
+                .foregroundColor(Color(.systemBackground))
+                .overlay(
+                    Rectangle()
+                        .padding(.top, 24)
+                        .padding(.bottom, -1)
+                        .foregroundColor(Color(.systemBackground))
+                )
             )
-        )
+
+            if displayCguText {
+                theme.colors.gray300.frame(height: 1)
+                RichText(legalTextStr)
+                    .font(theme.fonts.caption2.weight(.medium))
+                    .foregroundColor(theme.colors.gray900)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: displayCguText)
         .layoutPriority(1)
         .gesture(DragGesture(minimumDistance: 10, coordinateSpace: .global).onEnded { value in
             let horizontalAmount = value.translation.width

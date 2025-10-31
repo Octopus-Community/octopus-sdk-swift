@@ -90,8 +90,12 @@ class ConnectedActionChecker {
                 actionWhenNotConnected.wrappedValue = .validateNickname
             } else {
                 if error != nil {
-                    //TODO Djavan
-//                    octopus.core.connectionRepository.connectAsync()
+                    if case .sso = octopus.core.connectionRepository.connectionMode,
+                       octopus.core.connectionRepository.clientUserConnected {
+                        actionWhenNotConnected.wrappedValue = .error(.localizationKey("Connection.SSO.Error.Unknown"))
+                    } else {
+                        actionWhenNotConnected.wrappedValue = .error(.localizationKey("Error.Unknown"))
+                    }
                 }
                 return true
             }

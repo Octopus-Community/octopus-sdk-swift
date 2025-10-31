@@ -34,6 +34,8 @@ final class AppSessionMonitor: InjectableObject {
                     trackingRepository.appSessionEnded()
                 case .active:
                     trackingRepository.appSessionStarted()
+                case .none:
+                    break
                 }
             }.store(in: &storage)
     }
