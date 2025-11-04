@@ -16,12 +16,10 @@ class TokenProvider {
 
     private struct ClientUserTokenPayload: Encodable {
         let sub: String
-        let iat: Int
         let exp: Int
     }
 
     private struct BridgePostPayload: Encodable {
-        let iat: Int
         let exp: Int
     }
 
@@ -39,9 +37,7 @@ class TokenProvider {
         let headerBase64String = headerJSONData.urlSafeBase64EncodedString()
 
         let payloadJSONData = try JSONEncoder().encode(
-            ClientUserTokenPayload(sub: userId,
-                                   iat: Int(Date().timeIntervalSince1970),
-                                   exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
+            ClientUserTokenPayload(sub: userId, exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
         )
         let payloadBase64String = payloadJSONData.urlSafeBase64EncodedString()
 
@@ -69,8 +65,7 @@ class TokenProvider {
         let headerBase64String = headerJSONData.urlSafeBase64EncodedString()
 
         let payloadJSONData = try JSONEncoder().encode(
-            BridgePostPayload(iat: Int(Date().timeIntervalSince1970),
-                              exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
+            BridgePostPayload(exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
         )
         let payloadBase64String = payloadJSONData.urlSafeBase64EncodedString()
 
