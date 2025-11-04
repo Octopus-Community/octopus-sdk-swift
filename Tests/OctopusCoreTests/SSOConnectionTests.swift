@@ -43,6 +43,8 @@ class SSOConnectionTests: XCTestCase {
         injector.register { UserConfigDatabase(injector: $0) }
         injector.register { CommunityConfigDatabase(injector: $0) }
         injector.register { ConfigRepositoryDefault(injector: $0) }
+        injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
+        injector.register { FrictionlessProfileMigrator(injector: $0) }
 
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
             .userService as! MockUserService)

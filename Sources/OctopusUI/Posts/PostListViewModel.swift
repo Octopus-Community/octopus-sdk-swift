@@ -29,6 +29,7 @@ class PostListViewModel: ObservableObject {
     let octopus: OctopusSDK
     let connectedActionChecker: ConnectedActionChecker
 
+    private let translationStore: ContentTranslationPreferenceStore
     private var storage = [AnyCancellable]()
     private var feedStorage = [AnyCancellable]()
     private var relativeDateFormatter: RelativeDateTimeFormatter = {
@@ -41,8 +42,9 @@ class PostListViewModel: ObservableObject {
 
     private var feed: Feed<Post, Comment>?
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore) {
         self.octopus = octopus
+        self.translationStore = translationStore
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         mainFlowPath.$path
@@ -70,10 +72,13 @@ class PostListViewModel: ObservableObject {
 
     func set(feed: Feed<Post, Comment>) {
         guard postFeedViewModel?.feed.id != feed.id else { return }
-        postFeedViewModel = PostFeedViewModel(octopus: octopus, postFeed: feed, ensureConnected: { [weak self] action in
-            guard let self else { return false }
-            return self.ensureConnected(action: action)
-        })
+        postFeedViewModel = PostFeedViewModel(
+            octopus: octopus, postFeed: feed,
+            translationStore: translationStore,
+            ensureConnected: { [weak self] action in
+                guard let self else { return false }
+                return self.ensureConnected(action: action)
+            })
     }
 
     func ensureConnected(action: UserAction) -> Bool {

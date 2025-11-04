@@ -60,6 +60,15 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }.eraseToAnyPublisher()
     }
 
+    public func getClientObjectRelatedPost(clientObjectId: String) -> AnyPublisher<Post?, Error> {
+        postsDatabase.clientObjectRelatedPostPublisher(objectId: clientObjectId)
+            .map { [unowned self] in
+                guard let storablePost = $0 else { return nil }
+                return Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
+            }
+            .eraseToAnyPublisher()
+    }
+
     public func fetchPost(uuid: String, incrementViewCount: Bool = false) async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
@@ -177,11 +186,12 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    public func set(reaction: ReactionKind?, post: Post) async throws(Reaction.Error) {
-        try await userInteractionsDelegate.set(reaction: reaction, content: post)
+    public func set(reaction: ReactionKind?, post: Post, parentIsTranslated: Bool) async throws(Reaction.Error) {
+        try await userInteractionsDelegate.set(reaction: reaction, content: post,
+                                               parentIsTranslated: parentIsTranslated)
     }
 
-    public func vote(pollAnswerId: String, post: Post) async throws(PollVote.Error) {
+    public func vote(pollAnswerId: String, post: Post, parentIsTranslated: Bool) async throws(PollVote.Error) {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
             do {
@@ -190,6 +200,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 let response = try await remoteClient.octoService.voteOnPoll(
                     objectId: post.uuid,
                     answerId: pollAnswerId,
+                    parentIsTranslated: parentIsTranslated,
                     authenticationMethod: try authCallProvider.authenticatedMethod())
                 switch response.result {
                 case let .success(content):
@@ -222,36 +233,26 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
 
     public func getOrCreateClientObjectRelatedPostId(content: ClientPost)
     async throws(GetOrCreateClientPost.Error) -> String {
+        try await getOrCreateClientObjectRelatedPost(content: content).uuid
+    }
+
+    public func getOrCreateClientObjectRelatedPost(content: ClientPost)
+    async throws(GetOrCreateClientPost.Error) -> Post {
         do {
-            // first check in the db if the post exists:
-            if let post = try await postsDatabase.getClientObjectRelatedPost(objectId: content.clientObjectId) {
-                // Without waiting for the answer, send the data to the backend, in case they want to update it
-                Task {
-                    do {
-                        _ = try await remotelyGetOrCreateClientObjectRelatedPostId(content: content)
-                    } catch {
-                        if #available(iOS 14, *) { Logger.posts.debug("Error when sending bridge post: \(error)") }
-                    }
-                }
-                return post.uuid
-            } else {
-                // the post is not in db yet, so ask the backend to get or create it
-                return try await remotelyGetOrCreateClientObjectRelatedPostId(content: content)
-            }
+            return try await remotelyGetOrCreateClientObjectRelatedPost(content: content)
         } catch {
             if #available(iOS 14, *) { Logger.posts.debug("Error when getting/creating bridge post: \(error)") }
-            if let error = error as? GetOrCreateClientPost.Error {
-                throw error
-            } else if let error = error as? RemoteClientError {
-                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
-            } else {
-                throw .serverCall(.other(error))
+            // in case of error, try to return the local post if we have it
+            if let post = try? await postsDatabase.getClientObjectRelatedPost(objectId: content.clientObjectId) {
+                return Post(storablePost: post, commentFeedsStore: commentFeedsStore, featuredComment: nil)
             }
+            // if we don't have the local post or if it fails, throw the original error
+            throw error
         }
     }
 
-    private func remotelyGetOrCreateClientObjectRelatedPostId(content: ClientPost)
-    async throws(GetOrCreateClientPost.Error) -> String {
+    private func remotelyGetOrCreateClientObjectRelatedPost(content: ClientPost)
+    async throws(GetOrCreateClientPost.Error) -> Post {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
             var clientPost = content
@@ -269,11 +270,12 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
 
             switch response.result {
             case let .success(content):
-                guard let finalPost = StorablePost(octoPost: content.postBridge, aggregate: nil, userInteraction: nil) else {
+                let aggregate = content.hasAggregate ? content.aggregate : nil
+                guard let finalPost = StorablePost(octoPost: content.postBridge, aggregate: aggregate, userInteraction: nil) else {
                     throw SendComment.Error.serverCall(.other(nil))
                 }
                 try await postsDatabase.upsert(posts: [finalPost])
-                return finalPost.uuid
+                return Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
             case let .fail(failure):
                 throw GetOrCreateClientPost.Error.validation(.init(from: failure))
             case .none:

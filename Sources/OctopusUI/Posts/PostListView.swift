@@ -16,8 +16,10 @@ struct PostListView: View {
     @Binding var selectedRootFeed: RootFeed?
     @Binding private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, selectedRootFeed: Binding<RootFeed?>, zoomableImageInfo: Binding<ZoomableImageInfo?>) {
-        _viewModel = Compat.StateObject(wrappedValue: PostListViewModel(octopus: octopus, mainFlowPath: mainFlowPath))
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
+         selectedRootFeed: Binding<RootFeed?>, zoomableImageInfo: Binding<ZoomableImageInfo?>) {
+        _viewModel = Compat.StateObject(wrappedValue: PostListViewModel(
+            octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore))
         _selectedRootFeed = selectedRootFeed
         _zoomableImageInfo = zoomableImageInfo
     }

@@ -10,6 +10,8 @@ import OctopusCore
 struct RootFeedsView: View {
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+
     @Compat.StateObject private var viewModel: RootFeedsViewModel
 
     @State private var showRootFeedPicker = false
@@ -37,7 +39,7 @@ struct RootFeedsView: View {
         VStack(spacing: 0) {
             ContentView(rootFeeds: viewModel.rootFeeds, selectedRootFeed: $viewModel.selectedRootFeed,
                         showRootFeedPicker: $showRootFeedPicker)
-            PostListView(octopus: viewModel.octopus, mainFlowPath: mainFlowPath,
+            PostListView(octopus: viewModel.octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
                          selectedRootFeed: $viewModel.selectedRootFeed,
                          zoomableImageInfo: $zoomableImageInfo)
         }

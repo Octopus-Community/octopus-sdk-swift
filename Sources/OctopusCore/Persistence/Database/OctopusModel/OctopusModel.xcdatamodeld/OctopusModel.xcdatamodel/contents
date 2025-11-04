@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24G90" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="24G90" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BlockedUser" representedClassName="BlockedUserEntity" syncable="YES">
         <attribute name="profileId" optional="YES" attributeType="String"/>
         <relationship name="blockedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PrivateProfile" inverseName="blocking" inverseEntity="PrivateProfile"/>
@@ -15,7 +15,9 @@
         <relationship name="belongsTo" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="ClientUser" inverseName="profile" inverseEntity="ClientUser"/>
     </entity>
     <entity name="Comment" representedClassName="CommentEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="originalLanguage" optional="YES" attributeType="String"/>
         <attribute name="text" optional="YES" attributeType="String"/>
+        <attribute name="translatedText" optional="YES" attributeType="String"/>
         <relationship name="mediasRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="commentMedia" inverseEntity="Media"/>
     </entity>
     <entity name="ContentReaction" representedClassName="ContentReactionEntity" syncable="YES">
@@ -84,6 +86,7 @@
     </entity>
     <entity name="PollOption" representedClassName="PollOptionEntity" syncable="YES">
         <attribute name="text" attributeType="String"/>
+        <attribute name="translatedText" optional="YES" attributeType="String"/>
         <attribute name="uuid" attributeType="String"/>
         <relationship name="poll" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="pollOptionsRelationship" inverseEntity="Post"/>
     </entity>
@@ -96,7 +99,11 @@
         <attribute name="catchPhrase" optional="YES" attributeType="String"/>
         <attribute name="clientObjectId" optional="YES" attributeType="String"/>
         <attribute name="ctaText" optional="YES" attributeType="String"/>
+        <attribute name="originalLanguage" optional="YES" attributeType="String"/>
         <attribute name="text" attributeType="String"/>
+        <attribute name="translatedCatchPhrase" optional="YES" attributeType="String"/>
+        <attribute name="translatedCtaText" optional="YES" attributeType="String"/>
+        <attribute name="translatedText" optional="YES" attributeType="String"/>
         <relationship name="mediasRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="postMedia" inverseEntity="Media"/>
         <relationship name="pollOptionsRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PollOption" inverseName="poll" inverseEntity="PollOption"/>
         <fetchIndex name="byClientObjectId">
@@ -134,7 +141,9 @@
         <attribute name="profileId" attributeType="String"/>
     </entity>
     <entity name="Reply" representedClassName="ReplyEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="originalLanguage" optional="YES" attributeType="String"/>
         <attribute name="text" optional="YES" attributeType="String"/>
+        <attribute name="translatedText" optional="YES" attributeType="String"/>
         <relationship name="mediasRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Media" inverseName="replyMedia" inverseEntity="Media"/>
     </entity>
     <entity name="RootFeed" representedClassName="RootFeedEntity" syncable="YES">

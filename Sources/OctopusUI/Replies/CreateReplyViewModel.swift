@@ -18,6 +18,7 @@ class CreateReplyViewModel: ObservableObject {
     @Published private(set) var textError: DisplayableString?
     @Published private(set) var pictureError: DisplayableString?
     @Published private(set) var hasChanges = false
+    @Published private(set) var userHasAcceptedCgu = false
 
     var sendAvailable: Bool {
         validator.validate(reply: WritableReply(commentId: commentId, text: text, imageData: picture?.imageData))
@@ -25,8 +26,13 @@ class CreateReplyViewModel: ObservableObject {
 
     var textMaxLength: Int { validator.maxTextLength }
 
+    let communityGuidelinesUrl: URL
+    let privacyPolicyUrl: URL
+    let termsOfUseUrl: URL
+
     let octopus: OctopusSDK
     let commentId: String
+    private let translationStore: ContentTranslationPreferenceStore
     private let validator: Validators.Reply
     private var storage = [AnyCancellable]()
     private var replyReceivedCancellable: AnyCancellable?
@@ -35,10 +41,19 @@ class CreateReplyViewModel: ObservableObject {
 
     private var isWaitingToSendReply = false
 
-    init(octopus: OctopusSDK, commentId: String, ensureConnected: @escaping (UserAction) -> Bool) {
+    init(octopus: OctopusSDK, commentId: String,
+         translationStore: ContentTranslationPreferenceStore,
+         ensureConnected: @escaping (UserAction) -> Bool) {
         self.octopus = octopus
         self.commentId = commentId
+        self.translationStore = translationStore
         self.ensureConnected = ensureConnected
+
+        let externalLinksRepository = octopus.core.externalLinksRepository
+        communityGuidelinesUrl = externalLinksRepository.communityGuidelines
+        privacyPolicyUrl = externalLinksRepository.privacyPolicy
+        termsOfUseUrl = externalLinksRepository.termsOfUse
+
         validator = self.octopus.core.validators.reply
 
         octopus.core.configRepository.communityConfigPublisher
@@ -58,18 +73,17 @@ class CreateReplyViewModel: ObservableObject {
 
         octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] profile in
-            guard let profile else {
-                return
-            }
-            if !profile.isGuest || profile.hasConfirmedNickname {
-                if isWaitingToSendReply {
-                    isWaitingToSendReply = false
-                    DispatchQueue.main.async { [weak self] in
-                        self?.send()
+                guard let profile else { return }
+                userHasAcceptedCgu = profile.hasAcceptedCgu
+                if !profile.isGuest || profile.hasConfirmedNickname {
+                    if isWaitingToSendReply {
+                        isWaitingToSendReply = false
+                        DispatchQueue.main.async { [weak self] in
+                            self?.send()
+                        }
                     }
                 }
-            }
-        }.store(in: &storage)
+            }.store(in: &storage)
 
         $text
             .removeDuplicates()
@@ -125,8 +139,28 @@ class CreateReplyViewModel: ObservableObject {
 
     private func send(reply: WritableReply) async {
         do {
+            if let profile = octopus.core.profileRepository.profile, !profile.hasAcceptedCgu {
+                try await octopus.core.profileRepository.updateCurrentUserProfile(with: .init(
+                    hasAcceptedCgu: .updated(true)
+                ))
+            }
+        } catch {
+            switch error {
+            case let .validation(argumentError):
+                for (_, errors) in argumentError.errors {
+                    let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
+                    self.alertError = .localizedString(multiErrorLocalizedString)
+                }
+            case let .serverCall(serverError):
+                self.alertError = serverError.displayableMessage
+            }
+            // do not send the message if we cannot update the profile
+            return
+        }
+        do {
             // let enough time for the keyboard to remove itself
-            let (createdReply, imageData) = try await octopus.core.repliesRepository.send(reply)
+            let (createdReply, imageData) = try await octopus.core.repliesRepository.send(
+                reply, parentIsTranslated: translationStore.displayTranslation(for: commentId))
             if let imageData, let image = UIImage(data: imageData), let imageUrl = createdReply.medias.first?.url {
                 try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: imageUrl)
             }

@@ -17,7 +17,7 @@ struct CustomEventsView: View {
         VStack(spacing: 30) {
             Button(action: {
                 Task {
-                    try await viewModel.octopus?.track(customEvent: CustomEvent(name: "CustomEvent1"))
+                    try await viewModel.octopus.track(customEvent: CustomEvent(name: "CustomEvent1"))
                     success = true
                 }
             }) {
@@ -26,7 +26,7 @@ struct CustomEventsView: View {
 
             Button(action: {
                 Task {
-                    try await viewModel.octopus?.track(customEvent: CustomEvent(
+                    try await viewModel.octopus.track(customEvent: CustomEvent(
                         name: "Purchase",
                         properties: [
                             "price": .init(value: "\(String(format: "%.2f", Double.random(in: 0..<100)))"),

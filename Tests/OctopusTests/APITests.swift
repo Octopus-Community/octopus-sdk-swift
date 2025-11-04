@@ -116,6 +116,28 @@ class APITests {
         let _: String = try await octopus.getOrCreateClientObjectRelatedPostId(content: clientPost)
     }
 
+    @Test func testFetchOrCreateClientObjectRelatedPost() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
+                                    signature: nil)
+        let post = try await octopus.fetchOrCreateClientObjectRelatedPost(content: clientPost)
+        let _: String = post.id
+        let _: Int = post.commentCount
+        let _: Int = post.viewCount
+        if let reactionCount = post.reactions.first {
+            let _: Int = reactionCount.count
+            let reaction = reactionCount.reaction
+            let _: String = reaction.unicode
+        }
+
+        _ = octopus.getClientObjectRelatedPostPublisher(clientObjectId: "").sink { post in
+            guard let post else { return }
+            let _: String = post.id
+            let _: Int = post.commentCount
+            let _: Int = post.viewCount
+        }
+    }
+
     @Test func testSetDisplayClientObjectCallback() throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
         octopus.set(displayClientObjectCallback: { objectId in })

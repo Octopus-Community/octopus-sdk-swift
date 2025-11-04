@@ -7,12 +7,13 @@ import Octopus
 import OctopusCore
 
 struct MainFlowNavigationStack<RootView: View>: View {
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+
     let octopus: OctopusSDK
     let bottomSafeAreaInset: CGFloat
     @Compat.StateObject private var mainFlowPath: MainFlowPath
     @ViewBuilder let rootView: RootView
 
-    @State private var keyboardHeight = CGFloat.zero
     @State private var bottomInset: CGFloat
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, bottomSafeAreaInset: CGFloat = 0,
@@ -31,20 +32,25 @@ struct MainFlowNavigationStack<RootView: View>: View {
                     Group {
                         switch screen {
                         case .currentUserProfile:
-                            CurrentUserProfileSummaryView(octopus: octopus, mainFlowPath: mainFlowPath)
+                            CurrentUserProfileSummaryView(
+                                octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore)
                         case let .publicProfile(profileId):
-                            ProfileSummaryView(octopus: octopus, profileId: profileId)
+                            ProfileSummaryView(
+                                octopus: octopus, translationStore: translationStore, profileId: profileId)
                         case let .createPost(withPoll):
                             CreatePostView(octopus: octopus, withPoll: withPoll)
                         case let .postDetail(postId, comment, commentToScrollTo, scrollToMostRecentComment, origin, hasFeaturedComment):
-                            PostDetailView(octopus: octopus, mainFlowPath: mainFlowPath, postUuid: postId,
-                                           comment: comment,
-                                           commentToScrollTo: commentToScrollTo,
-                                           scrollToMostRecentComment: scrollToMostRecentComment,
-                                           origin: origin,
-                                           hasFeaturedComment: hasFeaturedComment)
+                            PostDetailView(
+                                octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
+                                postUuid: postId,
+                                comment: comment,
+                                commentToScrollTo: commentToScrollTo,
+                                scrollToMostRecentComment: scrollToMostRecentComment,
+                                origin: origin,
+                                hasFeaturedComment: hasFeaturedComment)
                         case let .commentDetail(commentId, displayGoToParentButton, reply, replyToScrollTo):
-                            CommentDetailView(octopus: octopus, commentUuid: commentId,
+                            CommentDetailView(octopus: octopus, translationStore: translationStore,
+                                              commentUuid: commentId,
                                               displayGoToParentButton: displayGoToParentButton,
                                               reply: reply, replyToScrollTo: replyToScrollTo)
                         case let .reportContent(contentId):

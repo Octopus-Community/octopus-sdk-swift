@@ -82,7 +82,7 @@ extension AggregatedInfo {
     public static let empty: AggregatedInfo = .init(reactions: [], childCount: 0, viewCount: 0, pollResult: nil)
 
     init(from aggregate: Com_Octopuscommunity_Aggregate) {
-        reactions = aggregate.reactions.map { .init(from: $0) }
+        reactions = aggregate.reactions.compactMap { .init(from: $0) }
         childCount = Int(aggregate.childrenCount)
         viewCount = Int(aggregate.viewCount)
         if aggregate.hasPollResult {
@@ -93,7 +93,7 @@ extension AggregatedInfo {
     }
 
     init(from entity: OctoObjectEntity) {
-        reactions = entity.reactions.map { .init(from: $0) }
+        reactions = entity.reactions.compactMap { .init(from: $0) }
         childCount = entity.childCount
         viewCount = entity.viewCount
         if let pollResults = entity.pollResults {

@@ -24,6 +24,7 @@ class PostFeedViewModel: ObservableObject {
 
     let octopus: OctopusSDK
     let feed: Feed<Post, Comment>
+    private let translationStore: ContentTranslationPreferenceStore
     private var storage = [AnyCancellable]()
 
     private var visiblePostIds: Set<String> = []
@@ -43,9 +44,11 @@ class PostFeedViewModel: ObservableObject {
     }()
 
     init(octopus: OctopusSDK, postFeed: Feed<Post, Comment>, displayModeratedPosts: Bool = false,
+         translationStore: ContentTranslationPreferenceStore,
          ensureConnected: @escaping (UserAction) -> Bool) {
         self.octopus = octopus
         self.feed = postFeed
+        self.translationStore = translationStore
         self.ensureConnected = ensureConnected
         if #available(iOS 14, *) { Logger.posts.trace("Display post feed \(postFeed.id) \(Date())") }
 
@@ -262,7 +265,7 @@ class PostFeedViewModel: ObservableObject {
 
     private func set(reaction: ReactionKind?, post: Post) async {
         do {
-            try await octopus.core.postsRepository.set(reaction: reaction, post: post)
+            try await octopus.core.postsRepository.set(reaction: reaction, post: post, parentIsTranslated: translationStore.displayTranslation(for: post.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -293,7 +296,9 @@ class PostFeedViewModel: ObservableObject {
 
     private func set(reaction: ReactionKind?, comment: Comment) async {
         do {
-            try await octopus.core.commentsRepository.set(reaction: reaction, comment: comment)
+            try await octopus.core.commentsRepository.set(
+                reaction: reaction, comment: comment,
+                parentIsTranslated: translationStore.displayTranslation(for: comment.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -324,7 +329,9 @@ class PostFeedViewModel: ObservableObject {
 
     private func vote(pollAnswerId: String, post: Post) async {
         do {
-            try await octopus.core.postsRepository.vote(pollAnswerId: pollAnswerId, post: post)
+            try await octopus.core.postsRepository.vote(
+                pollAnswerId: pollAnswerId, post: post,
+                parentIsTranslated: translationStore.displayTranslation(for: post.uuid))
         } catch {
             switch error {
             case let .validation(argumentError):

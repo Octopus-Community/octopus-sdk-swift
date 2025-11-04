@@ -19,16 +19,16 @@ class ProfileTests: XCTestCase {
     private var mockUserProfileFetchMonitor: MockUserProfileFetchMonitor!
     private var userDataStorage: UserDataStorage!
     private var userProfileDatabase: CurrentUserProfileDatabase!
+    private var clientUserProfileDatabase: ClientUserProfileDatabase!
     private var storage = [AnyCancellable]()
 
     override func setUp() {
         let injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
-        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .magicLinkMonitor,
-                               .userProfileFetchMonitor, .authProvider, .blockedUserIdsProvider)
+                               .userProfileFetchMonitor, .authProvider, .blockedUserIdsProvider, .configRepository)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
         injector.register { PostFeedsStore(injector: $0) }
@@ -38,10 +38,14 @@ class ProfileTests: XCTestCase {
         injector.register { RepliesDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
-        injector.register { ClientUserProvider(connectionMode: .octopus(deepLink: nil), injector: $0) }
-        injector.register { UserConfigDatabase(injector: $0) }
-        injector.register { CommunityConfigDatabase(injector: $0) }
-        injector.register { ConfigRepositoryDefault(injector: $0) }
+        injector.register { ClientUserProfileDatabase(injector: $0) }
+        injector.register { ClientUserProvider(
+            connectionMode: .sso(.init(
+                appManagedFields: [], loginRequired: {}, modifyUser: { _ in })),
+            injector: $0)
+        }
+        injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
+        injector.register { FrictionlessProfileMigrator(injector: $0) }
 
         profileRepository = ProfileRepositoryDefault(appManagedFields: [], injector: injector)
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
@@ -51,6 +55,7 @@ class ProfileTests: XCTestCase {
 
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
+        clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
     }
 
     func testInitialFetchCurrentUserProfile() async throws {
@@ -249,36 +254,159 @@ class ProfileTests: XCTestCase {
         await fulfillment(of: [blockedListNonEmptyExpectation], timeout: 0.5)
     }
 
-    // This test will be added later, when we care about profile fetching
-//    func testStateIsFetchingProfileWhenNoProfile() async throws {
-//        let fetchingProfileExpectation = XCTestExpectation(description: "Profile is fetching")
-//
-//        // for this test, we work with a local UserRepository because we need to create it after setting the
-//        // context: the userData should be already present when the connectionRepository is initialiazed
-//        // This is why we recreate an environmnent
-//        let injector = Injector()
-//        injector.register { _ in try! CoreDataStack(inRam: true) }
-//        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .magicLinkMonitor,
-//            .userProfileFetchMonitor)
-//        injector.register { UserDataStorage(injector: $0) }
-//
-//        let mockUserProfileFetchMonitor = (injector.getInjected(
-//            identifiedBy: Injected.userProfileFetchMonitor) as! MockUserProfileFetchMonitor)
-//        let userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
-//
-//        // precondition: userData is present
-//        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "abc"))
-//        try await delay()
-//
-//        let connectionRepository = UserRepositoryDefault(injector: injector)
-//        connectionRepository.connectionStatePublisher.sink { connectionState in
-//            switch connectionState {
-//            case .fetchingProfile:
-//                fetchingProfileExpectation.fulfill()
-//            default: break
-//            }
-//        }.store(in: &storage)
-//
-//        await fulfillment(of: [fetchingProfileExpectation], timeout: 0.1)
-//    }
+    func testFillWithClientUser() async throws {
+        // Precondition: user is logged in and a profile is in db
+        try await userProfileDatabase.upsert(
+            profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
+                                                originalNickname: nil,
+                                                email: nil, bio: nil, pictureUrl: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: false, hasConfirmedBio: false,
+                                                hasConfirmedPicture: false,
+                                                isGuest: false,
+                                                notificationBadgeCount: 0,
+                                                descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", clientId: "clientUserId", jwtToken: "fake_token"))
+        userDataStorage.store(clientUserData: UserDataStorage.ClientUserData(id: "clientUserId"))
+
+        // ensure blocked list is empty
+        let profileUpdatedExpectation = XCTestExpectation(description: "Profile updated with client profile")
+
+        profileRepository.profilePublisher.sink {
+            guard let profile = $0 else { return }
+            if profile.nickname == "clientNickname", profile.bio == "clientBio" {
+                profileUpdatedExpectation.fulfill()
+            }
+        }.store(in: &storage)
+
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(
+                .with {
+                    $0.profile = .with {
+                        $0.id = "profileId"
+                        $0.nickname = "clientNickname"
+                        $0.bio = "clientBio"
+                        $0.hasConfirmedNickname_p = false
+                        $0.hasConfirmedBio_p = false
+                        $0.hasConfirmedPicture_p = false
+                    }
+                })
+        })
+        try await clientUserProfileDatabase.upsert(
+            profile: .init(nickname: "clientNickname", bio: "clientBio", picture: nil),
+            clientUserId: "clientUserId")
+
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 0.5)
+    }
+
+    func testDoNotFillWithClientUserWhenOriginalNicknameIsSame() async throws {
+        // Precondition: user is logged in and a profile is in db
+        try await userProfileDatabase.upsert(
+            profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "clientNickname1",
+                                                originalNickname: "clientNickname",
+                                                email: nil, bio: "clientBio", pictureUrl: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: false, hasConfirmedBio: false,
+                                                hasConfirmedPicture: false,
+                                                isGuest: false,
+                                                notificationBadgeCount: 0,
+                                                descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", clientId: "clientUserId", jwtToken: "fake_token"))
+        userDataStorage.store(clientUserData: UserDataStorage.ClientUserData(id: "clientUserId"))
+
+        // ensure blocked list is empty
+        let profileUpdatedExpectation = XCTestExpectation(description: "Profile updated with client profile")
+
+        profileRepository.profilePublisher.sink {
+            guard let profile = $0 else { return }
+            if profile.nickname == "clientNickname1", profile.bio == "clientBio" {
+                profileUpdatedExpectation.fulfill()
+            }
+        }.store(in: &storage)
+
+        // no need to call mockUserService.injectNextUpdateProfileResponse because no network calls should be done
+
+        try await clientUserProfileDatabase.upsert(
+            profile: .init(nickname: "clientNickname", bio: "clientBio", picture: nil),
+            clientUserId: "clientUserId")
+
+        // add a delay to be sure to catch the error if a network call is done without calling the injectXXX
+        try await delay()
+
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 0.5)
+    }
+
+    func testNoLoopWhenFillingProfileWithClientProfile() async throws {
+        // Precondition: user is logged in and a profile is in db
+        try await userProfileDatabase.upsert(
+            profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
+                                                originalNickname: nil,
+                                                email: nil, bio: "clientBio", pictureUrl: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: false, hasConfirmedBio: false,
+                                                hasConfirmedPicture: false,
+                                                isGuest: false,
+                                                notificationBadgeCount: 0,
+                                                descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", clientId: "clientUserId", jwtToken: "fake_token"))
+        userDataStorage.store(clientUserData: UserDataStorage.ClientUserData(id: "clientUserId"))
+
+        // Mock a response with a different value that the one that was asked to create the loop
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(
+                .with {
+                    $0.profile = .with {
+                        $0.id = "profileId"
+                        $0.nickname = "clientNickname1"
+                        $0.bio = "clientBio"
+                        $0.hasConfirmedNickname_p = false
+                        $0.hasConfirmedBio_p = false
+                        $0.hasConfirmedPicture_p = false
+                    }
+                })
+        })
+
+        // Mock again a response with a different value that the one that was asked to create the loop
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(
+                .with {
+                    $0.profile = .with {
+                        $0.id = "profileId"
+                        $0.nickname = "clientNickname2"
+                        $0.bio = "clientBio"
+                        $0.hasConfirmedNickname_p = false
+                        $0.hasConfirmedBio_p = false
+                        $0.hasConfirmedPicture_p = false
+                    }
+                })
+        })
+
+        // Mock again a response with a different value that the one that was asked to create the loop
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(
+                .with {
+                    $0.profile = .with {
+                        $0.id = "profileId"
+                        $0.nickname = "clientNickname3"
+                        $0.bio = "clientBio"
+                        $0.hasConfirmedNickname_p = false
+                        $0.hasConfirmedBio_p = false
+                        $0.hasConfirmedPicture_p = false
+                    }
+                })
+        })
+
+        // Since the protection agains infinite loop is set to 3, no more calls should be done
+
+        try await clientUserProfileDatabase.upsert(
+            profile: .init(nickname: "clientNickname", bio: "clientBio", picture: nil),
+            clientUserId: "clientUserId")
+
+        // add a delay to be sure to catch the error if a network call is done without calling the injectXXX
+        try await delay()
+
+        if let errorMessage = mockUserService.errorMessage {
+            XCTFail(errorMessage)
+        }
+    }
 }

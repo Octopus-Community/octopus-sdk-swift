@@ -6,8 +6,7 @@ import Foundation
 import Combine
 import Octopus
 
-/// This class is a singleton that provides a publisher of the Octopus SDK
-/// (because, due to internal demo mode, it can be initialized later)
+/// This class is a singleton that provides an instance of the Octopus SDK.
 ///
 /// To test with your own API Key, you will need to modify the way to init the SDK accordingly to your community
 /// configuration in the function `initializeSDK()`
@@ -15,7 +14,7 @@ class OctopusSDKProvider {
 
     static let instance = OctopusSDKProvider()
 
-    @Published private(set) var octopus: OctopusSDK?
+    private(set) var octopus: OctopusSDK!
     @Published var clientLoginRequired = false
     @Published var clientModifyUserField: ConnectionMode.SSOConfiguration.ProfileField?
     @Published var clientModifyUserAsked = false
@@ -23,17 +22,14 @@ class OctopusSDKProvider {
     private var storage = [AnyCancellable]()
 
     private init() {
-
         initializeSDK()
 
-        Publishers.CombineLatest(
-            $octopus,
-            NotificationManager.instance.$notificationDeviceToken
-        ).sink { octopus, notificationDeviceToken in
-            guard let octopus, let notificationDeviceToken else { return }
-            print("Setting notification device token to octopus SDK")
-            octopus.set(notificationDeviceToken: notificationDeviceToken)
-        }.store(in: &storage)
+        NotificationManager.instance.$notificationDeviceToken
+            .sink { [unowned self] notificationDeviceToken in
+                guard let notificationDeviceToken else { return }
+                print("Setting notification device token to octopus SDK")
+                octopus.set(notificationDeviceToken: notificationDeviceToken)
+            }.store(in: &storage)
     }
 
     private func initializeSDK() {
@@ -103,51 +99,47 @@ class OctopusSDKProvider {
     }
 
     private func initializeSDKForInternalUsage() {
-        // Initialize the sdk only when the config is not nil
-        SDKConfigManager.instance.$sdkConfig.sink { [unowned self] config in
-            guard let config else {
-                octopus = nil
-                return
-            }
-            let connectionMode: ConnectionMode = switch config.authKind {
-            case .octopus: .octopus(deepLink: "com.octopuscommunity.sample://magic-link")
-            case let .sso(appManagedFields, _):
-                    .sso(
-                        .init(
-                            appManagedFields: Set(appManagedFields.map {
-                                return switch $0 {
-                                case .nickname: .nickname
-                                case .bio: .bio
-                                case .picture: .picture
-                                }
-                            }), loginRequired: { [weak self] in
-                                self?.clientLoginRequired = true
-                            }, modifyUser: { [weak self] in
-                                self?.clientModifyUserField = $0
-                                self?.clientModifyUserAsked = true
+        guard let sdkConfig = SDKConfigManager.instance.sdkConfig else {
+            fatalError("SDK config should be set before initializing the SDK")
+        }
+        let connectionMode: ConnectionMode = switch sdkConfig.authKind {
+        case .octopus: .octopus(deepLink: "com.octopuscommunity.sample://magic-link")
+        case let .sso(appManagedFields, _):
+                .sso(
+                    .init(
+                        appManagedFields: Set(appManagedFields.map {
+                            return switch $0 {
+                            case .nickname: .nickname
+                            case .bio: .bio
+                            case .picture: .picture
                             }
-                        )
+                        }), loginRequired: { [weak self] in
+                            self?.clientLoginRequired = true
+                        }, modifyUser: { [weak self] in
+                            self?.clientModifyUserField = $0
+                            self?.clientModifyUserAsked = true
+                        }
                     )
-            }
-            let apiKey = switch config.authKind {
-            case .octopus: APIKeys.octopusAuth
-            case let .sso(appManagedFields, forceLoginOnStrongActions):
-                if appManagedFields.isEmpty {
-                    if forceLoginOnStrongActions {
-                        APIKeys.ssoNoManagedFieldsForceLogin
-                    } else {
-                        APIKeys.ssoNoManagedFields
-                    }
-                } else if Set(appManagedFields) == Set(SDKConfig.ProfileField.allCases) {
-                    APIKeys.ssoAllManagedFields
+                )
+        }
+        let apiKey = switch sdkConfig.authKind {
+        case .octopus: APIKeys.octopusAuth
+        case let .sso(appManagedFields, forceLoginOnStrongActions):
+            if appManagedFields.isEmpty {
+                if forceLoginOnStrongActions {
+                    APIKeys.ssoNoManagedFieldsForceLogin
                 } else {
-                    APIKeys.ssoSomeManagedFields
+                    APIKeys.ssoNoManagedFields
                 }
+            } else if Set(appManagedFields) == Set(SDKConfig.ProfileField.allCases) {
+                APIKeys.ssoAllManagedFields
+            } else {
+                APIKeys.ssoSomeManagedFields
             }
+        }
 
-            printSdkCreation(connectionMode: connectionMode)
-            octopus = try! OctopusSDK(apiKey: apiKey, connectionMode: connectionMode)
-        }.store(in: &storage)
+        printSdkCreation(connectionMode: connectionMode)
+        octopus = try! OctopusSDK(apiKey: apiKey, connectionMode: connectionMode)
     }
 
     private func printSdkCreation(connectionMode: ConnectionMode) {

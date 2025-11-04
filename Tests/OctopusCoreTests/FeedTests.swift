@@ -719,7 +719,8 @@ class FeedTests: XCTestCase {
     }
 
     private func createPost(id: String, updateDate: Date = Date(), authorId: String = "authorId") -> StorablePost {
-        StorablePost(uuid: id, text: "title\(id)", medias: [], poll: nil,
+        StorablePost(uuid: id, text: .init(originalText: "title\(id)", originalLanguage: nil, translatedText: nil),
+                     medias: [], poll: nil,
                      author: MinimalProfile(uuid: authorId, nickname: "me", avatarUrl: nil),
                      creationDate: Date(),
                      updateDate: updateDate,

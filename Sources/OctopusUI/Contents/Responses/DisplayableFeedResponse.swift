@@ -9,8 +9,7 @@ import OctopusCore
 struct DisplayableFeedResponse: Equatable {
     let kind: ResponseKind
     let uuid: String
-    let text: String?
-    let textIsEllipsized: Bool
+    let text: EllipsizableTranslatedText?
     let image: ImageMedia?
     let author: Author
     let relativeDate: String
@@ -46,21 +45,8 @@ extension DisplayableFeedResponse {
         kind = .comment
         uuid = comment.uuid
 
-        let displayableText: String?
-        if ellipsizeText {
-            // Display max 200 chars and 4 new lines.
-            displayableText = comment.text.map {
-                String($0.prefix(200))
-                    .split(separator: "\n", omittingEmptySubsequences: false)
-                    .prefix(4)
-                    .joined(separator: "\n")
-            }
-        } else {
-            displayableText = comment.text
-        }
+        text = EllipsizableTranslatedText(text: comment.text, ellipsize: ellipsizeText)
 
-        text = displayableText
-        textIsEllipsized = comment.text != displayableText
         author = .init(profile: comment.author)
         relativeDate = dateFormatter.customLocalizedStructure(for: comment.creationDate, relativeTo: Date())
         image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
@@ -75,8 +61,7 @@ extension DisplayableFeedResponse {
          onAppearAction: @escaping () -> Void, onDisappearAction: @escaping () -> Void) {
         kind = .reply
         uuid = reply.uuid
-        text = reply.text
-        textIsEllipsized = false
+        text = EllipsizableTranslatedText(text: reply.text, ellipsize: false)
         author = .init(profile: reply.author)
         relativeDate = dateFormatter.customLocalizedStructure(for: reply.creationDate, relativeTo: Date())
         image = ImageMedia(from: reply.medias.first(where: { $0.kind == .image }))

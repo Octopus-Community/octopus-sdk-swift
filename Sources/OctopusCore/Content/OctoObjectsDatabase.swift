@@ -99,4 +99,16 @@ class OctoObjectsDatabase {
             try context.save()
         }
     }
+
+    func resetUpdateTimestamp() async throws {
+        try await context.performAsync { [context] in
+            let request = OctoObjectEntity.fetchAllGeneric()
+            let existingContents = try context.fetch(request)
+
+            for existingContent in existingContents {
+                existingContent.updateTimestamp = Date.distantPast.timeIntervalSince1970
+            }
+            try context.save()
+        }
+    }
 }

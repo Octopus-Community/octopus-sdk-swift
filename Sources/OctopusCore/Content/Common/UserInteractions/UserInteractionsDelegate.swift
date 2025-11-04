@@ -22,7 +22,7 @@ class UserInteractionsDelegate {
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
     }
 
-    func set(reaction: ReactionKind?, content: OctopusContent) async throws(Reaction.Error) {
+    func set(reaction: ReactionKind?, content: OctopusContent, parentIsTranslated: Bool) async throws(Reaction.Error) {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
             let existingReaction = content.userInteractions.reaction
@@ -35,6 +35,7 @@ class UserInteractionsDelegate {
                     let response = try await remoteClient.octoService.react(
                         reactionKind: reaction.unicode,
                         objectId: content.uuid,
+                        parentIsTranslated: parentIsTranslated,
                         authenticationMethod: try authCallProvider.authenticatedMethod())
                     switch response.result {
                     case let .success(receivedContent):

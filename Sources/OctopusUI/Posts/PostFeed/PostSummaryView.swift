@@ -186,9 +186,10 @@ struct PostSummaryView: View {
 
 private struct PublishedContentView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+
     let content: DisplayablePost.PostContent
     let contentId: String
-
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let childrenTapped: () -> Void
@@ -206,16 +207,18 @@ private struct PublishedContentView: View {
 
     @State private var liveMeasures: LiveMeasures?
 
+    var displayTranslation: Bool { translationStore.displayTranslation(for: contentId) }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Group {
-                if content.textIsEllipsized {
-                    Text(verbatim: "\(content.text)... ")
+                if content.text.getIsEllipsized(translated: displayTranslation) {
+                    Text(verbatim: "\(content.text.getText(translated: displayTranslation))... ")
                     +
                     Text("Common.ReadMore", bundle: .module)
                         .bold()
                 } else {
-                    Text(content.text)
+                    Text(content.text.getText(translated: displayTranslation))
                 }
             }
             .font(theme.fonts.body2)
@@ -223,6 +226,12 @@ private struct PublishedContentView: View {
             .contentShape(Rectangle())
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, horizontalPadding)
+
+            if !hasPoll && content.text.hasTranslation {
+                ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage)
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.top, -2)
+            }
 
             switch content.attachment {
             case let .image(image):
@@ -278,8 +287,15 @@ private struct PublishedContentView: View {
                 PollView(poll: poll,
                          aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
                          userInteractions: liveMeasures?.userInteractions ?? content.liveMeasuresValue.userInteractions,
+                         parentId: contentId,
                          vote: voteOnPoll)
                 .padding(.horizontal, horizontalPadding)
+
+                if content.text.hasTranslation {
+                    ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage)
+                        .padding(.horizontal, horizontalPadding)
+                        .padding(.top, -2)
+                }
             case .none:
                 EmptyView()
             }
@@ -348,6 +364,13 @@ private struct PublishedContentView: View {
             withAnimation {
                 liveMeasures = newLiveMeasures
             }
+        }
+    }
+
+    var hasPoll: Bool {
+        switch content.attachment {
+        case .poll: return true
+        default: return false
         }
     }
 }

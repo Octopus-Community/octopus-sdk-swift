@@ -18,6 +18,7 @@ class CreateCommentViewModel: ObservableObject {
     @Published private(set) var textError: DisplayableString?
     @Published private(set) var pictureError: DisplayableString?
     @Published private(set) var hasChanges = false
+    @Published private(set) var userHasAcceptedCgu = false
 
     var sendAvailable: Bool {
         validator.validate(comment: WritableComment(postId: postId, text: text, imageData: picture?.imageData))
@@ -25,8 +26,13 @@ class CreateCommentViewModel: ObservableObject {
 
     var textMaxLength: Int { validator.maxTextLength }
 
+    let communityGuidelinesUrl: URL
+    let privacyPolicyUrl: URL
+    let termsOfUseUrl: URL
+
     let octopus: OctopusSDK
     let postId: String
+    private let translationStore: ContentTranslationPreferenceStore
     private let validator: Validators.Comment
     private var storage = [AnyCancellable]()
     private var commentReceivedCancellable: AnyCancellable?
@@ -34,10 +40,19 @@ class CreateCommentViewModel: ObservableObject {
 
     private var isWaitingToSendComment = false
 
-    init(octopus: OctopusSDK, postId: String, ensureConnected: @escaping (UserAction) -> Bool) {
+    init(octopus: OctopusSDK, postId: String,
+         translationStore: ContentTranslationPreferenceStore,
+         ensureConnected: @escaping (UserAction) -> Bool) {
         self.octopus = octopus
         self.postId = postId
+        self.translationStore = translationStore
         self.ensureConnected = ensureConnected
+
+        let externalLinksRepository = octopus.core.externalLinksRepository
+        communityGuidelinesUrl = externalLinksRepository.communityGuidelines
+        privacyPolicyUrl = externalLinksRepository.privacyPolicy
+        termsOfUseUrl = externalLinksRepository.termsOfUse
+
         validator = self.octopus.core.validators.comment
 
         octopus.core.configRepository.communityConfigPublisher
@@ -57,9 +72,8 @@ class CreateCommentViewModel: ObservableObject {
 
         octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] profile in
-                guard let profile else {
-                    return
-                }
+                guard let profile else { return }
+                userHasAcceptedCgu = profile.hasAcceptedCgu
                 if !profile.isGuest || profile.hasConfirmedNickname {
                     if isWaitingToSendComment {
                         isWaitingToSendComment = false
@@ -124,8 +138,28 @@ class CreateCommentViewModel: ObservableObject {
 
     private func send(comment: WritableComment) async {
         do {
+            if let profile = octopus.core.profileRepository.profile, !profile.hasAcceptedCgu {
+                try await octopus.core.profileRepository.updateCurrentUserProfile(with: .init(
+                    hasAcceptedCgu: .updated(true)
+                ))
+            }
+        } catch {
+            switch error {
+            case let .validation(argumentError):
+                for (_, errors) in argumentError.errors {
+                    let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
+                    self.alertError = .localizedString(multiErrorLocalizedString)
+                }
+            case let .serverCall(serverError):
+                self.alertError = serverError.displayableMessage
+            }
+            // do not send the message if we cannot update the profile
+            return
+        }
+        do {
             // let enough time for the keyboard to remove itself
-            let (createdComment, imageData) = try await octopus.core.commentsRepository.send(comment)
+            let (createdComment, imageData) = try await octopus.core.commentsRepository.send(
+                comment, parentIsTranslated: translationStore.displayTranslation(for: postId))
             if let imageData, let image = UIImage(data: imageData), let imageUrl = createdComment.medias.first?.url {
                 try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: imageUrl)
             }
