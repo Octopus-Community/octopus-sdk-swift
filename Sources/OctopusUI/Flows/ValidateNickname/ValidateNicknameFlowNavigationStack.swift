@@ -22,15 +22,13 @@ struct ValidateNicknameFlowNavigationStack<RootView: View>: View {
         NBNavigationStack(path: $flowPath.path) {
             rootView
                 .nbNavigationDestination(for: ValidateNicknameFlowScreen.self) { screen in
-                    Group {
-                        switch screen {
-                        case .editProfile:
-                            EditProfileView(octopus: octopus, bioFocused: false, photoPickerFocused: false,
-                                            preventDismissAfterUpdate: true)
-                        }
+                    switch screen {
+                    case .editProfile:
+                        EditProfileView(octopus: octopus, bioFocused: false, photoPickerFocused: false,
+                                        preventDismissAfterUpdate: true)
                     }
                 }
-
         }
+        .nbUseNavigationStack(.whenAvailable)
     }
 }

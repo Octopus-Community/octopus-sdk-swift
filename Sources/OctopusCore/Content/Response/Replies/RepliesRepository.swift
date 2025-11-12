@@ -44,7 +44,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
     }
 
     @discardableResult
-    public func send(_ reply: WritableReply, parentIsTranslated: Bool,) async throws(SendReply.Error) -> (Reply, Data?) {
+    public func send(_ reply: WritableReply, parentIsTranslated: Bool) async throws(SendReply.Error) -> (Reply, Data?) {
         guard validator.validate(reply: reply) else {
             throw .serverCall(.other(InternalError.objectMalformed))
         }
