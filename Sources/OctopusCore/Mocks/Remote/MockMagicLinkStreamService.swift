@@ -5,7 +5,11 @@
 import Foundation
 import OctopusRemoteClient
 import OctopusGrpcModels
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 
 class MockMagicLinkStreamService: MagicLinkStreamService {
     /// Continuation in order to stream responses

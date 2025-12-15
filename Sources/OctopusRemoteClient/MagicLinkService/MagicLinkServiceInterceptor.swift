@@ -3,7 +3,11 @@
 //
 
 import Foundation
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 import OctopusGrpcModels
 
 final class MagicLinkServiceInterceptor: Com_Octopuscommunity_MagicLinkServiceClientInterceptorFactoryProtocol, @unchecked Sendable {

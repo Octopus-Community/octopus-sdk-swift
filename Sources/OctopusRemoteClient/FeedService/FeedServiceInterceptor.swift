@@ -3,7 +3,11 @@
 //
 
 import Foundation
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 import OctopusGrpcModels
 
 final class FeedServiceInterceptor: Com_Octopuscommunity_FeedServiceClientInterceptorFactoryProtocol, @unchecked Sendable {

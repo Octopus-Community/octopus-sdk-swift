@@ -3,7 +3,11 @@
 //
 
 import Foundation
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 import OctopusGrpcModels
 
 final class ApiKeyServiceInterceptor: Com_Octopuscommunity_ApiKeyServiceClientInterceptorFactoryProtocol, @unchecked Sendable {
@@ -15,7 +19,7 @@ final class ApiKeyServiceInterceptor: Com_Octopuscommunity_ApiKeyServiceClientIn
         self.updateTokenBlock = updateTokenBlock
     }
 
-    func makeGetConfigInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_Empty, OctopusGrpcModels.Com_Octopuscommunity_GetConfigResponse>] {
+    func makeGetConfigInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_Empty, OctopusGrpcModels.Com_Octopuscommunity_GetConfigResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 }

@@ -3,7 +3,11 @@
 //
 
 import Foundation
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 import OctopusGrpcModels
 
 final class TrackingServiceInterceptor: Com_Octopuscommunity_TrackingServiceClientInterceptorFactoryProtocol, @unchecked Sendable {
@@ -15,7 +19,7 @@ final class TrackingServiceInterceptor: Com_Octopuscommunity_TrackingServiceClie
         self.updateTokenBlock = updateTokenBlock
     }
 
-    func makeTrackInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_TrackRequest, OctopusGrpcModels.Com_Octopuscommunity_TrackResponse>] {
+    func makeTrackInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_TrackRequest, OctopusGrpcModels.Com_Octopuscommunity_TrackResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 }
