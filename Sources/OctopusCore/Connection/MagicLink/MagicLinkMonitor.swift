@@ -7,7 +7,11 @@ import Combine
 import os
 import OctopusDependencyInjection
 import OctopusRemoteClient
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 import OctopusGrpcModels
 
 extension Injected {
@@ -65,7 +69,7 @@ class MagicLinkMonitorDefault: MagicLinkMonitor, InjectableObject, @unchecked Se
 //                    do {
 //                        try await listenForMagicLinkConfirmationUpdates(stream: stream)
 //                    } catch {
-//                        if let grpcError = error as? GRPC.GRPCStatus, grpcError.code == .cancelled {
+//                        if let grpcError = error as? GRPCStatus, grpcError.code == .cancelled {
 //                            // nothing to do, it is normal
 //                        } else {
 //                            if #available(iOS 14, *) { Logger.connection.debug("Error during magic link subsription: \(error)") }

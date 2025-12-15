@@ -3,7 +3,11 @@
 //
 
 import Foundation
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 import NIOHPACK
 
 enum RefreshingTokenError: Error {

@@ -7,7 +7,11 @@ import Combine
 import os
 import OctopusDependencyInjection
 import OctopusRemoteClient
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 import OctopusGrpcModels
 
 extension Injected {

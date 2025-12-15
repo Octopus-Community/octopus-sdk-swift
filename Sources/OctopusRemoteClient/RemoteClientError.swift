@@ -3,7 +3,11 @@
 //
 
 import Foundation
+#if canImport(GRPC)
 import GRPC
+#else
+import GRPCSwift
+#endif
 
 /// The errors that can be reported from any remote client call
 public enum RemoteClientError: Error {

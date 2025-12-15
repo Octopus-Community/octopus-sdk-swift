@@ -10,6 +10,11 @@ target 'CocoaPodsValidationApp' do
   pod 'OctopusCommunityGrpcModels'
   pod 'OctopusCommunityDependencyInjection'
 
+  # If you have another dependency that uses Grpc-Core (such as FirebaseFirestore), you'll have to copy the
+  # gRPC-Swift.podspec.json file to your project and add this line in your Podfile
+  # pod 'gRPC-Swift', :podspec => 'gRPC-Swift.podspec.json'
+
+
 # Replace with that if you want to test with the local version
 #  pod 'OctopusCommunityUI', :path => '..'
 #  pod 'OctopusCommunity', :path => '..'
