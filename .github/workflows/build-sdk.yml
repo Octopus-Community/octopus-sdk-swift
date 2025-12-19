@@ -25,7 +25,11 @@ jobs:
 
     - name: Get active Xcode version
       id: xcode-version
-      run: echo "version=$(xcodebuild -version | head -n1 | awk '{print $2}')" >> $GITHUB_OUTPUT
+      run: |
+        xcodebuild_version=$(xcodebuild -version | head -n1 | awk '{print $2}')
+        echo "XcodeBuild versions: $xcodebuild_version"
+        available_runtimes="$(xcrun simctl list runtimes)"
+        echo "Runtimes available: $available_runtimes"
 
     - uses: irgaly/xcode-cache@v1
       with:
@@ -36,5 +40,5 @@ jobs:
       run: |
         xcodebuild test \
           -scheme 'OctopusSdkSwift-Package' \
-          -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+          -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.1' \
           CODE_SIGNING_ALLOWED='NO'

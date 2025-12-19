@@ -4,12 +4,13 @@
 
 import SwiftUI
 
-struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: ViewModifier {
+struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTrailingView: View>: ViewModifier {
     @Environment(\.octopusTheme) private var theme
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let defaultLeadingBarItem: LeadingBarItem
     let defaultTrailingBarItem: TrailingBarItem
+    let defaultPreTrailingBarItem: PreTrailingView?
     let defaultNavigationBarTitle: Text
     let defaultNavigationBarBackButtonHidden: Bool
     let defaultNavigationBarPrimaryColor: Bool
@@ -30,6 +31,8 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
                             isDisplayed: zoomableImageInfo != nil)
                     }
                     .transition(.identity)
+                    .accessibilitySortPriority(10)
+                    .accessibilityAddTraits(.isModal)
             }
         }
         .namespaced()
@@ -60,9 +63,13 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
             }
         }
         .toolbar(
-            leading: leadingBarItem, trailing: trailingBarItem,
+            leading: leadingBarItem,
+            preTrailing: preTrailingBarItem,
+            trailing: trailingBarItem,
             leadingSharedBackgroundVisibility: .hidden,
+            preTrailingSharedBackgroundVisibility: .automatic,
             trailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : .automatic)
+
         .navigationBarTitle(
             usableZoomableImageInfo == nil ? defaultNavigationBarTitle : Text(verbatim: ""),
             displayMode: .inline)
@@ -97,6 +104,15 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>: View
             Spacer()
         } else {
             defaultLeadingBarItem
+        }
+    }
+
+    @ViewBuilder
+    private var preTrailingBarItem: some View {
+        if usableZoomableImageInfo == nil, let defaultPreTrailingBarItem {
+            defaultPreTrailingBarItem
+        } else {
+            EmptyView()
         }
     }
 
@@ -143,6 +159,28 @@ extension View {
                 zoomableImageInfo: zoomableImageInfo,
                 defaultLeadingBarItem: defaultLeadingBarItem,
                 defaultTrailingBarItem: defaultTrailingBarItem,
+                defaultPreTrailingBarItem: nil as EmptyView?,
+                defaultNavigationBarTitle: defaultNavigationBarTitle,
+                defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
+                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor
+            )
+        )
+    }
+
+    func zoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTrailingBarItem: View>(
+        zoomableImageInfo: Binding<ZoomableImageInfo?>,
+        defaultLeadingBarItem: LeadingBarItem,
+        defaultPreTrailingBarItem: PreTrailingBarItem,
+        defaultTrailingBarItem: TrailingBarItem,
+        defaultNavigationBarTitle: Text = Text(verbatim: ""),
+        defaultNavigationBarBackButtonHidden: Bool = false,
+        defaultNavigationBarPrimaryColor: Bool = false) -> some View {
+        self.modifier(
+            ZoomableImageContainer(
+                zoomableImageInfo: zoomableImageInfo,
+                defaultLeadingBarItem: defaultLeadingBarItem,
+                defaultTrailingBarItem: defaultTrailingBarItem,
+                defaultPreTrailingBarItem: defaultPreTrailingBarItem,
                 defaultNavigationBarTitle: defaultNavigationBarTitle,
                 defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
                 defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor

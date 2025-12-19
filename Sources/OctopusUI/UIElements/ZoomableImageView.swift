@@ -70,6 +70,52 @@ struct ZoomableImageView: View {
                     .scaleEffect(scale)
                     .offset(offset)
                     .namespacedMatchedGeometryEffect(id: identifier, isSource: false)
+                    .accessibilityFocusOnAppear()
+                    .modify {
+                        if #available(iOS 16.0, *) {
+                            $0.accessibilityZoomAction { action in
+                                switch action.direction {
+                                case .zoomIn:
+                                    scale += 0.5
+                                case .zoomOut:
+                                    scale -= 0.5
+                                }
+                            }
+                        } else {
+                            $0
+                        }
+                    }
+
+                if UIAccessibility.isVoiceOverRunning {
+                    AccessibilityImageToolsView(
+                        moveLeft: {
+                            offset = clampedOffset(for: CGSize(
+                                width: offset.width + 50,
+                                height: offset.height
+                            ), scale: scale)
+                        },
+                        moveRight: {
+                            offset = clampedOffset(for: CGSize(
+                                width: offset.width - 50,
+                                height: offset.height
+                            ), scale: scale)
+                        },
+                        moveUp: {
+                            offset = clampedOffset(for: CGSize(
+                                width: offset.width,
+                                height: offset.height + 50
+                            ), scale: scale)
+                        },
+                        moveDown: {
+                            offset = clampedOffset(for: CGSize(
+                                width: offset.width,
+                                height: offset.height - 50
+                            ), scale: scale)
+                        },
+                        zoomIn: { scale += 0.5 },
+                        zoomOut: { scale = max(1, scale - 0.5) }
+                    )
+                }
             }
             .frame(maxWidth: .infinity)
         }
@@ -260,5 +306,70 @@ struct ZoomableImageView: View {
         decelerationTimer?.invalidate()
         decelerationTimer = nil
         isDecelerating = false
+    }
+}
+
+private struct AccessibilityImageToolsView: View {
+    let moveLeft: () -> Void
+    let moveRight: () -> Void
+    let moveUp: () -> Void
+    let moveDown: () -> Void
+    let zoomIn: () -> Void
+    let zoomOut: () -> Void
+
+    var body: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Button(action: zoomIn) {
+                    Image(systemName: "plus.magnifyingglass")
+                }
+                .accessibilityLabelInBundle("Accessibility.Image.ZoomIn")
+
+                Button(action: zoomOut) {
+                    Image(systemName: "minus.magnifyingglass")
+                }
+                .accessibilityLabelInBundle("Accessibility.Image.ZoomOut")
+
+                Spacer()
+
+                HStack {
+                    VStack {
+                        Spacer().frame(height: 40)
+                        Button(action: moveLeft) {
+                            Image(systemName: "arrow.left")
+                        }
+                        .accessibilityLabelInBundle("Accessibility.Image.MoveLeft")
+                        Spacer().frame(height: 40)
+                    }
+
+                    VStack {
+                        Button(action: moveUp) {
+                            Image(systemName: "arrow.up")
+                        }
+                        .accessibilityLabelInBundle("Accessibility.Image.MoveUp")
+                        Spacer().frame(height: 40)
+                        Button(action: moveDown) {
+                            Image(systemName: "arrow.down")
+                        }
+                        .accessibilityLabelInBundle("Accessibility.Image.MoveDown")
+                    }
+                    VStack {
+                        Spacer().frame(height: 40)
+                        Button(action: moveRight) {
+                            Image(systemName: "arrow.right")
+                        }
+                        .accessibilityLabelInBundle("Accessibility.Image.MoveRight")
+                        Spacer().frame(height: 40)
+                    }
+                }
+                .accessibilityElement(children: .contain)
+
+            }
+            .font(.title.bold())
+            .foregroundColor(.white)
+            .padding()
+            .background(Color.black.opacity(0.6))
+        }
     }
 }

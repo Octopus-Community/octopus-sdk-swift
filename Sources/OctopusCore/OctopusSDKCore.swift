@@ -20,6 +20,8 @@ public class OctopusSDKCore: ObservableObject {
     public let notificationsRepository: NotificationsRepository
     public let configRepository: ConfigRepository
     public let contentTranslationPreferenceRepository: ContentTranslationPreferenceRepository
+    public let toastsRepository: ToastsRepository
+    public let sdkEventsEmitter: SdkEventsEmitter
 
     public let validators: Validators
 
@@ -59,6 +61,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { LanguageChangedMonitor(injector: $0) }
         injector.register { BlockedUserIdsProviderDefault(injector: $0) }
         injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
+        injector.register { SdkEventsEmitter(injector: $0) }
 
         // Repository
         injector.register { ConfigRepositoryDefault(injector: $0) }
@@ -69,7 +72,8 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { TopicsRepository(injector: $0) }
         injector.register { ModerationRepository(injector: $0) }
         injector.register { ExternalLinksRepository(injector: $0, apiKey: apiKey) }
-        injector.register { ContentTranslationPreferenceRepository(injector: $0) }
+        injector.register { ContentTranslationPreferenceRepositoryDefault(injector: $0) }
+        injector.register { ToastsRepository(injector: $0) }
 
         // Feed
         injector.register { PostFeedsStore(injector: $0) }
@@ -157,6 +161,8 @@ public class OctopusSDKCore: ObservableObject {
         notificationsRepository = injector.getInjected(identifiedBy: Injected.notificationsRepository)
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
         contentTranslationPreferenceRepository = injector.getInjected(identifiedBy: Injected.contentTranslationPreferenceRepository)
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
     }
 
     deinit {

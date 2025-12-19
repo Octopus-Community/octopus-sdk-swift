@@ -37,7 +37,7 @@ extension String {
     }
 
     var initials: String {
-        split(separator: " ").prefix(2).compactMap { $0.first?.uppercased() }.joined()
+        first?.uppercased() ?? ""
     }
 }
 
@@ -77,10 +77,15 @@ extension String {
 
         func format(_ value: Double, suffix: String) -> String {
             if value < 10 {
-                let formatted = String(format: "%.1f", value)
-                return formatted.hasSuffix(".0") ? "\(Int(value))\(suffix)" : "\(formatted)\(suffix)"
+                let roundedToOne = (value * 10).rounded(.down) / 10
+                // If rounded value is whole, print as integer (no .0)
+                if roundedToOne.truncatingRemainder(dividingBy: 1) == 0 {
+                    return "\(Int(roundedToOne))\(suffix)"
+                } else {
+                    return String(format: "%.1f", roundedToOne) + suffix
+                }
             } else {
-                return "\(Int(round(value)))\(suffix)"
+                return "\(Int(floor(value)))\(suffix)"
             }
         }
 

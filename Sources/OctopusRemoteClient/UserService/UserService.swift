@@ -91,6 +91,9 @@ public protocol UserService {
 
     func bypassABTestingAccess(userId: String, canAccessCommunity: Bool, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_ByPassAbTestingResponse
+
+    func enteringOctopus(authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_EnteringOctopusResponse
 }
 
 class UserServiceClient: ServiceClient, UserService {
@@ -111,6 +114,8 @@ class UserServiceClient: ServiceClient, UserService {
     -> Com_Octopuscommunity_GetPublicProfileResponse {
         let request = Com_Octopuscommunity_GetPublicProfileRequest.with {
             $0.userID = profileId
+            $0.fetchTotalMessages = true
+            $0.fetchGamification = true
         }
         return try await callRemote(authenticationMethod) {
             try await client.getPublicProfile(
@@ -126,6 +131,8 @@ class UserServiceClient: ServiceClient, UserService {
             $0.userID = userId
             $0.fetchUserBlockList = true
             $0.fetchNotificationsBadge = true
+            $0.fetchTotalMessages = true
+            $0.fetchGamification = true
         }
         return try await callRemote(authenticationMethod) {
             try await client.getPrivateProfile(
@@ -175,6 +182,12 @@ class UserServiceClient: ServiceClient, UserService {
                 }
                 $0.optFindAvailableNickname = profile.optFindAvailableNickname
             }
+
+            // TODO: Djavan only set to true when it is a profile update, not only hasSeenOnboarding or hasAcceptedCgu
+            $0.fetchUserBlockList = true
+            $0.fetchNotificationsBadge = true
+            $0.fetchTotalMessages = true
+            $0.fetchGamification = true
         }
         return try await callRemote(authenticationMethod) {
             return try await client.updateProfile(
@@ -236,7 +249,7 @@ class UserServiceClient: ServiceClient, UserService {
         let request = Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest.with {
             $0.clientToken = clientToken
         }
-        return try await callRemote(.notAuthenticated) {
+        return try await callRemote(authenticationMethod) {
             try await client.getJwtFromClientSignedToken(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
@@ -256,7 +269,7 @@ class UserServiceClient: ServiceClient, UserService {
     -> Com_Octopuscommunity_CanAccessCommunityResponse {
         let request = Com_Octopuscommunity_CanAccessCommunityRequest()
 
-        return try await callRemote(.notAuthenticated) {
+        return try await callRemote(authenticationMethod) {
             try await client.canAccessCommunity(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
@@ -269,8 +282,20 @@ class UserServiceClient: ServiceClient, UserService {
             $0.giveCommunityAccess = canAccessCommunity
         }
 
-        return try await callRemote(.notAuthenticated) {
+        return try await callRemote(authenticationMethod) {
             try await client.byPassAbTesting(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func enteringOctopus(authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_EnteringOctopusResponse {
+        let request = Com_Octopuscommunity_EnteringOctopusRequest.with {
+            $0.fetchGamificationToasts = true
+        }
+
+        return try await callRemote(authenticationMethod) {
+            try await client.enteringOctopus(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

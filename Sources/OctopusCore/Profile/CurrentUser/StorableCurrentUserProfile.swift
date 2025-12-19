@@ -14,6 +14,14 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
     let bio: String?
     let pictureUrl: URL?
 
+    let tags: ProfileTags
+
+    let totalMessages: Int?
+    let accountCreationDate: Date?
+
+    let gamificationLevel: Int?
+    let gamificationScore: Int?
+
     let hasSeenOnboarding: Bool?
     let hasAcceptedCgu: Bool?
     let hasConfirmedNickname: Bool?
@@ -38,6 +46,11 @@ extension StorableCurrentUserProfile {
         email = entity.email
         bio = entity.bio
         pictureUrl = entity.pictureUrl
+        tags = entity.tags
+        totalMessages = entity.totalMessages
+        accountCreationDate = entity.accountCreationDate
+        gamificationLevel = entity.gamificationLevel
+        gamificationScore = entity.gamificationScore
         hasSeenOnboarding = entity.hasSeenOnboarding
         hasAcceptedCgu = entity.hasAcceptedCgu
         hasConfirmedNickname = entity.hasConfirmedNickname
@@ -57,6 +70,20 @@ extension StorableCurrentUserProfile {
         originalNickname = profile.originalNickname.nilIfEmpty
         email = profile.email
         bio = profile.bio
+
+        tags = ProfileTags(from: profile.tags)
+
+        totalMessages = profile.hasTotalMessages ? Int(profile.totalMessages) : nil
+        accountCreationDate = profile.hasAccountCreatedAt ? Date(timestampMs: profile.accountCreatedAt) : nil
+
+        if profile.hasGamificationScore {
+            gamificationLevel = Int(profile.gamificationScore.level)
+            gamificationScore = Int(profile.gamificationScore.score)
+        } else {
+            gamificationLevel = nil
+            gamificationScore = nil
+        }
+
         hasSeenOnboarding = profile.hasHasSeenOnboarding_p ? profile.hasSeenOnboarding_p : nil
         hasAcceptedCgu = profile.hasHasAcceptedCgu_p ? profile.hasAcceptedCgu_p : nil
         hasConfirmedNickname = profile.hasHasConfirmedNickname_p ? profile.hasConfirmedNickname_p : nil

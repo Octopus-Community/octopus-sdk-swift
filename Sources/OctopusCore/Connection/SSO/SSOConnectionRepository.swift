@@ -102,9 +102,9 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             networkMonitor.connectionAvailablePublisher.filter { $0 }
         )
         .first()
-        .sink { [unowned self] userDataIsNil, profileIsNil, _ in
+        .sink { [weak self] userDataIsNil, profileIsNil, _ in
             if profileIsNil && userDataIsNil {
-                connectAsync()
+                self?.connectAsync()
             }
         }
         .store(in: &storage)

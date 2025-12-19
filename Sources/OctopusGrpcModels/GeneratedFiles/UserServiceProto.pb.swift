@@ -421,11 +421,55 @@ public struct Com_Octopuscommunity_UpdateProfileRequest: Sendable {
   /// Clears the value of `update`. Subsequent reads from it will return its default value.
   public mutating func clearUpdate() {self._update = nil}
 
+  ///Default to false
+  public var fetchUserBlockList: Bool {
+    get {return _fetchUserBlockList ?? false}
+    set {_fetchUserBlockList = newValue}
+  }
+  /// Returns true if `fetchUserBlockList` has been explicitly set.
+  public var hasFetchUserBlockList: Bool {return self._fetchUserBlockList != nil}
+  /// Clears the value of `fetchUserBlockList`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchUserBlockList() {self._fetchUserBlockList = nil}
+
+  ///Default to false
+  public var fetchNotificationsBadge: Bool {
+    get {return _fetchNotificationsBadge ?? false}
+    set {_fetchNotificationsBadge = newValue}
+  }
+  /// Returns true if `fetchNotificationsBadge` has been explicitly set.
+  public var hasFetchNotificationsBadge: Bool {return self._fetchNotificationsBadge != nil}
+  /// Clears the value of `fetchNotificationsBadge`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchNotificationsBadge() {self._fetchNotificationsBadge = nil}
+
+  ///Default to false
+  public var fetchTotalMessages: Bool {
+    get {return _fetchTotalMessages ?? false}
+    set {_fetchTotalMessages = newValue}
+  }
+  /// Returns true if `fetchTotalMessages` has been explicitly set.
+  public var hasFetchTotalMessages: Bool {return self._fetchTotalMessages != nil}
+  /// Clears the value of `fetchTotalMessages`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchTotalMessages() {self._fetchTotalMessages = nil}
+
+  ///Default to false
+  public var fetchGamification: Bool {
+    get {return _fetchGamification ?? false}
+    set {_fetchGamification = newValue}
+  }
+  /// Returns true if `fetchGamification` has been explicitly set.
+  public var hasFetchGamification: Bool {return self._fetchGamification != nil}
+  /// Clears the value of `fetchGamification`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchGamification() {self._fetchGamification = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _update: Com_Octopuscommunity_ProfileUpdate? = nil
+  fileprivate var _fetchUserBlockList: Bool? = nil
+  fileprivate var _fetchNotificationsBadge: Bool? = nil
+  fileprivate var _fetchTotalMessages: Bool? = nil
+  fileprivate var _fetchGamification: Bool? = nil
 }
 
 public struct Com_Octopuscommunity_ProfileUpdate: Sendable {
@@ -660,11 +704,21 @@ public struct Com_Octopuscommunity_UpdateProfileResponse: Sendable {
     /// Clears the value of `profile`. Subsequent reads from it will return its default value.
     public mutating func clearProfile() {self._profile = nil}
 
+    public var shouldDisplayProfileCompletedGamificationToast: Bool {
+      get {return _shouldDisplayProfileCompletedGamificationToast ?? false}
+      set {_shouldDisplayProfileCompletedGamificationToast = newValue}
+    }
+    /// Returns true if `shouldDisplayProfileCompletedGamificationToast` has been explicitly set.
+    public var hasShouldDisplayProfileCompletedGamificationToast: Bool {return self._shouldDisplayProfileCompletedGamificationToast != nil}
+    /// Clears the value of `shouldDisplayProfileCompletedGamificationToast`. Subsequent reads from it will return its default value.
+    public mutating func clearShouldDisplayProfileCompletedGamificationToast() {self._shouldDisplayProfileCompletedGamificationToast = nil}
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
 
     fileprivate var _profile: Com_Octopuscommunity_PrivateProfile? = nil
+    fileprivate var _shouldDisplayProfileCompletedGamificationToast: Bool? = nil
   }
 
   public struct Fail: Sendable {
@@ -958,9 +1012,32 @@ public struct Com_Octopuscommunity_GetPublicProfileRequest: Sendable {
 
   public var userID: String = String()
 
+  ///Default to false
+  public var fetchTotalMessages: Bool {
+    get {return _fetchTotalMessages ?? false}
+    set {_fetchTotalMessages = newValue}
+  }
+  /// Returns true if `fetchTotalMessages` has been explicitly set.
+  public var hasFetchTotalMessages: Bool {return self._fetchTotalMessages != nil}
+  /// Clears the value of `fetchTotalMessages`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchTotalMessages() {self._fetchTotalMessages = nil}
+
+  ///Default to false
+  public var fetchGamification: Bool {
+    get {return _fetchGamification ?? false}
+    set {_fetchGamification = newValue}
+  }
+  /// Returns true if `fetchGamification` has been explicitly set.
+  public var hasFetchGamification: Bool {return self._fetchGamification != nil}
+  /// Clears the value of `fetchGamification`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchGamification() {self._fetchGamification = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _fetchTotalMessages: Bool? = nil
+  fileprivate var _fetchGamification: Bool? = nil
 }
 
 public struct Com_Octopuscommunity_GetPublicProfileResponse: Sendable {
@@ -1024,6 +1101,33 @@ public struct Com_Octopuscommunity_PublicProfile: Sendable {
 
   public var tags: [Com_Octopuscommunity_ProfileTag] = []
 
+  public var gamificationScore: Com_Octopuscommunity_PublicGamificationScore {
+    get {return _gamificationScore ?? Com_Octopuscommunity_PublicGamificationScore()}
+    set {_gamificationScore = newValue}
+  }
+  /// Returns true if `gamificationScore` has been explicitly set.
+  public var hasGamificationScore: Bool {return self._gamificationScore != nil}
+  /// Clears the value of `gamificationScore`. Subsequent reads from it will return its default value.
+  public mutating func clearGamificationScore() {self._gamificationScore = nil}
+
+  public var totalMessages: Int32 {
+    get {return _totalMessages ?? 0}
+    set {_totalMessages = newValue}
+  }
+  /// Returns true if `totalMessages` has been explicitly set.
+  public var hasTotalMessages: Bool {return self._totalMessages != nil}
+  /// Clears the value of `totalMessages`. Subsequent reads from it will return its default value.
+  public mutating func clearTotalMessages() {self._totalMessages = nil}
+
+  public var accountCreatedAt: UInt64 {
+    get {return _accountCreatedAt ?? 0}
+    set {_accountCreatedAt = newValue}
+  }
+  /// Returns true if `accountCreatedAt` has been explicitly set.
+  public var hasAccountCreatedAt: Bool {return self._accountCreatedAt != nil}
+  /// Clears the value of `accountCreatedAt`. Subsequent reads from it will return its default value.
+  public mutating func clearAccountCreatedAt() {self._accountCreatedAt = nil}
+
   ///JSON string
   public var metadata: String {
     get {return _metadata ?? String()}
@@ -1041,6 +1145,9 @@ public struct Com_Octopuscommunity_PublicProfile: Sendable {
   fileprivate var _nickname: String? = nil
   fileprivate var _pictureURL: String? = nil
   fileprivate var _bio: String? = nil
+  fileprivate var _gamificationScore: Com_Octopuscommunity_PublicGamificationScore? = nil
+  fileprivate var _totalMessages: Int32? = nil
+  fileprivate var _accountCreatedAt: UInt64? = nil
   fileprivate var _metadata: String? = nil
 }
 
@@ -1070,12 +1177,34 @@ public struct Com_Octopuscommunity_GetPrivateProfileRequest: Sendable {
   /// Clears the value of `fetchNotificationsBadge`. Subsequent reads from it will return its default value.
   public mutating func clearFetchNotificationsBadge() {self._fetchNotificationsBadge = nil}
 
+  ///Default to false
+  public var fetchTotalMessages: Bool {
+    get {return _fetchTotalMessages ?? false}
+    set {_fetchTotalMessages = newValue}
+  }
+  /// Returns true if `fetchTotalMessages` has been explicitly set.
+  public var hasFetchTotalMessages: Bool {return self._fetchTotalMessages != nil}
+  /// Clears the value of `fetchTotalMessages`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchTotalMessages() {self._fetchTotalMessages = nil}
+
+  ///Default to false
+  public var fetchGamification: Bool {
+    get {return _fetchGamification ?? false}
+    set {_fetchGamification = newValue}
+  }
+  /// Returns true if `fetchGamification` has been explicitly set.
+  public var hasFetchGamification: Bool {return self._fetchGamification != nil}
+  /// Clears the value of `fetchGamification`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchGamification() {self._fetchGamification = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _fetchUserBlockList: Bool? = nil
   fileprivate var _fetchNotificationsBadge: Bool? = nil
+  fileprivate var _fetchTotalMessages: Bool? = nil
+  fileprivate var _fetchGamification: Bool? = nil
 }
 
 ///May throw NOT_FOUND if the user does not exist, or you do not have the right to see the profile
@@ -1230,6 +1359,33 @@ public struct Com_Octopuscommunity_PrivateProfile: @unchecked Sendable {
     set {_uniqueStorage()._tags = newValue}
   }
 
+  public var gamificationScore: Com_Octopuscommunity_PrivateGamificationScore {
+    get {return _storage._gamificationScore ?? Com_Octopuscommunity_PrivateGamificationScore()}
+    set {_uniqueStorage()._gamificationScore = newValue}
+  }
+  /// Returns true if `gamificationScore` has been explicitly set.
+  public var hasGamificationScore: Bool {return _storage._gamificationScore != nil}
+  /// Clears the value of `gamificationScore`. Subsequent reads from it will return its default value.
+  public mutating func clearGamificationScore() {_uniqueStorage()._gamificationScore = nil}
+
+  public var totalMessages: Int32 {
+    get {return _storage._totalMessages ?? 0}
+    set {_uniqueStorage()._totalMessages = newValue}
+  }
+  /// Returns true if `totalMessages` has been explicitly set.
+  public var hasTotalMessages: Bool {return _storage._totalMessages != nil}
+  /// Clears the value of `totalMessages`. Subsequent reads from it will return its default value.
+  public mutating func clearTotalMessages() {_uniqueStorage()._totalMessages = nil}
+
+  public var accountCreatedAt: UInt64 {
+    get {return _storage._accountCreatedAt ?? 0}
+    set {_uniqueStorage()._accountCreatedAt = newValue}
+  }
+  /// Returns true if `accountCreatedAt` has been explicitly set.
+  public var hasAccountCreatedAt: Bool {return _storage._accountCreatedAt != nil}
+  /// Clears the value of `accountCreatedAt`. Subsequent reads from it will return its default value.
+  public mutating func clearAccountCreatedAt() {_uniqueStorage()._accountCreatedAt = nil}
+
   public var usersBlockList: [String] {
     get {return _storage._usersBlockList}
     set {_uniqueStorage()._usersBlockList = newValue}
@@ -1240,6 +1396,32 @@ public struct Com_Octopuscommunity_PrivateProfile: @unchecked Sendable {
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+public struct Com_Octopuscommunity_PrivateGamificationScore: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var score: Int32 = 0
+
+  public var level: Int32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_PublicGamificationScore: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var level: Int32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 public struct Com_Octopuscommunity_BanUserRequest: Sendable {
@@ -1825,6 +2007,49 @@ public struct Com_Octopuscommunity_SetProfileTagResponse: Sendable {
   }
 
   public init() {}
+}
+
+public struct Com_Octopuscommunity_EnteringOctopusRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var fetchGamificationToasts: Bool = false
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_EnteringOctopusResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var shouldDisplayGamificationLoginToast: Bool {
+    get {return _shouldDisplayGamificationLoginToast ?? false}
+    set {_shouldDisplayGamificationLoginToast = newValue}
+  }
+  /// Returns true if `shouldDisplayGamificationLoginToast` has been explicitly set.
+  public var hasShouldDisplayGamificationLoginToast: Bool {return self._shouldDisplayGamificationLoginToast != nil}
+  /// Clears the value of `shouldDisplayGamificationLoginToast`. Subsequent reads from it will return its default value.
+  public mutating func clearShouldDisplayGamificationLoginToast() {self._shouldDisplayGamificationLoginToast = nil}
+
+  public var shouldDisplayGamificationAnswerToast: Bool {
+    get {return _shouldDisplayGamificationAnswerToast ?? false}
+    set {_shouldDisplayGamificationAnswerToast = newValue}
+  }
+  /// Returns true if `shouldDisplayGamificationAnswerToast` has been explicitly set.
+  public var hasShouldDisplayGamificationAnswerToast: Bool {return self._shouldDisplayGamificationAnswerToast != nil}
+  /// Clears the value of `shouldDisplayGamificationAnswerToast`. Subsequent reads from it will return its default value.
+  public mutating func clearShouldDisplayGamificationAnswerToast() {self._shouldDisplayGamificationAnswerToast = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _shouldDisplayGamificationLoginToast: Bool? = nil
+  fileprivate var _shouldDisplayGamificationAnswerToast: Bool? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -2512,6 +2737,10 @@ extension Com_Octopuscommunity_UpdateProfileRequest: SwiftProtobuf.Message, Swif
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "userId"),
     2: .same(proto: "update"),
+    3: .same(proto: "fetchUserBlockList"),
+    4: .same(proto: "fetchNotificationsBadge"),
+    5: .same(proto: "fetchTotalMessages"),
+    6: .same(proto: "fetchGamification"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2522,6 +2751,10 @@ extension Com_Octopuscommunity_UpdateProfileRequest: SwiftProtobuf.Message, Swif
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._update) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self._fetchUserBlockList) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self._fetchNotificationsBadge) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self._fetchTotalMessages) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self._fetchGamification) }()
       default: break
       }
     }
@@ -2538,12 +2771,28 @@ extension Com_Octopuscommunity_UpdateProfileRequest: SwiftProtobuf.Message, Swif
     try { if let v = self._update {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._fetchUserBlockList {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._fetchNotificationsBadge {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._fetchTotalMessages {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._fetchGamification {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_UpdateProfileRequest, rhs: Com_Octopuscommunity_UpdateProfileRequest) -> Bool {
     if lhs.userID != rhs.userID {return false}
     if lhs._update != rhs._update {return false}
+    if lhs._fetchUserBlockList != rhs._fetchUserBlockList {return false}
+    if lhs._fetchNotificationsBadge != rhs._fetchNotificationsBadge {return false}
+    if lhs._fetchTotalMessages != rhs._fetchTotalMessages {return false}
+    if lhs._fetchGamification != rhs._fetchGamification {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2844,6 +3093,7 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Success: SwiftProtobuf.Mess
   public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "profile"),
+    2: .same(proto: "shouldDisplayProfileCompletedGamificationToast"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2853,6 +3103,7 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Success: SwiftProtobuf.Mess
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._profile) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self._shouldDisplayProfileCompletedGamificationToast) }()
       default: break
       }
     }
@@ -2866,11 +3117,15 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Success: SwiftProtobuf.Mess
     try { if let v = self._profile {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
+    try { if let v = self._shouldDisplayProfileCompletedGamificationToast {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_UpdateProfileResponse.Success, rhs: Com_Octopuscommunity_UpdateProfileResponse.Success) -> Bool {
     if lhs._profile != rhs._profile {return false}
+    if lhs._shouldDisplayProfileCompletedGamificationToast != rhs._shouldDisplayProfileCompletedGamificationToast {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3351,6 +3606,8 @@ extension Com_Octopuscommunity_GetPublicProfileRequest: SwiftProtobuf.Message, S
   public static let protoMessageName: String = _protobuf_package + ".GetPublicProfileRequest"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "userId"),
+    2: .same(proto: "fetchTotalMessages"),
+    3: .same(proto: "fetchGamification"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3360,20 +3617,34 @@ extension Com_Octopuscommunity_GetPublicProfileRequest: SwiftProtobuf.Message, S
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self._fetchTotalMessages) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self._fetchGamification) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.userID.isEmpty {
       try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
     }
+    try { if let v = self._fetchTotalMessages {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._fetchGamification {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetPublicProfileRequest, rhs: Com_Octopuscommunity_GetPublicProfileRequest) -> Bool {
     if lhs.userID != rhs.userID {return false}
+    if lhs._fetchTotalMessages != rhs._fetchTotalMessages {return false}
+    if lhs._fetchGamification != rhs._fetchGamification {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3425,6 +3696,9 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
     10: .same(proto: "descPostFeedId"),
     11: .same(proto: "ascPostFeedId"),
     20: .same(proto: "tags"),
+    30: .same(proto: "gamificationScore"),
+    40: .same(proto: "totalMessages"),
+    41: .same(proto: "accountCreatedAt"),
     999: .same(proto: "metadata"),
   ]
 
@@ -3441,6 +3715,9 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
       case 10: try { try decoder.decodeSingularStringField(value: &self.descPostFeedID) }()
       case 11: try { try decoder.decodeSingularStringField(value: &self.ascPostFeedID) }()
       case 20: try { try decoder.decodeRepeatedEnumField(value: &self.tags) }()
+      case 30: try { try decoder.decodeSingularMessageField(value: &self._gamificationScore) }()
+      case 40: try { try decoder.decodeSingularInt32Field(value: &self._totalMessages) }()
+      case 41: try { try decoder.decodeSingularUInt64Field(value: &self._accountCreatedAt) }()
       case 999: try { try decoder.decodeSingularStringField(value: &self._metadata) }()
       default: break
       }
@@ -3473,6 +3750,15 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
     if !self.tags.isEmpty {
       try visitor.visitPackedEnumField(value: self.tags, fieldNumber: 20)
     }
+    try { if let v = self._gamificationScore {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 30)
+    } }()
+    try { if let v = self._totalMessages {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 40)
+    } }()
+    try { if let v = self._accountCreatedAt {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 41)
+    } }()
     try { if let v = self._metadata {
       try visitor.visitSingularStringField(value: v, fieldNumber: 999)
     } }()
@@ -3487,6 +3773,9 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
     if lhs.descPostFeedID != rhs.descPostFeedID {return false}
     if lhs.ascPostFeedID != rhs.ascPostFeedID {return false}
     if lhs.tags != rhs.tags {return false}
+    if lhs._gamificationScore != rhs._gamificationScore {return false}
+    if lhs._totalMessages != rhs._totalMessages {return false}
+    if lhs._accountCreatedAt != rhs._accountCreatedAt {return false}
     if lhs._metadata != rhs._metadata {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -3499,6 +3788,8 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
     1: .same(proto: "userId"),
     2: .same(proto: "fetchUserBlockList"),
     3: .same(proto: "fetchNotificationsBadge"),
+    4: .same(proto: "fetchTotalMessages"),
+    5: .same(proto: "fetchGamification"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3510,6 +3801,8 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
       case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self._fetchUserBlockList) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self._fetchNotificationsBadge) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self._fetchTotalMessages) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self._fetchGamification) }()
       default: break
       }
     }
@@ -3529,6 +3822,12 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
     try { if let v = self._fetchNotificationsBadge {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._fetchTotalMessages {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._fetchGamification {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3536,6 +3835,8 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
     if lhs.userID != rhs.userID {return false}
     if lhs._fetchUserBlockList != rhs._fetchUserBlockList {return false}
     if lhs._fetchNotificationsBadge != rhs._fetchNotificationsBadge {return false}
+    if lhs._fetchTotalMessages != rhs._fetchTotalMessages {return false}
+    if lhs._fetchGamification != rhs._fetchGamification {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3596,6 +3897,9 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     12: .same(proto: "originalNickname"),
     20: .same(proto: "notSeenNotificationsCount"),
     30: .same(proto: "tags"),
+    40: .same(proto: "gamificationScore"),
+    50: .same(proto: "totalMessages"),
+    51: .same(proto: "accountCreatedAt"),
     100: .same(proto: "usersBlockList"),
   ]
 
@@ -3616,6 +3920,9 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     var _originalNickname: String? = nil
     var _notSeenNotificationsCount: UInt32? = nil
     var _tags: [Com_Octopuscommunity_ProfileTag] = []
+    var _gamificationScore: Com_Octopuscommunity_PrivateGamificationScore? = nil
+    var _totalMessages: Int32? = nil
+    var _accountCreatedAt: UInt64? = nil
     var _usersBlockList: [String] = []
 
     #if swift(>=5.10)
@@ -3647,6 +3954,9 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
       _originalNickname = source._originalNickname
       _notSeenNotificationsCount = source._notSeenNotificationsCount
       _tags = source._tags
+      _gamificationScore = source._gamificationScore
+      _totalMessages = source._totalMessages
+      _accountCreatedAt = source._accountCreatedAt
       _usersBlockList = source._usersBlockList
     }
   }
@@ -3679,6 +3989,9 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
         case 12: try { try decoder.decodeSingularStringField(value: &_storage._originalNickname) }()
         case 20: try { try decoder.decodeSingularUInt32Field(value: &_storage._notSeenNotificationsCount) }()
         case 30: try { try decoder.decodeRepeatedEnumField(value: &_storage._tags) }()
+        case 40: try { try decoder.decodeSingularMessageField(value: &_storage._gamificationScore) }()
+        case 50: try { try decoder.decodeSingularInt32Field(value: &_storage._totalMessages) }()
+        case 51: try { try decoder.decodeSingularUInt64Field(value: &_storage._accountCreatedAt) }()
         case 100: try { try decoder.decodeRepeatedStringField(value: &_storage._usersBlockList) }()
         case 113: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedNickname_p) }()
         case 114: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedPicture_p) }()
@@ -3734,6 +4047,15 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
       if !_storage._tags.isEmpty {
         try visitor.visitPackedEnumField(value: _storage._tags, fieldNumber: 30)
       }
+      try { if let v = _storage._gamificationScore {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 40)
+      } }()
+      try { if let v = _storage._totalMessages {
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 50)
+      } }()
+      try { if let v = _storage._accountCreatedAt {
+        try visitor.visitSingularUInt64Field(value: v, fieldNumber: 51)
+      } }()
       if !_storage._usersBlockList.isEmpty {
         try visitor.visitRepeatedStringField(value: _storage._usersBlockList, fieldNumber: 100)
       }
@@ -3771,11 +4093,84 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
         if _storage._originalNickname != rhs_storage._originalNickname {return false}
         if _storage._notSeenNotificationsCount != rhs_storage._notSeenNotificationsCount {return false}
         if _storage._tags != rhs_storage._tags {return false}
+        if _storage._gamificationScore != rhs_storage._gamificationScore {return false}
+        if _storage._totalMessages != rhs_storage._totalMessages {return false}
+        if _storage._accountCreatedAt != rhs_storage._accountCreatedAt {return false}
         if _storage._usersBlockList != rhs_storage._usersBlockList {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_PrivateGamificationScore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PrivateGamificationScore"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "score"),
+    2: .same(proto: "level"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.score) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.level) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.score != 0 {
+      try visitor.visitSingularInt32Field(value: self.score, fieldNumber: 1)
+    }
+    if self.level != 0 {
+      try visitor.visitSingularInt32Field(value: self.level, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_PrivateGamificationScore, rhs: Com_Octopuscommunity_PrivateGamificationScore) -> Bool {
+    if lhs.score != rhs.score {return false}
+    if lhs.level != rhs.level {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_PublicGamificationScore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PublicGamificationScore"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "level"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.level) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.level != 0 {
+      try visitor.visitSingularInt32Field(value: self.level, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_PublicGamificationScore, rhs: Com_Octopuscommunity_PublicGamificationScore) -> Bool {
+    if lhs.level != rhs.level {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4771,6 +5166,80 @@ extension Com_Octopuscommunity_SetProfileTagResponse.Error: SwiftProtobuf.Messag
   public static func ==(lhs: Com_Octopuscommunity_SetProfileTagResponse.Error, rhs: Com_Octopuscommunity_SetProfileTagResponse.Error) -> Bool {
     if lhs.errorCode != rhs.errorCode {return false}
     if lhs.message != rhs.message {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_EnteringOctopusRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".EnteringOctopusRequest"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "fetchGamificationToasts"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.fetchGamificationToasts) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.fetchGamificationToasts != false {
+      try visitor.visitSingularBoolField(value: self.fetchGamificationToasts, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_EnteringOctopusRequest, rhs: Com_Octopuscommunity_EnteringOctopusRequest) -> Bool {
+    if lhs.fetchGamificationToasts != rhs.fetchGamificationToasts {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_EnteringOctopusResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".EnteringOctopusResponse"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "shouldDisplayGamificationLoginToast"),
+    2: .same(proto: "shouldDisplayGamificationAnswerToast"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self._shouldDisplayGamificationLoginToast) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self._shouldDisplayGamificationAnswerToast) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._shouldDisplayGamificationLoginToast {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._shouldDisplayGamificationAnswerToast {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_EnteringOctopusResponse, rhs: Com_Octopuscommunity_EnteringOctopusResponse) -> Bool {
+    if lhs._shouldDisplayGamificationLoginToast != rhs._shouldDisplayGamificationLoginToast {return false}
+    if lhs._shouldDisplayGamificationAnswerToast != rhs._shouldDisplayGamificationAnswerToast {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

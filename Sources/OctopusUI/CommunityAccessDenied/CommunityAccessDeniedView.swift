@@ -27,6 +27,7 @@ struct CommunityAccessDeniedView: View {
                             Button(action: { presentationMode.wrappedValue.dismiss() }) {
                                 Image(systemName: "xmark")
                                     .font(theme.fonts.navBarItem)
+                                    .accessibilityLabelInBundle("Common.Close")
                             }
                     )
                 } else {

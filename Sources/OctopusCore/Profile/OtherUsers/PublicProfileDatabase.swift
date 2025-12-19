@@ -46,6 +46,10 @@ class PublicProfileDatabase: InjectableObject {
             profileEntity.nickname = profile.nickname
             profileEntity.bio = profile.bio
             profileEntity.pictureUrl = profile.pictureUrl
+            profileEntity.tagsRawValue = profile.tags.rawValue
+            profileEntity.totalMessagesOptional = profile.totalMessages.map { NSNumber(integerLiteral: $0) }
+            profileEntity.accountCreationDate = profile.accountCreationDate
+            profileEntity.gamificationLevelOptional = profile.gamificationLevel.map { NSNumber(integerLiteral: $0) }
             profileEntity.descPostFeedId = profile.descPostFeedId
             profileEntity.ascPostFeedId = profile.ascPostFeedId
 

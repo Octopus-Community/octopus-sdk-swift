@@ -31,7 +31,7 @@ public protocol ProfileRepository: Sendable {
     func deleteCurrentUserProfile(profileId: String) async throws
     func resetNotificationBadgeCount() async throws
 
-    func getProfile(profileId: String) -> AnyPublisher<Profile?, Error>
+    func getProfile(profileId: String) -> AnyPublisher<Profile?, Never>
     func fetchProfile(profileId: String) async throws(ServerCallError)
     func blockUser(profileId: String) async throws(AuthenticatedActionError)
 }
@@ -67,6 +67,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     private let postFeedsStore: PostFeedsStore
     private let clientUserProvider: ClientUserProvider
     private let configRepository: ConfigRepository
+    private let toastsRepository: ToastsRepository
+    private let sdkEventsEmitter: SdkEventsEmitter
     private let clientUserProfileMerger: ClientUserProfileMerger
     private let frictionlessProfileMigrator: FrictionlessProfileMigrator
     private var storage: Set<AnyCancellable> = []
@@ -84,6 +86,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
         clientUserProvider = injector.getInjected(identifiedBy: Injected.clientUserProvider)
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         clientUserProfileMerger = injector.getInjected(identifiedBy: Injected.clientUserProfileMerger)
         frictionlessProfileMigrator = injector.getInjected(identifiedBy: Injected.frictionlessProfileMigrator)
 
@@ -93,13 +97,18 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 guard let userData else {
                     return Just<(CurrentUserProfile, String?)?>(nil).eraseToAnyPublisher()
                 }
-                return userProfileDatabase.profilePublisher(userId: userData.id)
-                    .replaceError(with: nil)
-                    .map { [unowned self] in
-                        guard let storableProfile = $0 else { return nil }
-                        return (CurrentUserProfile(storableProfile: storableProfile, postFeedsStore: postFeedsStore), userData.clientId)
-                    }
-                    .eraseToAnyPublisher()
+                return Publishers.CombineLatest(
+                    userProfileDatabase.profilePublisher(userId: userData.id)
+                        .replaceError(with: nil),
+                    configRepository.communityConfigPublisher.map { $0?.gamificationConfig?.gamificationLevels }
+                        .removeDuplicates()
+                )
+                .map { [unowned self] in
+                    guard let storableProfile = $0 else { return nil }
+                    return (CurrentUserProfile(storableProfile: storableProfile, gamificationLevels: $1 ?? [],
+                                               postFeedsStore: postFeedsStore), userData.clientId)
+                }
+                .eraseToAnyPublisher()
             }
             .switchToLatest()
             .removeDuplicates(by: {
@@ -195,13 +204,19 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
 
     // MARK: Other users APIs
 
-    public func getProfile(profileId: String) -> AnyPublisher<Profile?, Error> {
-        publicProfileDatabase.profilePublisher(profileId: profileId)
-            .map { [unowned self] in
-                guard let storableProfile = $0 else { return nil }
-                return Profile(storableProfile: storableProfile, postFeedsStore: postFeedsStore)
-            }
-            .eraseToAnyPublisher()
+    public func getProfile(profileId: String) -> AnyPublisher<Profile?, Never> {
+        Publishers.CombineLatest(
+            publicProfileDatabase.profilePublisher(profileId: profileId).replaceError(with: nil),
+            configRepository.communityConfigPublisher.map { $0?.gamificationConfig?.gamificationLevels }
+                .removeDuplicates()
+        )
+        .map { [unowned self] profile, gamificationLevels in
+            guard let profile else { return nil }
+            return Profile(storableProfile: profile,
+                           gamificationLevels: gamificationLevels ?? [],
+                           postFeedsStore: postFeedsStore)
+        }
+        .eraseToAnyPublisher()
     }
 
     public func fetchProfile(profileId: String) async throws(ServerCallError) {
@@ -248,7 +263,12 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     func createOrUpdateUserProfile(with profile: EditableProfile, findAvailableNickname: Bool = false)
     async throws(UpdateProfile.Error) -> (CurrentUserProfile, Data?) {
         let (storableProfile, pictureData) = try await internalUpdateUserProfile(with: profile)
-        return (CurrentUserProfile(storableProfile: storableProfile, postFeedsStore: postFeedsStore), pictureData)
+        return (
+            CurrentUserProfile(
+                storableProfile: storableProfile,
+                gamificationLevels: configRepository.communityConfig?.gamificationConfig?.gamificationLevels ?? [],
+                postFeedsStore: postFeedsStore),
+            pictureData)
     }
 
     private func processCurrentUserProfileResponse(_ response: Com_Octopuscommunity_GetPrivateProfileResponse,
@@ -300,6 +320,13 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 let profile = StorableCurrentUserProfile(from: content.profile, userId: userData.id)
                 try await userProfileDatabase.upsert(profile: profile)
                 _onCurrentUserProfileUpdated.send()
+                if content.hasShouldDisplayProfileCompletedGamificationToast,
+                   content.shouldDisplayProfileCompletedGamificationToast {
+                    toastsRepository.display(gamificationToast: .profileCompleted)
+                }
+
+                sdkEventsEmitter.emit(.profileUpdated)
+
                 return (profile, resizedPicture)
 
             case let .fail(failure):

@@ -142,6 +142,7 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
                             profile: CurrentUserProfile(
                                 storableProfile: StorableCurrentUserProfile.create(
                                     id: "profileId", userId: userData.id, nickname: "nickname"),
+                                gamificationLevels: [],
                                 postFeedsStore: postFeedsStore),
                             jwtToken: userData.jwtToken), nil)
                 } else {

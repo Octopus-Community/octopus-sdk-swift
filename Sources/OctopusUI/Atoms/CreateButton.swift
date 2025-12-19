@@ -28,11 +28,14 @@ struct CreateButton: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 20, height: 20)
+                    .accessibilityHidden(true)
 
                 Text(kind.text, bundle: .module)
                 Spacer()
             }
-        }.buttonStyle(OctopusButtonStyle(.main, hasLeadingIcon: true))
+            .padding(.vertical, -1) // in order to make the padding of the button 15 instead of 16
+        }
+        .buttonStyle(OctopusButtonStyle(.main, hasLeadingIcon: true))
     }
 }
 

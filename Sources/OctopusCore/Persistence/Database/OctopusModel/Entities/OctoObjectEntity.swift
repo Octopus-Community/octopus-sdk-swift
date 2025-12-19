@@ -7,9 +7,13 @@ import CoreData
 
 @objc(OctoObjectEntity)
 class OctoObjectEntity: NSManagedObject, Identifiable {
+    @NSManaged public var author: MinimalProfileEntity?
+
+    // deprecated author fields (moved to author)
     @NSManaged public var authorId: String?
     @NSManaged public var authorNickname: String?
     @NSManaged public var authorAvatarUrl: URL?
+
     @NSManaged public var creationTimestamp: Double
     @NSManaged public var updateTimestamp: Double
     @NSManaged public var statusValue: Int16
@@ -60,11 +64,26 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
         return request
     }
 
-    func fill(with content: StorableContent, context: NSManagedObjectContext) {
+    func fill(with content: StorableContent, context: NSManagedObjectContext) throws {
         uuid = content.uuid
+
+        if let author = content.author {
+            let profileEntity: MinimalProfileEntity
+            if let existingProfile = try context.fetch(MinimalProfileEntity.fetchById(id: author.uuid)).first {
+                profileEntity = existingProfile
+            } else {
+                profileEntity = MinimalProfileEntity(context: context)
+            }
+            profileEntity.fill(with: author, context: context)
+            self.author = profileEntity
+        } else {
+            self.author = nil
+        }
+        // deprecated but kept in case a client would rollback to a previous SDK version
         authorId = content.author?.uuid
         authorNickname = content.author?.nickname
         authorAvatarUrl = content.author?.avatarUrl
+
         creationTimestamp = content.creationDate.timeIntervalSince1970
         updateTimestamp = content.updateDate.timeIntervalSince1970
         statusValue = content.status.rawValue

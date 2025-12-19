@@ -16,7 +16,6 @@ enum MainFlowScreen: NBScreen {
     case settingsList
     case settingsAccount
     case settingsAbout
-    case settingsHelp
     case reportExplanation
     case deleteAccount
 }

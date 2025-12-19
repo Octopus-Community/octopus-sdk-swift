@@ -24,11 +24,14 @@ class RepliesTests: XCTestCase {
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
-        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
+        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider,
+                               .configRepository, .appStateMonitor)
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ReplyFeedsStore(injector: $0) }
         injector.register { RepliesDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
+        injector.register { ToastsRepository(injector: $0) }
+        injector.register { SdkEventsEmitter(injector: $0) }
 
         repliesRepository = RepliesRepository(injector: injector)
         repliesDatabase = injector.getInjected(identifiedBy: Injected.repliesDatabase)
@@ -48,7 +51,7 @@ class RepliesTests: XCTestCase {
         injectPutReply(StorableReply(uuid: "newReply",
                                      text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
                                      medias: [],
-                                     author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                                     author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
                                      creationDate: Date(), updateDate: Date(),
                                      status: .published, statusReasons: [],
                                      parentId: "commentId",
@@ -66,7 +69,7 @@ class RepliesTests: XCTestCase {
             StorableReply(uuid: "1",
                           text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
                           medias: [],
-                          author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                          author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
                           creationDate: Date(), updateDate: Date(),
                           status: .published, statusReasons: [],
                           parentId: "commentId",

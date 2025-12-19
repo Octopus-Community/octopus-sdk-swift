@@ -15,6 +15,7 @@ struct DefaultEmptyPostsView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 64, height: 64)
+                .accessibilityHidden(true)
             Text("Post.List.Default.Empty", bundle: .module)
                 .font(theme.fonts.body2)
                 .multilineTextAlignment(.center)
@@ -37,6 +38,7 @@ struct CreatePostEmptyPostView: View {
                 .aspectRatio(contentMode: .fit)
                 .foregroundColor(theme.colors.gray900)
                 .frame(width: 56, height: 56)
+                .accessibilityHidden(true)
             Spacer().frame(height: 16)
             Text("Post.Create.Incentive.Explanation", bundle: .module)
                 .font(theme.fonts.body1)
@@ -86,9 +88,8 @@ private struct CurrentUserIncentiveButton: View {
         Button(action: { createPost(openPoll) }) {
             Text(text, bundle: .module)
         }
-        .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
-        .padding(.vertical, 6)
-        .padding(.horizontal, 4)
+        .buttonStyle(OctopusButtonStyle(.mid, style: .outline,
+                                        externalVerticalPadding: 6, externalHorizontalPadding: 4))
     }
 }
 
@@ -99,6 +100,7 @@ struct OtherUserEmptyPostView: View {
         VStack {
             Spacer().frame(height: 54)
             Image(res: .noPosts)
+                .accessibilityHidden(true)
             Text("Post.List.OtherUser.Empty", bundle: .module)
                 .font(theme.fonts.body2)
                 .fontWeight(.medium)

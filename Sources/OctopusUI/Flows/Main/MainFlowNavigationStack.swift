@@ -8,6 +8,7 @@ import OctopusCore
 
 struct MainFlowNavigationStack<RootView: View>: View {
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+    @EnvironmentObject private var gamificationRulesViewManager: GamificationRulesViewManager
 
     let octopus: OctopusSDK
     let bottomSafeAreaInset: CGFloat
@@ -33,7 +34,8 @@ struct MainFlowNavigationStack<RootView: View>: View {
                         switch screen {
                         case .currentUserProfile:
                             CurrentUserProfileSummaryView(
-                                octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore)
+                                octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
+                                gamificationRulesViewManager: gamificationRulesViewManager)
                         case let .publicProfile(profileId):
                             ProfileSummaryView(
                                 octopus: octopus, translationStore: translationStore, profileId: profileId)
@@ -65,10 +67,8 @@ struct MainFlowNavigationStack<RootView: View>: View {
                             SettingProfileView(octopus: octopus)
                         case .settingsAbout:
                             SettingsAboutView(octopus: octopus)
-                        case .settingsHelp:
-                            SettingsHelpView(octopus: octopus)
                         case .reportExplanation:
-                            SignalExplanationView(octopus: octopus)
+                            ReportExplanationView(octopus: octopus)
                         case .deleteAccount:
                             DeleteAccountView(octopus: octopus, mainFlowPath: mainFlowPath)
                         }

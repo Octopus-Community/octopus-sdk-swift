@@ -94,4 +94,8 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
     func makeSetProfileTagInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SetProfileTagRequest, OctopusGrpcModels.Com_Octopuscommunity_SetProfileTagResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
+
+    func makeEnteringOctopusInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusRequest, OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
 }

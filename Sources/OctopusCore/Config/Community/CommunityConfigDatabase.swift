@@ -24,8 +24,8 @@ class CommunityConfigDatabase: InjectableObject {
     func configPublisher() -> AnyPublisher<CommunityConfig?, Error> {
         (context
             .publisher(request: CommunityConfigEntity.fetch()) {
-                guard let configEntity = $0.first, let config = CommunityConfig(from: configEntity) else { return [] }
-                return [config]
+                guard let configEntity = $0.first else { return [] }
+                return [CommunityConfig(from: configEntity)]
             } as AnyPublisher<[CommunityConfig], Error>
         )
         .map(\.first)

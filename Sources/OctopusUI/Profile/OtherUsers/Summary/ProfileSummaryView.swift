@@ -32,7 +32,9 @@ struct ProfileSummaryView: View {
 
     var body: some View {
         VStack {
-            ContentView(profile: viewModel.profile, zoomableImageInfo: $zoomableImageInfo, refresh: viewModel.refresh) {
+            ContentView(profile: viewModel.profile,
+                        displayAccountAge: viewModel.displayAccountAge,
+                        zoomableImageInfo: $zoomableImageInfo, refresh: viewModel.refresh) {
                 if let postFeedViewModel = viewModel.postFeedViewModel {
                     PostFeedView(
                         viewModel: postFeedViewModel,
@@ -60,6 +62,7 @@ struct ProfileSummaryView: View {
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem)
+        .toastContainer(octopus: viewModel.octopus)
         .compatAlert(
             "Common.Error",
             isPresented: $displayError,
@@ -157,24 +160,15 @@ struct ProfileSummaryView: View {
                     Label(L10n("Block.Profile.Button"), systemImage: "person.slash")
                 }
             }, label: {
-                VStack {
+                if #available(iOS 26.0, *) {
+                    Label(L10n("Settings.Community.Title"), systemImage: "ellipsis")
+                } else {
                     Image(systemName: "ellipsis")
-                        .modify {
-#if compiler(>=6.2)
-                            if #available(iOS 26.0, *) {
-                                $0
-                            } else {
-                                $0.padding(.vertical)
-                                    .padding(.leading)
-                            }
-#else
-                            $0.padding(.vertical)
-                                .padding(.leading)
-#endif
-
-                        }
                         .font(theme.fonts.navBarItem)
-                }.frame(width: 32, height: 32)
+                        .padding(.vertical)
+                        .padding(.leading)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
             })
             .buttonStyle(.plain)
         } else {
@@ -183,6 +177,7 @@ struct ProfileSummaryView: View {
                     .padding(.vertical)
                     .padding(.leading)
                     .font(theme.fonts.navBarItem)
+                    .frame(minWidth: 44, minHeight: 44)
             }
             .buttonStyle(.plain)
         }
@@ -190,7 +185,8 @@ struct ProfileSummaryView: View {
 }
 
 private struct ContentView<PostsView: View>: View {
-    let profile: Profile?
+    let profile: DisplayableProfile?
+    let displayAccountAge: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
 
@@ -208,9 +204,12 @@ private struct ContentView<PostsView: View>: View {
                         .frame(height: 1)
                 }
 #endif
-                ProfileContentView(profile: profile, zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
-                    postsView
-                }
+                ProfileContentView(
+                    profile: profile,
+                    displayAccountAge: displayAccountAge,
+                    zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
+                        postsView
+                }.padding(.top, 8)
                 PoweredByOctopusView()
             }
         } else {
@@ -221,46 +220,81 @@ private struct ContentView<PostsView: View>: View {
 
 private struct ProfileContentView<PostsView: View>: View {
     @Environment(\.octopusTheme) private var theme
-    let profile: Profile
+    let profile: DisplayableProfile
+    let displayAccountAge: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
     @ViewBuilder let postsView: PostsView
 
     @State private var selectedTab = 0
 
+    @State private var displayFullBio = false
+
     var body: some View {
         Compat.ScrollView(refreshAction: refresh) {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 0) {
-                    Spacer().frame(height: 20)
-                    ZoomableAuthorAvatarView(avatar: avatar, zoomableImageInfo: $zoomableImageInfo)
-                        .frame(width: 71, height: 71)
-                    Spacer().frame(height: 14)
-                    Text(profile.nickname ?? "")
-                        .font(theme.fonts.title1)
-                        .fontWeight(.semibold)
+                    HStack(spacing: 16) {
+                        ZoomableAuthorAvatarView(avatar: avatar, zoomableImageInfo: $zoomableImageInfo)
+                            .frame(width: 71, height: 71)
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(profile.nickname ?? "")
+                                .font(theme.fonts.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(theme.colors.gray900)
+                                .modify {
+                                    if #available(iOS 15.0, *) {
+                                        $0.textSelection(.enabled)
+                                    } else { $0 }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            if profile.tags.contains(.admin) {
+                                Text("Profile.Tag.Admin", bundle: .module)
+                                    .octopusBadgeStyle(.xs, status: .admin)
+                            } else {
+                                GamificationLevelBadge(level: profile.gamificationLevel, size: .big)
+                            }
+                        }
+                    }
+
+                    Spacer().frame(height: 16)
+
+                    ProfileCounterView(totalMessages: profile.totalMessages,
+                                       accountCreationDate: displayAccountAge ? profile.accountCreationDate : nil)
+
+                    if let bio = profile.bio {
+                        Group {
+                            if bio.isEllipsized {
+                                Text(verbatim: "\(bio.getText(ellipsized: !displayFullBio))\(!displayFullBio ? "... " : " ")")
+                                +
+                                Text(displayFullBio ? " \(L10n("Common.ReadLess"))" : L10n("Common.ReadMore"))
+                                    .fontWeight(.medium)
+                                    .foregroundColor(theme.colors.gray500)
+                            } else {
+                                Text(bio.fullText)
+                            }
+                        }
+                        .font(theme.fonts.body2)
                         .foregroundColor(theme.colors.gray900)
                         .modify {
                             if #available(iOS 15.0, *) {
                                 $0.textSelection(.enabled)
                             } else { $0 }
                         }
-
-                    Spacer().frame(height: 10)
-                    if let bio = profile.bio?.nilIfEmpty {
-                        Text(bio.cleanedBio)
-                            .font(theme.fonts.body2)
-                            .foregroundColor(theme.colors.gray500)
-                            .modify {
-                                if #available(iOS 15.0, *) {
-                                    $0.textSelection(.enabled)
-                                } else { $0 }
+                        .padding(.vertical, 5)
+                        .onTapGesture {
+                            withAnimation {
+                                displayFullBio.toggle()
                             }
+                        }
                     }
                     Spacer().frame(height: 20)
-                    CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)
                 }
                 .padding(.horizontal, 20)
+
+                CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)
                 theme.colors.gray300.frame(height: 1)
                 postsView
             }

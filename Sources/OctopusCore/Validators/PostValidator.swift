@@ -14,7 +14,7 @@ public extension Validators {
         }
 
         public let minTextLength = 10
-        public let maxTextLength = 3000
+        public let maxTextLength = 5000
 
         public var minSize: CGFloat { pictureValidator.minSize }
         public var maxRatio: CGFloat { pictureValidator.maxRatio }

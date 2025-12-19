@@ -26,50 +26,50 @@ struct OctopusBadgeButtonStyle: ButtonStyle {
 #Preview {
     VStack {
         HStack {
-            Text("Medium On")
+            Text(verbatim: "Medium On")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusBadgeButtonStyle(.medium, status: .on))
         }
 
         HStack {
-            Text("Medium Off")
+            Text(verbatim: "Medium Off")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusBadgeButtonStyle(.medium, status: .off))
         }
 
         HStack {
-            Text("Small On")
+            Text(verbatim: "Small On")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusBadgeButtonStyle(.small, status: .on))
         }
 
         HStack {
-            Text("Small Off")
+            Text(verbatim: "Small Off")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusBadgeButtonStyle(.small, status: .off))
         }
 
         HStack {
-            Text("Small Warning")
+            Text(verbatim: "Small Warning")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusBadgeButtonStyle(.small, status: .warning))
         }
 
         HStack {
-            Text("Small Admin")
+            Text(verbatim: "Small Admin")
             Spacer()
             Button(action: {}) {
-                Text("Admin")
+                Text(verbatim: "Admin")
             }.buttonStyle(OctopusBadgeButtonStyle(.small, status: .admin))
         }
     }

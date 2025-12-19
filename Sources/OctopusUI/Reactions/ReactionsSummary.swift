@@ -23,10 +23,14 @@ struct ReactionsSummary: View {
             if #available(iOS 16.0, *) {
                 Button(action: { displayReactionsCount = true }) {
                     ContentView(reactions: reactions, countPlacement: countPlacement, maxReactionsKind: maxReactionsKind)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityHintInBundle("Accessibility.Reaction.Summary.SeeAll")
                 .sheet(isPresented: $displayReactionsCount) {
                     ReactionsCountSheetScreen(reactions: reactions)
+                        .accessibilityFocusOnAppear()
+                        .accessibilityAddTraits(.isModal)
                 }
             } else {
                 ContentView(reactions: reactions, countPlacement: countPlacement, maxReactionsKind: maxReactionsKind)
@@ -58,7 +62,6 @@ private struct ContentView: View {
             HStack(spacing: -5) {
                 ForEach(reactionsToDisplay, id: \.self) { reactionKind in
                     Text(reactionKind.unicode)
-                        .font(.system(size: 12))
                         .shadow(color: Color(UIColor.systemBackground), radius: 0, x: -1, y: 0)
                 }
             }
@@ -67,6 +70,11 @@ private struct ContentView: View {
                     .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
             }
         }
+        .font(theme.fonts.caption1)
+        .padding(.vertical, 14)
+        .frame(minWidth: 44)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabelInBundle("Accessibility.Reaction.Count_count:\(reactionsCount)")
     }
 
     var reactionsCount: Int {
@@ -79,7 +87,6 @@ private struct ContentView: View {
 
     var countView: some View {
         Text(String.formattedCount(reactionsCount))
-            .font(theme.fonts.caption1)
             .foregroundColor(theme.colors.gray700)
             .modify {
                 if #available(iOS 16.0, *) {

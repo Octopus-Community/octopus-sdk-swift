@@ -108,27 +108,30 @@ public struct Com_Octopuscommunity_SubscribeResponse: Sendable {
   fileprivate var _newMsg: Com_Octopuscommunity_SubscribeNewMsg? = nil
 }
 
-public struct Com_Octopuscommunity_SubscribeNewMsg: Sendable {
+public struct Com_Octopuscommunity_SubscribeNewMsg: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   public var octoObject: Com_Octopuscommunity_OctoObject {
-    get {return _octoObject ?? Com_Octopuscommunity_OctoObject()}
-    set {_octoObject = newValue}
+    get {return _storage._octoObject ?? Com_Octopuscommunity_OctoObject()}
+    set {_uniqueStorage()._octoObject = newValue}
   }
   /// Returns true if `octoObject` has been explicitly set.
-  public var hasOctoObject: Bool {return self._octoObject != nil}
+  public var hasOctoObject: Bool {return _storage._octoObject != nil}
   /// Clears the value of `octoObject`. Subsequent reads from it will return its default value.
-  public mutating func clearOctoObject() {self._octoObject = nil}
+  public mutating func clearOctoObject() {_uniqueStorage()._octoObject = nil}
 
-  public var origin: Com_Octopuscommunity_Origin = .unspecifiedOrigin
+  public var origin: Com_Octopuscommunity_Origin {
+    get {return _storage._origin}
+    set {_uniqueStorage()._origin = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _octoObject: Com_Octopuscommunity_OctoObject? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct Com_Octopuscommunity_SubscribeWelcome: Sendable {
@@ -234,36 +237,78 @@ extension Com_Octopuscommunity_SubscribeNewMsg: SwiftProtobuf.Message, SwiftProt
     2: .same(proto: "origin"),
   ]
 
+  fileprivate class _StorageClass {
+    var _octoObject: Com_Octopuscommunity_OctoObject? = nil
+    var _origin: Com_Octopuscommunity_Origin = .unspecifiedOrigin
+
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _octoObject = source._octoObject
+      _origin = source._origin
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._octoObject) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self.origin) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._octoObject) }()
+        case 2: try { try decoder.decodeSingularEnumField(value: &_storage._origin) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._octoObject {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    if self.origin != .unspecifiedOrigin {
-      try visitor.visitSingularEnumField(value: self.origin, fieldNumber: 2)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._octoObject {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      if _storage._origin != .unspecifiedOrigin {
+        try visitor.visitSingularEnumField(value: _storage._origin, fieldNumber: 2)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_SubscribeNewMsg, rhs: Com_Octopuscommunity_SubscribeNewMsg) -> Bool {
-    if lhs._octoObject != rhs._octoObject {return false}
-    if lhs.origin != rhs.origin {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._octoObject != rhs_storage._octoObject {return false}
+        if _storage._origin != rhs_storage._origin {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

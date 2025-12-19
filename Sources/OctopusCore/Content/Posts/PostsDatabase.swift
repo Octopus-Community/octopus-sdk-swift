@@ -26,7 +26,8 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
 
     func postPublisher(uuid: String) -> AnyPublisher<StorablePost?, Error> {
         (context
-            .publisher(request: PostEntity.fetchById(id: uuid)) {
+            .publisher(request: PostEntity.fetchById(id: uuid),
+                       relatedTypes: [MinimalProfileEntity.self]) {
                 guard let postEntity = $0.first else { return [] }
                 return [StorablePost(from: postEntity)]
             } as AnyPublisher<[StorablePost], Error>
@@ -120,7 +121,7 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
                 } else {
                     postEntity = PostEntity(context: context)
                 }
-                postEntity.fill(with: post, context: context)
+                try postEntity.fill(with: post, context: context)
             }
             
             try context.save()

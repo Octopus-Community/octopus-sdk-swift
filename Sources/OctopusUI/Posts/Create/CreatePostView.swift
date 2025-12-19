@@ -16,9 +16,7 @@ struct CreatePostView: View {
     @State private var showTopicPicker = false
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
-    @State private var topicPickerDetentHeight: CGFloat = 80
     @State private var showChangesWillBeLostAlert = false
-    @State private var height: CGFloat = 0
 
     init(octopus: OctopusSDK, withPoll: Bool) {
         _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(octopus: octopus, withPoll: withPoll))
@@ -45,21 +43,7 @@ struct CreatePostView: View {
                              trailingSharedBackgroundVisibility: .hidden)
         .sheet(isPresented: $showTopicPicker) {
             TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
-                .modify {
-                    if #available(iOS 16.4, *) {
-                        $0.readHeight($height)
-                            .onValueChanged(of: height) { [$topicPickerDetentHeight] height in
-                                $topicPickerDetentHeight.wrappedValue = height
-                            }
-                            .presentationDetents([.height(topicPickerDetentHeight)])
-                            .presentationDragIndicator(.visible)
-                    } else { $0 }
-                }
-                .modify {
-                    if #available(iOS 16.4, *) {
-                        $0.presentationContentInteraction(.scrolls)
-                    } else { $0 }
-                }
+                .sizedSheet()
         }
         .compatAlert(
             "Common.Error",
@@ -126,7 +110,8 @@ struct CreatePostView: View {
             }) {
                 Text("Post.Create.Button", bundle: .module)
             }
-            .buttonStyle(OctopusButtonStyle(.mid, enabled: viewModel.sendButtonAvailable))
+            .buttonStyle(OctopusButtonStyle(.mid, enabled: viewModel.sendButtonAvailable,
+                                            externalVerticalPadding: 5))
             .disabled(!viewModel.sendButtonAvailable)
         } else {
             if #available(iOS 14.0, *) {
@@ -135,7 +120,8 @@ struct CreatePostView: View {
                 Button(action: { }) {
                     Text("Post.Create.Button", bundle: .module)
                 }
-                .buttonStyle(OctopusButtonStyle(.mid, enabled: true))
+                .buttonStyle(OctopusButtonStyle(.mid, enabled: true,
+                                                externalVerticalPadding: 5))
                 .disabled(true)
             }
         }
@@ -201,6 +187,7 @@ private struct WritingPostForm: View {
     @State private var scrollToBottomOfId: String?
 
     @State private var keyboardHeight: CGFloat = 0
+    @State private var previousText = ""
 
     var legalTextStr: String {
         if #available(iOS 15, *) {
@@ -223,9 +210,10 @@ private struct WritingPostForm: View {
             Compat.ScrollView(scrollToId: $scrollToBottomOfId, idAnchor: .bottom) {
                 VStack {
                     VStack(alignment: .leading) {
-                        HStack(spacing: 10) {
+                        HStack(spacing: 8) {
                             AuthorAvatarView(avatar: userAvatar)
-                                .frame(width: 33, height: 33)
+                                .frame(width: 32, height: 32)
+
                             Button(action: {
                                 showTopicPicker = true
                                 textFocused = false
@@ -239,45 +227,34 @@ private struct WritingPostForm: View {
                                     Image(systemName: "chevron.down")
                                 }
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .secondary, hasTrailingIcon: true))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .secondary, hasTrailingIcon: true,
+                                                            externalVerticalPadding: 5))
                         }
-                        Spacer()
-                            .frame(height: 24)
-                        VStack(alignment: .leading, spacing: 2) {
-                            if #available(iOS 16.0, *) {
-                                TextField(String(""), text: $text, axis: .vertical)
-                                    .multilineTextAlignment(.leading)
-                                    .focused($textFocused)
-                                    .foregroundColor(theme.colors.gray900)
-                                    .placeholder(when: text.isEmpty) {
-                                        Text("Post.Create.Text.Placeholder", bundle: .module)
-                                            .multilineTextAlignment(.leading)
-                                            .foregroundColor(theme.colors.gray700)
-                                    }
-                                    .font(theme.fonts.body1)
-                                    .id("textInputView")
-                                    .onChange(of: text) { [oldValue = text] newValue in
-                                        // only scroll to bottom if the last line changed
-                                        let previousLastLine = oldValue.components(separatedBy: "\n").last ?? ""
-                                        let newLastLine = newValue.components(separatedBy: "\n").last ?? ""
-                                        if previousLastLine != newLastLine {
-                                            scrollToBottomOfId = "textInputView"
-                                        }
-                                    }
 
-                            } else {
-                                // TODO: create a TextField that expands vertically on iOS 13
-                                TextField(String(""), text: $text)
-                                    .multilineTextAlignment(.leading)
-                                    .focused($textFocused)
-                                    .foregroundColor(theme.colors.gray900)
-                                    .placeholder(when: text.isEmpty) {
-                                        Text("Post.Create.Text.Placeholder", bundle: .module)
-                                            .multilineTextAlignment(.leading)
-                                            .foregroundColor(theme.colors.gray700)
+                        VStack(alignment: .leading, spacing: 0) {
+                            OctopusTextField(text: $text, placeholder: "Post.Create.Text.Placeholder")
+                                .focused($textFocused)
+                                .id("textInputView")
+                                .onValueChanged(of: text) { newValue in
+                                    // only scroll to bottom if the last line changed
+                                    let previousLastLine = previousText.trimmingCharacters(in: .whitespacesAndNewlines)
+                                        .components(separatedBy: "\n").last ?? ""
+                                    let newLastLine = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                                        .components(separatedBy: "\n").last ?? ""
+                                    if previousLastLine != newLastLine {
+                                        scrollToBottomOfId = "textInputView"
                                     }
-                                    .font(theme.fonts.body1)
-                            }
+                                    previousText = newValue
+                                }
+                                .padding(.top, 24)
+                                .padding(.bottom, 2)
+                                .onTapGesture { textFocused = true }
+                                .modify {
+                                    if #available(iOS 16.0, *) {
+                                        $0.scrollDisabled(true)
+                                    } else { $0 }
+                                }
+
                             switch attachment {
                             case let .image(imageAndData):
                                 Spacer().frame(height: 10)
@@ -300,10 +277,12 @@ private struct WritingPostForm: View {
 
                                             )
                                             .frame(width: 32, height: 32)
-                                            .padding()
+                                            .padding([.leading, .bottom], 14)
+                                            .padding([.trailing, .top], 4)
 
                                     }
                                     .buttonStyle(.plain)
+                                    .accessibilityLabelInBundle("Accessibility.Image.Delete")
                                 }
                             case let .poll(editablePoll):
                                 Spacer().frame(height: 10)
@@ -328,8 +307,8 @@ private struct WritingPostForm: View {
                         }
                         Spacer()
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 18)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
                 }
             }
             VStack(spacing: 0) {
@@ -384,7 +363,8 @@ private struct WritingPostForm: View {
                                         Text("Content.Create.AddPicture", bundle: .module)
                                     }
                                 }
-                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
+                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
+                                                                externalVerticalPadding: 16))
                             }
                             if attachment == nil {
                                 Button(action: {
@@ -400,12 +380,12 @@ private struct WritingPostForm: View {
                                         Text("Content.Create.AddPoll", bundle: .module)
                                     }
                                 }
-                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
+                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
+                                                               externalVerticalPadding: 16))
                             }
                             Spacer()
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 16)
                         .background(RoundedRectangle(cornerRadius: 24)
                             .stroke(theme.colors.gray300, lineWidth: 1)
                             .padding(.horizontal, -1)
@@ -447,7 +427,7 @@ private struct WritingPostForm: View {
 }
 
 #Preview {
-    ContentView(isLoading: false, displayCguText: true, text: .constant(""), attachment: .constant(nil),
+    ContentView(isLoading: false, displayCguText: true, text: .constant(""), attachment: .constant(.image(ImageAndData(imageData: Data(), image: .actions))),
                 textError: nil, pictureError: nil, pollError: nil,
                 termsOfUseUrl: URL(string: "www.google.com")!,
                 privacyPolicyUrl: URL(string: "www.google.com")!,

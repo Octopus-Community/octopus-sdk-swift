@@ -12,17 +12,11 @@ struct ReactionsCountSheetScreen: View {
     @State private var detentHeight: CGFloat = 50
 
     var body: some View {
-        ReactionsCountView(reactions: reactions)
-            .readHeight($detentHeight)
-            .presentationDetents([.height(detentHeight)])
-            .presentationDragIndicator(.visible)
-            .modify {
-                if #available(iOS 16.4, *) {
-                    $0.presentationContentInteraction(.scrolls)
-                } else {
-                    $0
-                }
-            }
+        ContentSizedSheet(
+            content: { ReactionsCountView(reactions: reactions) },
+            scrollingContent: { ReactionsCountView(reactions: reactions) }
+        )
+        .sizedSheet()
     }
 }
 
@@ -43,6 +37,9 @@ struct ReactionsCountView: View {
                 .font(theme.fonts.caption1.weight(.medium))
                 .foregroundColor(theme.colors.gray700)
                 .padding(.horizontal, 12)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabelInBundle("Accessibility.Reaction.Count_reaction:\(reaction.reactionKind.accessibilityValue)_count:\(reaction.count)")
+                .frame(maxWidth: .infinity)
             }
         }
         .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)

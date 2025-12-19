@@ -29,8 +29,11 @@ class PostsTests: XCTestCase {
         injector.register { CommentFeedsStore(injector: $0) }
         injector.register { ReplyFeedsStore(injector: $0) }
         injector.register { RepliesDatabase(injector: $0) }
+        injector.register { ToastsRepository(injector: $0) }
+        injector.register { SdkEventsEmitter(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
-        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
+        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider,
+                               .configRepository, .appStateMonitor)
 
         postsRepository = PostsRepository(injector: injector)
         postsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
@@ -52,7 +55,8 @@ class PostsTests: XCTestCase {
         injectPutPost(StorablePost(
             uuid: "newPost", text: .init(originalText: "My Post with long text", originalLanguage: nil, translatedText: nil),
             medias: [], poll: nil,
-            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil), creationDate: Date(), updateDate: Date(),
+            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
+            creationDate: Date(), updateDate: Date(),
             status: .published, statusReasons: [],
             parentId: "topicId",
             descCommentFeedId: nil, ascCommentFeedId: nil, clientObjectId: nil, catchPhrase: nil, ctaText: nil,
@@ -77,7 +81,7 @@ class PostsTests: XCTestCase {
         injectGetPost(
             .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
                   medias: [], poll: nil,
-                  author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                  author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
@@ -93,7 +97,7 @@ class PostsTests: XCTestCase {
         try await postsDatabase.upsert(posts: [
             .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
                   medias: [], poll: nil,
-                  author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil),
+                  author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil, gamificationLevel: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
@@ -133,7 +137,7 @@ class PostsTests: XCTestCase {
         try await postsDatabase.upsert(posts: [
             .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
                   medias: [], poll: nil,
-                  author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                  author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
@@ -162,7 +166,7 @@ class PostsTests: XCTestCase {
         try await postsDatabase.upsert(posts: [
             .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
                   medias: [], poll: nil,
-                  author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil),
+                  author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil, gamificationLevel: nil),
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",

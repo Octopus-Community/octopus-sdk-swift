@@ -28,12 +28,27 @@ struct OctopusButtonStyle: ButtonStyle {
     let customBackgroundColor: Color?
     let enabled: Bool
 
+    let externalAllPadding: CGFloat
+    let externalVerticalPadding: CGFloat
+    let externalHorizontalPadding: CGFloat
+    let externalLeadingPadding: CGFloat
+    let externalTrailingPadding: CGFloat
+    let externalTopPadding: CGFloat
+    let externalBottomPadding: CGFloat
+
     init(_ kind: Kind,
          style: Style = .main,
          backgroundColor: Color? = nil,
          enabled: Bool = true,
          hasLeadingIcon: Bool = false,
-         hasTrailingIcon: Bool = false
+         hasTrailingIcon: Bool = false,
+         externalAllPadding: CGFloat = 0,
+         externalVerticalPadding: CGFloat = 0,
+         externalHorizontalPadding: CGFloat = 0,
+         externalLeadingPadding: CGFloat = 0,
+         externalTrailingPadding: CGFloat = 0,
+         externalTopPadding: CGFloat = 0,
+         externalBottomPadding: CGFloat = 0
     ) {
         self.kind = kind
         self.style = style
@@ -41,6 +56,13 @@ struct OctopusButtonStyle: ButtonStyle {
         self.enabled = enabled
         self.hasLeadingIcon = hasLeadingIcon
         self.hasTrailingIcon = hasTrailingIcon
+        self.externalAllPadding = externalAllPadding
+        self.externalVerticalPadding = externalVerticalPadding
+        self.externalHorizontalPadding = externalHorizontalPadding
+        self.externalLeadingPadding = externalLeadingPadding
+        self.externalTrailingPadding = externalTrailingPadding
+        self.externalTopPadding = externalTopPadding
+        self.externalBottomPadding = externalBottomPadding
     }
 
     func makeBody(configuration: Configuration) -> some View {
@@ -50,7 +72,15 @@ struct OctopusButtonStyle: ButtonStyle {
             .padding(.trailing, trailingPadding)
             .padding(.vertical, verticalPadding)
             .foregroundColor(foregroundColor)
-            .background(background.contentShape(Rectangle()))
+            .background(background)
+            .modify { if externalAllPadding != 0 { $0.padding(externalAllPadding) } else { $0 } }
+            .modify { if externalVerticalPadding != 0 { $0.padding(.vertical, externalVerticalPadding) } else { $0 } }
+            .modify { if externalHorizontalPadding != 0 { $0.padding(.horizontal, externalHorizontalPadding) } else { $0 } }
+            .modify { if externalLeadingPadding != 0 { $0.padding(.leading, externalLeadingPadding) } else { $0 } }
+            .modify { if externalTrailingPadding != 0 { $0.padding(.trailing, externalTrailingPadding) } else { $0 } }
+            .modify { if externalTopPadding != 0 { $0.padding(.top, externalTopPadding) } else { $0 } }
+            .modify { if externalBottomPadding != 0 { $0.padding(.bottom, externalBottomPadding) } else { $0 } }
+            .contentShape(Rectangle())
     }
 }
 
@@ -151,155 +181,155 @@ fileprivate extension OctopusButtonStyle {
 #Preview {
     VStack {
         HStack {
-            Text("Main Active")
+            Text(verbatim: "Main Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.main))
         }
 
         HStack {
-            Text("Main Active With icon")
+            Text(verbatim: "Main Active With icon")
             Spacer()
             Button(action: {}) {
                 HStack {
                     Image(systemName: "checkmark")
-                    Text("Click me")
+                    Text(verbatim: "Click me")
                 }
             }.buttonStyle(OctopusButtonStyle(.main, hasLeadingIcon: true))
         }
 
         HStack {
-            Text("Main Disabled")
+            Text(verbatim: "Main Disabled")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.main, enabled: false))
         }
 
         HStack {
-            Text("Main with outlined style Active")
+            Text(verbatim: "Main with outlined style Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.main, style: .outline))
         }
 
         HStack {
-            Text("Mid main Active")
+            Text(verbatim: "Mid main Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.mid))
         }
 
         HStack {
-            Text("Mid main Disabled")
+            Text(verbatim: "Mid main Disabled")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.mid, enabled: false))
         }
 
         HStack {
-            Text("Mid outline Active")
+            Text(verbatim: "Mid outline Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.mid, style: .outline))
         }
 
         HStack {
-            Text("Mid outline Disabled")
+            Text(verbatim: "Mid outline Disabled")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.mid, style: .outline, enabled: false))
         }
 
         HStack {
-            Text("Mid secondary Active")
+            Text(verbatim: "Mid secondary Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.mid, style: .secondary))
         }
 
         HStack {
-            Text("Mid secondary with icon")
+            Text(verbatim: "Mid secondary with icon")
             Spacer()
             Button(action: {}) {
                 HStack {
-                    Text("Click me")
+                    Text(verbatim: "Click me")
                     Image(systemName: "checkmark")
                 }
             }.buttonStyle(OctopusButtonStyle(.mid, style: .secondary, hasTrailingIcon: true))
         }
 
         HStack {
-            Text("Mid secondary Disabled")
+            Text(verbatim: "Mid secondary Disabled")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.mid, style: .secondary, enabled: false))
         }
 
         HStack {
-            Text("Small main Active")
+            Text(verbatim: "Small main Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.small))
         }
 
         HStack {
-            Text("Small main Disabled")
+            Text(verbatim: "Small main Disabled")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.small, enabled: false))
         }
 
         HStack {
-            Text("Small outline Active")
+            Text(verbatim: "Small outline Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.small, style: .outline))
         }
 
         HStack {
-            Text("Small outline Disabled")
+            Text(verbatim: "Small outline Disabled")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.small, style: .outline, enabled: false))
         }
 
         HStack {
-            Text("Small secondary Active")
+            Text(verbatim: "Small secondary Active")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.small, style: .secondary))
         }
 
         HStack {
-            Text("Small secondary with icon")
+            Text(verbatim: "Small secondary with icon")
             Spacer()
             Button(action: {}) {
                 HStack {
-                    Text("Click me")
+                    Text(verbatim: "Click me")
                     Image(systemName: "checkmark")
                 }
             }.buttonStyle(OctopusButtonStyle(.small, style: .secondary, hasTrailingIcon: true))
         }
 
         HStack {
-            Text("Small secondary Disabled")
+            Text(verbatim: "Small secondary Disabled")
             Spacer()
             Button(action: {}) {
-                Text("Click me")
+                Text(verbatim: "Click me")
             }.buttonStyle(OctopusButtonStyle(.small, style: .secondary, enabled: false))
         }
     }

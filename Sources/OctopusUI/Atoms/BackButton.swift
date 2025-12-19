@@ -18,6 +18,7 @@ struct BackButton: View {
                 Image(systemName: "chevron.left")
                     .font(theme.fonts.navBarItem.weight(.semibold))
                     .contentShape(Rectangle())
+                    .accessibilityLabelInBundle("Accessibility.Common.Back")
             }
         } else {
             Button(action: action) {
@@ -27,6 +28,7 @@ struct BackButton: View {
                     .padding(.trailing, 40)
             }
             .padding(.leading, -8)
+            .accessibilityLabelInBundle("Accessibility.Common.Back")
         }
 #else
         Button(action: action) {
@@ -36,6 +38,7 @@ struct BackButton: View {
                 .padding(.trailing, 40)
         }
         .padding(.leading, -8)
+        .accessibilityLabelInBundle("Accessibility.Common.Back")
 #endif
     }
 }

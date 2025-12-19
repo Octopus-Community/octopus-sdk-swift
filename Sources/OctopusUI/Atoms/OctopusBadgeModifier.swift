@@ -7,8 +7,9 @@ import SwiftUI
 
 enum OctopusBadgeStyle {
     enum Kind {
-        case medium
+        case xs
         case small
+        case medium
     }
 
     enum Status {
@@ -30,21 +31,23 @@ struct OctopusBadgeModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        HStack(spacing: 2) {
-            content
-            if status == .admin {
-                Image(systemName: "checkmark.circle")
-            }
-        }
-        .font(font)
-        .padding(.leading, leadingPadding)
-        .padding(.trailing, trailingPadding)
-        .padding(.vertical, verticalPadding)
-        .foregroundColor(foregroundColor)
-        .background(
-            Capsule()
-                .fill(backgroundColor)
-        )
+        content
+            .font(font)
+            .padding(.leading, leadingPadding)
+            .padding(.trailing, trailingPadding)
+            .padding(.vertical, verticalPadding)
+            .foregroundColor(foregroundColor)
+            .background(
+                Capsule()
+                    .modify {
+                        if status == .admin {
+                            $0.stroke(backgroundColor)
+                        } else {
+                            $0.fill(backgroundColor)
+                        }
+                    }
+
+            )
     }
 }
 
@@ -59,7 +62,7 @@ fileprivate extension OctopusBadgeModifier {
         case .warning:
             theme.colors.errorLowContrast
         case .admin:
-            theme.colors.primary
+            theme.colors.gray300
         }
     }
 
@@ -72,7 +75,7 @@ fileprivate extension OctopusBadgeModifier {
         case .warning:
             theme.colors.error
         case .admin:
-            theme.colors.onPrimary
+            theme.colors.gray900
         }
     }
 }
@@ -85,28 +88,25 @@ fileprivate extension OctopusBadgeModifier {
 
     var trailingPadding: CGFloat {
         switch kind {
-        case .medium:
-            return horizontalDefaultPadding
-        case .small:
-            return status != .admin ? horizontalDefaultPadding : 2
+        case .xs:       horizontalDefaultPadding
+        case .small:    horizontalDefaultPadding
+        case .medium:   horizontalDefaultPadding
         }
     }
 
     var horizontalDefaultPadding: CGFloat {
         switch kind {
-        case .medium:
-            return 12
-        case .small:
-            return 8
+        case .xs:       8
+        case .small:    8
+        case .medium:   12
         }
     }
 
     var verticalPadding: CGFloat {
         switch kind {
-        case .medium:
-            return 8
-        case .small:
-            return status != .admin ? 2 : 4
+        case .xs:       2
+        case .small:    4
+        case .medium:   8
         }
     }
 }
@@ -115,10 +115,12 @@ fileprivate extension OctopusBadgeModifier {
 fileprivate extension OctopusBadgeModifier {
     var font: Font {
         switch kind {
-        case .medium:
-            theme.fonts.body2.weight(.semibold)
+        case .xs:
+            theme.fonts.caption2.weight(.medium)
         case .small:
             theme.fonts.caption1.weight(.medium)
+        case .medium:
+            theme.fonts.body2.weight(.semibold)
         }
     }
 }

@@ -27,21 +27,36 @@ struct ResponseFeedItemView: View {
     @State private var liveMeasures: LiveMeasures?
     @State private var showReactionPicker = false
 
+    @State private var groupedForAccessibility = true
+
+    @Compat.ScaledMetric(relativeTo: .subheadline) var moreIconSize: CGFloat = 24 // subheadline to vary from 19 to 69
+    @Compat.ScaledMetric(relativeTo: .largeTitle) var authorAvatarSize: CGFloat = 32 // title1 to vary from 29 to 54
+
     private let minAspectRatio: CGFloat = 4 / 5
 
     var displayTranslation: Bool { translationStore.displayTranslation(for: response.uuid) }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: 0) {
             OpenProfileButton(author: response.author, displayProfile: displayProfile) {
-                AuthorAvatarView(avatar: response.author.avatar)
-                    .frame(width: 32, height: 32)
+                HStack {
+                    AuthorAvatarView(avatar: response.author.avatar)
+                        .frame(width: max(authorAvatarSize, 32), height: max(authorAvatarSize, 32))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                }
+                .frame(width: max(authorAvatarSize, 44), height: max(authorAvatarSize, 44), alignment: .top)
+                // trailing padding is size of (button - 44) max 8. So when button is 44, it will be 0,
+                // when button is big, it will be 8
+                .padding(.trailing, min(max(authorAvatarSize, 32) - 32, 8))
             }
+            .padding(.top, 8)
+
             VStack(spacing: 0) {
                 VStack(spacing: 0) {
                     VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: 4) {
+                        HStack(alignment: .top, spacing: 4) {
                             AuthorAndDateHeaderView(author: response.author, relativeDate: response.relativeDate,
+                                                    topPadding: 16, bottomPadding: 4,
                                                     displayProfile: displayProfile)
                             Spacer()
                             if response.canBeDeleted || response.canBeModerated {
@@ -60,18 +75,25 @@ struct ResponseFeedItemView: View {
                                             .buttonStyle(.plain)
                                         }
                                     }, label: {
-                                        Image(res: .more)
-                                            .resizable()
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(theme.colors.gray500)
+                                        HStack {
+                                            Image(res: .more)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
+                                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                                                .foregroundColor(theme.colors.gray500)
+                                                .accessibilityLabelInBundle("Accessibility.Common.More")
+                                                .padding(.top, 8)
+                                        }.frame(width: max(moreIconSize, 44), height: max(moreIconSize, 44))
                                     })
                                     .buttonStyle(.plain)
                                 } else {
                                     Button(action: { openActions = true }) {
                                         Image(res: .more)
                                             .resizable()
-                                            .frame(width: 24, height: 24)
+                                            .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
                                             .foregroundColor(theme.colors.gray500)
+                                            .accessibilityLabelInBundle("Accessibility.Common.More")
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -80,38 +102,40 @@ struct ResponseFeedItemView: View {
 
                         if let translatableText = response.text,
                            let text = translatableText.getText(translated: displayTranslation).nilIfEmpty {
-                            Spacer().frame(height: 8)
-
-                            Button(action: { displayParentDetail(response.uuid )}) {
-                                Group {
-                                    if translatableText.getIsEllipsized(translated: displayTranslation) {
-                                        Text(verbatim: "\(text)... ")
-                                        +
-                                        Text("Common.ReadMore", bundle: .module)
-                                            .bold()
-                                    } else {
-                                        RichText(text)
+                            ButtonOrContent(
+                                embedInButton: tapToOpenDetail,
+                                action: { displayParentDetail(response.uuid ) }) {
+                                    Group {
+                                        if translatableText.getIsEllipsized(translated: displayTranslation) {
+                                            Text(verbatim: "\(text)... ")
+                                            +
+                                            Text("Common.ReadMore", bundle: .module)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(theme.colors.gray500)
+                                        } else {
+                                            RichText(text)
+                                        }
                                     }
+                                    .multilineTextAlignment(.leading)
+                                    .contentShape(Rectangle())
                                 }
-                                .multilineTextAlignment(.leading)
-                                .contentShape(Rectangle())
-                            }
-                            .font(theme.fonts.body2)
-                            .lineSpacing(4)
-                            .foregroundColor(theme.colors.gray900)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .allowsHitTesting(tapToOpenDetail)
-                            .buttonStyle(.plain)
+                                .font(theme.fonts.body2)
+                                .lineSpacing(4)
+                                .foregroundColor(theme.colors.gray900)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .buttonStyle(.plain)
 
                             if translatableText.hasTranslation {
                                 ToggleTextTranslationButton(contentId: response.uuid,
                                                             originalLanguage: translatableText.originalLanguage)
-                                    .padding(.top, 6)
+                            } else {
+                                Spacer().frame(height: 8)
                             }
+                        } else {
+                            Spacer().frame(height: 4)
                         }
-
                     }
-                    .padding(8)
+                    .padding(.horizontal, 8)
                     if let image = response.image {
                         AsyncCachedImage(
                             url: image.url, cache: .content,
@@ -143,13 +167,13 @@ struct ResponseFeedItemView: View {
                                     }
                             })
                         .cornerRadius(12)
-                        .padding(.top, 4)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerSize: CGSize(width: 12, height: 12))
                         .foregroundColor(theme.colors.gray200)
+                        .padding(.top, 8)
                 )
 
                 let userInteractions = liveMeasures?.userInteractions ?? response.liveMeasuresValue.userInteractions
@@ -166,18 +190,39 @@ struct ResponseFeedItemView: View {
                     Button(action: { displayResponseDetail(response.uuid, false) }) {
                         HStack {
                             Image(systemName: "arrow.right")
+                                .accessibilityHidden(true)
                             Text("Reply.See_count:\(aggregatedInfo.childCount)", bundle: .module)
                             Spacer()
                         }
                         .font(theme.fonts.caption1.weight(.semibold))
                         .foregroundColor(theme.colors.primary)
                         .contentShape(Rectangle())
+                        .padding(.bottom, 27)
                     }
                 }
             }
         }
-        .padding(.bottom, 10)
-        .id("\(response.kind.identifierPrefix)-\(response.uuid)")
+        .id("\(response.kind.identifierPrefix)-\(response.uuid)-\(groupedForAccessibility)")
+        .accessibilityElement(children: groupedForAccessibility ? .ignore : .contain)
+        .accessibilityLabelInBundle(groupedForAccessibility ? accessibilityDescription : nil)
+        .accessibilityAction(named: Text(groupedForAccessibility ? "Accessibility.Content.Action.ReadElements" : "Accessibility.Content.Action.ReadSummary", bundle: .module)) {
+            groupedForAccessibility.toggle()
+            refreshVoiceOverFocus(on: self)
+        }
+        .modify {
+            if let authorId = response.author.profileId {
+                $0.accessibilityAction(named: Text("Accessibility.Content.Action.ViewAuthor", bundle: .module)) {
+                    displayProfile(authorId)
+                }
+            } else { $0 }
+        }
+        .modify {
+            if response.kind.canReply {
+                $0.accessibilityAction(named: Text("Accessibility.Content.Action.OpenDetail", bundle: .module)) {
+                    displayResponseDetail(response.uuid, false)
+                }
+            } else { $0 }
+        }
         .actionSheet(isPresented: $openActions) {
             ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: actionSheetContent)
         }
@@ -224,6 +269,24 @@ struct ResponseFeedItemView: View {
         buttons.append(.cancel())
         return buttons
     }
+
+    var accessibilityDescription: LocalizedStringKey {
+        let authorName = response.author.name.localizedString
+
+        if let responseText = response.text {
+            let text = responseText.getText(translated: true)
+            let textToRead = "\(text)\(responseText.getIsEllipsized(translated: true) ? "..." : "")"
+            if response.image != nil {
+                return "Accessibility.Response.Summary.TextAndImage_author:\(authorName)_date:\(response.relativeDate)_text:\(textToRead)"
+            } else {
+                return "Accessibility.Response.Summary.TextOnly_author:\(authorName)_date:\(response.relativeDate)_text:\(textToRead)"
+            }
+        } else if response.image != nil {
+            return "Accessibility.Response.Summary.Image_author:\(authorName)_date:\(response.relativeDate)"
+        } else {
+            return "Accessibility.Response.Summary.TextOnly_author:\(authorName)_date:\(response.relativeDate)_text:\("")"
+        }
+    }
 }
 
 private extension ResponseKind {
@@ -253,4 +316,171 @@ private extension ResponseKind {
         case .reply: "Reply.Delete.Confirmation.Title"
         }
     }
+}
+
+import Combine
+#Preview("Text") {
+    ResponseFeedItemView(
+        response: .init(
+            kind: .comment,
+            uuid: "commentId",
+            text: .init(text: .init(
+                originalText: "Un texte",
+                originalLanguage: nil)),
+            image: nil,
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            canBeDeleted: false,
+            canBeModerated: true,
+            _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                aggregatedInfo: .init(reactions: [
+                    .init(reactionKind: .heart, count: 10),
+                    .init(reactionKind: .clap, count: 5),
+                ], childCount: 5, viewCount: 4, pollResult: nil),
+                userInteractions: .empty)),
+            displayEvents: .init(onAppear: {}, onDisappear: {})
+        ),
+        zoomableImageInfo: .constant(nil),
+        displayResponseDetail: { _, _ in },
+        displayParentDetail: { _ in },
+        displayProfile: { _ in },
+        deleteResponse: { _ in },
+        reactionTapped: { _, _ in },
+        displayContentModeration: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Text and image") {
+    ResponseFeedItemView(
+        response: .init(
+            kind: .comment,
+            uuid: "commentId",
+            text: .init(text: .init(
+                originalText: "Un texte",
+                originalLanguage: "fr",
+                translatedText: "A text")),
+            image: .init(
+                url: URL(string: "https://picsum.photos/700/750")!,
+                size: CGSize(width: 700, height: 750)),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            canBeDeleted: false,
+            canBeModerated: true,
+            _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                aggregatedInfo: .init(reactions: [
+                    .init(reactionKind: .heart, count: 10),
+                    .init(reactionKind: .clap, count: 5),
+                ], childCount: 0, viewCount: 4, pollResult: nil),
+                userInteractions: .empty)),
+            displayEvents: .init(onAppear: {}, onDisappear: {})
+        ),
+        zoomableImageInfo: .constant(nil),
+        displayResponseDetail: { _, _ in },
+        displayParentDetail: { _ in },
+        displayProfile: { _ in },
+        deleteResponse: { _ in },
+        reactionTapped: { _, _ in },
+        displayContentModeration: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Image") {
+    ResponseFeedItemView(
+        response: .init(
+            kind: .comment,
+            uuid: "commentId",
+            text: nil,
+            image: .init(
+                url: URL(string: "https://picsum.photos/700/750")!,
+                size: CGSize(width: 700, height: 750)),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            canBeDeleted: false,
+            canBeModerated: true,
+            _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                aggregatedInfo: .init(reactions: [
+                    .init(reactionKind: .heart, count: 10),
+                    .init(reactionKind: .clap, count: 5),
+                ], childCount: 5, viewCount: 4, pollResult: nil),
+                userInteractions: .empty)),
+            displayEvents: .init(onAppear: {}, onDisappear: {})
+        ),
+        zoomableImageInfo: .constant(nil),
+        displayResponseDetail: { _, _ in },
+        displayParentDetail: { _ in },
+        displayProfile: { _ in },
+        deleteResponse: { _ in },
+        reactionTapped: { _, _ in },
+        displayContentModeration: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+
+#Preview("No translation") {
+    ResponseFeedItemView(
+        response: .init(
+            kind: .comment,
+            uuid: "commentId",
+            text: .init(text: .init(
+                originalText: "Un texte",
+                originalLanguage: nil)),
+            image: .init(
+                url: URL(string: "https://picsum.photos/700/750")!,
+                size: CGSize(width: 700, height: 750)),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            canBeDeleted: false,
+            canBeModerated: true,
+            _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                aggregatedInfo: .init(reactions: [
+                    .init(reactionKind: .heart, count: 10),
+                    .init(reactionKind: .clap, count: 5),
+                ], childCount: 5, viewCount: 4, pollResult: nil),
+                userInteractions: .empty)),
+            displayEvents: .init(onAppear: {}, onDisappear: {})
+        ),
+        zoomableImageInfo: .constant(nil),
+        displayResponseDetail: { _, _ in },
+        displayParentDetail: { _ in },
+        displayProfile: { _ in },
+        deleteResponse: { _ in },
+        reactionTapped: { _, _ in },
+        displayContentModeration: { _ in })
+    .mockContentTranslationPreferenceStore()
 }

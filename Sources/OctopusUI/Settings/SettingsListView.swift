@@ -24,7 +24,7 @@ struct SettingsListView: View {
                     logoutInProgress: viewModel.logoutInProgress,
                     openProfile: { navigator.push(.settingsAccount) },
                     openAbout: { navigator.push(.settingsAbout) },
-                    openHelp: { navigator.push(.settingsHelp) },
+                    openReportContent: { navigator.push(.reportExplanation) },
                     logout: viewModel.logout)
         .navigationBarTitle(Text("Settings.Community.Title", bundle: .module))
         .compatAlert(
@@ -68,7 +68,7 @@ private struct ContentView: View {
     let logoutInProgress: Bool
     let openProfile: () -> Void
     let openAbout: () -> Void
-    let openHelp: () -> Void
+    let openReportContent: () -> Void
     let logout: () -> Void
 
     var body: some View {
@@ -78,15 +78,15 @@ private struct ContentView: View {
                 .frame(height: 1)
             Spacer().frame(height: 20)
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 0) {
                     if octopusOwnedProfile {
                         SettingItemView(imageResource: .Settings.account, titleKey: "Settings.Profile",
                                         color: theme.colors.gray900, action: openProfile)
                     }
                     SettingItemView(imageResource: .Settings.info, titleKey: "Settings.About",
                                     color: theme.colors.gray900, action: openAbout)
-                    SettingItemView(imageResource: .Settings.help, titleKey: "Settings.Help",
-                                    color: theme.colors.gray900, action: openHelp)
+                    SettingItemView(imageResource: .Settings.help, titleKey: "Settings.ReportContent",
+                                    color: theme.colors.gray900, action: openReportContent)
                     if octopusOwnedProfile {
                         SettingItemView(imageResource: .Settings.logout, titleKey: "Settings.LogOut.Button",
                                         color: theme.colors.error, isLoading: logoutInProgress, action: logout)
@@ -107,6 +107,8 @@ private struct SettingItemView: View {
     let isLoading: Bool
     let action: () -> Void
 
+    @Compat.ScaledMetric(relativeTo: .title1) var iconSize: CGFloat = 20 // title1 to vary from 18 to 40
+
     init(imageResource: GenImageResource, titleKey: LocalizedStringKey, color: Color, isLoading: Bool = false,
          action: @escaping () -> Void) {
         self.imageResource = imageResource
@@ -122,8 +124,9 @@ private struct SettingItemView: View {
                 Image(res: imageResource)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 20, height: 20)
+                    .frame(width: iconSize, height: iconSize)
                     .foregroundColor(color)
+                    .accessibilityHidden(true)
 
                 Text(titleKey, bundle: .module)
                     .font(theme.fonts.body2)
@@ -137,6 +140,7 @@ private struct SettingItemView: View {
                 Spacer()
             }
             .padding(.horizontal, 20)
+            .padding(.bottom, 24)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

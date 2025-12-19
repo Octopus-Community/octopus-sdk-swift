@@ -50,6 +50,10 @@ class CurrentUserProfileDatabase: InjectableObject {
             profileEntity.email = profile.email
             profileEntity.bio = profile.bio
             profileEntity.pictureUrl = profile.pictureUrl
+            profileEntity.totalMessagesOptional = profile.totalMessages.map { NSNumber(integerLiteral: $0) }
+            profileEntity.accountCreationDate = profile.accountCreationDate
+            profileEntity.gamificationLevelOptional = profile.gamificationLevel.map { NSNumber(integerLiteral: $0) }
+            profileEntity.gamificationScoreOptional = profile.gamificationScore.map { NSNumber(integerLiteral: $0) }
             profileEntity.hasAcceptedCguOptional = profile.hasAcceptedCgu.map { NSNumber(booleanLiteral: $0) }
             profileEntity.hasSeenOnboardingOptional = profile.hasSeenOnboarding.map { NSNumber(booleanLiteral: $0) }
             profileEntity.hasConfirmedNicknameOptional = profile.hasConfirmedNickname.map { NSNumber(booleanLiteral: $0) }

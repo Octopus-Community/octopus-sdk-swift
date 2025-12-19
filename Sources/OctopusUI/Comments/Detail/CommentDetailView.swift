@@ -26,8 +26,6 @@ struct CommentDetailView: View {
     @State private var replyTextFocused: Bool
     @State private var replyHasChanges = false
 
-    @State private var width: CGFloat = 0
-
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
     let displayGoToParentButton: Bool
@@ -52,7 +50,6 @@ struct CommentDetailView: View {
                     comment: viewModel.comment, replies: viewModel.replies,
                     hasMoreReplies: viewModel.hasMoreData,
                     hideLoadMoreRepliesLoader: viewModel.hideLoadMoreRepliesLoader,
-                    width: width,
                     displayGoToParentButton: displayGoToParentButton,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
@@ -82,6 +79,7 @@ struct CommentDetailView: View {
                                                    scrollToMostRecentComment: false, origin: .sdk,
                                                    hasFeaturedComment: false))
                     })
+                .toastContainer(octopus: viewModel.octopus)
 
                 CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
                                 translationStore: translationStore,
@@ -90,7 +88,6 @@ struct CommentDetailView: View {
                                 ensureConnected: viewModel.ensureConnected)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .readWidth($width)
 
             if viewModel.commentDeletion == .inProgress || viewModel.isDeletingReply {
                 Compat.ProgressView()
@@ -228,7 +225,6 @@ private struct ContentView: View {
     let replies: [DisplayableFeedResponse]?
     let hasMoreReplies: Bool
     let hideLoadMoreRepliesLoader: Bool
-    let width: CGFloat
     let displayGoToParentButton: Bool
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
@@ -248,32 +244,44 @@ private struct ContentView: View {
         Compat.ScrollView(
             scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
             refreshAction: refresh) {
-                if let comment {
-                    CommentDetailContentView(comment: comment, replies: replies,
-                                             hasMoreReplies: hasMoreReplies,
-                                             hideLoadMoreRepliesLoader: hideLoadMoreRepliesLoader,
-                                             width: width,
-                                             displayGoToParentButton: displayGoToParentButton,
-                                             zoomableImageInfo: $zoomableImageInfo,
-                                             loadPreviousReplies: loadPreviousReplies,
-                                             displayProfile: displayProfile,
-                                             openCreateReply: openCreateReply,
-                                             deleteComment: deleteComment,
-                                             deleteReply: deleteReply,
-                                             reactionTapped: reactionTapped,
-                                             replyReactionTapped: replyReactionTapped,
-                                             displayContentModeration: displayContentModeration,
-                                             displayParentPost: displayParentPost)
-                } else {
-                    VStack {
-                        Spacer().frame(height: 54)
-                        Image(res: .contentNotAvailable)
-                        Text("Content.Detail.NotAvailable", bundle: .module)
-                            .font(theme.fonts.body2)
-                            .fontWeight(.medium)
-                            .multilineTextAlignment(.center)
+                Compat.LazyVStack(spacing: 0) {
+                    if let comment {
+                        CommentDetailContentView(comment: comment,
+                                                 displayGoToParentButton: displayGoToParentButton,
+                                                 zoomableImageInfo: $zoomableImageInfo,
+                                                 displayProfile: displayProfile,
+                                                 openCreateReply: openCreateReply,
+                                                 deleteComment: deleteComment,
+                                                 reactionTapped: reactionTapped,
+                                                 displayContentModeration: displayContentModeration,
+                                                 displayParentPost: displayParentPost)
+
+                        if let replies {
+                            RepliesView(replies: replies,
+                                        hasMoreData: hasMoreReplies,
+                                        hideLoader: hideLoadMoreRepliesLoader,
+                                        zoomableImageInfo: $zoomableImageInfo,
+                                        loadPreviousReplies: loadPreviousReplies,
+                                        displayProfile: displayProfile,
+                                        deleteReply: deleteReply,
+                                        reactionTapped: replyReactionTapped,
+                                        displayContentModeration: displayContentModeration)
+                            .padding(.horizontal, 16)
+                        } else {
+                            Compat.ProgressView()
+                        }
+                    } else {
+                        VStack {
+                            Spacer().frame(height: 54)
+                            Image(res: .contentNotAvailable)
+                                .accessibilityHidden(true)
+                            Text("Content.Detail.NotAvailable", bundle: .module)
+                                .font(theme.fonts.body2)
+                                .fontWeight(.medium)
+                                .multilineTextAlignment(.center)
+                        }
+                        .foregroundColor(theme.colors.gray500)
                     }
-                    .foregroundColor(theme.colors.gray500)
                 }
             }
             .clipped()
@@ -285,19 +293,12 @@ private struct CommentDetailContentView: View {
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     let comment: CommentDetailViewModel.CommentDetail
-    let replies: [DisplayableFeedResponse]?
-    let hasMoreReplies: Bool
-    let hideLoadMoreRepliesLoader: Bool
-    let width: CGFloat
     let displayGoToParentButton: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let loadPreviousReplies: () -> Void
     let displayProfile: (String) -> Void
     let openCreateReply: () -> Void
     let deleteComment: () -> Void
-    let deleteReply: (String) -> Void
     let reactionTapped: (ReactionKind?) -> Void
-    let replyReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
     let displayParentPost: (String, String) -> Void
 
@@ -323,21 +324,25 @@ private struct CommentDetailContentView: View {
                             Capsule()
                                 .stroke(theme.colors.gray300, lineWidth: 1)
                         )
+                        .padding(.top, 8)
+                        .padding(.bottom, 16)
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 16)
                 .buttonStyle(.plain)
             }
             HStack(alignment: .top) {
                 OpenProfileButton(author: comment.author, displayProfile: displayProfile) {
                     AuthorAvatarView(avatar: comment.author.avatar)
                         .frame(width: 32, height: 32)
+                        .padding(.leading, 12)
+                        .padding(.bottom, 6)
+                        .padding(.top, 8)
                 }
                 VStack(spacing: 0) {
                     VStack(spacing: 0) {
                         VStack(alignment: .leading, spacing: 0) {
                             HStack(spacing: 4) {
                                 AuthorAndDateHeaderView(author: comment.author, relativeDate: comment.relativeDate,
+                                                        topPadding: 16, bottomPadding: 4,
                                                         displayProfile: displayProfile)
                                 Spacer()
                                 if comment.canBeDeleted || comment.canBeModerated {
@@ -356,18 +361,30 @@ private struct CommentDetailContentView: View {
                                                 .buttonStyle(.plain)
                                             }
                                         }, label: {
-                                            Image(res: .more)
-                                                .resizable()
-                                                .frame(width: 24, height: 24)
-                                                .foregroundColor(theme.colors.gray500)
+                                            HStack {
+                                                Image(res: .more)
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 24, height: 24)
+                                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                                                    .foregroundColor(theme.colors.gray500)
+                                                    .accessibilityLabelInBundle("Accessibility.Common.More")
+                                                    .padding(.top, 8)
+                                            }.frame(width: 44, height: 44)
                                         })
                                         .buttonStyle(.plain)
                                     } else {
                                         Button(action: { openActions = true }) {
-                                            Image(res: .more)
-                                                .resizable()
-                                                .frame(width: 24, height: 24)
-                                                .foregroundColor(theme.colors.gray500)
+                                            HStack {
+                                                Image(res: .more)
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 24, height: 24)
+                                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                                                    .foregroundColor(theme.colors.gray500)
+                                                    .accessibilityLabelInBundle("Accessibility.Common.More")
+                                                    .padding(.top, 8)
+                                            }.frame(width: 44, height: 44)
                                         }
                                         .buttonStyle(.plain)
                                     }
@@ -375,7 +392,6 @@ private struct CommentDetailContentView: View {
                             }
                             if let translatableText = comment.text,
                                let text = translatableText.getText(translated: displayTranslation).nilIfEmpty {
-                                Spacer().frame(height: 8)
 
                                 RichText(text)
                                     .font(theme.fonts.body2)
@@ -385,10 +401,14 @@ private struct CommentDetailContentView: View {
                                 if translatableText.hasTranslation {
                                     ToggleTextTranslationButton(
                                         contentId: comment.uuid, originalLanguage: translatableText.originalLanguage)
-                                    .padding(.top, 6)
+                                } else {
+                                    Spacer().frame(height: 8)
                                 }
+
+                            } else {
+                                Spacer().frame(height: 4)
                             }
-                        }.padding(8)
+                        }.padding(.horizontal, 8)
                         if let image = comment.image {
                             AsyncCachedImage(
                                 url: image.url, cache: .content,
@@ -421,13 +441,13 @@ private struct CommentDetailContentView: View {
                                 })
                             .fixedSize(horizontal: false, vertical: true)
                             .cornerRadius(12)
-                            .padding(.top, 4)
                         }
                     }
                     .frame(maxWidth: .infinity)
                     .background(
                         RoundedRectangle(cornerSize: CGSize(width: 12, height: 12))
                             .foregroundColor(theme.colors.primaryLowContrast)
+                            .padding(.top, 8)
                     )
 
                     let userInteractions = comment.userInteractions
@@ -442,23 +462,9 @@ private struct CommentDetailContentView: View {
                 }
             }
             .id("commentDetail-\(comment.uuid)")
-
-            if let replies {
-                RepliesView(replies: replies,
-                            hasMoreData: hasMoreReplies,
-                            hideLoader: hideLoadMoreRepliesLoader,
-                            zoomableImageInfo: $zoomableImageInfo,
-                            loadPreviousReplies: loadPreviousReplies,
-                            displayProfile: displayProfile,
-                            deleteReply: deleteReply,
-                            reactionTapped: replyReactionTapped,
-                            displayContentModeration: displayContentModeration)
-            } else {
-                Compat.ProgressView()
-            }
-
         }
-        .padding(.horizontal, 16)
+        .padding(.leading, 4)
+        .padding(.trailing, 16)
         .frame(maxWidth: .infinity)
         .actionSheet(isPresented: $openActions) {
             ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: actionSheetContent)
@@ -519,45 +525,44 @@ private struct RepliesView: View {
     let displayContentModeration: (String) -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            Spacer().frame(width: 40)
-            Compat.LazyVStack {
-                ForEach(replies, id: \.uuid) { reply in
-                    ResponseFeedItemView(
-                        response: reply,
-                        zoomableImageInfo: $zoomableImageInfo,
-                        displayResponseDetail: { _, _ in },
-                        displayParentDetail: { _ in },
-                        displayProfile: displayProfile,
-                        deleteResponse: deleteReply,
-                        reactionTapped: reactionTapped,
-                        displayContentModeration: displayContentModeration)
-                    .onAppear {
-                        reply.displayEvents.onAppear()
-                    }
-                    .onDisappear() {
-                        reply.displayEvents.onDisappear()
-                    }
-                    .modify {
-                        if #available(iOS 17.0, *) {
-                            $0.geometryGroup()
-                        } else {
-                            $0
-                        }
-                    }
+        ForEach(replies, id: \.uuid) { reply in
+            HStack(alignment: .top, spacing: 0) {
+                Spacer().frame(width: 32)
+                ResponseFeedItemView(
+                    response: reply,
+                    zoomableImageInfo: $zoomableImageInfo,
+                    displayResponseDetail: { _, _ in },
+                    displayParentDetail: { _ in },
+                    displayProfile: displayProfile,
+                    deleteResponse: deleteReply,
+                    reactionTapped: reactionTapped,
+                    displayContentModeration: displayContentModeration)
+                .onAppear {
+                    reply.displayEvents.onAppear()
                 }
-                if hasMoreData && !hideLoader {
-                    Compat.ProgressView()
-                        .frame(width: 100)
-                        .frame(maxWidth: .infinity)
-                        .onAppear {
-                            if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
-                            loadPreviousReplies()
-                        }
+                .onDisappear() {
+                    reply.displayEvents.onDisappear()
+                }
+            }
+            .modify {
+                if #available(iOS 17.0, *) {
+                    $0.geometryGroup()
+                } else {
+                    $0
                 }
             }
         }
-        .padding(.top, 16)
-        .frame(maxHeight: .infinity)
+        if hasMoreData && !hideLoader {
+            HStack(alignment: .top, spacing: 0) {
+                Spacer().frame(width: 40)
+                Compat.ProgressView()
+                    .frame(width: 100)
+                    .frame(maxWidth: .infinity)
+                    .onAppear {
+                        if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
+                        loadPreviousReplies()
+                    }
+            }
+        }
     }
 }

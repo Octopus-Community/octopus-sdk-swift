@@ -12,20 +12,10 @@ struct TopicPicker: View {
     @State private var contentHeight: CGFloat = .zero
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            VStack { // Ensures the content wraps its natural height
-                ContentView(topics: topics, selectedTopic: $selectedTopic)
-                    .readHeight($contentHeight)
-                    .opacity(contentHeight <= UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Hide if scrolling is needed
-            }
-            .frame(height: min(contentHeight, UIScreen.main.bounds.height * 0.8)) // Limit height
-            .overlay(
-                ScrollingContentView(topics: topics, selectedTopic: $selectedTopic)
-                    .opacity(contentHeight > UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Enable scrolling only if needed
-            )
-        } else {
-            ScrollingContentView(topics: topics, selectedTopic: $selectedTopic)
-        }
+        ContentSizedSheet(
+            content: { ContentView(topics: topics, selectedTopic: $selectedTopic) },
+            scrollingContent: { ScrollingContentView(topics: topics, selectedTopic: $selectedTopic) }
+        )
     }
 }
 
@@ -74,6 +64,7 @@ private struct TitleView: View {
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
             .padding()
+            .accessibilityAddTraits(.isHeader)
     }
 }
 
@@ -114,6 +105,7 @@ private struct TopicsListView: View {
                 Text(topic.name)
             }
             .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedTopic == topic ? .on : .off))
+            .accessibilityValueInBundle(selectedTopic == topic ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
             .padding(4)
         }
     }

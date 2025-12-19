@@ -25,11 +25,14 @@ class CommentsTests: XCTestCase {
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
-        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider)
+        injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .appStateMonitor, .blockedUserIdsProvider,
+                               .configRepository)
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ReplyFeedsStore(injector: $0) }
         injector.register { RepliesDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
+        injector.register { ToastsRepository(injector: $0) }
+        injector.register { SdkEventsEmitter(injector: $0) }
 
         commentsRepository = CommentsRepository(injector: injector)
         commentsDatabase = injector.getInjected(identifiedBy: Injected.commentsDatabase)
@@ -49,7 +52,7 @@ class CommentsTests: XCTestCase {
         injectPutComment(StorableComment(uuid: "newComment",
                                          text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
                                          medias: [],
-                                         author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                                         author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
                                          creationDate: Date(), updateDate: Date(),
                                          status: .published, statusReasons: [],
                                          parentId: "postId",
@@ -69,7 +72,7 @@ class CommentsTests: XCTestCase {
             StorableComment(uuid: "1",
                             text: .init(originalText: "My Comment", originalLanguage: nil, translatedText: nil),
                             medias: [],
-                            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil),
+                            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
                             creationDate: Date(), updateDate: Date(),
                             status: .published, statusReasons: [],
                             parentId: "postId",

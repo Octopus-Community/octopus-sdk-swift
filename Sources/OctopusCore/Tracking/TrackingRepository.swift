@@ -21,6 +21,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     private let authCallProvider: AuthenticatedCallProvider
     private let octopusUISessionManager: SessionManager
     private let appSessionManager: SessionManager
+    private let toastsRepository: ToastsRepository
     private var storage = [AnyCancellable]()
 
     /// Whether the Octopus UI is currently displayed. Used to end the UI session when the app session is ended
@@ -30,6 +31,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         database = injector.getInjected(identifiedBy: Injected.eventsDatabase)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
 
         octopusUISessionManager = SessionManager(kind: .octopusUI)
         appSessionManager = SessionManager(kind: .app)
@@ -43,6 +45,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                 // first, set the new session id to the remote client
                 remoteClient.set(octopusUISessionId: session.uuid)
                 triggerEnteringOctopusEvent(octoUISession: session)
+                callEnteringOctopus()
             }.store(in: &storage)
 
         // listen to previous UI session in order to create `leavingUI` event
@@ -206,6 +209,25 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                                             firstSession: session.firstSession))
                 )
                 octopusUISessionManager.clearPreviousSession()
+            } catch {
+                if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving UI event: \(error)") }
+            }
+        }
+    }
+
+    private func callEnteringOctopus() {
+        Task {
+            do {
+                let response = try await remoteClient.userService.enteringOctopus(
+                    authenticationMethod: try authCallProvider.authenticatedMethod())
+                if response.hasShouldDisplayGamificationLoginToast,
+                    response.shouldDisplayGamificationLoginToast {
+                    toastsRepository.display(gamificationToast: .dailySession)
+                }
+                if response.hasShouldDisplayGamificationAnswerToast,
+                   response.shouldDisplayGamificationAnswerToast {
+                    toastsRepository.display(gamificationToast: .postCommented)
+                }
             } catch {
                 if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving UI event: \(error)") }
             }

@@ -16,18 +16,7 @@ struct ZoomableAuthorAvatarView: View {
         switch avatar {
         case let .image(url, name):
             AsyncCachedImage(url: url, cache: .profile, placeholder: {
-                Text(name.initials)
-                    .bold()
-                    .lineLimit(1)
-                    .foregroundColor(.black)
-                    .font(.system(size: 100))
-                    .minimumScaleFactor(0.01)
-                    .padding(8)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(
-                        Circle()
-                            .foregroundColor(name.avatarColor)
-                    )
+                AuthorAvatarView(avatar: .defaultImage(name: name))
             }, content: { cachedImage in
                 Image(uiImage: cachedImage.fullSizeImage)
                     .resizable()
@@ -47,6 +36,7 @@ struct ZoomableAuthorAvatarView: View {
             })
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .mask(Circle())
+            .accessibilityLabelInBundle("Accessibility.Profile.Picture")
         default:
             AuthorAvatarView(avatar: avatar)
         }

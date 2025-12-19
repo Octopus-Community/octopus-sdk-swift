@@ -22,7 +22,7 @@ struct SettingsAboutView: View {
             theme.colors.gray300.frame(height: 1)
             Spacer().frame(height: 20)
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 0) {
                     SettingLinkItem(text: "Settings.CommunityGuidelines",
                                     url: viewModel.communityGuidelines)
 

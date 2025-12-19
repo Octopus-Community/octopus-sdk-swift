@@ -49,9 +49,190 @@ public struct Com_Octopuscommunity_ApiKeyConfig: Sendable {
   ///Guest user must be logged to do strong interaction (post/comment/reply)
   public var clientLoginMandatory: Bool = false
 
+  public var gamificationConfig: Com_Octopuscommunity_GamificationConfig {
+    get {return _gamificationConfig ?? Com_Octopuscommunity_GamificationConfig()}
+    set {_gamificationConfig = newValue}
+  }
+  /// Returns true if `gamificationConfig` has been explicitly set.
+  public var hasGamificationConfig: Bool {return self._gamificationConfig != nil}
+  /// Clears the value of `gamificationConfig`. Subsequent reads from it will return its default value.
+  public mutating func clearGamificationConfig() {self._gamificationConfig = nil}
+
+  public var displayAccountAge: Bool = false
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _gamificationConfig: Com_Octopuscommunity_GamificationConfig? = nil
+}
+
+public struct Com_Octopuscommunity_GamificationConfig: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var pointsName: String = String()
+
+  public var shortenPointSingular: String = String()
+
+  public var shortenPointPlural: String = String()
+
+  public var reactPts: Int32 {
+    get {return _reactPts ?? 0}
+    set {_reactPts = newValue}
+  }
+  /// Returns true if `reactPts` has been explicitly set.
+  public var hasReactPts: Bool {return self._reactPts != nil}
+  /// Clears the value of `reactPts`. Subsequent reads from it will return its default value.
+  public mutating func clearReactPts() {self._reactPts = nil}
+
+  public var votePts: Int32 {
+    get {return _votePts ?? 0}
+    set {_votePts = newValue}
+  }
+  /// Returns true if `votePts` has been explicitly set.
+  public var hasVotePts: Bool {return self._votePts != nil}
+  /// Clears the value of `votePts`. Subsequent reads from it will return its default value.
+  public mutating func clearVotePts() {self._votePts = nil}
+
+  public var commentPts: Int32 {
+    get {return _commentPts ?? 0}
+    set {_commentPts = newValue}
+  }
+  /// Returns true if `commentPts` has been explicitly set.
+  public var hasCommentPts: Bool {return self._commentPts != nil}
+  /// Clears the value of `commentPts`. Subsequent reads from it will return its default value.
+  public mutating func clearCommentPts() {self._commentPts = nil}
+
+  public var replyPts: Int32 {
+    get {return _replyPts ?? 0}
+    set {_replyPts = newValue}
+  }
+  /// Returns true if `replyPts` has been explicitly set.
+  public var hasReplyPts: Bool {return self._replyPts != nil}
+  /// Clears the value of `replyPts`. Subsequent reads from it will return its default value.
+  public mutating func clearReplyPts() {self._replyPts = nil}
+
+  public var postPts: Int32 {
+    get {return _postPts ?? 0}
+    set {_postPts = newValue}
+  }
+  /// Returns true if `postPts` has been explicitly set.
+  public var hasPostPts: Bool {return self._postPts != nil}
+  /// Clears the value of `postPts`. Subsequent reads from it will return its default value.
+  public mutating func clearPostPts() {self._postPts = nil}
+
+  public var commentOnYourPostPts: Int32 {
+    get {return _commentOnYourPostPts ?? 0}
+    set {_commentOnYourPostPts = newValue}
+  }
+  /// Returns true if `commentOnYourPostPts` has been explicitly set.
+  public var hasCommentOnYourPostPts: Bool {return self._commentOnYourPostPts != nil}
+  /// Clears the value of `commentOnYourPostPts`. Subsequent reads from it will return its default value.
+  public mutating func clearCommentOnYourPostPts() {self._commentOnYourPostPts = nil}
+
+  public var loginPts: Int32 {
+    get {return _loginPts ?? 0}
+    set {_loginPts = newValue}
+  }
+  /// Returns true if `loginPts` has been explicitly set.
+  public var hasLoginPts: Bool {return self._loginPts != nil}
+  /// Clears the value of `loginPts`. Subsequent reads from it will return its default value.
+  public mutating func clearLoginPts() {self._loginPts = nil}
+
+  public var completeProfilePts: Int32 {
+    get {return _completeProfilePts ?? 0}
+    set {_completeProfilePts = newValue}
+  }
+  /// Returns true if `completeProfilePts` has been explicitly set.
+  public var hasCompleteProfilePts: Bool {return self._completeProfilePts != nil}
+  /// Clears the value of `completeProfilePts`. Subsequent reads from it will return its default value.
+  public mutating func clearCompleteProfilePts() {self._completeProfilePts = nil}
+
+  public var gamificationLevels: [Com_Octopuscommunity_GamificationLevel] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _reactPts: Int32? = nil
+  fileprivate var _votePts: Int32? = nil
+  fileprivate var _commentPts: Int32? = nil
+  fileprivate var _replyPts: Int32? = nil
+  fileprivate var _postPts: Int32? = nil
+  fileprivate var _commentOnYourPostPts: Int32? = nil
+  fileprivate var _loginPts: Int32? = nil
+  fileprivate var _completeProfilePts: Int32? = nil
+}
+
+public struct Com_Octopuscommunity_GamificationLevel: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var level: Int32 = 0
+
+  public var name: String = String()
+
+  public var nextLevelAt: Int32 {
+    get {return _nextLevelAt ?? 0}
+    set {_nextLevelAt = newValue}
+  }
+  /// Returns true if `nextLevelAt` has been explicitly set.
+  public var hasNextLevelAt: Bool {return self._nextLevelAt != nil}
+  /// Clears the value of `nextLevelAt`. Subsequent reads from it will return its default value.
+  public mutating func clearNextLevelAt() {self._nextLevelAt = nil}
+
+  /// No value = no badge
+  public var badgeLightColorHex: String {
+    get {return _badgeLightColorHex ?? String()}
+    set {_badgeLightColorHex = newValue}
+  }
+  /// Returns true if `badgeLightColorHex` has been explicitly set.
+  public var hasBadgeLightColorHex: Bool {return self._badgeLightColorHex != nil}
+  /// Clears the value of `badgeLightColorHex`. Subsequent reads from it will return its default value.
+  public mutating func clearBadgeLightColorHex() {self._badgeLightColorHex = nil}
+
+  /// No value = no badge
+  public var badgeDarkColorHex: String {
+    get {return _badgeDarkColorHex ?? String()}
+    set {_badgeDarkColorHex = newValue}
+  }
+  /// Returns true if `badgeDarkColorHex` has been explicitly set.
+  public var hasBadgeDarkColorHex: Bool {return self._badgeDarkColorHex != nil}
+  /// Clears the value of `badgeDarkColorHex`. Subsequent reads from it will return its default value.
+  public mutating func clearBadgeDarkColorHex() {self._badgeDarkColorHex = nil}
+
+  /// No value = no badge
+  public var badgeTextLightColorHex: String {
+    get {return _badgeTextLightColorHex ?? String()}
+    set {_badgeTextLightColorHex = newValue}
+  }
+  /// Returns true if `badgeTextLightColorHex` has been explicitly set.
+  public var hasBadgeTextLightColorHex: Bool {return self._badgeTextLightColorHex != nil}
+  /// Clears the value of `badgeTextLightColorHex`. Subsequent reads from it will return its default value.
+  public mutating func clearBadgeTextLightColorHex() {self._badgeTextLightColorHex = nil}
+
+  /// No value = no badge
+  public var badgeTextDarkColorHex: String {
+    get {return _badgeTextDarkColorHex ?? String()}
+    set {_badgeTextDarkColorHex = newValue}
+  }
+  /// Returns true if `badgeTextDarkColorHex` has been explicitly set.
+  public var hasBadgeTextDarkColorHex: Bool {return self._badgeTextDarkColorHex != nil}
+  /// Clears the value of `badgeTextDarkColorHex`. Subsequent reads from it will return its default value.
+  public mutating func clearBadgeTextDarkColorHex() {self._badgeTextDarkColorHex = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _nextLevelAt: Int32? = nil
+  fileprivate var _badgeLightColorHex: String? = nil
+  fileprivate var _badgeDarkColorHex: String? = nil
+  fileprivate var _badgeTextLightColorHex: String? = nil
+  fileprivate var _badgeTextDarkColorHex: String? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -98,6 +279,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
   public static let protoMessageName: String = _protobuf_package + ".ApiKeyConfig"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "clientLoginMandatory"),
+    2: .same(proto: "gamificationConfig"),
+    3: .same(proto: "displayAccountAge"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -107,20 +290,208 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.clientLoginMandatory) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._gamificationConfig) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self.displayAccountAge) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.clientLoginMandatory != false {
       try visitor.visitSingularBoolField(value: self.clientLoginMandatory, fieldNumber: 1)
+    }
+    try { if let v = self._gamificationConfig {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    if self.displayAccountAge != false {
+      try visitor.visitSingularBoolField(value: self.displayAccountAge, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_ApiKeyConfig, rhs: Com_Octopuscommunity_ApiKeyConfig) -> Bool {
     if lhs.clientLoginMandatory != rhs.clientLoginMandatory {return false}
+    if lhs._gamificationConfig != rhs._gamificationConfig {return false}
+    if lhs.displayAccountAge != rhs.displayAccountAge {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_GamificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GamificationConfig"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "pointsName"),
+    2: .same(proto: "shortenPointSingular"),
+    3: .same(proto: "shortenPointPlural"),
+    4: .same(proto: "reactPts"),
+    5: .same(proto: "votePts"),
+    6: .same(proto: "commentPts"),
+    7: .same(proto: "replyPts"),
+    8: .same(proto: "postPts"),
+    9: .same(proto: "commentOnYourPostPts"),
+    10: .same(proto: "loginPts"),
+    11: .same(proto: "completeProfilePts"),
+    100: .same(proto: "gamificationLevels"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.pointsName) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.shortenPointSingular) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.shortenPointPlural) }()
+      case 4: try { try decoder.decodeSingularInt32Field(value: &self._reactPts) }()
+      case 5: try { try decoder.decodeSingularInt32Field(value: &self._votePts) }()
+      case 6: try { try decoder.decodeSingularInt32Field(value: &self._commentPts) }()
+      case 7: try { try decoder.decodeSingularInt32Field(value: &self._replyPts) }()
+      case 8: try { try decoder.decodeSingularInt32Field(value: &self._postPts) }()
+      case 9: try { try decoder.decodeSingularInt32Field(value: &self._commentOnYourPostPts) }()
+      case 10: try { try decoder.decodeSingularInt32Field(value: &self._loginPts) }()
+      case 11: try { try decoder.decodeSingularInt32Field(value: &self._completeProfilePts) }()
+      case 100: try { try decoder.decodeRepeatedMessageField(value: &self.gamificationLevels) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.pointsName.isEmpty {
+      try visitor.visitSingularStringField(value: self.pointsName, fieldNumber: 1)
+    }
+    if !self.shortenPointSingular.isEmpty {
+      try visitor.visitSingularStringField(value: self.shortenPointSingular, fieldNumber: 2)
+    }
+    if !self.shortenPointPlural.isEmpty {
+      try visitor.visitSingularStringField(value: self.shortenPointPlural, fieldNumber: 3)
+    }
+    try { if let v = self._reactPts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._votePts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._commentPts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 6)
+    } }()
+    try { if let v = self._replyPts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 7)
+    } }()
+    try { if let v = self._postPts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 8)
+    } }()
+    try { if let v = self._commentOnYourPostPts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 9)
+    } }()
+    try { if let v = self._loginPts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 10)
+    } }()
+    try { if let v = self._completeProfilePts {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 11)
+    } }()
+    if !self.gamificationLevels.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.gamificationLevels, fieldNumber: 100)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_GamificationConfig, rhs: Com_Octopuscommunity_GamificationConfig) -> Bool {
+    if lhs.pointsName != rhs.pointsName {return false}
+    if lhs.shortenPointSingular != rhs.shortenPointSingular {return false}
+    if lhs.shortenPointPlural != rhs.shortenPointPlural {return false}
+    if lhs._reactPts != rhs._reactPts {return false}
+    if lhs._votePts != rhs._votePts {return false}
+    if lhs._commentPts != rhs._commentPts {return false}
+    if lhs._replyPts != rhs._replyPts {return false}
+    if lhs._postPts != rhs._postPts {return false}
+    if lhs._commentOnYourPostPts != rhs._commentOnYourPostPts {return false}
+    if lhs._loginPts != rhs._loginPts {return false}
+    if lhs._completeProfilePts != rhs._completeProfilePts {return false}
+    if lhs.gamificationLevels != rhs.gamificationLevels {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_GamificationLevel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GamificationLevel"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "level"),
+    2: .same(proto: "name"),
+    3: .same(proto: "nextLevelAt"),
+    4: .same(proto: "badgeLightColorHex"),
+    5: .same(proto: "badgeDarkColorHex"),
+    6: .same(proto: "badgeTextLightColorHex"),
+    7: .same(proto: "badgeTextDarkColorHex"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.level) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self._nextLevelAt) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self._badgeLightColorHex) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self._badgeDarkColorHex) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self._badgeTextLightColorHex) }()
+      case 7: try { try decoder.decodeSingularStringField(value: &self._badgeTextDarkColorHex) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if self.level != 0 {
+      try visitor.visitSingularInt32Field(value: self.level, fieldNumber: 1)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
+    }
+    try { if let v = self._nextLevelAt {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._badgeLightColorHex {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._badgeDarkColorHex {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._badgeTextLightColorHex {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 6)
+    } }()
+    try { if let v = self._badgeTextDarkColorHex {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 7)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_GamificationLevel, rhs: Com_Octopuscommunity_GamificationLevel) -> Bool {
+    if lhs.level != rhs.level {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs._nextLevelAt != rhs._nextLevelAt {return false}
+    if lhs._badgeLightColorHex != rhs._badgeLightColorHex {return false}
+    if lhs._badgeDarkColorHex != rhs._badgeDarkColorHex {return false}
+    if lhs._badgeTextLightColorHex != rhs._badgeTextLightColorHex {return false}
+    if lhs._badgeTextDarkColorHex != rhs._badgeTextDarkColorHex {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

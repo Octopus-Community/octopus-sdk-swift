@@ -49,13 +49,17 @@ class NotificationsDatabase: InjectableObject {
                 notifEntity.text = notification.text
                 notifEntity.openAction = notification.openAction
 
-                notifEntity.thumbnailsRelationship = NSOrderedSet(array: notification.thumbnails.map {
+                notifEntity.thumbnailsRelationship = NSOrderedSet(array: try notification.thumbnails.map {
                     switch $0 {
                     case let .profile(profile):
-                        let profileEntity = MinimalProfileEntity(context: context)
-                        profileEntity.profileId = profile.uuid
-                        profileEntity.nickname = profile.nickname
-                        profileEntity.avatarUrl = profile.avatarUrl
+                        let profileEntity: MinimalProfileEntity
+                        if let existingProfile = try context.fetch(MinimalProfileEntity.fetchById(id: profile.uuid)).first {
+                            profileEntity = existingProfile
+                        } else {
+                            profileEntity = MinimalProfileEntity(context: context)
+                        }
+                        // since secondary infos are not sent when coming from this request, do not override it
+                        profileEntity.fill(with: profile, replaceSecondaryInfosIfNil: false, context: context)
                         return profileEntity
                     }
                 })

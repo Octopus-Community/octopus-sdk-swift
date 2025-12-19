@@ -7,12 +7,18 @@ import CoreData
 
 @objc(CommunityConfigEntity)
 class CommunityConfigEntity: NSManagedObject, Identifiable {
-    @NSManaged public var forceLoginOnStrongActionsOptional: NSNumber?
-
-    var forceLoginOnStrongActions: Bool? { forceLoginOnStrongActionsOptional?.boolValue }
+    @NSManaged public var forceLoginOnStrongActions: Bool
+    @NSManaged public var displayAccountAge: Bool
+    @NSManaged public var gamificationConfig: GamificationConfigEntity?
 
     func fill(with config: CommunityConfig, context: NSManagedObjectContext) {
-        forceLoginOnStrongActionsOptional = NSNumber(booleanLiteral: config.forceLoginOnStrongActions)
+        forceLoginOnStrongActions = config.forceLoginOnStrongActions
+        displayAccountAge = config.displayAccountAge
+        gamificationConfig = config.gamificationConfig.map { gamificationConfig in
+            let entity = GamificationConfigEntity(context: context)
+            entity.fill(with: gamificationConfig, context: context)
+            return entity
+        }
     }
 }
 

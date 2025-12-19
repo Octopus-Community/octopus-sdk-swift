@@ -27,7 +27,7 @@ struct ReactionInteractionView: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 5) {
             // make sure the image has the same height as the text. To do that, use a squared font size based
             // transparent image and put our image on overlay of this transparent image
             Image(systemName: "square")

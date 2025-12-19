@@ -16,4 +16,21 @@ extension Array {
     var nilIfEmpty: Array? {
         isEmpty ? nil : self
     }
+
+    /// Returns a sequence of pairs `(previous, current)` where `previous`
+    /// is `nil` for the first element and the preceding element otherwise.
+    func withPrevious() -> AnySequence<(previous: Element?, current: Element)> {
+        AnySequence { () -> AnyIterator<(previous: Element?, current: Element)> in
+            var iterator = self.makeIterator()
+            var previous: Element? = nil
+
+            return AnyIterator {
+                guard let current = iterator.next() else {
+                    return nil
+                }
+                defer { previous = current }
+                return (previous, current)
+            }
+        }
+    }
 }

@@ -17,6 +17,7 @@ struct OpenProfileButton<Content: View>: View {
             }
         }) {
             content
+                .contentShape(Rectangle())
         }.buttonStyle(.plain)
     }
 }

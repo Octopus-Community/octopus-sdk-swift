@@ -27,12 +27,7 @@ struct BridgeToClientObjectView: View {
             Spacer()
 
             Button(action: {
-                showFullScreen {
-                    OctopusUIView(octopus: viewModel.octopus)
-                        .fullScreenCover(item: $viewModel.recipePresented) { recipe in
-                            RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
-                        }
-                }
+                viewModel.displayOctopusAsFullScreenModal = true
             }) {
                 Text("Open Octopus Home Screen")
             }
@@ -54,6 +49,12 @@ struct BridgeToClientObjectView: View {
                 label: { EmptyView() }
             )
         )
+        .fullScreenCover(isPresented: $viewModel.displayOctopusAsFullScreenModal) {
+            OctopusUIView(octopus: viewModel.octopus)
+                .fullScreenCover(item: $viewModel.recipePresented) { recipe in
+                    RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
+                }
+        }
         .sheet(isPresented: $viewModel.displayOctopusAsSheet) {
             OctopusUIView(octopus: viewModel.octopus, postId: viewModel.octopusPostId)
                 .fullScreenCover(item: $viewModel.recipePresented) { recipe in

@@ -26,7 +26,7 @@ class SSOConnectionTests: XCTestCase {
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
-                               .userProfileFetchMonitor, .blockedUserIdsProvider)
+                               .userProfileFetchMonitor, .blockedUserIdsProvider, .appStateMonitor)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
@@ -45,6 +45,8 @@ class SSOConnectionTests: XCTestCase {
         injector.register { ConfigRepositoryDefault(injector: $0) }
         injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
         injector.register { FrictionlessProfileMigrator(injector: $0) }
+        injector.register { ToastsRepository(injector: $0) }
+        injector.register { SdkEventsEmitter(injector: $0) }
 
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
             .userService as! MockUserService)

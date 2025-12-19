@@ -8,12 +8,13 @@ import SwiftUI
 extension Compat {
     /// A LazyVStack that fallbacks on a normal VStack
     struct LazyVStack<Content: View>: View {
+        var spacing: CGFloat?
         @ViewBuilder let content: Content
 
         @ViewBuilder
         var body: some View {
             if #available(iOS 14.0, *) {
-                SwiftUI.LazyVStack {
+                SwiftUI.LazyVStack(spacing: spacing) {
                     content
                 }
             } else {

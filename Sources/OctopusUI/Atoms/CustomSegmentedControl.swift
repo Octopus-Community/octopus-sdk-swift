@@ -19,17 +19,20 @@ struct CustomSegmentedControl: View {
     let index = 0
 
     var body: some View {
-        VStack(alignment: .centeredAlignment, spacing: 18) {
+        VStack(alignment: .centeredAlignment, spacing: 0) {
             HStack(spacing: 0) {
                 ForEach(tabs.indices, id: \.self) { index in
                     Text(self.tabs[index], bundle: .module)
                         .font(theme.fonts.body2.weight(.medium))
                         .foregroundColor(selectedTab == index ? theme.colors.primary : theme.colors.gray700)
+                        .frame(width: itemWidth)
+                        .padding(.vertical, 13)
+                        .contentShape(Rectangle())
                         .onTapGesture {
                             selectedTab = index
                         }
-                        .contentShape(Rectangle())
-                        .frame(width: itemWidth)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityValueInBundle(animatedSelectedTab == index ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
                         .modify {
                             if animatedSelectedTab == index {
                                 $0.alignmentGuide(.centeredAlignment, computeValue: { d in d[HorizontalAlignment.center] })
@@ -65,7 +68,6 @@ struct CustomSegmentedControl: View {
                 animatedSelectedTab = selectedTab
             }
         }
-        .padding(.top, 16)
     }
 
     private func updateWidth(computedWidth: CGFloat, screenWidth: CGFloat) {

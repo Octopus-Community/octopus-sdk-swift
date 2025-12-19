@@ -103,10 +103,13 @@ class CommentDetailViewModel: ObservableObject {
         self.replyToScrollTo = replyToScrollTo
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
-        Publishers.CombineLatest(
+        Publishers.CombineLatest3(
             octopus.core.commentsRepository.getComment(uuid: commentUuid).removeDuplicates().replaceError(with: nil),
-            octopus.core.profileRepository.profilePublisher.removeDuplicates())
-        .sink { [unowned self] comment, profile in
+            octopus.core.profileRepository.profilePublisher.removeDuplicates(),
+            octopus.core.configRepository.communityConfigPublisher
+                .map { $0?.gamificationConfig?.gamificationLevels }
+                .removeDuplicates()
+        ).sink { [unowned self] comment, profile, gamificationLevels in
             self.internalComment = comment
             guard commentDeletion == nil else { return }
             guard let comment else {
@@ -128,7 +131,9 @@ class CommentDetailViewModel: ObservableObject {
                 return
             }
 
-            self.comment = CommentDetail(from: comment, thisUserProfileId: profile?.id,
+            self.comment = CommentDetail(from: comment,
+                                         gamificationLevels: gamificationLevels ?? [],
+                                         thisUserProfileId: profile?.id,
                                          dateFormatter: relativeDateFormatter)
             newestFirstRepliesFeed = comment.newestFirstRepliesFeed
             if let oldestFirstRepliesFeed = comment.oldestFirstRepliesFeed {
@@ -137,11 +142,14 @@ class CommentDetailViewModel: ObservableObject {
 
         }.store(in: &storage)
 
-        Publishers.CombineLatest(
+        Publishers.CombineLatest3(
             $modelReplies.removeDuplicates(),
-            octopus.core.profileRepository.profilePublisher.removeDuplicates()
+            octopus.core.profileRepository.profilePublisher.removeDuplicates(),
+            octopus.core.configRepository.communityConfigPublisher
+                .map { $0?.gamificationConfig?.gamificationLevels }
+                .removeDuplicates()
         )
-        .sink { [unowned self] reply, profile in
+        .sink { [unowned self] reply, profile, gamificationLevels in
             guard let reply else {
                 self.replies = nil
                 return
@@ -213,6 +221,7 @@ class CommentDetailViewModel: ObservableObject {
                 liveMeasurePublisher.send(LiveMeasures(aggregatedInfo: reply.aggregatedInfo, userInteractions: reply.userInteractions))
                 return DisplayableFeedResponse(
                     from: reply,
+                    gamificationLevels: gamificationLevels ?? [],
                     liveMeasurePublisher: liveMeasurePublisher,
                     thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
@@ -637,12 +646,17 @@ class CommentDetailViewModel: ObservableObject {
 }
 
 extension CommentDetailViewModel.CommentDetail {
-    init(from comment: Comment, thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter) {
+    init(from comment: Comment,
+         gamificationLevels: [GamificationLevel],
+         thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter) {
         uuid = comment.uuid
         parentId = comment.parentId
         text = comment.text
         image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
-        author = .init(profile: comment.author)
+        author = .init(
+            profile: comment.author,
+            gamificationLevel: gamificationLevels.first { $0.level == comment.author?.gamificationLevel }
+        )
         relativeDate = dateFormatter.localizedString(for: comment.creationDate, relativeTo: Date())
         canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
         canBeModerated = comment.author?.uuid != thisUserProfileId
