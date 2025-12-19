@@ -27,19 +27,33 @@ struct PostSummaryView: View {
 
     @State private var displayReactionsCount = false
 
-    var body: some View {
-        VStack {
-            VStack(alignment: .leading, spacing: 8) {
-                Group { // group views to have the same horizontal padding
-                    HStack(alignment: .top) {
-                        OpenProfileButton(author: post.author, displayProfile: displayProfile) {
-                            AuthorAvatarView(avatar: post.author.avatar)
-                                .frame(width: 40, height: 40)
-                        }
+    @State private var groupedForAccessibility = true
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            AuthorAndDateHeaderView(author: post.author, relativeDate: post.relativeDate,
-                                                    displayProfile: displayProfile)
+    @Compat.ScaledMetric(relativeTo: .subheadline) var moreIconSize: CGFloat = 24 // subheadline to vary from 19 to 69
+    @Compat.ScaledMetric(relativeTo: .title1) var authorAvatarSize: CGFloat = 40 // title1 to vary from 40 to 88
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                Group { // group views to have the same horizontal padding
+                    HStack(alignment: .top, spacing: 0) {
+                        OpenProfileButton(author: post.author, displayProfile: displayProfile) {
+                            HStack {
+                                AuthorAvatarView(avatar: post.author.avatar)
+                                    .frame(width: max(authorAvatarSize, 40), height: max(authorAvatarSize, 40))
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            }
+                            .frame(width: max(authorAvatarSize, 44), height: max(authorAvatarSize, 44))
+                        }
+                        .padding(.top, 16)
+
+                        Spacer().frame(width: 4)
+
+                        VStack(alignment: .leading, spacing: 0) {
+                            AuthorAndDateHeaderView(
+                                author: post.author, relativeDate: post.relativeDate,
+                                topPadding: 16, displayProfile: displayProfile,
+                                displayContent: { displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment) })
                             HStack(spacing: 4) {
                                 OpenDetailButton(
                                     post: post,
@@ -49,6 +63,7 @@ struct PostSummaryView: View {
                                                 .octopusBadgeStyle(.small, status: .off)
                                             Spacer()
                                         }
+                                        .padding(.top, 3)
                                     }
                                 if case .moderated = post.content {
                                     Text("Post.Status.Moderated", bundle: .module)
@@ -61,6 +76,7 @@ struct PostSummaryView: View {
                                             Capsule()
                                                 .foregroundColor(theme.colors.error.opacity(0.1))
                                         )
+                                        .padding(.top, 3)
                                 }
                             }
                         }
@@ -82,18 +98,22 @@ struct PostSummaryView: View {
                                     HStack(alignment: .top) {
                                         Image(res: .more)
                                             .resizable()
-                                            .frame(width: 24, height: 24)
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                                             .foregroundColor(theme.colors.gray500)
-                                            .padding(.bottom, 8)
-                                    }.frame(width: 32, height: 32)
+                                            .accessibilityLabelInBundle("Accessibility.Common.More")
+                                    }.frame(width: max(moreIconSize, 44), height: max(moreIconSize, 44))
                                 })
                                 .buttonStyle(.plain)
+                                .padding(.top, 16)
                             } else {
                                 Button(action: { openActions = true }) {
                                     Image(res: .more)
                                         .resizable()
-                                        .frame(width: 24, height: 24)
+                                        .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
                                         .foregroundColor(theme.colors.gray500)
+                                        .accessibilityLabelInBundle("Accessibility.Common.More")
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -103,35 +123,48 @@ struct PostSummaryView: View {
 
                 switch post.content {
                 case let .published(postContent):
-                    OpenDetailButton(post: post, displayPostDetail: { displayPostDetail($0, false, false, nil, post.hasFeaturedComment) }) {
-                        PublishedContentView(
-                            content: postContent, contentId: post.uuid, width: width,
-                            zoomableImageInfo: $zoomableImageInfo,
-                            childrenTapped: {
-                                let comment = postContent.liveMeasuresValue.aggregatedInfo.childCount == 0
-                                displayPostDetail(post.uuid, comment, true, nil, post.hasFeaturedComment) },
-                            reactionTapped: { reactionTapped($0, post.uuid) },
-                            commentReactionTapped: commentReactionTapped,
-                            voteOnPoll: { voteOnPoll($0, post.uuid) },
-                            displayClientObject: displayClientObject,
-                            displayPostDetail: { displayPostDetail(post.uuid, false, false, $0, post.hasFeaturedComment) },
-                            displayCommentDetail: displayCommentDetail,
-                            displayProfile: displayProfile,
-                            deleteComment: deleteComment,
-                            displayContentModeration: displayContentModeration
-                        )
-                    }
+                    PublishedContentView(
+                        content: postContent, contentId: post.uuid, width: width,
+                        zoomableImageInfo: $zoomableImageInfo,
+                        childrenTapped: {
+                            let comment = postContent.liveMeasuresValue.aggregatedInfo.childCount == 0
+                            displayPostDetail(post.uuid, comment, true, nil, post.hasFeaturedComment) },
+                        reactionTapped: { reactionTapped($0, post.uuid) },
+                        commentReactionTapped: commentReactionTapped,
+                        voteOnPoll: { voteOnPoll($0, post.uuid) },
+                        displayClientObject: displayClientObject,
+                        displayPostDetail: { displayPostDetail(post.uuid, false, false, $0, post.hasFeaturedComment) },
+                        displayCommentDetail: displayCommentDetail,
+                        displayProfile: displayProfile,
+                        deleteComment: deleteComment,
+                        displayContentModeration: displayContentModeration
+                    )
                 case let .moderated(reasons):
                     ModeratedPostContentView(reasons: reasons)
                 }
             }
-            .padding(.top, 16)
             .padding(.bottom, 8)
 
             theme.colors.gray300
                 .frame(height: 1)
         }
-        .id("post-\(post.uuid)")
+        .id("post-\(post.uuid)-\(groupedForAccessibility)")
+        .accessibilityElement(children: groupedForAccessibility ? .ignore : .contain)
+        .accessibilityLabelInBundle(groupedForAccessibility ? accessibilityDescription : nil)
+        .accessibilityAction(named: Text(groupedForAccessibility ? "Accessibility.Content.Action.ReadElements" : "Accessibility.Content.Action.ReadSummary", bundle: .module)) {
+            groupedForAccessibility.toggle()
+            refreshVoiceOverFocus(on: self)
+        }
+        .modify {
+            if let authorId = post.author.profileId {
+                $0.accessibilityAction(named: Text("Accessibility.Content.Action.ViewAuthor", bundle: .module)) {
+                    displayProfile(authorId)
+                }
+            } else { $0 }
+        }
+        .accessibilityAction(named: Text("Accessibility.Content.Action.OpenDetail", bundle: .module)) {
+            displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment)
+        }
         .actionSheet(isPresented: $openActions) {
             ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: actionSheetContent)
         }
@@ -182,6 +215,35 @@ struct PostSummaryView: View {
         case .moderated: []
         }
     }
+
+    var accessibilityDescription: LocalizedStringKey {
+        let authorName = post.author.name.localizedString
+        switch post.content {
+        case let .published(postContent):
+            let text = postContent.text.getText(translated: true)
+            var textToRead = "\(text)\(postContent.text.getIsEllipsized(translated: true) ? "..." : "")"
+            switch postContent.attachment {
+                case .image: return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+            case let .poll(poll):
+                let pollOptionsToRead = poll.options.enumerated()
+                    .map { index, pollOption in
+                        let indexToRead = L10n("Accessibility.Poll.IdxOption_index:%lld_count:%lld", index + 1, poll.options.count)
+                        let pollOptionToRead = pollOption.text.getText(translated: true)
+                        let isSelectedToRead = postContent.liveMeasuresValue.userInteractions.pollVoteId == pollOption.id ? L10n("Accessibility.Common.Selected") : ""
+                        return "\(indexToRead): \(pollOptionToRead)\(isSelectedToRead)"
+                    }
+                    .joined(separator: ", ")
+                textToRead = "\(textToRead), \(pollOptionsToRead)"
+                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+            case .none:
+                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+            }
+
+        case let .moderated(reasons):
+            let localizedReasons = reasons.map { $0.localizedString }.joined(separator: ", ")
+            return "Accessibility.Post.Summary.Moderated_author:\(authorName)_date:\(post.relativeDate)_reasons:\(localizedReasons)"
+        }
+    }
 }
 
 private struct PublishedContentView: View {
@@ -197,7 +259,7 @@ private struct PublishedContentView: View {
     let commentReactionTapped: (ReactionKind?, String) -> Void
     let voteOnPoll: (String) -> Bool
     let displayClientObject: ((String) -> Void)?
-    let displayPostDetail: (_ scrollTo: String) -> Void
+    let displayPostDetail: (_ scrollTo: String?) -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let deleteComment: (String) -> Void
@@ -210,27 +272,51 @@ private struct PublishedContentView: View {
     var displayTranslation: Bool { translationStore.displayTranslation(for: contentId) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Group {
-                if content.text.getIsEllipsized(translated: displayTranslation) {
-                    Text(verbatim: "\(content.text.getText(translated: displayTranslation))... ")
-                    +
-                    Text("Common.ReadMore", bundle: .module)
-                        .bold()
-                } else {
-                    Text(content.text.getText(translated: displayTranslation))
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: { displayPostDetail(nil) }) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Spacer().frame(height: 8)
+                    if let catchPhrase = content.bridgeInfo?.catchPhrase {
+                        Text(catchPhrase.getText(translated: displayTranslation))
+                            .font(theme.fonts.body2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(theme.colors.gray900)
+                        Spacer().frame(height: 4)
+                    }
+                    if content.text.getIsEllipsized(translated: displayTranslation) {
+                        Text(verbatim: "\(content.text.getText(translated: displayTranslation))... ")
+                        +
+                        Text("Common.ReadMore", bundle: .module)
+                            .fontWeight(.medium)
+                            .foregroundColor(theme.colors.gray500)
+                    } else {
+                        Text(content.text.getText(translated: displayTranslation))
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .multilineTextAlignment(.leading)
+                .modify {
+                    if !content.text.hasTranslation && content.attachment != nil {
+                        $0.padding(.bottom, 4)
+                    } else { $0 }
+                }
+                .contentShape(Rectangle())
             }
             .font(theme.fonts.body2)
             .foregroundColor(theme.colors.gray900)
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
             .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, horizontalPadding)
+            .accessibilityElement(children: .combine)
+            .modify {
+                if #available(iOS 14.0, *) {
+                    $0.accessibilityHintInBundle("Accessibility.Post.List.OpenDetail.Hint")
+                } else { $0 }
+            }
 
             if !hasPoll && content.text.hasTranslation {
                 ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage)
                     .padding(.horizontal, horizontalPadding)
-                    .padding(.top, -2)
             }
 
             switch content.attachment {
@@ -249,6 +335,7 @@ private struct PublishedContentView: View {
                         Image(uiImage: cachedImage.ratioImage)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: .infinity)
                             .modify {
                                 if zoomableImageInfo?.url != image.url {
                                     $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
@@ -283,6 +370,7 @@ private struct PublishedContentView: View {
                                 }
                             }
                     })
+                .padding(.top, content.text.hasTranslation ? 0 : 4)
             case let .poll(poll):
                 PollView(poll: poll,
                          aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
@@ -290,54 +378,88 @@ private struct PublishedContentView: View {
                          parentId: contentId,
                          vote: voteOnPoll)
                 .padding(.horizontal, horizontalPadding)
+                .padding(.top, 4)
 
                 if content.text.hasTranslation {
                     ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage)
                         .padding(.horizontal, horizontalPadding)
-                        .padding(.top, -2)
                 }
             case .none:
                 EmptyView()
             }
 
-            if let bridgeCTA = content.bridgeCTA, let displayClientObject {
+            if let bridgeInfo = content.bridgeInfo, let ctaText = bridgeInfo.ctaText, let displayClientObject {
                 HStack {
                     Spacer()
-                    Button(action: { displayClientObject(bridgeCTA.clientObjectId) }) {
-                        Text(bridgeCTA.text)
+                    Button(action: { displayClientObject(bridgeInfo.objectId) }) {
+                        Text(ctaText.getText(translated: displayTranslation))
                             .lineLimit(1)
                     }
-                    .buttonStyle(OctopusButtonStyle(.mid))
+                    .buttonStyle(OctopusButtonStyle(.mid, externalTopPadding: 10))
                     Spacer()
                 }
                 .padding(.horizontal, horizontalPadding)
             }
 
-            HStack {
-                PostAggregatedInfoView(
-                    aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
-                    childrenTapped: childrenTapped)
-                .layoutPriority(1)
-                Spacer()
-
-            }
+            PostAggregatedInfoView(
+                aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
+                childrenTapped: childrenTapped)
             .padding(.horizontal, horizontalPadding)
-            .padding(.bottom, 3)
 
-            HStack(spacing: 16) {
-                ReactionsPickerView(
-                    contentId: contentId,
-                    userReaction: liveMeasures?.userInteractions.reaction ?? content.liveMeasuresValue.userInteractions.reaction,
-                    reactionTapped: reactionTapped)
+            AdaptiveAccessibleStack2Contents(
+                hStackSpacing: 16,
+                vStackSpacing: 0,
+                horizontalContent: {
+                    ReactionsPickerView(
+                        contentId: contentId,
+                        userReaction: liveMeasures?.userInteractions.reaction ?? content.liveMeasuresValue.userInteractions.reaction,
+                        reactionTapped: reactionTapped)
 
-                Spacer()
+                    Spacer()
 
-                Button(action: childrenTapped) {
-                    CreateChildInteractionView(image: .AggregatedInfo.comment, text: "Content.AggregatedInfo.Comment")
+                    if !UIAccessibility.isVoiceOverRunning {
+                        Button(action: childrenTapped) {
+                            CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                                       text: "Content.AggregatedInfo.Comment",
+                                                       kind: .comment)
+                        }
+                        .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 6))
+                    }
+                },
+                verticalContent: {
+                    ReactionsPickerView(
+                        contentId: contentId,
+                        userReaction: liveMeasures?.userInteractions.reaction ?? content.liveMeasuresValue.userInteractions.reaction,
+                        reactionTapped: reactionTapped)
+
+                    if !UIAccessibility.isVoiceOverRunning {
+                        HStack(spacing: 0) {
+                            Spacer()
+                            Button(action: childrenTapped) {
+                                CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                                           text: "Content.AggregatedInfo.Comment",
+                                                           kind: .comment)
+                            }
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 6))
+                            Spacer()
+                        }
+                    }
+                })
+            .padding(.horizontal, horizontalPadding)
+
+            if UIAccessibility.isVoiceOverRunning {
+                HStack(spacing: 0) {
+                    Spacer()
+                    Button(action: childrenTapped) {
+                        CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                                   text: "Content.AggregatedInfo.Comment",
+                                                   kind: .comment)
+                    }
+                    .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 6))
+                    Spacer()
                 }
-                .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
+                .padding(.horizontal, horizontalPadding)
             }
-            .padding(.horizontal, horizontalPadding)
 
             if let featuredComment = content.featuredComment {
                 ResponseFeedItemView(
@@ -354,7 +476,6 @@ private struct PublishedContentView: View {
                 )
                 .padding(.horizontal, horizontalPadding)
                 .padding(.top, 8)
-                .padding(.bottom, -16)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -380,19 +501,19 @@ private struct ModeratedPostContentView: View {
     let reasons: [DisplayableString]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Group {
-                Text("Post.List.ModeratedPost.MainText", bundle: .module)
-                    .font(theme.fonts.body2)
-                    .fontWeight(.semibold)
-                    .multilineTextAlignment(.leading)
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 8)
+            Text("Post.List.ModeratedPost.MainText", bundle: .module)
+                .font(theme.fonts.body2)
+                .fontWeight(.semibold)
+                .multilineTextAlignment(.leading)
 
-                Group {
-                    Text("Post.List.ModeratedPost.Reason", bundle: .module) + reasons.textView
-                }.font(theme.fonts.caption1)
-            }
-            .padding(.horizontal, 16)
+            Spacer().frame(height: 8)
+
+            Text("Post.List.ModeratedPost.Reason_reasons:\(reasons.map { $0.localizedString }.joined(separator: ", "))", bundle: .module)
+                .font(theme.fonts.caption1)
         }
+        .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .multilineTextAlignment(.leading)
     }
@@ -435,4 +556,277 @@ private extension View {
                 }
             }
     }
+}
+
+import Combine
+#Preview("Text only") {
+    PostSummaryView(
+        post: DisplayablePost(
+            uuid: "postUuid",
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "3d ago",
+            topic: "Help",
+            canBeDeleted: false,
+            canBeModerated: true,
+            canBeOpened: true,
+            content: .published(.init(
+                text: .init(
+                    originalText: "Un texte",
+                    originalLanguage: "fr",
+                    translatedText: "A text"),
+                attachment: nil,
+                bridgeInfo: nil,
+                featuredComment: nil,
+                liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                    aggregatedInfo: .init(reactions: [
+                        .init(reactionKind: .heart, count: 10),
+                        .init(reactionKind: .clap, count: 5),
+                    ], childCount: 5, viewCount: 4, pollResult: nil),
+                    userInteractions: .empty)))),
+            displayEvents: .init(onAppear: {}, onDisappear: {})),
+        width: 0,
+        zoomableImageInfo: .constant(nil),
+        displayPostDetail: { _, _, _, _, _ in },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        deletePost: { _ in },
+        deleteComment: { _ in },
+        reactionTapped: { _, _ in },
+        commentReactionTapped: { _, _ in },
+        voteOnPoll: { _, _ in false },
+        displayContentModeration: { _ in },
+        displayClientObject: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Text and Image") {
+    PostSummaryView(
+        post: DisplayablePost(
+            uuid: "postUuid",
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "3d ago",
+            topic: "Help",
+            canBeDeleted: false,
+            canBeModerated: true,
+            canBeOpened: true,
+            content: .published(.init(
+                text: .init(
+                    originalText: "Un texte",
+                    originalLanguage: "fr",
+                    translatedText: "A text"),
+                attachment: .image(.init(
+                    url: URL(string: "https://picsum.photos/700/750")!,
+                    size: CGSize(width: 700, height: 750))),
+                bridgeInfo: nil,
+                featuredComment: nil,
+                liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                    aggregatedInfo: .init(reactions: [
+                        .init(reactionKind: .heart, count: 10),
+                        .init(reactionKind: .clap, count: 5),
+                    ], childCount: 5, viewCount: 4, pollResult: nil),
+                    userInteractions: .empty)))),
+            displayEvents: .init(onAppear: {}, onDisappear: {})),
+        width: 0,
+        zoomableImageInfo: .constant(nil),
+        displayPostDetail: { _, _, _, _, _ in },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        deletePost: { _ in },
+        deleteComment: { _ in },
+        reactionTapped: { _, _ in },
+        commentReactionTapped: { _, _ in },
+        voteOnPoll: { _, _ in false },
+        displayContentModeration: { _ in },
+        displayClientObject: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Text and Poll") {
+    PostSummaryView(
+        post: DisplayablePost(
+            uuid: "postUuid",
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "3d ago",
+            topic: "Help",
+            canBeDeleted: false,
+            canBeModerated: true,
+            canBeOpened: true,
+            content: .published(.init(
+                text: .init(
+                    originalText: "Un texte\navec retour à la ligne",
+                    originalLanguage: "fr",
+                    translatedText: "A text\nwith a line break"),
+                attachment: .poll(
+                    DisplayablePoll(options: [
+                        .init(id: "1", text: .init(
+                            originalText: "Option 1",
+                            originalLanguage: "fr",
+                            translatedText: "Option 1")),
+                        .init(id: "2", text: .init(
+                            originalText: "Option 2",
+                            originalLanguage: "fr",
+                            translatedText: "Option 2"))
+                    ])
+                ),
+                bridgeInfo: nil,
+                featuredComment: nil,
+                liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                    aggregatedInfo: .init(reactions: [
+                        .init(reactionKind: .heart, count: 10),
+                        .init(reactionKind: .clap, count: 5),
+                    ], childCount: 5, viewCount: 4, pollResult: nil),
+                    userInteractions: .empty)))),
+            displayEvents: .init(onAppear: {}, onDisappear: {})),
+        width: 0,
+        zoomableImageInfo: .constant(nil),
+        displayPostDetail: { _, _, _, _, _ in },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        deletePost: { _ in },
+        deleteComment: { _ in },
+        reactionTapped: { _, _ in },
+        commentReactionTapped: { _, _ in },
+        voteOnPoll: { _, _ in false },
+        displayContentModeration: { _ in },
+        displayClientObject: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Text no translation") {
+    PostSummaryView(
+        post: DisplayablePost(
+            uuid: "postUuid",
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "3d ago",
+            topic: "Help",
+            canBeDeleted: false,
+            canBeModerated: true,
+            canBeOpened: true,
+            content: .published(.init(
+                text: .init(
+                    originalText: "Un texte\navec retour à la ligne",
+                    originalLanguage: nil),
+                attachment: .image(.init(
+                    url: URL(string: "https://picsum.photos/700/750")!,
+                    size: CGSize(width: 700, height: 750))),
+                bridgeInfo: nil,
+                featuredComment: nil,
+                liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                    aggregatedInfo: .init(reactions: [
+                        .init(reactionKind: .heart, count: 10),
+                        .init(reactionKind: .clap, count: 5),
+                    ], childCount: 5, viewCount: 4, pollResult: nil),
+                    userInteractions: .empty)))),
+            displayEvents: .init(onAppear: {}, onDisappear: {})),
+        width: 0,
+        zoomableImageInfo: .constant(nil),
+        displayPostDetail: { _, _, _, _, _ in },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        deletePost: { _ in },
+        deleteComment: { _ in },
+        reactionTapped: { _, _ in },
+        commentReactionTapped: { _, _ in },
+        voteOnPoll: { _, _ in false },
+        displayContentModeration: { _ in },
+        displayClientObject: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Bridge with Text and Image") {
+    let ctaText = TranslatableText(
+        originalText: "Voir",
+        originalLanguage: "fr",
+        translatedText: "View")
+    PostSummaryView(
+        post: DisplayablePost(
+            uuid: "postUuid",
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "3d ago",
+            topic: "Help",
+            canBeDeleted: false,
+            canBeModerated: true,
+            canBeOpened: true,
+            content: .published(.init(
+                text: .init(
+                    originalText: "Un texte",
+                    originalLanguage: "fr",
+                    translatedText: "A text"),
+                attachment: .image(.init(
+                    url: URL(string: "https://picsum.photos/700/750")!,
+                    size: CGSize(width: 700, height: 750))),
+                bridgeInfo: .init(
+                    objectId: "clientObjectId",
+                    catchPhrase: .init(
+                        originalText: "Qu'en pensez vous ?",
+                        originalLanguage: "fr",
+                        translatedText: "What do you think?"),
+                    ctaText: ctaText
+                ),
+                featuredComment: nil,
+                liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                    aggregatedInfo: .init(reactions: [
+                        .init(reactionKind: .heart, count: 10),
+                        .init(reactionKind: .clap, count: 5),
+                    ], childCount: 5, viewCount: 4, pollResult: nil),
+                    userInteractions: .empty)))),
+            displayEvents: .init(onAppear: {}, onDisappear: {})),
+        width: 0,
+        zoomableImageInfo: .constant(nil),
+        displayPostDetail: { _, _, _, _, _ in },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        deletePost: { _ in },
+        deleteComment: { _ in },
+        reactionTapped: { _, _ in },
+        commentReactionTapped: { _, _ in },
+        voteOnPoll: { _, _ in false },
+        displayContentModeration: { _ in },
+        displayClientObject: { _ in })
+    .mockContentTranslationPreferenceStore()
 }

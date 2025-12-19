@@ -13,13 +13,18 @@ struct DisplayablePost: Equatable {
     }
 
     struct PostContent: Equatable {
+        struct BridgeInfo: Equatable {
+            public let objectId: String
+            public let catchPhrase: TranslatableText?
+            public let ctaText: TranslatableText?
+        }
         enum Attachment: Equatable {
             case image(ImageMedia)
             case poll(DisplayablePoll)
         }
         let text: EllipsizableTranslatedText
         let attachment: Attachment?
-        let bridgeCTA: (text: String, clientObjectId: String)?
+        let bridgeInfo: BridgeInfo?
         fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
         var liveMeasures: AnyPublisher<LiveMeasures, Never> {
             _liveMeasuresPublisher.removeDuplicates().eraseToAnyPublisher()
@@ -31,12 +36,12 @@ struct DisplayablePost: Equatable {
         let featuredComment: DisplayableFeedResponse?
 
         init(text: TranslatableText, attachment: Attachment?,
-             bridgeCTA: (text: String, clientObjectId: String)?,
+             bridgeInfo: BridgeInfo?,
              featuredComment: DisplayableFeedResponse?,
              liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
             self.text = EllipsizableTranslatedText(text: text)
             self.attachment = attachment
-            self.bridgeCTA = bridgeCTA
+            self.bridgeInfo = bridgeInfo
             self.featuredComment = featuredComment
             self._liveMeasuresPublisher = liveMeasuresPublisher
         }
@@ -44,8 +49,7 @@ struct DisplayablePost: Equatable {
         static func == (lhs: DisplayablePost.PostContent, rhs: DisplayablePost.PostContent) -> Bool {
             return lhs.text == rhs.text &&
             lhs.attachment == rhs.attachment &&
-            lhs.bridgeCTA?.text == rhs.bridgeCTA?.text &&
-            lhs.bridgeCTA?.clientObjectId == rhs.bridgeCTA?.clientObjectId &&
+            lhs.bridgeInfo == rhs.bridgeInfo &&
             lhs.featuredComment == rhs.featuredComment
         }
     }
@@ -69,7 +73,9 @@ struct DisplayablePost: Equatable {
 }
 
 extension DisplayablePost {
-    init(from post: Post, liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>,
+    init(from post: Post,
+         gamificationLevels: [GamificationLevel],
+         liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>,
          childLiveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>?,
          thisUserProfileId: String?, topic: Topic?, dateFormatter: RelativeDateTimeFormatter,
          onAppear: @escaping () -> Void, onDisappear: @escaping () -> Void) {
@@ -79,17 +85,15 @@ extension DisplayablePost {
         case .published, .other:
             canBeOpened = true
 
-            let bridgeCTA: (text: String, clientObjectId: String)? = if let bridgeInfo = post.clientObjectBridgeInfo,
-                                                                        let ctaText = bridgeInfo.ctaText {
-                (text: ctaText.originalText, clientObjectId: bridgeInfo.objectId)
-            } else {
-                nil
+            let bridgeInfo = post.clientObjectBridgeInfo.map {
+                PostContent.BridgeInfo(objectId: $0.objectId, catchPhrase: $0.catchPhrase, ctaText: $0.ctaText)
             }
 
             let featuredComment: DisplayableFeedResponse?
             if let comment = post.featuredComment, let childLiveMeasuresPublisher {
                 featuredComment = DisplayableFeedResponse(
                     from: comment,
+                    gamificationLevels: gamificationLevels,
                     ellipsizeText: true,
                     liveMeasurePublisher: childLiveMeasuresPublisher,
                     thisUserProfileId: thisUserProfileId,
@@ -104,7 +108,7 @@ extension DisplayablePost {
             content = .published(PostContent(
                 text: post.text,
                 attachment: PostContent.Attachment(from: post),
-                bridgeCTA: bridgeCTA,
+                bridgeInfo: bridgeInfo,
                 featuredComment: featuredComment,
                 liveMeasuresPublisher: liveMeasuresPublisher)
             )
@@ -116,7 +120,10 @@ extension DisplayablePost {
             canBeDeleted = false
             canBeModerated = false
         }
-        author = .init(profile: post.author)
+        author = .init(
+            profile: post.author,
+            gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
+        )
         relativeDate = dateFormatter.customLocalizedStructure(for: post.creationDate, relativeTo: Date())
         self.topic = topic?.name ?? ""
 

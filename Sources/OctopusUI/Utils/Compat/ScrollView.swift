@@ -14,6 +14,7 @@ extension Compat {
         @Binding var scrollToId: String?
         let idAnchor: UnitPoint?
         let preventScrollIfContentFits: Bool
+        let canScrollToExtremities: Bool
         @State private var refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
 
@@ -24,6 +25,7 @@ extension Compat {
              scrollToId: Binding<String?> = .constant(nil),
              idAnchor: UnitPoint? = nil,
              preventScrollIfContentFits: Bool = true,
+             canScrollToExtremities: Bool = true,
              refreshAction: (@Sendable () async -> Void)? = nil,
              minTime: TimeInterval = 0.75,
              @ViewBuilder content: () -> Content) {
@@ -34,6 +36,7 @@ extension Compat {
             self._scrollToId = scrollToId
             self.idAnchor = idAnchor
             self.preventScrollIfContentFits = preventScrollIfContentFits
+            self.canScrollToExtremities = canScrollToExtremities
             if let refreshAction {
                 self._refreshAction = State(initialValue: {
                     let refreshTask = Task { await refreshAction() }
@@ -59,6 +62,7 @@ extension Compat {
                     scrollToBottom: $scrollToBottom,
                     scrollToId: $scrollToId,
                     idAnchor: idAnchor,
+                    canScrollToExtremities: canScrollToExtremities,
                     refreshAction: refreshAction) {
                         content
                     }
@@ -76,6 +80,7 @@ extension Compat {
                                 scrollToBottom: $scrollToBottom,
                                 scrollToId: $scrollToId,
                                 idAnchor: idAnchor,
+                                canScrollToExtremities: canScrollToExtremities,
                                 refreshAction: refreshAction) {
                     content
                 }
@@ -97,6 +102,7 @@ extension Compat {
         @Binding var scrollToBottom: Bool
         @Binding var scrollToId: String?
         let idAnchor: UnitPoint?
+        let canScrollToExtremities: Bool
         let refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
 
@@ -106,13 +112,23 @@ extension Compat {
         var body: some View {
             ScrollViewReader { reader in
                 SwiftUI.ScrollView(axes, showsIndicators: showIndicators) {
-                    Color.white.opacity(0.0001)
-                        .frame(height: 1)
-                        .id(topId)
-                    content
-                    Color.white.opacity(0.0001)
-                        .frame(height: 1)
-                        .id(bottomId)
+                    // TODO Djavan: the caller should implement this instead of doing it here because it creates an
+                    // implicit VStack
+                    if canScrollToExtremities {
+                        VStack(spacing: 0) {
+                            Color.white.opacity(0.0001)
+                                .frame(height: 1)
+                                .id(topId)
+
+                            content
+
+                            Color.white.opacity(0.0001)
+                                .frame(height: 1)
+                                .id(bottomId)
+                        }
+                    } else {
+                        content
+                    }
                 }
                 .modify {
                     if let refreshAction {
@@ -156,6 +172,7 @@ extension Compat {
         @Binding var scrollToBottom: Bool
         @Binding var scrollToId: String?
         let idAnchor: UnitPoint?
+        let canScrollToExtremities: Bool
         let refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
 
@@ -178,16 +195,22 @@ extension Compat {
                     }
                     ScrollViewReader { reader in
                         SwiftUI.ScrollView(axes, showsIndicators: showIndicators) {
-                            Color(UIColor.systemBackground)
-                                .frame(height: 1)
-                                .id(topId)
+                            // TODO Djavan: the caller should implement this instead of doing it here because it creates an
+                            // implicit VStack
+                            if canScrollToExtremities {
+                                Color(UIColor.systemBackground)
+                                    .frame(height: 1)
+                                    .id(topId)
+                            }
                             content
                                 .anchorPreference(key: OffsetPreferenceKey.self, value: .top) {
                                     geometry[$0].y
                                 }
-                            Color(UIColor.systemBackground)
-                                .frame(height: 1)
-                                .id(bottomId)
+                            if canScrollToExtremities {
+                                Color(UIColor.systemBackground)
+                                    .frame(height: 1)
+                                    .id(bottomId)
+                            }
                         }
                         .onChange(of: scrollToTop) {
                             guard $0 else { return }

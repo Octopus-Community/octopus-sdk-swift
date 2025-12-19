@@ -17,12 +17,16 @@ struct Author: Equatable {
     let profileId: String?
     let avatar: Avatar
     let name: DisplayableString
+    let tags: ProfileTags
+    let gamificationLevel: GamificationLevel?
 
-    init(profile: MinimalProfile?) {
+    init(profile: MinimalProfile?, gamificationLevel: GamificationLevel?) {
         guard let profile else {
             profileId = nil
             name = .localizationKey("Author.Deleted")
             avatar = .notConnected
+            tags = []
+            self.gamificationLevel = nil
             return
         }
         profileId = profile.uuid
@@ -32,12 +36,8 @@ struct Author: Equatable {
         } else {
             avatar = .defaultImage(name: profile.nickname)
         }
-    }
-
-    init(avatar: Avatar, name: String, profileId: String) {
-        self.profileId = profileId
-        self.avatar = avatar
-        self.name = .localizedString(name)
+        tags = profile.tags
+        self.gamificationLevel = gamificationLevel
     }
 }
 
@@ -48,22 +48,9 @@ struct AuthorAvatarView: View {
     @State private var width: CGFloat = 0
 
     var body: some View {
-        switch avatar {
-        case let .defaultImage(name):
-            Text(name.initials)
-                .bold()
-                .lineLimit(1)
-                .foregroundColor(.black)
-                .font(.system(size: 100))
-                .minimumScaleFactor(0.01)
-                .padding(8)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(
-                    Circle()
-                        .foregroundColor(name.avatarColor)
-                )
-        case let .image(url, name):
-            AsyncCachedImage(url: url, cache: .profile, placeholder: {
+        Group {
+            switch avatar {
+            case let .defaultImage(name):
                 Text(name.initials)
                     .bold()
                     .lineLimit(1)
@@ -75,32 +62,42 @@ struct AuthorAvatarView: View {
                     .background(
                         Circle()
                             .foregroundColor(name.avatarColor)
+                            .padding(1)
+                            .background(
+                                Circle()
+                                    .fill(theme.colors.gray300)
+                            )
                     )
-            }, content: { cachedImage in
-                Image(uiImage: cachedImage.fullSizeImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            })
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .mask(Circle())
-        case let .localImage(image):
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
+            case let .image(url, name):
+                AsyncCachedImage(url: url, cache: .profile, placeholder: {
+                    AuthorAvatarView(avatar: .defaultImage(name: name))
+                }, content: { cachedImage in
+                    Image(uiImage: cachedImage.fullSizeImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                })
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .mask(Circle())
-        case .notConnected, .none:
-            Image(systemName: "person")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .padding(max(width * 0.24, 4))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(
-                    Circle()
-                        .foregroundColor(theme.colors.gray200)
-                )
-                .readWidth($width)
+            case let .localImage(image):
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .mask(Circle())
+            case .notConnected, .none:
+                Image(systemName: "person")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .padding(max(width * 0.24, 4))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(
+                        Circle()
+                            .foregroundColor(theme.colors.gray200)
+                    )
+                    .readWidth($width)
+            }
         }
+        .accessibilityLabelInBundle("Accessibility.Profile.Picture")
     }
 }
 

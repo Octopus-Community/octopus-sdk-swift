@@ -63,6 +63,7 @@ struct PostListView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+        .toastContainer(octopus: viewModel.octopus)
         .modify {
             if #available(iOS 15.0, *) {
                 $0.safeAreaInset(edge: .bottom, content: {
@@ -76,6 +77,7 @@ struct PostListView: View {
                         actionTapped: {
                             navigator.push(.createPost(withPoll: false))
                         })
+                    .accessibilitySortPriority(1)
                 })
             } else {
                 $0.overlay(

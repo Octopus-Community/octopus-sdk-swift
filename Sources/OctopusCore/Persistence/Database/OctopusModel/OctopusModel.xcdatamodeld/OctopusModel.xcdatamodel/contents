@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="24G90" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24411" systemVersion="24G90" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BlockedUser" representedClassName="BlockedUserEntity" syncable="YES">
         <attribute name="profileId" optional="YES" attributeType="String"/>
         <relationship name="blockedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PrivateProfile" inverseName="blocking" inverseEntity="PrivateProfile"/>
@@ -43,9 +43,15 @@
     </entity>
     <entity name="MinimalProfile" representedClassName="MinimalProfileEntity" syncable="YES">
         <attribute name="avatarUrl" optional="YES" attributeType="URI"/>
+        <attribute name="gamificationLevel" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="nickname" optional="YES" attributeType="String"/>
         <attribute name="profileId" optional="YES" attributeType="String"/>
+        <attribute name="tagsRawValue" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="isAuthorOf" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="OctoObject" inverseName="author" inverseEntity="OctoObject"/>
         <relationship name="producedNotif" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Notification" inverseName="thumbnailsRelationship" inverseEntity="Notification"/>
+        <fetchIndex name="byProfileId">
+            <fetchIndexElement property="profileId" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <entity name="Notification" representedClassName="NotificationEntity" syncable="YES">
         <attribute name="isRead" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -78,6 +84,7 @@
         <attribute name="userReactionKind" optional="YES" attributeType="String"/>
         <attribute name="uuid" attributeType="String"/>
         <attribute name="viewCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="author" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MinimalProfile" inverseName="isAuthorOf" inverseEntity="MinimalProfile"/>
         <relationship name="pollOptionResultsRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="PollOptionResult" inverseName="resultFor" inverseEntity="PollOptionResult"/>
         <relationship name="reactionsRelationship" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="ContentReaction" inverseName="reactionFor" inverseEntity="ContentReaction"/>
         <fetchIndex name="byParentId">
@@ -111,10 +118,13 @@
         </fetchIndex>
     </entity>
     <entity name="PrivateProfile" representedClassName="PrivateProfileEntity" syncable="YES">
+        <attribute name="accountCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="ascPostFeedId" attributeType="String"/>
         <attribute name="bio" optional="YES" attributeType="String"/>
         <attribute name="descPostFeedId" attributeType="String"/>
         <attribute name="email" optional="YES" attributeType="String"/>
+        <attribute name="gamificationLevelOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
+        <attribute name="gamificationScoreOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
         <attribute name="hasAcceptedCguOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
         <attribute name="hasConfirmedBioOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
         <attribute name="hasConfirmedNicknameOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
@@ -126,6 +136,8 @@
         <attribute name="originalNickname" optional="YES" attributeType="String"/>
         <attribute name="pictureUrl" optional="YES" attributeType="URI"/>
         <attribute name="profileId" attributeType="String"/>
+        <attribute name="tagsRawValue" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalMessagesOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
         <attribute name="userId" attributeType="String"/>
         <relationship name="blocking" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="BlockedUser" inverseName="blockedBy" inverseEntity="BlockedUser"/>
         <fetchIndex name="byId">
@@ -133,12 +145,16 @@
         </fetchIndex>
     </entity>
     <entity name="PublicProfile" representedClassName="PublicProfileEntity" syncable="YES">
+        <attribute name="accountCreationDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="ascPostFeedId" attributeType="String"/>
         <attribute name="bio" optional="YES" attributeType="String"/>
         <attribute name="descPostFeedId" attributeType="String"/>
+        <attribute name="gamificationLevelOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
         <attribute name="nickname" optional="YES" attributeType="String"/>
         <attribute name="pictureUrl" optional="YES" attributeType="URI"/>
         <attribute name="profileId" attributeType="String"/>
+        <attribute name="tagsRawValue" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalMessagesOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
     </entity>
     <entity name="Reply" representedClassName="ReplyEntity" parentEntity="OctoObject" syncable="YES">
         <attribute name="originalLanguage" optional="YES" attributeType="String"/>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24411" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CommunityConfig" representedClassName="CommunityConfigEntity" syncable="YES">
+        <attribute name="displayAccountAge" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="forceLoginOnStrongActions" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <relationship name="gamificationConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="GamificationConfig" inverseName="belongsTo" inverseEntity="GamificationConfig"/>
+    </entity>
+    <entity name="GamificationConfig" representedClassName="GamificationConfigEntity" syncable="YES">
+        <attribute name="abbrevPointPlural" attributeType="String"/>
+        <attribute name="abbrevPointSingular" attributeType="String"/>
+        <attribute name="commentOnYourPostPts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="commentPts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="completeProfilePts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="loginPts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="pointsName" attributeType="String"/>
+        <attribute name="postPts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="reactPts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="replyPts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <attribute name="votePts" optional="YES" attributeType="Integer 64" defaultValueString="-1" usesScalarValueType="YES"/>
+        <relationship name="belongsTo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CommunityConfig" inverseName="gamificationConfig" inverseEntity="CommunityConfig"/>
+        <relationship name="gamificationLevelsRelationship" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="GamificationLevel" inverseName="isLevelOf" inverseEntity="GamificationLevel"/>
+    </entity>
+    <entity name="GamificationLevel" representedClassName="GamificationLevelEntity" syncable="YES">
+        <attribute name="badgeDarkColorHex" optional="YES" attributeType="String"/>
+        <attribute name="badgeLightColorHex" optional="YES" attributeType="String"/>
+        <attribute name="badgeTextDarkColorHex" optional="YES" attributeType="String"/>
+        <attribute name="badgeTextLightColorHex" optional="YES" attributeType="String"/>
+        <attribute name="level" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="nextLevelAtOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
+        <relationship name="isLevelOf" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="GamificationConfig" inverseName="gamificationLevelsRelationship" inverseEntity="GamificationConfig"/>
+    </entity>
+    <entity name="UserConfig" representedClassName="UserConfigEntity" syncable="YES">
+        <attribute name="accessDeniedMessage" optional="YES" attributeType="String"/>
+        <attribute name="canAccessCommunityOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
+    </entity>
+</model>

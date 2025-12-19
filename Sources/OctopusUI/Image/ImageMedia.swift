@@ -14,4 +14,9 @@ struct ImageMedia: Equatable {
         url = media.url
         size = media.size
     }
+
+    init(url: URL, size: CGSize) {
+        self.url = url
+        self.size = size
+    }
 }

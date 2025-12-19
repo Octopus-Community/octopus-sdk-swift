@@ -23,8 +23,9 @@ struct ToggleTextTranslationButton: View {
             .font(theme.fonts.caption1)
             .fontWeight(.medium)
             .foregroundColor(theme.colors.gray700)
+            .contentShape(Rectangle())
         }
-        .contentShape(Rectangle())
+        .padding(.vertical, 8)
     }
 
     var localizedKey: LocalizedStringKey {

@@ -22,6 +22,8 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
     private let remoteClient: OctopusRemoteClient
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
+    private let toastsRepository: ToastsRepository
+    private let sdkEventsEmitter: SdkEventsEmitter
 
     private var latestClientUserSent: ClientUser?
     private var sameClientUserSendingCount = 0
@@ -31,6 +33,8 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
     }
 
     func updateProfileWithClientUser(_ clientUser: ClientUser, profile: CurrentUserProfile, userId: String)
@@ -165,6 +169,13 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
                 authenticationMethod: try authCallProvider.authenticatedMethod())
             switch response.result {
             case let .success(content):
+                if content.hasShouldDisplayProfileCompletedGamificationToast,
+                   content.shouldDisplayProfileCompletedGamificationToast {
+                    toastsRepository.display(gamificationToast: .profileCompleted)
+                }
+
+                sdkEventsEmitter.emit(.profileUpdated)
+
                 return StorableCurrentUserProfile(from: content.profile, userId: userId)
 
             case let .fail(failure):

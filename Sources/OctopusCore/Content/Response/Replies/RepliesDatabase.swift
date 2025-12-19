@@ -25,7 +25,8 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
 
     func repliesPublisher(ids: [String]) -> AnyPublisher<[StorableReply], Error> {
         return context
-            .publisher(request: ReplyEntity.fetchAllByIds(ids: ids)) {
+            .publisher(request: ReplyEntity.fetchAllByIds(ids: ids),
+                       relatedTypes: [MinimalProfileEntity.self]) {
                 $0.map { StorableReply(from: $0) }
                     .sorted { reply1, reply2 in
                         guard let index1 = ids.firstIndex(of: reply1.uuid),
@@ -70,7 +71,7 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
                 } else {
                     replyEntity = ReplyEntity(context: context)
                 }
-                replyEntity.fill(with: reply, context: context)
+                try replyEntity.fill(with: reply, context: context)
             }
             
             try context.save()

@@ -29,8 +29,8 @@ class PostEntity: OctoObjectEntity {
         return pollOptions.removingDuplicates(by: \.uuid)
     }
 
-    func fill(with post: StorablePost, context: NSManagedObjectContext) {
-        super.fill(with: post, context: context)
+    func fill(with post: StorablePost, context: NSManagedObjectContext) throws {
+        try super.fill(with: post, context: context)
         text = post.text.originalText
         translatedText = post.text.translatedText
         originalLanguage = post.text.originalLanguage

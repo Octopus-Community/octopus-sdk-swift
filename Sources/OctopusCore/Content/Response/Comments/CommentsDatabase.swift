@@ -25,7 +25,8 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
 
     func commentPublisher(uuid: String) -> AnyPublisher<StorableComment?, Error> {
         (context
-            .publisher(request: CommentEntity.fetchById(id: uuid)) {
+            .publisher(request: CommentEntity.fetchById(id: uuid),
+                       relatedTypes: [MinimalProfileEntity.self]) {
                 guard let commentEntity = $0.first else { return [] }
                 return [StorableComment(from: commentEntity)]
             } as AnyPublisher<[StorableComment], Error>
@@ -82,7 +83,7 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
                 } else {
                     commentEntity = CommentEntity(context: context)
                 }
-                commentEntity.fill(with: comment, context: context)
+                try commentEntity.fill(with: comment, context: context)
             }
             
             try context.save()

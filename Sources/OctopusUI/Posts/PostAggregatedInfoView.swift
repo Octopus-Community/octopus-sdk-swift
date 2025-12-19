@@ -24,21 +24,22 @@ struct PostAggregatedInfoView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
+            HStack(spacing: 8) {
                 ReactionsSummary(reactions: aggregatedInfo.reactions, countPlacement: .trailing)
-                .buttonStyle(.plain)
                 Spacer()
                 if aggregatedInfo.childCount > 0 {
                     Button(action: childrenTapped) {
                         AggregateView(image: .AggregatedInfo.comment, count: aggregatedInfo.childCount)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabelInBundle("Accessibility.Comment.Count_count:\(aggregatedInfo.childCount)")
                 }
                 if aggregatedInfo.viewCount > 0 {
                     Button(action: { isShowingPopover = true }) {
                         AggregateView(image: .AggregatedInfo.view, count: aggregatedInfo.viewCount)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabelInBundle("Accessibility.View.Count_count:\(aggregatedInfo.viewCount)")
                     .modify {
                         if #available(iOS 16.4, *) {
                             $0.popover(isPresented: $isShowingPopover, arrowEdge: .bottom) {
@@ -69,21 +70,19 @@ private struct AggregateView: View {
     let count: Int
 
     var body: some View {
-        HStack(spacing: 4) {
-            // make sure the image has the same height as the text. To do that, use a squared font size based
-            // transparent image and put our image on overlay of this transparent image
-            Image(systemName: "square")
-                .font(theme.fonts.caption1)
-                .foregroundColor(Color.clear)
-                .overlay(
-                    Image(res: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .foregroundColor(theme.colors.gray700)
-                        .padding(-2) // make it slightly bigger
-                        .scaleEffect(1.0)
-                        .opacity(1.0)
-                )
+        HStack(spacing: 0) {
+            Image(res: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .foregroundColor(theme.colors.gray700)
+                .scaleEffect(0.95)
+                .accessibilityHidden(true)
+                .modify {
+                    if #unavailable(iOS 16.0) {
+                        // fix a weird bug on iOS 15 where the button is big when there is a tall image
+                        $0.frame(maxWidth: 30)
+                    } else { $0 }
+                }
             if count > 0 {
                 Text(String.formattedCount(count))
                     .font(theme.fonts.caption1)
@@ -96,6 +95,16 @@ private struct AggregateView: View {
                         }
                     }
                     .animation(.default, value: count)
+            }
+        }
+        .fixedSize(horizontal: true, vertical: false)
+        .padding(.vertical, 11)
+        .frame(minWidth: 44)
+        .modify {
+            if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+                $0.fixedSize()
+            } else {
+                $0
             }
         }
     }

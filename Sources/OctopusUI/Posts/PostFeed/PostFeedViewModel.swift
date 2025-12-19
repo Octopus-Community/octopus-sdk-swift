@@ -78,12 +78,15 @@ class PostFeedViewModel: ObservableObject {
             loadRemoteTopics()
         }.store(in: &storage)
 
-        Publishers.CombineLatest3(
+        Publishers.CombineLatest4(
             feed.$items.removeDuplicates(),
             octopus.core.topicsRepository.$topics,
-            octopus.core.profileRepository.profilePublisher.removeDuplicates()
+            octopus.core.profileRepository.profilePublisher.removeDuplicates(),
+            octopus.core.configRepository.communityConfigPublisher
+                .map { $0?.gamificationConfig?.gamificationLevels }
+                .removeDuplicates()
         )
-        .sink { [unowned self] posts, topics, profile in
+        .sink { [unowned self] posts, topics, profile, gamificationLevels in
             guard let posts else { return }
             let postCount = posts.count
             let newPosts = posts.enumerated().compactMap { idx, post -> DisplayablePost? in
@@ -135,7 +138,9 @@ class PostFeedViewModel: ObservableObject {
                 }
 
 
-                return DisplayablePost(from: post, liveMeasuresPublisher: liveMeasuresPublisher,
+                return DisplayablePost(from: post,
+                                       gamificationLevels: gamificationLevels ?? [],
+                                       liveMeasuresPublisher: liveMeasuresPublisher,
                                        childLiveMeasuresPublisher: childLiveMeasuresPublisher,
                                        thisUserProfileId: profile?.id, topic: topic,
                                        dateFormatter: relativeDateFormatter,

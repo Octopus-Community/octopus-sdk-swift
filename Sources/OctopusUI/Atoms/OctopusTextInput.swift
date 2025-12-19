@@ -12,9 +12,10 @@ struct OctopusTextInput: View {
     let placeholder: LocalizedStringKey
     let hint: LocalizedStringKey?
     let error: DisplayableString?
-    let lineLimit: Int?
+    let lineLimitValue: Int?
+    let lineLimitRange: PartialRangeFrom<Int>?
 
-    let isFocused: Bool
+    @Binding var isFocused: Bool
     let isDisabled: Bool
 
     let onCommit: (() -> Void)?
@@ -25,14 +26,16 @@ struct OctopusTextInput: View {
          hint: LocalizedStringKey? = nil,
          error: DisplayableString? = nil,
          lineLimit: Int? = 1,
-         isFocused: Bool, isDisabled: Bool = false, onCommit: (() -> Void)? = nil) {
+         lineLimitRange: PartialRangeFrom<Int>? = nil,
+         isFocused: Binding<Bool>, isDisabled: Bool = false, onCommit: (() -> Void)? = nil) {
         self._text = text
         self.label = label
         self.placeholder = placeholder
         self.hint = hint
         self.error = error
-        self.lineLimit = lineLimit
-        self.isFocused = isFocused
+        self.lineLimitValue = lineLimit
+        self.lineLimitRange = lineLimitRange
+        self._isFocused = isFocused
         self.isDisabled = isDisabled
         self.onCommit = onCommit
     }
@@ -41,7 +44,16 @@ struct OctopusTextInput: View {
         OctopusInput(
             label: label, hint: hint, error: error, isFocused: isFocused,
             isDisabled: isDisabled) {
-                OctopusTextField(text: $text, placeholder: placeholder, lineLimit: lineLimit, onCommit: onCommit)
+                OctopusTextField(
+                    text: $text,
+                    placeholder: placeholder,
+                    lineLimit: lineLimitValue,
+                    lineLimitRange: lineLimitRange,
+                    onCommit: onCommit
+                )
+                .padding(12)
+                .contentShape(Rectangle())
+                .onTapGesture { isFocused = true }
             }
     }
 }

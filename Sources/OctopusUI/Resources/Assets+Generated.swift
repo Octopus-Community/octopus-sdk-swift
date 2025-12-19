@@ -148,6 +148,10 @@ extension GenImageResource {
         static let off = GenImageResource(name: "CheckBox/off", bundle: resourceBundle)
         static let on = GenImageResource(name: "CheckBox/on", bundle: resourceBundle)
     }
+    enum Gamification {
+        static let badge = GenImageResource(name: "Gamification/badge", bundle: resourceBundle)
+        static let rulesHeader = GenImageResource(name: "Gamification/rulesHeader", bundle: resourceBundle)
+    }
     enum RadioButton {
         static let off = GenImageResource(name: "RadioButton/off", bundle: resourceBundle)
         static let on = GenImageResource(name: "RadioButton/on", bundle: resourceBundle)
@@ -243,6 +247,10 @@ extension UIKit.UIImage {
         enum CheckBox {
             static var off: UIKit.UIImage { .init(res: .CheckBox.off) }
             static var on: UIKit.UIImage { .init(res: .CheckBox.on) }
+        }
+        enum Gamification {
+            static var badge: UIKit.UIImage { .init(res: .Gamification.badge) }
+            static var rulesHeader: UIKit.UIImage { .init(res: .Gamification.rulesHeader) }
         }
         enum RadioButton {
             static var off: UIKit.UIImage { .init(res: .RadioButton.off) }

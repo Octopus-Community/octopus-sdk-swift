@@ -21,9 +21,9 @@ public struct TranslatableText: Equatable, Sendable {
     }
 
     public init(originalText: String, originalLanguage: String?, translatedText: String? = nil) {
-        self.originalText = originalText
+        self.originalText = originalText.trimmingCharacters(in: .whitespacesAndNewlines)
         self.originalLanguage = originalLanguage
-        self.translatedText = translatedText?.nilIfEmpty
+        self.translatedText = translatedText?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
     }
 
     public func getText(translated: Bool) -> String {

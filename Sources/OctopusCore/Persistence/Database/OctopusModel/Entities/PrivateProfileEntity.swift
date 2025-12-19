@@ -14,6 +14,14 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var email: String?
     @NSManaged public var bio: String?
     @NSManaged public var pictureUrl: URL?
+
+    @NSManaged public var tagsRawValue: Int
+
+    @NSManaged public var totalMessagesOptional: NSNumber?
+    @NSManaged public var accountCreationDate: Date?
+    @NSManaged public var gamificationLevelOptional: NSNumber?
+    @NSManaged public var gamificationScoreOptional: NSNumber?
+
     @NSManaged public var descPostFeedId: String
     @NSManaged public var ascPostFeedId: String
     @NSManaged public var notificationBadgeCount: Int
@@ -30,6 +38,10 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
     var hasConfirmedNickname: Bool? { hasConfirmedNicknameOptional?.boolValue }
     var hasConfirmedBio: Bool? { hasConfirmedBioOptional?.boolValue }
     var hasConfirmedPicture: Bool? { hasConfirmedPictureOptional?.boolValue }
+    var gamificationLevel: Int? { gamificationLevelOptional?.intValue }
+    var gamificationScore: Int? { gamificationScoreOptional?.intValue }
+    var totalMessages: Int? { totalMessagesOptional?.intValue }
+    var tags: ProfileTags { ProfileTags(rawValue: tagsRawValue) }
 
     var blockedProfileIds: [String] {
         (blocking.array as? [BlockedUserEntity] ?? []).map { $0.profileId }

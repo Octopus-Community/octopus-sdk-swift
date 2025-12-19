@@ -16,8 +16,8 @@ class ResponseEntity: OctoObjectEntity {
         mediasRelationship.array as? [MediaEntity] ?? []
     }
 
-    func fill(with response: StorableResponse, context: NSManagedObjectContext) {
-        super.fill(with: response, context: context)
+    func fill(with response: StorableResponse, context: NSManagedObjectContext) throws {
+        try super.fill(with: response, context: context)
         text = response.text?.originalText
         translatedText = response.text?.translatedText
         originalLanguage = response.text?.originalLanguage

@@ -18,7 +18,9 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
         case editInApp(EditProfileInAppBlock)
     }
 
-    @Published var profile: CurrentUserProfile?
+    @Published var profile: DisplayableCurrentUserProfile?
+    @Published var gamificationConfig: GamificationConfig?
+    @Published var displayAccountAge = false
     @Published private(set) var dismiss = false
     @Published var error: DisplayableString?
 
@@ -27,19 +29,24 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     @Published private var isFetchingProfile: Bool = false
     @Published private(set) var editConfig: EditConfig = .editInOctopus
 
+    @Published private(set) var forceDisplayGamificationRules: Bool = false
+
     let hasInitialNotSeenNotifications: Bool
 
     let notifCenterViewModel: NotificationCenterViewModel
 
     let octopus: OctopusSDK
     private let translationStore: ContentTranslationPreferenceStore
+    private let gamificationRulesViewManager: GamificationRulesViewManager
     private var previousProfileId: String?
 
     private var storage = [AnyCancellable]()
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore) {
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
+         gamificationRulesViewManager: GamificationRulesViewManager) {
         self.octopus = octopus
         self.translationStore = translationStore
+        self.gamificationRulesViewManager = gamificationRulesViewManager
         notifCenterViewModel = NotificationCenterViewModel(octopus: octopus)
 
         hasInitialNotSeenNotifications = (octopus.core.profileRepository.profile?.notificationBadgeCount ?? 0) > 0
@@ -48,6 +55,26 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             await fetchProfile()
         }
 
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.gamificationConfig }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                gamificationConfig = $0
+                if gamificationConfig != nil {
+                    forceDisplayGamificationRules = !gamificationRulesViewManager.rulesDisplayedOnce
+                } else {
+                    forceDisplayGamificationRules = false
+                }
+            }.store(in: &storage)
+
+        octopus.core.configRepository
+            .communityConfigPublisher
+            .map { $0?.displayAccountAge ?? false }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                displayAccountAge = $0
+            }.store(in: &storage)
+
         Publishers.CombineLatest4(
             octopus.core.profileRepository.profilePublisher.removeDuplicates(),
             $error,
@@ -55,7 +82,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             mainFlowPath.$isLocked
         ).sink { [unowned self] profile, currentError, isFetchingProfile, isLocked in
             guard let profile else { return }
-            self.profile = profile
+            self.profile = DisplayableCurrentUserProfile(from: profile)
 
             if case let .sso(configuration) = octopus.core.connectionRepository.connectionMode,
                !configuration.appManagedFields.isEmpty, !profile.isGuest {
@@ -74,9 +101,18 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
                 postFeedViewModel = PostFeedViewModel(octopus: octopus, postFeed: newestFirstPostsFeed,
                                                       displayModeratedPosts: true,
                                                       translationStore: translationStore,
-                                                      ensureConnected: { _ in true }) // TODO Djavan: can we be sure that we are fully authorized to post?
+                                                      ensureConnected: { _ in true })
             }
         }.store(in: &storage)
+
+        octopus.core.sdkEventsEmitter.events
+            .sink { [unowned self] event in
+                switch event {
+                case .contentCreated, .contentDeleted, .contentReactionChanged:
+                    fetchProfile()
+                case .profileUpdated: break
+                }
+            }.store(in: &storage)
     }
 
     func refresh() async {
@@ -86,6 +122,12 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             group.addTask { [self] in await fetchProfile() }
 
             await group.waitForAll()
+        }
+    }
+
+    private func fetchProfile() {
+        Task {
+            await fetchProfile()
         }
     }
 

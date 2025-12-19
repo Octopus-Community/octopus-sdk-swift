@@ -16,6 +16,9 @@ struct ReactionsPickerView: View {
     @State private var showReactionPicker = false
 
     private var quickReactions: [ReactionKind] {
+        guard !UIAccessibility.isVoiceOverRunning else {
+            return ReactionKind.knownValues
+        }
         if let userReaction {
             return [userReaction.kind]
         } else {
@@ -44,41 +47,43 @@ struct ReactionsPickerView: View {
                                isSelected: userReaction?.kind == reaction,
                                reactionTapped: reactionTapped)
             }
-            if userReaction == nil {
+            if userReaction == nil && !remainingReactions.isEmpty {
                 // Invisible button, with a visible overlay, just to give the correct size to the overlay
-                Button(action: { }) {
-                    Text(ReactionKind.clap.unicode)
-                        .font(theme.fonts.body2)
-                        .fixedSize()
-                }
-                .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true,
-                                                hasTrailingIcon: true))
-                .opacity(0)
-                .overlay(
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showReactionPicker.toggle()
+                ReactionButton(reaction: .clap, isSelected: false, reactionTapped: { _ in })
+                    .opacity(0)
+                    .accessibilityHidden(true)
+                    .overlay(
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showReactionPicker.toggle()
+                            }
+                        }) {
+                            Image(systemName: "plus")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .font(theme.fonts.body1.weight(.thin))
+                        }.buttonStyle(OctopusButtonStyle(.small, style: .outline,
+                                                         hasLeadingIcon: true,
+                                                         hasTrailingIcon: true,
+                                                         externalVerticalPadding: 5,
+                                                         externalTrailingPadding: 10))
+                        .modify {
+                            if #available(iOS 17.0, *) {
+                                $0.accessibilityAddTraits(.isToggle)
+                            } else { $0 }
                         }
-                    }) {
-                        Image(systemName: "plus")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .font(theme.fonts.body1.weight(.thin))
-                    }.buttonStyle(OctopusButtonStyle(.small, style: .outline,
-                                                     hasLeadingIcon: true,
-                                                     hasTrailingIcon: true))
-                )
-                .displayableOverlay(isPresented: $showReactionPicker,
-                                    horizontalPadding: 12,
-                                    verticalPadding: 8) {
-                    PopoverReactionsBar(reactions: remainingReactions,
-                                        reactionTapped: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showReactionPicker = false
-                        }
-                        reactionTapped($0)
-                    })
-                }
+                    )
+                    .displayableOverlay(isPresented: $showReactionPicker,
+                                        horizontalPadding: 12,
+                                        verticalPadding: 8) {
+                        PopoverReactionsBar(reactions: remainingReactions,
+                                            reactionTapped: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                showReactionPicker = false
+                            }
+                            reactionTapped($0)
+                        })
+                    }
             }
         }
         .animation(.default, value: userReaction)
@@ -117,7 +122,16 @@ private struct ReactionButton: View {
         }
         .buttonStyle(
             OctopusButtonStyle(.small, style: .outline,
-                               backgroundColor: isSelected ? theme.colors.primaryLowContrast : nil))
+                               backgroundColor: isSelected ? theme.colors.primaryLowContrast : nil,
+                               externalVerticalPadding: 5))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabelInBundle("Accessibility.Reaction.Button_reaction:\(reaction.accessibilityValue)")
+        .accessibilityValueInBundle(isSelected ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
+        .modify {
+            if #available(iOS 17.0, *) {
+                $0.accessibilityAddTraits(.isToggle)
+            } else { $0 }
+        }
         .modify {
             if #available(iOS 17.0, *) {
                 $0.sensoryFeedback(trigger: animate) { oldValue, newValue in
@@ -172,5 +186,6 @@ struct PopoverReactionsBar: View {
                 }
             } else { $0 }
         }
+        .accessibilityFocusOnAppear()
     }
 }

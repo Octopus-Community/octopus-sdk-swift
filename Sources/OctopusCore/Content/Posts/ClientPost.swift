@@ -17,7 +17,7 @@ public struct ClientPost: Sendable {
     /// The topic id to save your post to. If nil, a default topic that you should configure with our backend team will
     /// be used.
     public let topicId: String?
-    /// The text of the post. Length must be between 10 and 3000 characters.
+    /// The text of the post. Length must be between 10 and 5000 characters.
     public let text: String
     /// The catch phrase. You can use something like "What do you think about this?". It will be displayed below the
     /// text, in bold. Must be below 84 characters. We recommand between 6 and 38 characters.

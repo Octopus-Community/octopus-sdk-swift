@@ -14,20 +14,10 @@ struct RootFeedPicker: View {
     @State private var contentHeight: CGFloat = .zero
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            VStack { // Ensures the content wraps its natural height
-                ContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
-                    .readHeight($contentHeight)
-                    .opacity(contentHeight <= UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Hide if scrolling is needed
-            }
-            .frame(height: min(contentHeight, UIScreen.main.bounds.height * 0.8)) // Limit height
-            .overlay(
-                ScrollingContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
-                    .opacity(contentHeight > UIScreen.main.bounds.height * 0.8 ? 1 : 0) // Enable scrolling only if needed
-            )
-        } else {
-            ScrollingContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed)
-        }
+        ContentSizedSheet(
+            content: { ContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed) },
+            scrollingContent: { ScrollingContentView(rootFeeds: rootFeeds, selectedRootFeed: $selectedRootFeed) }
+        )
     }
 }
 
@@ -78,6 +68,7 @@ private struct TitleView: View {
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
             .padding()
+            .accessibilityAddTraits(.isHeader)
     }
 }
 
@@ -119,6 +110,7 @@ private struct RootFeedsListView: View {
             }
             .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedRootFeed == rootFeed ? .on : .off))
             .padding(4)
+            .accessibilityValueInBundle(selectedRootFeed == rootFeed ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
         }
     }
 }

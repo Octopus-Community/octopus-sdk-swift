@@ -32,6 +32,8 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
     private let repliesDatabase: RepliesDatabase
     private let networkMonitor: NetworkMonitor
     private let validator: Validators.Reply
+    private let toastsRepository: ToastsRepository
+    private let sdkEventsEmitter: SdkEventsEmitter
     private let userInteractionsDelegate: UserInteractionsDelegate
 
     init(injector: Injector) {
@@ -40,6 +42,8 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
         repliesDatabase = injector.getInjected(identifiedBy: Injected.repliesDatabase)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         validator = injector.getInjected(identifiedBy: Injected.validators).reply
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
 
@@ -70,6 +74,8 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
                 try await repliesDatabase.upsert(replies: [finalReply])
                 let newReply = Reply(storableComment: finalReply)
                 _replySentPublisher.send(newReply)
+                toastsRepository.display(gamificationToast: .reply)
+                sdkEventsEmitter.emit(.contentCreated(content: newReply))
                 return (newReply, reply.imageData)
             case let .fail(failure):
                 throw SendReply.Error.validation(.init(from: failure))
@@ -99,6 +105,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
 
             try await repliesDatabase.delete(replyId: replyId)
             _replyDeletedPublisher.send(reply)
+            sdkEventsEmitter.emit(.contentDeleted(content: reply))
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error

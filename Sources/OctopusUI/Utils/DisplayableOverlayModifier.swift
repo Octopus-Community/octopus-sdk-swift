@@ -33,6 +33,7 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                             }
                         }
                     )
+                    .accessibilityHidden(true)
                 } else {
                     $0
                 }
@@ -51,6 +52,7 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                             .simultaneousGesture(DragGesture().onChanged { _ in
                                     isPresented = false
                             })
+                            .accessibilityHidden(true)
                             .overlay(
                                 // Position the emoji bar above the button
                                 ZStack {
@@ -62,6 +64,7 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                                         )
                                         .transition(.scale.combined(with: .opacity))
                                         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPresented)
+                                        .accessibilityHidden(false)
                                 },
                                 alignment: .topLeading
                             )

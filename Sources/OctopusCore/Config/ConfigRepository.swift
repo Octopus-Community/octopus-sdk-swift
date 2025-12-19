@@ -39,6 +39,7 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
     private let userConfigDatabase: UserConfigDatabase
     private let remoteClient: OctopusRemoteClient
     private let networkMonitor: NetworkMonitor
+    private let appStateMonitor: AppStateMonitor
     private let userDataStorage: UserDataStorage
     private let authenticatedCallProvider: AuthenticatedCallProvider
     private let userCommunityAccessSyncStore = UserCommunityAccessSyncStore()
@@ -54,6 +55,7 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
         userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
+        appStateMonitor = injector.getInjected(identifiedBy: Injected.appStateMonitor)
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
 
@@ -80,13 +82,16 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
                 }
             }.store(in: &storage)
 
-        networkMonitor.connectionAvailablePublisher
-            .first(where: { $0 })
-            .sink { [unowned self] _ in
-                Task {
-                    try await refreshCommunityConfig()
-                }
-            }.store(in: &storage)
+        Publishers.CombineLatest(
+            networkMonitor.connectionAvailablePublisher,
+            appStateMonitor.appStatePublisher
+        )
+        .first(where: { $0 && $1 == .active })
+        .sink { [unowned self] _ in
+            Task {
+                try await refreshCommunityConfig()
+            }
+        }.store(in: &storage)
     }
 
     func refreshCommunityConfig() async throws(ServerCallError) {

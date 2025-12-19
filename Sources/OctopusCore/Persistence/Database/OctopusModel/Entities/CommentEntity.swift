@@ -7,8 +7,8 @@ import CoreData
 
 @objc(CommentEntity)
 class CommentEntity: ResponseEntity {
-    func fill(with comment: StorableComment, context: NSManagedObjectContext) {
-        super.fill(with: comment, context: context)
+    func fill(with comment: StorableComment, context: NSManagedObjectContext) throws {
+        try super.fill(with: comment, context: context)
         if descChildrenFeedId?.nilIfEmpty == nil || comment.descReplyFeedId?.nilIfEmpty != nil {
             descChildrenFeedId = comment.descReplyFeedId
         }

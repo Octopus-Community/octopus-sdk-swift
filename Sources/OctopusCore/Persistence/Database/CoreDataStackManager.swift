@@ -20,12 +20,21 @@ class CoreDataStackManager: @unchecked Sendable {
     // cf https://stackoverflow.com/questions/51851485/multiple-nsentitydescriptions-claim-nsmanagedobject-subclass
     nonisolated(unsafe) static var models = [String: NSManagedObjectModel]()
 
-    init(persistentContainerName: String, inRam: Bool = false) throws(CoreDataErrors) {
+    init(persistentContainerName: String, eraseExistingContainer: Bool = false, inRam: Bool = false) throws(CoreDataErrors) {
         persistentContainer = NSPersistentContainer(
             name: persistentContainerName,
             managedObjectModel: try Self.loadModel(name: persistentContainerName)
         )
         persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
+
+        if eraseExistingContainer {
+            if #available(iOS 14, *) { Logger.other.trace("Migration of \(persistentContainerName) needs reset of the db") }
+            do {
+                try deleteSQLiteStoreFiles(for: persistentContainer)
+            } catch {
+                if #available(iOS 14, *) { Logger.other.debug("Failed to delete persistent store: \(error)") }
+            }
+        }
 
         self.load(inRam: inRam)
     }
@@ -64,10 +73,6 @@ class CoreDataStackManager: @unchecked Sendable {
                     Logger.other.debug("Persistent store couldn't be loaded: \(error) try to reset it at: \(persistentStoreDescription.url?.path ?? "URL not found")")
                 }
                 do {
-                    if let storeUrl = persistentStoreDescription.url,
-                       FileManager.default.fileExists(atPath: storeUrl.path) {
-                        try FileManager.default.removeItem(at: storeUrl)
-                    }
                     try self.reset()
                 } catch {
                     if #available(iOS 14, *) { Logger.other.debug("failed to delete Persistent store: \(error)") }
@@ -93,9 +98,32 @@ class CoreDataStackManager: @unchecked Sendable {
             guard let storeUrl = persistentStore.url else {
                 return
             }
-            if FileManager.default.fileExists(atPath: storeUrl.path),
-               FileManager.default.isDeletableFile(atPath: storeUrl.path) {
-                try FileManager.default.removeItem(at: storeUrl)
+            try deleteSQLiteFiles(at: storeUrl)
+        }
+    }
+
+    // MARK: - File Deletion Utilities
+
+    /// Deletes all SQLite-related files BEFORE the stores are loaded.
+    private func deleteSQLiteStoreFiles(for container: NSPersistentContainer) throws {
+        for desc in container.persistentStoreDescriptions {
+            if let url = desc.url {
+                try deleteSQLiteFiles(at: url)
+            }
+        }
+    }
+
+    /// Delete .sqlite, .sqlite-wal, .sqlite-shm files
+    private func deleteSQLiteFiles(at storeURL: URL) throws {
+        let urls = [
+            storeURL,
+            storeURL.deletingPathExtension().appendingPathExtension("sqlite-wal"),
+            storeURL.deletingPathExtension().appendingPathExtension("sqlite-shm")
+        ]
+
+        for url in urls {
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url)
             }
         }
     }

@@ -27,8 +27,6 @@ struct PostDetailView: View {
     @State private var commentTextFocused: Bool
     @State private var commentHasChanges = false
 
-    @State private var width: CGFloat = 0
-
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
     private let canClose: Bool
@@ -59,7 +57,6 @@ struct PostDetailView: View {
                     post: viewModel.post, comments: viewModel.comments,
                     hasMoreComments: viewModel.hasMoreData,
                     hideLoadMoreCommentsLoader: viewModel.hideLoadMoreCommentsLoader,
-                    width: width,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
                     zoomableImageInfo: $zoomableImageInfo,
@@ -88,6 +85,7 @@ struct PostDetailView: View {
                     },
                     displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId:$0) } : nil)
                 )
+                .toastContainer(octopus: viewModel.octopus)
 
                 CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
                                   translationStore: translationStore,
@@ -96,7 +94,6 @@ struct PostDetailView: View {
                                   ensureConnected: viewModel.ensureConnected)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .readWidth($width)
 
             if viewModel.postDeletion == .inProgress || viewModel.isDeletingComment {
                 Compat.ProgressView()
@@ -263,7 +260,6 @@ private struct ContentView: View {
     let comments: [DisplayableFeedResponse]?
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
-    let width: CGFloat
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
@@ -293,33 +289,50 @@ private struct ContentView: View {
 #endif
             Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
                               refreshAction: refresh) {
-                if let post {
-                    PostDetailContentView(post: post, comments: comments,
-                                          hasMoreComments: hasMoreComments,
-                                          hideLoadMoreCommentsLoader: hideLoadMoreCommentsLoader,
-                                          width: width,
-                                          zoomableImageInfo: $zoomableImageInfo,
-                                          loadPreviousComments: loadPreviousComments,
-                                          displayCommentDetail: displayCommentDetail,
-                                          displayProfile: displayProfile,
-                                          openCreateComment: openCreateComment,
-                                          deletePost: deletePost,
-                                          deleteComment: deleteComment,
-                                          reactionTapped: reactionTapped,
-                                          voteOnPoll: voteOnPoll,
-                                          commentReactionTapped: commentReactionTapped,
-                                          displayContentModeration: displayContentModeration,
-                                          displayClientObject: displayClientObject)
-                } else {
-                    VStack {
-                        Spacer().frame(height: 54)
-                        Image(res: .contentNotAvailable)
-                        Text("Content.Detail.NotAvailable", bundle: .module)
-                            .font(theme.fonts.body2)
-                            .fontWeight(.medium)
-                            .multilineTextAlignment(.center)
+                Compat.LazyVStack(spacing: 0) {
+                    if let post {
+                        PostDetailContentView(post: post,
+                                              zoomableImageInfo: $zoomableImageInfo,
+                                              displayProfile: displayProfile,
+                                              openCreateComment: openCreateComment,
+                                              deletePost: deletePost,
+                                              reactionTapped: reactionTapped,
+                                              voteOnPoll: voteOnPoll,
+                                              displayContentModeration: displayContentModeration,
+                                              displayClientObject: displayClientObject)
+
+                        Spacer().frame(height: 14)
+                        theme.colors.gray300.frame(height: 1)
+                        Spacer().frame(height: 10)
+
+                        if let comments {
+                            CommentsView(comments: comments,
+                                         hasMoreData: hasMoreComments,
+                                         hideLoader: hideLoadMoreCommentsLoader,
+                                         zoomableImageInfo: $zoomableImageInfo,
+                                         loadPreviousComments: loadPreviousComments,
+                                         displayCommentDetail: displayCommentDetail,
+                                         displayProfile: displayProfile,
+                                         openCreateComment: openCreateComment,
+                                         deleteComment: deleteComment,
+                                         reactionTapped: commentReactionTapped,
+                                         displayContentModeration: displayContentModeration)
+                            .padding(.leading, 10)
+                            .padding(.trailing, 16)
+                        } else {
+                            Compat.ProgressView()
+                        }
+                    } else {
+                        VStack {
+                            Spacer().frame(height: 54)
+                            Image(res: .contentNotAvailable)
+                            Text("Content.Detail.NotAvailable", bundle: .module)
+                                .font(theme.fonts.body2)
+                                .fontWeight(.medium)
+                                .multilineTextAlignment(.center)
+                        }
+                        .foregroundColor(theme.colors.gray500)
                     }
-                    .foregroundColor(theme.colors.gray500)
                 }
             }
         }
@@ -331,20 +344,12 @@ private struct PostDetailContentView: View {
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     let post: PostDetailViewModel.Post
-    let comments: [DisplayableFeedResponse]?
-    let hasMoreComments: Bool
-    let hideLoadMoreCommentsLoader: Bool
-    let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let loadPreviousComments: () -> Void
-    let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
     let deletePost: () -> Void
-    let deleteComment: (String) -> Void
     let reactionTapped: (ReactionKind?) -> Void
     let voteOnPoll: (String) -> Bool
-    let commentReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
 
@@ -354,20 +359,30 @@ private struct PostDetailContentView: View {
     private let horizontalPadding = CGFloat(16)
     private let minAspectRatio: CGFloat = 4 / 5
 
+    @Compat.ScaledMetric(relativeTo: .subheadline) var moreIconSize: CGFloat = 24 // subheadline to vary from 19 to 69
+    @Compat.ScaledMetric(relativeTo: .title1) var authorAvatarSize: CGFloat = 40 // title1 to vary from 40 to 88
+
     var displayTranslation: Bool { translationStore.displayTranslation(for: post.uuid) }
 
     var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Group { // group views to have the same horizontal padding
-                    HStack {
+                    HStack(alignment: .top, spacing: 0) {
+                        let topPadding = CGFloat(21)
                         OpenProfileButton(author: post.author, displayProfile: displayProfile) {
                             AuthorAvatarView(avatar: post.author.avatar)
-                                .frame(width: 40, height: 40)
+                                .frame(width: max(authorAvatarSize, 40), height: max(authorAvatarSize, 40))
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                         }
+                        .frame(width: max(authorAvatarSize, 44), height: max(authorAvatarSize, 44))
+                        .padding(.top, topPadding)
 
-                        VStack(alignment: .leading, spacing: 4) {
+                        Spacer().frame(width: 3)
+
+                        VStack(alignment: .leading, spacing: 0) {
                             AuthorAndDateHeaderView(author: post.author, relativeDate: post.relativeDate,
+                                                    topPadding: topPadding, bottomPadding: 4,
                                                     displayProfile: displayProfile)
                             Text(post.topic)
                                 .octopusBadgeStyle(.small, status: .off)
@@ -388,46 +403,51 @@ private struct PostDetailContentView: View {
                                         }
                                     }
                                 }, label: {
-                                    Image(res: .more)
-                                        .resizable()
-                                        .frame(width: 24, height: 24)
-                                        .foregroundColor(theme.colors.gray500)
+                                    HStack(alignment: .top) {
+                                        Image(res: .more)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                                            .foregroundColor(theme.colors.gray500)
+                                            .accessibilityLabelInBundle("Accessibility.Common.More")
+                                    }.frame(width: max(moreIconSize, 44), height: max(moreIconSize, 44))
                                 })
                                 .buttonStyle(.plain)
+                                .padding(.top, topPadding)
                             } else {
                                 Button(action: { openActions = true }) {
                                     Image(res: .more)
                                         .resizable()
-                                        .frame(width: 24, height: 24)
+                                        .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
                                         .foregroundColor(theme.colors.gray500)
+                                        .accessibilityLabelInBundle("Accessibility.Common.More")
                                 }
                                 .buttonStyle(.plain)
+                                .padding(.top, topPadding)
                             }
                         }
                     }
 
-                    Spacer().frame(height: 10)
+                    Spacer().frame(height: 8)
 
+                    if let catchPhrase = post.catchPhrase {
+                        Text(catchPhrase.getText(translated: displayTranslation))
+                            .font(theme.fonts.body2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(theme.colors.gray900)
+                        Spacer().frame(height: 4)
+                    }
                     RichText(post.text.getText(translated: displayTranslation))
                         .font(theme.fonts.body2)
                         .lineSpacing(4)
                         .foregroundColor(theme.colors.gray900)
                         .fixedSize(horizontal: false, vertical: true)
-                    if let catchPhrase = post.catchPhrase {
-                        Spacer().frame(height: 4)
-                        Text(catchPhrase.getText(translated: displayTranslation))
-                            .font(theme.fonts.body2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(theme.colors.gray900)
-                    }
 
                     if !hasPoll && post.text.hasTranslation {
                         ToggleTextTranslationButton(
                             contentId: post.uuid, originalLanguage: post.text.originalLanguage)
-                            .padding(.top, 6)
                     }
-
-                    Spacer().frame(height: 10)
                 }.padding(.horizontal, horizontalPadding)
                 switch post.attachment {
                 case let .image(image):
@@ -461,6 +481,7 @@ private struct PostDetailContentView: View {
                                 }
                         })
                     .frame(maxWidth: .infinity)
+                    .padding(.top, post.text.hasTranslation ? 4 : 8)
                 case let .poll(poll):
                     PollView(poll: poll,
                              aggregatedInfo: post.aggregatedInfo,
@@ -468,17 +489,15 @@ private struct PostDetailContentView: View {
                              parentId: post.uuid,
                              vote: voteOnPoll)
                     .padding(.horizontal, horizontalPadding)
+                    .padding(.top, post.text.hasTranslation ? 4 : 8)
 
                     if post.text.hasTranslation {
                         ToggleTextTranslationButton(contentId: post.uuid, originalLanguage: post.text.originalLanguage)
                             .padding(.horizontal, horizontalPadding)
-                            .padding(.top, 6)
                     }
                 case .none:
                     EmptyView()
                 }
-
-                Spacer().frame(height: post.bridgeCTA == nil || displayClientObject == nil ? 8 : 4)
 
                 if let bridgeCTA = post.bridgeCTA, let displayClientObject {
                     HStack {
@@ -498,46 +517,62 @@ private struct PostDetailContentView: View {
                     aggregatedInfo: post.aggregatedInfo,
                     childrenTapped: { openCreateComment() })
                 .padding(.horizontal, horizontalPadding)
-                .padding(.bottom, 3)
 
-                Spacer().frame(height: 8)
+                AdaptiveAccessibleStack2Contents(
+                    hStackSpacing: 16,
+                    vStackSpacing: 0,
+                    horizontalContent: {
+                        ReactionsPickerView(
+                            contentId: post.uuid,
+                            userReaction: post.userInteractions.reaction,
+                            reactionTapped: reactionTapped)
 
-                HStack(spacing: 16) {
-                    ReactionsPickerView(
-                        contentId: post.uuid,
-                        userReaction: post.userInteractions.reaction,
-                        reactionTapped: reactionTapped)
+                        Spacer()
 
-                    Spacer()
+                        if !UIAccessibility.isVoiceOverRunning {
+                            Button(action: openCreateComment) {
+                                CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                                           text: "Content.AggregatedInfo.Comment",
+                                                           kind: .comment)
+                            }
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 6))
+                        }
+                    },
+                    verticalContent: {
+                        ReactionsPickerView(
+                            contentId: post.uuid,
+                            userReaction: post.userInteractions.reaction,
+                            reactionTapped: reactionTapped)
 
-                    Button(action: openCreateComment) {
-                        CreateChildInteractionView(image: .AggregatedInfo.comment, text: "Content.AggregatedInfo.Comment")
+                        if !UIAccessibility.isVoiceOverRunning {
+                            HStack(spacing: 0) {
+                                Spacer()
+                                Button(action: openCreateComment) {
+                                    CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                                               text: "Content.AggregatedInfo.Comment",
+                                                               kind: .comment)
+                                }
+                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 6))
+                                Spacer()
+                            }
+                        }
+                    })
+                .padding(.horizontal, horizontalPadding)
+
+                if UIAccessibility.isVoiceOverRunning {
+                    HStack(spacing: 0) {
+                        Spacer()
+                        Button(action: openCreateComment) {
+                            CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                                       text: "Content.AggregatedInfo.Comment",
+                                                       kind: .comment)
+                        }
+                        .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 6))
+                        Spacer()
                     }
-                    .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
+                    .padding(.horizontal, horizontalPadding)
                 }
-                .padding(.horizontal, horizontalPadding)
             }
-            .padding(.bottom, 16)
-
-            theme.colors.gray300.frame(height: 1)
-
-            if let comments {
-                CommentsView(comments: comments,
-                             hasMoreData: hasMoreComments,
-                             hideLoader: hideLoadMoreCommentsLoader,
-                             zoomableImageInfo: $zoomableImageInfo,
-                             loadPreviousComments: loadPreviousComments,
-                             displayCommentDetail: displayCommentDetail,
-                             displayProfile: displayProfile,
-                             openCreateComment: openCreateComment,
-                             deleteComment: deleteComment,
-                             reactionTapped: commentReactionTapped,
-                             displayContentModeration: displayContentModeration)
-                .padding(.horizontal, horizontalPadding)
-            } else {
-                Compat.ProgressView()
-            }
-
         }
         .frame(maxWidth: .infinity)
         .actionSheet(isPresented: $openActions) {
@@ -609,8 +644,8 @@ private struct CommentsView: View {
     let displayContentModeration: (String) -> Void
 
     var body: some View {
-        Compat.LazyVStack {
-            if !comments.isEmpty {
+        if !comments.isEmpty {
+            Compat.LazyVStack(spacing: 0) {
                 ForEach(comments, id: \.uuid) { comment in
                     ResponseFeedItemView(
                         response: comment,
@@ -642,21 +677,306 @@ private struct CommentsView: View {
                             loadPreviousComments()
                         }
                 }
-            } else {
-                Button(action: openCreateComment) {
-                    VStack {
-                        Spacer().frame(height: 54)
-                        Image(res: .contentNotAvailable)
-                        Text("Post.Detail.NoComments", bundle: .module)
-                            .font(theme.fonts.body2)
-                            .fontWeight(.medium)
-                            .multilineTextAlignment(.center)
-                    }
-                    .foregroundColor(theme.colors.gray500)
-                }.buttonStyle(.plain)
             }
+        } else {
+            Button(action: openCreateComment) {
+                VStack {
+                    Spacer().frame(height: 54)
+                    Image(res: .contentNotAvailable)
+                    Text("Post.Detail.NoComments", bundle: .module)
+                        .font(theme.fonts.body2)
+                        .fontWeight(.medium)
+                        .multilineTextAlignment(.center)
+                }
+                .foregroundColor(theme.colors.gray500)
+            }.buttonStyle(.plain)
         }
-        .padding(.top, 8)
-        .frame(maxHeight: .infinity)
     }
+}
+
+#Preview("Text only") {
+    ContentView(
+        post: .init(
+            uuid: "postUuid",
+            text: .init(
+                originalText: "Un texte",
+                originalLanguage: "fr",
+                translatedText: "A text"),
+            attachment: nil,
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            topic: "Help",
+            aggregatedInfo: .init(reactions: [
+                .init(reactionKind: .heart, count: 10),
+                .init(reactionKind: .clap, count: 5),
+            ], childCount: 5, viewCount: 4, pollResult: nil),
+            userInteractions: .empty,
+            canBeDeleted: false,
+            canBeModerated: true,
+            catchPhrase: nil,
+            bridgeCTA: nil),
+        comments: [],
+        hasMoreComments: true,
+        hideLoadMoreCommentsLoader: false,
+        scrollToBottom: .constant(false),
+        scrollToId: .constant(nil),
+        zoomableImageInfo: .constant(nil),
+        loadPreviousComments: { },
+        refresh: { },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        openCreateComment: { },
+        deletePost: { },
+        deleteComment: { _ in },
+        reactionTapped: { _ in },
+        voteOnPoll: { _ in false },
+        commentReactionTapped: { _, _ in },
+        displayContentModeration: { _ in },
+        displayClientObject: nil
+    )
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Text and Image") {
+    ContentView(
+        post: .init(
+            uuid: "postUuid",
+            text: .init(
+                originalText: "Un texte",
+                originalLanguage: "fr",
+                translatedText: "A text"),
+            attachment: .image(.init(
+                url: URL(string: "https://picsum.photos/700/750")!,
+                size: CGSize(width: 700, height: 750))),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            topic: "Help",
+            aggregatedInfo: .init(reactions: [
+                .init(reactionKind: .heart, count: 10),
+                .init(reactionKind: .clap, count: 5),
+            ], childCount: 5, viewCount: 4, pollResult: nil),
+            userInteractions: .empty,
+            canBeDeleted: false,
+            canBeModerated: true,
+            catchPhrase: nil,
+            bridgeCTA: nil),
+        comments: [],
+        hasMoreComments: true,
+        hideLoadMoreCommentsLoader: false,
+        scrollToBottom: .constant(false),
+        scrollToId: .constant(nil),
+        zoomableImageInfo: .constant(nil),
+        loadPreviousComments: { },
+        refresh: { },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        openCreateComment: { },
+        deletePost: { },
+        deleteComment: { _ in },
+        reactionTapped: { _ in },
+        voteOnPoll: { _ in false },
+        commentReactionTapped: { _, _ in },
+        displayContentModeration: { _ in },
+        displayClientObject: nil
+    )
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Text and Poll") {
+    ContentView(
+        post: .init(
+            uuid: "postUuid",
+            text: .init(
+                originalText: "Un texte",
+                originalLanguage: "fr",
+                translatedText: "A text"),
+            attachment: .poll(
+                DisplayablePoll(options: [
+                    .init(id: "1", text: .init(
+                        originalText: "Option 1",
+                        originalLanguage: "fr",
+                        translatedText: "Option 1")),
+                    .init(id: "2", text: .init(
+                        originalText: "Option 2",
+                        originalLanguage: "fr",
+                        translatedText: "Option 2"))
+                ])
+            ),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            topic: "Help",
+            aggregatedInfo: .init(reactions: [
+                .init(reactionKind: .heart, count: 10),
+                .init(reactionKind: .clap, count: 5),
+            ], childCount: 5, viewCount: 4, pollResult: nil),
+            userInteractions: .empty,
+            canBeDeleted: false,
+            canBeModerated: true,
+            catchPhrase: nil,
+            bridgeCTA: nil),
+        comments: [],
+        hasMoreComments: true,
+        hideLoadMoreCommentsLoader: false,
+        scrollToBottom: .constant(false),
+        scrollToId: .constant(nil),
+        zoomableImageInfo: .constant(nil),
+        loadPreviousComments: { },
+        refresh: { },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        openCreateComment: { },
+        deletePost: { },
+        deleteComment: { _ in },
+        reactionTapped: { _ in },
+        voteOnPoll: { _ in false },
+        commentReactionTapped: { _, _ in },
+        displayContentModeration: { _ in },
+        displayClientObject: nil
+    )
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Text no translation") {
+    ContentView(
+        post: .init(
+            uuid: "postUuid",
+            text: .init(
+                originalText: "Un texte",
+                originalLanguage: nil),
+            attachment: .poll(
+                DisplayablePoll(options: [
+                    .init(id: "1", text: .init(
+                        originalText: "Option 1",
+                        originalLanguage: nil)),
+                    .init(id: "2", text: .init(
+                        originalText: "Option 2",
+                        originalLanguage: nil))
+                ])
+            ),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            topic: "Help",
+            aggregatedInfo: .init(reactions: [
+                .init(reactionKind: .heart, count: 10),
+                .init(reactionKind: .clap, count: 5),
+            ], childCount: 5, viewCount: 4, pollResult: nil),
+            userInteractions: .empty,
+            canBeDeleted: false,
+            canBeModerated: true,
+            catchPhrase: nil,
+            bridgeCTA: nil),
+        comments: [],
+        hasMoreComments: true,
+        hideLoadMoreCommentsLoader: false,
+        scrollToBottom: .constant(false),
+        scrollToId: .constant(nil),
+        zoomableImageInfo: .constant(nil),
+        loadPreviousComments: { },
+        refresh: { },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        openCreateComment: { },
+        deletePost: { },
+        deleteComment: { _ in },
+        reactionTapped: { _ in },
+        voteOnPoll: { _ in false },
+        commentReactionTapped: { _, _ in },
+        displayContentModeration: { _ in },
+        displayClientObject: nil
+    )
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Bridge Text and Image") {
+    ContentView(
+        post: .init(
+            uuid: "postUuid",
+            text: .init(
+                originalText: "Un texte",
+                originalLanguage: "fr",
+                translatedText: "A text"),
+            attachment: .image(.init(
+                url: URL(string: "https://picsum.photos/700/750")!,
+                size: CGSize(width: 700, height: 750))),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "2h. ago",
+            topic: "Help",
+            aggregatedInfo: .init(reactions: [
+                .init(reactionKind: .heart, count: 10),
+                .init(reactionKind: .clap, count: 5),
+            ], childCount: 5, viewCount: 4, pollResult: nil),
+            userInteractions: .empty,
+            canBeDeleted: false,
+            canBeModerated: true,
+            catchPhrase: .init(
+                originalText: "Qu'en pensez vous ?",
+                originalLanguage: "fr",
+                translatedText: "What do you think?"),
+            bridgeCTA: nil
+        ),
+        comments: [],
+        hasMoreComments: true,
+        hideLoadMoreCommentsLoader: false,
+        scrollToBottom: .constant(false),
+        scrollToId: .constant(nil),
+        zoomableImageInfo: .constant(nil),
+        loadPreviousComments: { },
+        refresh: { },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        openCreateComment: { },
+        deletePost: { },
+        deleteComment: { _ in },
+        reactionTapped: { _ in },
+        voteOnPoll: { _ in false },
+        commentReactionTapped: { _, _ in },
+        displayContentModeration: { _ in },
+        displayClientObject: nil
+    )
+    .mockContentTranslationPreferenceStore()
 }

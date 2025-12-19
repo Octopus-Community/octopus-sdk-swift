@@ -7,9 +7,18 @@ import SwiftUI
 import Octopus
 import OctopusCore
 
-struct SignalExplanationView: View {
+struct ReportExplanationView: View {
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: LinksProviderViewModel
+
+    @Compat.ScaledMetric(relativeTo: .title1) var iconSize: CGFloat = 20 // title1 to vary from 18 to 40
+
+    var explanationString: String {
+        String.localizedStringWithFormat(
+            Bundle.module.localizedString(forKey: "Settings.Report.Explanation_url:%@", value: nil, table: nil),
+            viewModel.communityGuidelines.absoluteString
+        )
+    }
 
     init(octopus: OctopusSDK) {
         _viewModel = Compat.StateObject(wrappedValue: LinksProviderViewModel(octopus: octopus))
@@ -25,8 +34,9 @@ struct SignalExplanationView: View {
                     Image(res: .Settings.info)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 20, height: 20)
+                        .frame(width: iconSize, height: iconSize)
                         .foregroundColor(theme.colors.gray900)
+                        .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Settings.Report.MainText", bundle: .module)
@@ -34,31 +44,10 @@ struct SignalExplanationView: View {
                             .fontWeight(.medium)
                             .foregroundColor(theme.colors.gray900)
 
-                        Text("Settings.Report.Explanation", bundle: .module)
-                            .font(theme.fonts.body2)
-                            .fontWeight(.medium)
+                        RichText(explanationString)
+                            .font(theme.fonts.body2.weight(.medium))
                             .foregroundColor(theme.colors.gray500)
                             .lineSpacing(8)
-
-                        if #available(iOS 15.0, *) {
-                            Text("Settings.Report.CommunityGuidelines.Link",
-                                 bundle: .module)
-                            .font(theme.fonts.body2)
-                            .fontWeight(.medium)
-                            .tint(theme.colors.link)
-                            .environment(\.openURL, OpenURLAction { _ in
-                                UIApplication.shared.open(viewModel.communityGuidelines)
-                                return .handled
-                            })
-                        } else {
-                            Compat.Link(destination: viewModel.communityGuidelines) {
-                                Text("Settings.Report.CommunityGuidelines.NoLink", bundle: .module)
-                                    .font(theme.fonts.body2)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(theme.colors.link)
-                                    .multilineTextAlignment(.leading)
-                            }
-                        }
                     }
                     Spacer()
                 }
@@ -66,7 +55,7 @@ struct SignalExplanationView: View {
             }
             PoweredByOctopusView()
         }
-        .navigationBarTitle(Text("Settings.Help.ReportContent", bundle: .module), displayMode: .inline)
+        .navigationBarTitle(Text("Settings.ReportContent", bundle: .module), displayMode: .inline)
     }
 
     var contentPolicyView: some View {

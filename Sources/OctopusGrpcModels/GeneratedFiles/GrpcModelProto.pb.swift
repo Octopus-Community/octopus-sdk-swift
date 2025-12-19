@@ -606,11 +606,21 @@ public struct Com_Octopuscommunity_MinimalProfile: Sendable {
 
   public var tags: [Com_Octopuscommunity_ProfileTag] = []
 
+  public var gamificationLevel: Int32 {
+    get {return _gamificationLevel ?? 0}
+    set {_gamificationLevel = newValue}
+  }
+  /// Returns true if `gamificationLevel` has been explicitly set.
+  public var hasGamificationLevel: Bool {return self._gamificationLevel != nil}
+  /// Clears the value of `gamificationLevel`. Subsequent reads from it will return its default value.
+  public mutating func clearGamificationLevel() {self._gamificationLevel = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _avatarURL: String? = nil
+  fileprivate var _gamificationLevel: Int32? = nil
 }
 
 public struct Com_Octopuscommunity_Content: @unchecked Sendable {
@@ -1838,6 +1848,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
     2: .same(proto: "nickname"),
     3: .same(proto: "avatarUrl"),
     4: .same(proto: "tags"),
+    5: .same(proto: "gamificationLevel"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1850,6 +1861,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
       case 2: try { try decoder.decodeSingularStringField(value: &self.nickname) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self._avatarURL) }()
       case 4: try { try decoder.decodeRepeatedEnumField(value: &self.tags) }()
+      case 5: try { try decoder.decodeSingularInt32Field(value: &self._gamificationLevel) }()
       default: break
       }
     }
@@ -1872,6 +1884,9 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
     if !self.tags.isEmpty {
       try visitor.visitPackedEnumField(value: self.tags, fieldNumber: 4)
     }
+    try { if let v = self._gamificationLevel {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1880,6 +1895,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
     if lhs.nickname != rhs.nickname {return false}
     if lhs._avatarURL != rhs._avatarURL {return false}
     if lhs.tags != rhs.tags {return false}
+    if lhs._gamificationLevel != rhs._gamificationLevel {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

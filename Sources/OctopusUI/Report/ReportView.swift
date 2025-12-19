@@ -101,9 +101,9 @@ private struct ContentView: View {
                         .foregroundColor(theme.colors.gray500)
                         .multilineTextAlignment(.leading)
 
-                        Spacer().frame(height: 30)
+                        Spacer().frame(height: 20)
 
-                        VStack(spacing: 16) {
+                        VStack(spacing: 0) {
                             ForEach(ReportReason.allCases, id: \.self) {
                                 ReasonCell(reason: $0, selectedReasons: $selectedReasons)
                             }
@@ -114,7 +114,7 @@ private struct ContentView: View {
                                 .stroke(theme.colors.gray300, lineWidth: 1)
                         )
 
-                        Spacer(minLength: 30)
+                        Spacer(minLength: 20)
                     }
                     .padding(.horizontal, 20)
                 }
@@ -152,6 +152,7 @@ private struct ReasonCell: View {
     @Binding var selectedReasons: [ReportReason]
 
     @State private var isOn: Bool = false
+    @Compat.ScaledMetric(relativeTo: .title1) var iconSize: CGFloat = 20 // title1 to vary from 18 to 40
 
     var body: some View {
         Button(action: {
@@ -163,13 +164,23 @@ private struct ReasonCell: View {
         }) {
             HStack {
                 Image(res: selectedReasons.contains(reason) ? .CheckBox.on : .CheckBox.off)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: iconSize, height: iconSize)
                 reason.displayableString.textView
                     .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)
                 Spacer()
             }
             .foregroundColor(theme.colors.gray900)
+            .padding(.vertical, 10)
         }
         .buttonStyle(.plain)
+        .accessibilityValueInBundle(selectedReasons.contains(reason) ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
+        .modify {
+            if #available(iOS 17.0, *) {
+                $0.accessibilityAddTraits(.isToggle)
+            } else { $0 }
+        }
     }
 }

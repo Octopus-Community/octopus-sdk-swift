@@ -132,6 +132,9 @@ class NotificationsTests: XCTestCase {
     private func createProfile(id: String, userId: String, nickname: String) -> CurrentUserProfile {
         CurrentUserProfile(
             id: id, userId: userId, nickname: nickname, originalNickname: nil, email: nil, bio: nil, pictureUrl: nil,
+            tags: [],
+            totalMessages: nil, accountCreationDate: nil,
+            gamificationLevel: nil, gamificationScore: nil,
             hasSeenOnboarding: false, hasAcceptedCgu: false, hasConfirmedNickname: false,
             hasConfirmedBio: false,
             hasConfirmedPicture: false,
@@ -169,7 +172,7 @@ private class MockProfileRepository: ProfileRepository, InjectableObject, @unche
         fatalError("Not implemented")
     }
 
-    func getProfile(profileId: String) -> AnyPublisher<OctopusCore.Profile?, any Error> {
+    func getProfile(profileId: String) -> AnyPublisher<OctopusCore.Profile?, Never> {
         fatalError("Not implemented")
     }
 

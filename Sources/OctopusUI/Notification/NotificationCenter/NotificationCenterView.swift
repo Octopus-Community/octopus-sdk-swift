@@ -130,6 +130,7 @@ private struct NotificationCell: View {
                         .foregroundColor(theme.colors.gray700)
                 }
             }
+            .frame(minHeight: 48)
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
             .background(notification.isRead ? Color.clear : theme.colors.primaryLowContrast)
@@ -166,7 +167,7 @@ private struct ThumbnailImageView: View {
     var body: some View {
         switch thumbnail {
         case let .profile(profile):
-            AuthorAvatarView(avatar: Author(profile: profile).avatar)
+            AuthorAvatarView(avatar: Author(profile: profile, gamificationLevel: nil).avatar)
         }
     }
 }

@@ -6,7 +6,11 @@ import Foundation
 import SwiftUI
 
 private struct ThemeEnvironmentKey: EnvironmentKey {
-    static let defaultValue = OctopusTheme()
+    /// Computed property in order to be recomputed when dynamic size changes
+    ///
+    /// - Note: the environment should be set in order to avoid re-creating the default env each time a view accesses
+    /// the default value
+    static var defaultValue: OctopusTheme { OctopusTheme() }
 }
 
 public extension EnvironmentValues {

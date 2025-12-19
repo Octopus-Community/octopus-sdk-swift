@@ -8,7 +8,9 @@ import Foundation
 extension StorableCurrentUserProfile {
     static func create(
         id: String, userId: String, nickname: String, originalNickname: String? = nil, email: String? = nil,
-        bio: String? = nil, pictureUrl: URL? = nil,
+        bio: String? = nil, pictureUrl: URL? = nil, tags: ProfileTags = [],
+        totalMessages: Int? = nil, accountCreationDate: Date? = nil,
+        gamificationLevel: Int? = nil, gamificationScore: Int? = nil,
         hasSeenOnboarding: Bool? = true, hasAcceptedCgu: Bool? = true,
         hasConfirmedNickname: Bool? = true, hasConfirmedBio: Bool? = true, hasConfirmedPicture: Bool? = true,
         isGuest: Bool = false,
@@ -17,7 +19,11 @@ extension StorableCurrentUserProfile {
     -> StorableCurrentUserProfile {
         StorableCurrentUserProfile(
             id: id, userId: userId, nickname: nickname, originalNickname: originalNickname, email: email, bio: bio,
-            pictureUrl: pictureUrl, hasSeenOnboarding: hasSeenOnboarding, hasAcceptedCgu: hasAcceptedCgu,
+            pictureUrl: pictureUrl,
+            tags: tags,
+            totalMessages: totalMessages, accountCreationDate: accountCreationDate,
+            gamificationLevel: gamificationLevel, gamificationScore: gamificationScore,
+            hasSeenOnboarding: hasSeenOnboarding, hasAcceptedCgu: hasAcceptedCgu,
             hasConfirmedNickname: hasConfirmedNickname, hasConfirmedBio: hasConfirmedBio,
             hasConfirmedPicture: hasConfirmedPicture,
             isGuest: isGuest,

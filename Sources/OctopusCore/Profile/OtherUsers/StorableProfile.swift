@@ -10,6 +10,14 @@ struct StorableProfile: Sendable {
     let nickname: String?
     let bio: String?
     let pictureUrl: URL?
+
+    let tags: ProfileTags
+
+    let totalMessages: Int?
+    let accountCreationDate: Date?
+
+    let gamificationLevel: Int?
+
     let descPostFeedId: String
     let ascPostFeedId: String
 }
@@ -20,6 +28,10 @@ extension StorableProfile {
         nickname = entity.nickname
         bio = entity.bio
         pictureUrl = entity.pictureUrl
+        tags = entity.tags
+        totalMessages = entity.totalMessages
+        accountCreationDate = entity.accountCreationDate
+        gamificationLevel = entity.gamificationLevel
         descPostFeedId = entity.descPostFeedId
         ascPostFeedId = entity.ascPostFeedId
     }
@@ -29,6 +41,14 @@ extension StorableProfile {
         nickname = profile.hasNickname ? profile.nickname.nilIfEmpty : nil
         bio = profile.bio
         pictureUrl = profile.hasPictureURL ? URL(string: profile.pictureURL) : nil
+
+        tags = ProfileTags(from: profile.tags)
+
+        totalMessages = profile.hasTotalMessages ? Int(profile.totalMessages) : nil
+        accountCreationDate = profile.hasAccountCreatedAt ? Date(timestampMs: profile.accountCreatedAt) : nil
+
+        gamificationLevel = profile.hasGamificationScore ? Int(profile.gamificationScore.level) : nil
+
         descPostFeedId = profile.descPostFeedID
         ascPostFeedId = profile.ascPostFeedID
     }

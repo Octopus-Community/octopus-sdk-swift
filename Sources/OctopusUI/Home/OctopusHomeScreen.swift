@@ -55,6 +55,7 @@ public struct OctopusHomeScreen: View {
     @Compat.StateObject private var viewModel: OctopusHomeScreenViewModel
     @Compat.StateObject private var translationStore: ContentTranslationPreferenceStore
     @Compat.StateObject private var trackingApi: TrackingApi
+    @Compat.StateObject private var gamificationRulesViewManager: GamificationRulesViewManager
 
     /// Constructor of the `OctopusHomeScreen`.
     /// - Parameters:
@@ -88,6 +89,7 @@ public struct OctopusHomeScreen: View {
         _translationStore = Compat.StateObject(wrappedValue: ContentTranslationPreferenceStore(
             repository: octopus.core.contentTranslationPreferenceRepository))
         _trackingApi = Compat.StateObject(wrappedValue: TrackingApi(octopus: octopus))
+        _gamificationRulesViewManager = Compat.StateObject(wrappedValue: GamificationRulesViewManager(octopus: octopus))
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
         self.navBarLeadingItem = navBarLeadingItem
@@ -106,21 +108,25 @@ public struct OctopusHomeScreen: View {
                 Group {
                     if viewModel.displayCommunityAccessDenied {
                         CommunityAccessDeniedView(octopus: octopus, canClose: presentationMode.wrappedValue.isPresented)
-                    } else if let postId {
-                        PostDetailView(
-                            octopus: octopus, mainFlowPath: viewModel.mainFlowPath, translationStore: translationStore,
-                            postUuid: postId,
-                            comment: false,
-                            commentToScrollTo: nil,
-                            scrollToMostRecentComment: false,
-                            origin: .clientApp,
-                            hasFeaturedComment: false,
-                            canClose: presentationMode.wrappedValue.isPresented)
                     } else {
-                        RootFeedsView(octopus: octopus,
-                                      mainFlowPath: viewModel.mainFlowPath,
-                                      navBarLeadingItem: navBarLeadingItem,
-                                      navBarPrimaryColor: navBarPrimaryColor)
+                        Group {
+                            if let postId {
+                                PostDetailView(
+                                    octopus: octopus, mainFlowPath: viewModel.mainFlowPath, translationStore: translationStore,
+                                    postUuid: postId,
+                                    comment: false,
+                                    commentToScrollTo: nil,
+                                    scrollToMostRecentComment: false,
+                                    origin: .clientApp,
+                                    hasFeaturedComment: false,
+                                    canClose: presentationMode.wrappedValue.isPresented)
+                            } else {
+                                RootFeedsView(octopus: octopus,
+                                              mainFlowPath: viewModel.mainFlowPath,
+                                              navBarLeadingItem: navBarLeadingItem,
+                                              navBarPrimaryColor: navBarPrimaryColor)
+                            }
+                        }
                     }
                 }
                 .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
@@ -146,17 +152,35 @@ public struct OctopusHomeScreen: View {
         .accentColor(theme.colors.primary)
         .navigationViewStyle(.stack)
         .onAppear {
+            octopus.core.toastsRepository.resetDisplayedToasts()
             octopus.core.trackingRepository.octopusUISessionStarted()
             displayScreenAfterNotificationTapped(notificationResponse: notificationResponse)
+            if !viewModel.displayCommunityAccessDenied {
+                gamificationRulesViewManager.incrementViewCountIfNeeded()
+            }
         }
         .onDisappear {
+            octopus.core.toastsRepository.resetDisplayedToasts()
             octopus.core.trackingRepository.octopusUISessionEnded()
         }
         .onValueChanged(of: notificationResponse) {
             displayScreenAfterNotificationTapped(notificationResponse: $0)
         }
+        // set the environment, this will set the default environment if no other has been set, and avoid re-creating
+        // the default env each time it is accessed
+        .environment(\.octopusTheme, theme)
         .environmentObject(translationStore)
         .environmentObject(trackingApi)
+        .environmentObject(gamificationRulesViewManager)
+        .sheet(isPresented: $gamificationRulesViewManager.shouldDisplayGamificationRules) {
+            if let gamificationConfig = gamificationRulesViewManager.gamificationConfig {
+                GamificationRulesScreen(gamificationConfig: gamificationConfig,
+                                        gamificationRulesViewManager: gamificationRulesViewManager
+                ).sizedSheet()
+            } else {
+                EmptyView()
+            }
+        }
     }
 
     @ViewBuilder

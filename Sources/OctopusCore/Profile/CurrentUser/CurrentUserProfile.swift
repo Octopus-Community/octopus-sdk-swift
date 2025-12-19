@@ -14,6 +14,13 @@ public struct CurrentUserProfile: Equatable, Sendable {
     public let bio: String?
     public let pictureUrl: URL?
 
+    public let tags: ProfileTags
+
+    public let totalMessages: Int?
+    public let accountCreationDate: Date?
+    public let gamificationLevel: GamificationLevel?
+    public let gamificationScore: Int?
+
     public let hasSeenOnboarding: Bool
     public let hasAcceptedCgu: Bool
     public let hasConfirmedNickname: Bool
@@ -29,14 +36,22 @@ public struct CurrentUserProfile: Equatable, Sendable {
 }
 
 extension CurrentUserProfile {
-    init(storableProfile: StorableCurrentUserProfile, postFeedsStore: PostFeedsStore) {
+    init(storableProfile: StorableCurrentUserProfile, gamificationLevels: [GamificationLevel],
+         postFeedsStore: PostFeedsStore) {
         id = storableProfile.id
         userId = storableProfile.userId
         nickname = storableProfile.nickname
         originalNickname = storableProfile.originalNickname
         email = storableProfile.email
-        bio = storableProfile.bio
+        bio = storableProfile.bio?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
         pictureUrl = storableProfile.pictureUrl
+        tags = storableProfile.tags
+        
+        totalMessages = storableProfile.totalMessages
+        accountCreationDate = storableProfile.accountCreationDate
+        gamificationLevel = gamificationLevels.first { $0.level == storableProfile.gamificationLevel }
+        gamificationScore = storableProfile.gamificationScore
+
         // if frictionless values are nil, it means that we are currently using a non-frictionless profile
         // In this case, default to true values to avoid presenting screens/making actions on this
         // non-frictionless user

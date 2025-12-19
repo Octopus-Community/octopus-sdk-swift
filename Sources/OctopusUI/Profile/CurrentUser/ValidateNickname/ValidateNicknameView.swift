@@ -96,9 +96,10 @@ private struct ContentView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxHeight: 144)
+                        .accessibilityHidden(true)
 
                     Spacer().frame(height: 18)
-                    
+
                     Text("ValidateNickname.Nickname", bundle: .module)
                         .font(theme.fonts.title2)
                         .fontWeight(.semibold)

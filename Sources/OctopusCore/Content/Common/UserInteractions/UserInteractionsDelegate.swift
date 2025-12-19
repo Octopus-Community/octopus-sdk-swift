@@ -14,15 +14,20 @@ class UserInteractionsDelegate {
     private let authCallProvider: AuthenticatedCallProvider
     private let octoObjectsDatabase: OctoObjectsDatabase
     private let networkMonitor: NetworkMonitor
+    private let toastsRepository: ToastsRepository
+    private let sdkEventsEmitter: SdkEventsEmitter
 
     init(injector: Injector) {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         octoObjectsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
     }
 
-    func set(reaction: ReactionKind?, content: OctopusContent, parentIsTranslated: Bool) async throws(Reaction.Error) {
+    func set(reaction: ReactionKind?, content: any OctopusContent, parentIsTranslated: Bool)
+    async throws(Reaction.Error) {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
             let existingReaction = content.userInteractions.reaction
@@ -51,6 +56,10 @@ class UserInteractionsDelegate {
                                 id: reactionId),
                             contentId: content.uuid,
                             updateReactionCount: false)
+                        if existingReaction == nil {
+                            toastsRepository.display(gamificationToast: .reaction)
+                        }
+                        sdkEventsEmitter.emit(.contentReactionChanged(content: content, reaction: reaction))
                     case let .fail(failure):
                         throw Reaction.Error.validation(.init(from: failure))
                     case .none:
@@ -68,6 +77,7 @@ class UserInteractionsDelegate {
                     _ = try await remoteClient.octoService.deleteReaction(
                         reactionId: existingReaction.id,
                         authenticationMethod: try authCallProvider.authenticatedMethod())
+                    sdkEventsEmitter.emit(.contentReactionChanged(content: content, reaction: reaction))
                 } catch {
                     guard let error = error as? RemoteClientError,
                           case .notFound = error else {

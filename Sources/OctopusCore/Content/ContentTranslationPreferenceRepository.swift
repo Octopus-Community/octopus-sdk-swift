@@ -3,20 +3,37 @@
 //
 
 import Foundation
+import Combine
 import OctopusDependencyInjection
+
+public protocol ContentTranslationPreferenceRepository {
+    var contentDisplayTranslationsPublisher: AnyPublisher<[String: Bool], Never> { get }
+
+    /// Returns whether the given content should display the original text.
+    func displayTranslation(for contentId: String) -> Bool
+
+    /// Toggles the display mode for a given content ID.
+    /// - Returns: the new display translation value
+    @discardableResult
+    func toggleDisplayTranslation(for contentId: String) -> Bool
+}
 
 extension Injected {
     static let contentTranslationPreferenceRepository = Injector.InjectedIdentifier<ContentTranslationPreferenceRepository>()
 }
 
-public class ContentTranslationPreferenceRepository: InjectableObject {
+public class ContentTranslationPreferenceRepositoryDefault: ContentTranslationPreferenceRepository, InjectableObject {
     public static let injectedIdentifier = Injected.contentTranslationPreferenceRepository
+
+    public var contentDisplayTranslationsPublisher: AnyPublisher<[String: Bool], Never> {
+        $contentDisplayTranslations.eraseToAnyPublisher()
+    }
 
     /// Dictionary mapping content IDs to a Boolean:
     /// - true = show translation text
     /// - false = show original text
     /// - nil = show translation text
-    @Published public private(set) var contentDisplayTranslations: [String: Bool] = [:]
+    @Published private(set) var contentDisplayTranslations: [String: Bool] = [:]
 
     init(injector: Injector) {
         

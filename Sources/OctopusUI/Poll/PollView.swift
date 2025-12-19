@@ -18,13 +18,19 @@ struct PollView: View {
     @State private var simulateVote: String?
 
     var body: some View {
-        VStack(spacing: 8) {
-            ForEach(poll.options, id: \.id) { pollOption in
+        VStack(spacing: 0) {
+            ForEach(poll.options.indices, id: \.self) { pollOptionIdx in
+                let pollOption = poll.options[pollOptionIdx]
                 Group {
                     let state = state(for: pollOption.id)
                     if simulateVote != nil || state.displayResult {
-                        PollOptionView(pollOption: pollOption, state: state, parentId: parentId)
-                            .animation(.easeInOut, value: state) // Animates changes
+                        PollOptionView(
+                            pollOption: pollOption,
+                            optionIdx: pollOptionIdx,
+                            totalOptionCount: poll.options.count,
+                            state: state,
+                            parentId: parentId)
+                        .animation(.easeInOut, value: state) // Animates changes
                     } else {
                         Button(action: {
                             simulateVote = pollOption.id
@@ -33,22 +39,24 @@ struct PollView: View {
                                 simulateVote = nil
                             }
                         }) {
-                            PollOptionView(pollOption: pollOption, state: state, parentId: parentId)
-                                .contentShape(Rectangle())
+                            PollOptionView(
+                                pollOption: pollOption,
+                                optionIdx: pollOptionIdx,
+                                totalOptionCount: poll.options.count,
+                                state: state,
+                                parentId: parentId)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
                 }
             }
-            if let totalVoteCount = aggregatedInfo.pollResult?.totalVoteCount,
-               userInteractions.hasVoted || totalVoteCount >= 4 {
-                Text("Poll.Results.VoteCount_total:\(totalVoteCount)", bundle: .module)
-                    .font(theme.fonts.caption2)
-                    .fontWeight(.medium)
-                    .foregroundColor(theme.colors.gray700)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .multilineTextAlignment(.leading)
-            }
+            Text(subPollLocalizedKey, bundle: .module)
+                .font(theme.fonts.caption2)
+                .fontWeight(.medium)
+                .foregroundColor(theme.colors.gray700)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .multilineTextAlignment(.leading)
         }
         .onValueChanged(of: userInteractions.hasVoted) {
             guard $0 else { return }
@@ -68,7 +76,19 @@ struct PollView: View {
         }
     }
 
-    
+    var subPollLocalizedKey: LocalizedStringKey {
+        if userInteractions.hasVoted {
+            if let totalVoteCount = aggregatedInfo.pollResult?.totalVoteCount, totalVoteCount > 1 {
+                return "Poll.Results.VoteCount.Plural_total:\(String.formattedCount(totalVoteCount))"
+            } else {
+                return "Poll.Results.VoteCount.One_total:\("1")" // if hasVoted, the total vote count is > 0
+            }
+        } else if let totalVoteCount = aggregatedInfo.pollResult?.totalVoteCount, totalVoteCount >= 5 {
+            return "Poll.Results.Hidden.VoteCount_total:\(String.formattedCount(totalVoteCount))"
+        } else {
+            return "Poll.Results.Hidden.SomeVotes"
+        }
+    }
 }
 
 struct PollOptionView: View {
@@ -85,9 +105,19 @@ struct PollOptionView: View {
             case .displayResult: return true
             }
         }
+
+        var isUserChoice: Bool {
+            switch self {
+            case let .displayResult(_, isUserChoice):
+                return isUserChoice
+            case .waitForUserVote: return false
+            }
+        }
     }
 
     let pollOption: DisplayablePoll.Option
+    let optionIdx: Int
+    let totalOptionCount: Int
     let state: VoteState
     let parentId: String
 
@@ -146,10 +176,19 @@ struct PollOptionView: View {
                     $0.readWidth($width)
                 }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityHintInBundle("Accessibility.Poll.IdxOption_index:\(optionIdx + 1)_count:\(totalOptionCount)")
+            .accessibilityLabelCompat(pollOption.text.getText(translated: translationStore.displayTranslation(for: parentId)))
+            .modify {
+                if state.displayResult {
+                    $0.accessibilityValueInBundle(state.isUserChoice ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
+                } else { $0 }
+            }
             if case let .displayResult(percent, _) = state {
                 ZStack {
                     Text(verbatim: "100%") // biggest possible string
                         .foregroundColor(Color.clear)
+                        .accessibilityHidden(true)
 
                     Text(verbatim: "\(percent)%")
                         .foregroundColor(theme.colors.gray900)
@@ -157,6 +196,7 @@ struct PollOptionView: View {
                 .font(theme.fonts.body2)
             }
         }
+        .padding(.vertical, 4)
     }
 }
 

@@ -133,11 +133,14 @@ class PostDetailViewModel: ObservableObject {
         self.translationStore = translationStore
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
-        Publishers.CombineLatest3(
+        Publishers.CombineLatest4(
             octopus.core.postsRepository.getPost(uuid: postUuid).removeDuplicates().replaceError(with: nil),
             octopus.core.topicsRepository.$topics.removeDuplicates(),
-            octopus.core.profileRepository.profilePublisher.removeDuplicates())
-        .sink { [unowned self] post, topics, profile in
+            octopus.core.profileRepository.profilePublisher.removeDuplicates(),
+            octopus.core.configRepository.communityConfigPublisher
+                .map { $0?.gamificationConfig?.gamificationLevels }
+                .removeDuplicates())
+        .sink { [unowned self] post, topics, profile, gamificationLevels in
             self.internalPost = post
             guard postDeletion == nil else { return }
             guard let post else {
@@ -164,7 +167,9 @@ class PostDetailViewModel: ObservableObject {
                 self.comments = nil
                 return
             }
-            self.post = Post(from: post, thisUserProfileId: profile?.id, topic: topic,
+            self.post = Post(from: post,
+                             gamificationLevels: gamificationLevels ?? [],
+                             thisUserProfileId: profile?.id, topic: topic,
                              dateFormatter: relativeDateFormatter)
             newestFirstCommentsFeed = post.newestFirstCommentsFeed
             if let oldestFirstCommentsFeed = post.oldestFirstCommentsFeed {
@@ -173,11 +178,14 @@ class PostDetailViewModel: ObservableObject {
 
         }.store(in: &storage)
 
-        Publishers.CombineLatest(
+        Publishers.CombineLatest3(
             $modelComments.removeDuplicates(),
-            octopus.core.profileRepository.profilePublisher.removeDuplicates()
+            octopus.core.profileRepository.profilePublisher.removeDuplicates(),
+            octopus.core.configRepository.communityConfigPublisher
+                .map { $0?.gamificationConfig?.gamificationLevels }
+                .removeDuplicates()
         )
-        .sink { [unowned self] comments, profile in
+        .sink { [unowned self] comments, profile, gamificationLevels in
             guard let comments else {
                 self.comments = nil
                 return
@@ -248,7 +256,7 @@ class PostDetailViewModel: ObservableObject {
                 }
                 liveMeasurePublisher.send(LiveMeasures(aggregatedInfo: comment.aggregatedInfo, userInteractions: comment.userInteractions))
                 return DisplayableFeedResponse(
-                    from: comment,
+                    from: comment, gamificationLevels: gamificationLevels ?? [],
                     liveMeasurePublisher: liveMeasurePublisher,
                     thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
@@ -811,11 +819,16 @@ extension PostDetailViewModel.Post.Attachment {
 }
 
 extension PostDetailViewModel.Post {
-    init(from post: Post, thisUserProfileId: String?, topic: OctopusCore.Topic,
+    init(from post: Post,
+         gamificationLevels: [GamificationLevel],
+         thisUserProfileId: String?, topic: OctopusCore.Topic,
          dateFormatter: RelativeDateTimeFormatter) {
         uuid = post.uuid
         text = post.text
-        author = .init(profile: post.author)
+        author = .init(
+            profile: post.author,
+            gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
+        )
         relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())
         self.topic = topic.name
         attachment = .init(from: post)

@@ -79,6 +79,8 @@ struct CreatePollView: View {
 
     @State private var focusOptionId: UUID?
 
+    private let internalPadding: CGFloat = 16
+
     init(poll: Binding<EditablePoll>, deletePoll: @escaping () -> Void) {
         self._poll = poll
         self.deletePoll = deletePoll
@@ -86,49 +88,59 @@ struct CreatePollView: View {
     }
 
     var body: some View {
-        VStack {
-            VStack(spacing: 8) {
-                HStack {
-                    Text("Poll.Create.Title", bundle: .module)
-                        .font(theme.fonts.caption1)
-                        .foregroundColor(theme.colors.gray700)
-                    Spacer()
-                    Button(action: {
-                        withAnimation {
-                            deletePoll()
-                        }
-                    }) {
-                        Image(res: .trash)
-                            .resizable()
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(theme.colors.gray900)
+        VStack(spacing: 0) {
+            HStack {
+                Text("Poll.Create.Title", bundle: .module)
+                    .font(theme.fonts.caption1)
+                    .foregroundColor(theme.colors.gray700)
+                    .accessibilityAddTraits(.isHeader)
+                    .padding(.top, internalPadding)
+                Spacer()
+                Button(action: {
+                    withAnimation {
+                        deletePoll()
                     }
+                }) {
+                    Image(res: .trash)
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(theme.colors.gray900)
+                        .accessibilityLabelInBundle("Accessibility.Poll.Delete")
                 }
-                ForEach(Array(poll.options.indices), id: \.self) { index in
-                    OptionView(
-                        index: index,
-                        option: $poll.options[index],
-                        focus: $focusOptionId,
-                        nextFocusId: poll.options.count > index + 1 ? poll.options[index + 1].uuid : nil,
-                        canDelete: poll.canRemoveOptions,
-                        deleteOption: {
-                            withAnimation {
-                                poll.removeOption(at: index)
-                            }
-                        }
-                    )
-                }
-                if poll.canAddOptions {
-                    AddOptionView(addOption: {
-                        withAnimation {
-                            let newOptionId = poll.addOption()
-                            focusOptionId = newOptionId
-                        }
-                    })
-                }
+                .padding(.top, internalPadding)
+                .padding(.vertical, (44 - 24) - internalPadding)
+                .padding(.leading, (44 - 24) - internalPadding)
+                .padding(.trailing, internalPadding)
             }
-            .padding(16)
+
+            ForEach(Array(poll.options.indices), id: \.self) { index in
+                OptionView(
+                    index: index,
+                    option: $poll.options[index],
+                    focus: $focusOptionId,
+                    nextFocusId: poll.options.count > index + 1 ? poll.options[index + 1].uuid : nil,
+                    canDelete: poll.canRemoveOptions,
+                    deleteOption: {
+                        withAnimation {
+                            poll.removeOption(at: index)
+                        }
+                    }
+                )
+                .padding(.vertical, 4)
+            }
+            if poll.canAddOptions {
+                AddOptionView(addOption: {
+                    withAnimation {
+                        let newOptionId = poll.addOption()
+                        focusOptionId = newOptionId
+                    }
+                })
+                .padding(.trailing, internalPadding)
+                .padding(.vertical, 4)
+            }
         }
+        .padding(.bottom, internalPadding)
+        .padding(.leading, internalPadding)
         .overlay(
             RoundedRectangle(cornerRadius: 24)
                 .stroke(theme.colors.gray300, lineWidth: 1)
@@ -145,38 +157,50 @@ private struct OptionView: View {
     let canDelete: Bool
     let deleteOption: () -> Void
 
-    var body: some View {
-        VStack(spacing: 4) {
-            HStack {
-                OctopusTextInput(
-                    text: $option.text,
-                    placeholder: "Poll.Create.Option.Text.Placeholder_index:\(index+1)",
-                    error: option.error,
-                    lineLimit: nil,
-                    isFocused: focus == option.id)
-                .focused(id: option.id, $focus)
-                // keep the text without any new line character
-                .onValueChanged(of: option) {
-                    // be sure that it is the same option. Needed in case an option has just been deleted
-                    guard option.uuid == $0.uuid else { return }
-                    var newText = $0.text
-                    if newText.last?.isNewline == true {
-                        newText.removeLast()
-                        focus = nextFocusId
-                    }
-                    // finally, remove all the new lines (in case of a copy/paste)
-                    newText.removeAll { $0.isNewline }
-                    option.text = newText
-                }
+    private let leadingPadding: CGFloat = 16
 
-                Button(action: deleteOption) {
-                    Image(systemName: "xmark")
-                        .font(theme.fonts.body2)
-                        .foregroundColor(canDelete ? theme.colors.gray900 : theme.colors.gray200)
+    var body: some View {
+        HStack(spacing: 0) {
+            OctopusTextInput(
+                text: $option.text,
+                placeholder: "Poll.Create.Option.Text.Placeholder_index:\(index+1)",
+                error: option.error,
+                lineLimit: nil,
+                isFocused: Binding(
+                    get: { focus == option.id },
+                    set: {
+                        if $0 {
+                            focus = option.id
+                        }
+                    })
+            )
+            .focused(id: option.id, $focus)
+            // keep the text without any new line character
+            .onValueChanged(of: option) {
+                // be sure that it is the same option. Needed in case an option has just been deleted
+                guard option.uuid == $0.uuid else { return }
+                var newText = $0.text
+                if newText.last?.isNewline == true {
+                    newText.removeLast()
+                    focus = nextFocusId
                 }
-                .disabled(!canDelete)
-                .buttonStyle(.plain)
+                // finally, remove all the new lines (in case of a copy/paste)
+                newText.removeAll { $0.isNewline }
+                option.text = newText
             }
+
+            Button(action: deleteOption) {
+                Image(systemName: "xmark")
+                    .font(theme.fonts.body2)
+                    .foregroundColor(canDelete ? theme.colors.gray900 : theme.colors.gray200)
+                    .accessibilityLabelInBundle("Accessibility.Poll.Option.Delete")
+                    .padding(.leading, (44 - 14) - leadingPadding)
+                    .padding(.trailing, leadingPadding)
+                    .padding(.vertical, 16)
+                    .contentShape(Rectangle())
+            }
+            .disabled(!canDelete)
+            .buttonStyle(.plain)
         }
     }
 }
@@ -204,5 +228,6 @@ private struct AddOptionView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .frame(minHeight: 44)
     }
 }

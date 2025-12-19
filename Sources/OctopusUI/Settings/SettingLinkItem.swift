@@ -30,6 +30,7 @@ struct SettingItem: View {
             .foregroundColor(theme.colors.gray900)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
+            .padding(.bottom, 25)
             .contentShape(Rectangle())
     }
 }

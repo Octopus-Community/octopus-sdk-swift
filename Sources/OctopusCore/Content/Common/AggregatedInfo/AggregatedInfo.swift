@@ -76,6 +76,14 @@ public struct AggregatedInfo: Equatable, Sendable {
     public let childCount: Int
     public let viewCount: Int
     public let pollResult: PollResult?
+
+    /// Public constructor, only for SwiftUI previews
+    public init(reactions: [ReactionCount], childCount: Int, viewCount: Int, pollResult: PollResult?) {
+        self.reactions = reactions
+        self.childCount = childCount
+        self.viewCount = viewCount
+        self.pollResult = pollResult
+    }
 }
 
 extension AggregatedInfo {

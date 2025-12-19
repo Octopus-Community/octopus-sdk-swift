@@ -26,11 +26,12 @@ struct PoweredByOctopusView: View {
                     .frame(height: textHeight * 1.4)
             }
             .foregroundColor(theme.colors.gray500)
-            .padding(.top, 4)
+            .padding(.top, 21)
+
         }
         .buttonStyle(.plain)
         .modify {
-            if #available(iOS 16.4, *) {
+            if #available(iOS 16.4, *), !UIAccessibility.isVoiceOverRunning {
                 $0.popover(isPresented: $isShowingPopover, arrowEdge: .bottom) {
                     Text(verbatim: "www.octopuscommunity.com")
                         .font(theme.fonts.caption1)
@@ -43,6 +44,8 @@ struct PoweredByOctopusView: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabelInBundle("Accessibility.Common.PoweredBy")
     }
 }
 

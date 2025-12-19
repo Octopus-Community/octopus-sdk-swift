@@ -126,6 +126,7 @@ private struct ContentView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 44)
+                .accessibilityHidden(true)
             switch state {
             case let .emailEntry(substate):
                 EnterEmailView(state: substate, sendEmailButtonAvailable: sendEmailButtonAvailable, email: $email,
@@ -163,7 +164,7 @@ private struct EnterEmailView: View {
             OctopusTextInput(
                 text: $email, label: "Connection.MagicLink.Email.Description",
                 placeholder: "Connection.MagicLink.Email.Placeholder",
-                hint: nil, error: nil, isFocused: emailFocused, isDisabled: false) {
+                hint: nil, error: nil, isFocused: $emailFocused, isDisabled: false) {
                     sendMagicLink()
                 }
             .autocapitalization(.none)

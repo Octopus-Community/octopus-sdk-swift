@@ -10,7 +10,8 @@ import OctopusCore
 
 @MainActor
 class ProfileSummaryViewModel: ObservableObject {
-    @Published var profile: Profile?
+    @Published var profile: DisplayableProfile?
+    @Published var displayAccountAge: Bool = false
     @Published private(set) var dismiss = false
     @Published private(set) var error: DisplayableString?
     @Published private(set) var isLoading: Bool = false
@@ -39,10 +40,9 @@ class ProfileSummaryViewModel: ObservableObject {
         self.connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         octopus.core.profileRepository.getProfile(profileId: profileId)
-            .replaceError(with: nil)
             .removeDuplicates()
             .sink { [unowned self] in
-                self.profile = $0
+                self.profile = $0.map { DisplayableProfile(from: $0) }
                 if let newestFirstPostsFeed = $0?.newestFirstPostsFeed {
                     // Update the view model only if feed id has changed
                     if postFeedViewModel?.feed.id != newestFirstPostsFeed.id {
@@ -57,6 +57,14 @@ class ProfileSummaryViewModel: ObservableObject {
                 } else {
                     postFeedViewModel = nil
                 }
+            }.store(in: &storage)
+
+        octopus.core.configRepository
+            .communityConfigPublisher
+            .map { $0?.displayAccountAge ?? false }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                displayAccountAge = $0
             }.store(in: &storage)
 
         Task {

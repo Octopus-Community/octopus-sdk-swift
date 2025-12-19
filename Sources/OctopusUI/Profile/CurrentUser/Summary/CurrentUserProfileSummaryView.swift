@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct CurrentUserProfileSummaryView: View {
+    @EnvironmentObject private var gamificationRulesViewManager: GamificationRulesViewManager
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
@@ -22,16 +23,24 @@ struct CurrentUserProfileSummaryView: View {
     @State private var displayOpenEditProfileInApp = false
     @State private var openEditProfileInApp: (() -> Void)?
 
+    @State private var showGamificationRules = false
+
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore) {
+    @State private var isDisplayed = false
+
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
+         gamificationRulesViewManager: GamificationRulesViewManager) {
         _viewModel = Compat.StateObject(wrappedValue: CurrentUserProfileSummaryViewModel(
-            octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore))
+            octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
+            gamificationRulesViewManager: gamificationRulesViewManager))
     }
 
     var body: some View {
         ContentView(
             profile: viewModel.profile,
+            gamificationConfig: viewModel.gamificationConfig,
+            displayAccountAge: viewModel.displayAccountAge,
             zoomableImageInfo: $zoomableImageInfo,
             hasInitialNotSeenNotifications: viewModel.hasInitialNotSeenNotifications,
             refresh: viewModel.refresh,
@@ -41,7 +50,9 @@ struct CurrentUserProfileSummaryView: View {
                 openEdition(field: .bio)
             }, openEditionWithPhotoPicker: {
                 openEdition(field: .picture)
-            }, postsView: {
+            },
+            openGamificationRules: { showGamificationRules = true },
+            postsView: {
                 if let postFeedViewModel = viewModel.postFeedViewModel {
                     PostFeedView(
                         viewModel: postFeedViewModel,
@@ -70,6 +81,16 @@ struct CurrentUserProfileSummaryView: View {
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem)
+        .toastContainer(octopus: viewModel.octopus)
+        .sheet(isPresented: $showGamificationRules) {
+            if let gamificationConfig = viewModel.gamificationConfig {
+                GamificationRulesScreen(gamificationConfig: gamificationConfig,
+                                      gamificationRulesViewManager:gamificationRulesViewManager
+                ).sizedSheet()
+            } else {
+                EmptyView()
+            }
+        }
         .compatAlert(
             "Common.Error",
             isPresented: $displayError,
@@ -103,6 +124,20 @@ struct CurrentUserProfileSummaryView: View {
         .onValueChanged(of: displayError) {
             guard !$0 else { return }
             viewModel.error = nil
+        }
+        .onReceive(viewModel.$forceDisplayGamificationRules) {
+            guard $0 else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                if isDisplayed {
+                    showGamificationRules = true
+                }
+            }
+        }
+        .onAppear {
+            isDisplayed = true
+        }
+        .onDisappear {
+            isDisplayed = false
         }
     }
 
@@ -153,34 +188,36 @@ struct CurrentUserProfileSummaryView: View {
     @ViewBuilder
     private var trailingBarItem: some View {
         Button(action: { navigator.push(.settingsList) }) {
-            Image(systemName: "ellipsis")
-                .modify {
-#if compiler(>=6.2)
-                    if #available(iOS 26.0, *) {
-                        $0
-                    } else {
-                        $0.padding(.vertical)
-                            .padding(.leading)
-                    }
-#else
-                    $0.padding(.vertical)
-                        .padding(.leading)
-#endif
-                }
-                .font(theme.fonts.navBarItem)
+            if #available(iOS 26.0, *) {
+                Label(L10n("Accessibility.Common.More"), systemImage: "ellipsis")
+            } else {
+                Image(systemName: "ellipsis")
+                    .font(theme.fonts.navBarItem)
+                    .padding(.vertical)
+                    .padding(.leading)
+                    .frame(minWidth: 44, minHeight: 44)
+            }
         }
-        .buttonStyle(.plain)
+        .modify {
+            if #unavailable(iOS 26.0) {
+                $0.buttonStyle(.plain)
+            } else { $0 }
+        }
+        .accessibilityLabelInBundle("Settings.Community.Title")
     }
 }
 
 private struct ContentView<PostsView: View, NotificationsView: View>: View {
-    let profile: CurrentUserProfile?
+    let profile: DisplayableCurrentUserProfile?
+    let gamificationConfig: GamificationConfig?
+    let displayAccountAge: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let hasInitialNotSeenNotifications: Bool
     let refresh: @Sendable () async -> Void
     let openEdition: () -> Void
     let openEditionWithBioFocused: () -> Void
     let openEditionWithPhotoPicker: () -> Void
+    let openGamificationRules: () -> Void
 
     @ViewBuilder let postsView: PostsView
     @ViewBuilder let notificationsView: NotificationsView
@@ -198,13 +235,17 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
                 }
 #endif
                 ProfileContentView(profile: profile,
+                                   gamificationConfig: gamificationConfig,
+                                   displayAccountAge: displayAccountAge,
                                    zoomableImageInfo: $zoomableImageInfo,
                                    hasInitialNotSeenNotifications: hasInitialNotSeenNotifications,
                                    refresh: refresh, openEdition: openEdition,
                                    openEditionWithBioFocused: openEditionWithBioFocused,
                                    openEditionWithPhotoPicker: openEditionWithPhotoPicker,
+                                   openGamificationRules: openGamificationRules,
                                    postsView: { postsView },
                                    notificationsView: { notificationsView })
+                .padding(.top, 8)
                 PoweredByOctopusView()
             }
         } else {
@@ -216,35 +257,46 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
 
 private struct ProfileContentView<PostsView: View, NotificationsView: View>: View {
     @Environment(\.octopusTheme) private var theme
-    let profile: CurrentUserProfile
+    let profile: DisplayableCurrentUserProfile
+    let gamificationConfig: GamificationConfig?
+    let displayAccountAge: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
     let openEdition: () -> Void
     let openEditionWithBioFocused: () -> Void
     let openEditionWithPhotoPicker: () -> Void
+    let openGamificationRules: () -> Void
     @ViewBuilder let postsView: PostsView
     @ViewBuilder let notificationsView: NotificationsView
 
     @State private var selectedTab: Int
     @State private var displayStickyHeader = false
 
+    @State private var displayFullBio = false
+
     private let scrollViewCoordinateSpace = "scrollViewCoordinateSpace"
 
-    init(profile: CurrentUserProfile,
+    init(profile: DisplayableCurrentUserProfile,
+         gamificationConfig: GamificationConfig?,
+         displayAccountAge: Bool,
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
          hasInitialNotSeenNotifications: Bool,
          refresh: @escaping @Sendable () async -> Void,
          openEdition: @escaping () -> Void,
          openEditionWithBioFocused: @escaping () -> Void,
          openEditionWithPhotoPicker: @escaping () -> Void,
+         openGamificationRules: @escaping () -> Void,
          @ViewBuilder postsView: @escaping () -> PostsView,
          @ViewBuilder notificationsView: @escaping () -> NotificationsView) {
         self.profile = profile
+        self.gamificationConfig = gamificationConfig
+        self.displayAccountAge = displayAccountAge
         self._zoomableImageInfo = zoomableImageInfo
         self.refresh = refresh
         self.openEdition = openEdition
         self.openEditionWithBioFocused = openEditionWithBioFocused
         self.openEditionWithPhotoPicker = openEditionWithPhotoPicker
+        self.openGamificationRules = openGamificationRules
         self.postsView = postsView()
         self.notificationsView = notificationsView()
         self._selectedTab = State(wrappedValue: hasInitialNotSeenNotifications ? 1 : 0)
@@ -255,7 +307,7 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
             Compat.ScrollView(refreshAction: refresh) {
                 VStack(spacing: 0) {
                     VStack(alignment: .leading, spacing: 0) {
-                        HStack(alignment: .top) {
+                        HStack(spacing: 16) {
                             if case .defaultImage = avatar {
                                 Button(action: openEditionWithPhotoPicker) {
                                     AuthorAvatarView(avatar: avatar)
@@ -271,51 +323,151 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                                         )
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityHintInBundle("Accessibility.Profile.Picture.Edit")
                             } else {
                                 ZoomableAuthorAvatarView(avatar: avatar, zoomableImageInfo: $zoomableImageInfo)
                                     .frame(width: 71, height: 71)
                             }
-                            Spacer()
-                            Button(action: openEdition) {
-                                Text("Profile.Edit.Button", bundle: .module)
+
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(profile.nickname)
+                                    .font(theme.fonts.title2)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(theme.colors.gray900)
+                                    .modify {
+                                        if #available(iOS 15.0, *) {
+                                            $0.textSelection(.enabled)
+                                        } else { $0 }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                if profile.tags.contains(.admin) {
+                                    Text("Profile.Tag.Admin", bundle: .module)
+                                        .octopusBadgeStyle(.xs, status: .admin)
+                                        .padding(.top, 6)
+                                } else if let gamificationConfig {
+                                    Button(action: openGamificationRules) {
+                                        VStack(alignment: .leading, spacing: 0) {
+                                            AdaptiveAccessibleStack2Contents(
+                                                hStackSpacing: 0,
+                                                vStackAlignment: .leading,
+                                                vStackSpacing: 4,
+                                                horizontalContent: {
+                                                    GamificationLevelBadge(level: profile.gamificationLevel, size: .big)
+                                                    Spacer(minLength: 8)
+                                                    if let gamificationScore = profile.gamificationScore,
+                                                       let gamificationLevel = profile.gamificationLevel {
+                                                        GamificationScoreToTargetView(
+                                                            gamificationLevel: gamificationLevel,
+                                                            gamificationScore: gamificationScore,
+                                                            gamificationConfig: gamificationConfig)
+                                                    }
+                                                }, verticalContent: {
+                                                    GamificationLevelBadge(level: profile.gamificationLevel, size: .big)
+                                                    if let gamificationScore = profile.gamificationScore,
+                                                       let gamificationLevel = profile.gamificationLevel {
+                                                        GamificationScoreToTargetView(
+                                                            gamificationLevel: gamificationLevel,
+                                                            gamificationScore: gamificationScore,
+                                                            gamificationConfig: gamificationConfig)
+                                                    }
+                                                })
+
+                                            if let gamificationScore = profile.gamificationScore,
+                                               let level = profile.gamificationLevel,
+                                               let nextLevelAt = level.nextLevelAt {
+                                                Spacer().frame(height: 8)
+                                                GamificationProgressionBar(
+                                                    currentScore: gamificationScore,
+                                                    startScore: level.startAt,
+                                                    targetScore: nextLevelAt)
+                                            }
+                                        }
+                                        .padding(.top, 6)
+                                        .padding(.bottom, 4)
+                                    }.buttonStyle(.plain)
+                                } else {
+                                    Spacer().frame(height: 8)
+                                }
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline))
                         }
-                        Spacer().frame(height: 20)
-                        Text(profile.nickname)
-                            .font(theme.fonts.title1)
-                            .fontWeight(.semibold)
+
+                        Spacer().frame(height: 14)
+
+                        ProfileCounterView(totalMessages: profile.totalMessages,
+                                           accountCreationDate: displayAccountAge ? profile.accountCreationDate : nil)
+
+                        if let bio = profile.bio {
+                            Group {
+                                if bio.isEllipsized {
+                                    Text(verbatim: "\(bio.getText(ellipsized: !displayFullBio))\(!displayFullBio ? "... " : " ")")
+                                    +
+                                    Text(displayFullBio ? L10n("Common.ReadLess") : L10n("Common.ReadMore"))
+                                        .fontWeight(.medium)
+                                        .foregroundColor(theme.colors.gray500)
+                                } else {
+                                    Text(bio.fullText)
+                                }
+                            }
+                            .font(theme.fonts.body2)
                             .foregroundColor(theme.colors.gray900)
                             .modify {
                                 if #available(iOS 15.0, *) {
                                     $0.textSelection(.enabled)
                                 } else { $0 }
                             }
-                        Spacer().frame(height: 10)
-                        if let bio = profile.bio?.nilIfEmpty {
-                            Text(bio.cleanedBio)
-                                .font(theme.fonts.body2)
-                                .foregroundColor(theme.colors.gray900)
-                                .modify {
-                                    if #available(iOS 15.0, *) {
-                                        $0.textSelection(.enabled)
-                                    } else { $0 }
+                            .padding(.vertical, 5)
+                            .onTapGesture {
+                                withAnimation {
+                                    displayFullBio.toggle()
                                 }
-                        } else {
-                            Button(action: openEditionWithBioFocused) {
+                            }
+
+                            Spacer().frame(height: 12)
+
+                            Button(action: openEdition) {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "plus")
-                                        .font(theme.fonts.body2.weight(.light))
-                                    Text("Profile.Detail.EmptyBio.Button", bundle: .module)
+                                    Text("Profile.Edit.Button", bundle: .module)
                                         .font(theme.fonts.body2)
                                         .fontWeight(.medium)
                                 }
                                 .foregroundColor(theme.colors.gray900)
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
+                                                           externalVerticalPadding: 5))
+                        } else {
+                            AdaptiveAccessibleStack(
+                                hStackSpacing: 8,
+                                vStackAlignment: .leading,
+                                vStackSpacing: 4) {
+                                    Button(action: openEditionWithBioFocused) {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "plus")
+                                                .font(theme.fonts.body2.weight(.light))
+                                            Text("Profile.Detail.EmptyBio.Button", bundle: .module)
+                                                .font(theme.fonts.body2)
+                                                .fontWeight(.medium)
+                                        }
+                                        .foregroundColor(theme.colors.gray900)
+                                    }
+                                    .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
+                                                                    externalVerticalPadding: 5))
+
+                                    Button(action: openEdition) {
+                                        HStack(spacing: 4) {
+                                            Text("Profile.Edit.Button", bundle: .module)
+                                                .font(theme.fonts.body2)
+                                                .fontWeight(.medium)
+                                        }
+                                        .foregroundColor(theme.colors.gray900)
+                                    }
+                                    .buttonStyle(OctopusButtonStyle(.mid, style: .outline,
+                                                                    externalVerticalPadding: 5))
+                                }
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 16)
+
                     CustomSegmentedControl(tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],
                                            tabCount: 2, selectedTab: $selectedTab)
                     .background(
@@ -355,5 +507,35 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
         } else {
             return .defaultImage(name: profile.nickname)
         }
+    }
+}
+
+private struct GamificationScoreToTargetView: View {
+    @Environment(\.octopusTheme) private var theme
+
+    let gamificationLevel: GamificationLevel
+    let gamificationScore: Int
+    let gamificationConfig: GamificationConfig
+
+
+    var body: some View {
+        HStack(spacing: 0) {
+            if let nextLevelAt = gamificationLevel.nextLevelAt {
+                Text(verbatim: "\(gamificationScore) / \(nextLevelAt) \(gamificationConfig.pointsName)")
+            } else {
+                Text(verbatim: "\(gamificationScore) \(gamificationConfig.pointsName)")
+            }
+
+            Image(systemName: "info.circle")
+                .font(theme.fonts.caption1)
+                .scaleEffect(0.9)
+                .padding(.horizontal, 2)
+        }
+        .font(theme.fonts.caption1.weight(.semibold))
+        .foregroundColor(theme.colors.primary)
+        .padding(2)
+        .background(RoundedRectangle(cornerRadius: 4)
+            .fill(theme.colors.primaryLowContrast)
+        )
     }
 }

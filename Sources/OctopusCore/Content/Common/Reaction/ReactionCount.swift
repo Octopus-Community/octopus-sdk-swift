@@ -8,6 +8,12 @@ import OctopusGrpcModels
 public struct ReactionCount: Equatable, Hashable, Sendable {
     public let reactionKind: ReactionKind
     public let count: Int
+
+    /// Public constructor, only for SwiftUI previews
+    public init(reactionKind: ReactionKind, count: Int) {
+        self.reactionKind = reactionKind
+        self.count = count
+    }
 }
 
 extension ReactionCount {

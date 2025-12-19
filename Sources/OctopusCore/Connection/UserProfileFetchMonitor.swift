@@ -43,6 +43,7 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
     private let userDataStorage: UserDataStorage
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
+    private let appStateMonitor: AppStateMonitor
 
     private var storage: Set<AnyCancellable> = []
     private var magicLinkSubscription: Task<Void, Error>?
@@ -55,49 +56,51 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
+        appStateMonitor = injector.getInjected(identifiedBy: Injected.appStateMonitor)
     }
 
     func start() {
-        Publishers.CombineLatest3(
-            userDataStorage.$userData.removeDuplicates(by: { $0?.id == $1?.id }),
-            networkMonitor.connectionAvailablePublisher,
-            $connectionInProgress
-        )
-        .map { userData, connectionAvailable, connectionInProgress -> UserDataStorage.UserData? in
-            guard !connectionInProgress else { return nil }
-            guard connectionAvailable else { return nil }
-            guard let userData else { return nil }
-            return userData
-        }
-        // do it only once when all requirements are met
-        .removeDuplicates()
-        .sink { userData in
-            guard let userData else { return }
-            Task { [self] in
-                do {
-                    let response = try await remoteClient.userService
-                        .getPrivateProfile(
-                            userId: userData.id,
-                            authenticationMethod: try authCallProvider.authenticatedMethod(forceJwt: userData.jwtToken))
-                    guard userDataStorage.userData?.id == userData.id else {
-                        throw InternalError.userIdNotMatching
-                    }
-                    // Pass the user id that triggered the response to be sure to have consistent data.
-                    userProfileResponse = (response, userData.id)
-                } catch {
-                    if #available(iOS 14, *) { Logger.profile.debug("Error while fetching user profile: \(error)") }
-                    if let error = error as? RemoteClientError {
-                        if case .notFound = error {
-                            if #available(iOS 14, *) { Logger.profile.debug("NotFound received from server, logging out the user") }
-                            let connectionRepository = injector?.getInjected(identifiedBy: Injected.connectionRepository)
-                            Task {
-                                try await connectionRepository?.logout()
+        userDataStorage.$userData.removeDuplicates(by: { $0?.id == $1?.id })
+            // do it only once when all requirements are met
+            .map { [unowned self] userData in
+                return Publishers.CombineLatest3(
+                    networkMonitor.connectionAvailablePublisher.removeDuplicates(),
+                    appStateMonitor.appStatePublisher.removeDuplicates(),
+                    $connectionInProgress.removeDuplicates()
+                )
+                // do it only once when all requirements are met
+                .filter { $0 && $1 == .active && !$2 }
+                .first()
+                .map { _ in userData }
+            }
+            .switchToLatest()
+            .sink { userData in
+                guard let userData else { return }
+                Task { [self] in
+                    do {
+                        let response = try await remoteClient.userService
+                            .getPrivateProfile(
+                                userId: userData.id,
+                                authenticationMethod: try authCallProvider.authenticatedMethod(forceJwt: userData.jwtToken))
+                        guard userDataStorage.userData?.id == userData.id else {
+                            throw InternalError.userIdNotMatching
+                        }
+                        // Pass the user id that triggered the response to be sure to have consistent data.
+                        userProfileResponse = (response, userData.id)
+                    } catch {
+                        if #available(iOS 14, *) { Logger.profile.debug("Error while fetching user profile: \(error)") }
+                        if let error = error as? RemoteClientError {
+                            if case .notFound = error {
+                                if #available(iOS 14, *) { Logger.profile.debug("NotFound received from server, logging out the user") }
+                                let connectionRepository = injector?.getInjected(identifiedBy: Injected.connectionRepository)
+                                Task {
+                                    try await connectionRepository?.logout()
+                                }
                             }
                         }
                     }
                 }
-            }
-        }.store(in: &storage)
+            }.store(in: &storage)
     }
 
     func stop() {

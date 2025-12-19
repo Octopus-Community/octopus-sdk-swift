@@ -9,11 +9,12 @@ import Combine
 extension NSManagedObjectContext {
     func publisher<Entity: NSManagedObject, MappedEntity>(
         request: NSFetchRequest<Entity>,
+        relatedTypes: [NSManagedObject.Type] = [],
         transform: @escaping @Sendable ([Entity]) -> [MappedEntity])
     -> AnyPublisher<[MappedEntity], Error> {
             return NotificationCenter.default
                 .publisher(for: .NSManagedObjectContextDidSave, object: self)
-                .filter { $0.isUpdateOf(managedObjectType: Entity.self) }
+                .filter { $0.isUpdateOf(managedObjectTypes: [Entity.self] + relatedTypes) }
                 .map { _ in return Void() }
                 .prepend(Void())
                 .tryMap { [weak self] in
@@ -34,14 +35,17 @@ extension NSManagedObjectContext {
 extension Notification {
 
     /// Check if notification is an insert/update/delete
-    /// of the given NSManagedObject type
+    /// of the given NSManagedObject type or one of its related types (needed for relationships)
     ///
-    /// - Parameter managedObjectType: The managed object class
-    func isUpdateOf<T: NSManagedObject>(managedObjectType: T.Type) -> Bool {
+    /// - Parameter managedObjectTypes: The list of managed object classes that matters
+    func isUpdateOf<T: NSManagedObject>(managedObjectTypes: [T.Type]) -> Bool {
         let inserted = userInfo?[NSInsertedObjectsKey] as? Set<NSManagedObject> ?? []
         let updated = userInfo?[NSUpdatedObjectsKey] as? Set<NSManagedObject> ?? []
         let deleted = userInfo?[NSDeletedObjectsKey] as? Set<NSManagedObject> ?? []
-        return inserted.union(updated).union(deleted).contains(where: { $0 is T })
+        let allChanges = inserted.union(updated).union(deleted)
+        return allChanges.contains { typeChanged in
+            managedObjectTypes.contains { typeChanged.isKind(of: $0) }
+        }
     }
 }
 

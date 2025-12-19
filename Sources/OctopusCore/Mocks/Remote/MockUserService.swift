@@ -37,6 +37,9 @@ class MockUserService: UserService {
     /// Fifo of the responses to `bypassABTesting`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var bypassABTestingResponses = [Com_Octopuscommunity_ByPassAbTestingResponse]()
+    /// Fifo of the responses to `enteringOctopus`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var enteringOctopusResponses = [Com_Octopuscommunity_EnteringOctopusResponse]()
 
     private(set) var errorMessage: String?
 
@@ -152,6 +155,16 @@ class MockUserService: UserService {
         }
         return response
     }
+
+    func enteringOctopus(authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_EnteringOctopusResponse {
+        guard let response = enteringOctopusResponses.popLast() else {
+            let message = "Dev error, injectNextEnteringOctopusResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
+        }
+        return response
+    }
 }
 
 extension MockUserService {
@@ -185,5 +198,9 @@ extension MockUserService {
 
     func injectNextGetGuestJwtResponse(_ response: Com_Octopuscommunity_GetGuestJwtResponse) {
         getGuestJwtResponses.insert(response, at: 0)
+    }
+
+    func injectNextEnteringOctopusResponse(_ response: Com_Octopuscommunity_EnteringOctopusResponse) {
+        enteringOctopusResponses.insert(response, at: 0)
     }
 }

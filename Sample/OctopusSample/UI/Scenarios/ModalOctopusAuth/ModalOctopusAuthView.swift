@@ -12,6 +12,8 @@ struct ModalOctopusAuthView: View {
     @StateObjectCompat private var viewModel = OctopusAuthSDKViewModel()
     @Binding var openOctopusAsModal: Bool
 
+    @Environment(\.sizeCategory) var sizeCategory // make it recompute the theme when the size category changes
+
     @State private var octopusNotification: UNNotificationResponse?
 
     var body: some View {
@@ -66,12 +68,13 @@ struct ModalOctopusAuthView: View {
 
     // Only for used for internal purpose
     // If you want to override the theme, please have a look to Scenarios/CustomTheme
-    let demoTheme = OctopusTheme(
+    var demoTheme: OctopusTheme { OctopusTheme(
         colors: .init(
             primarySet: OctopusTheme.Colors.ColorSet(
                 main: .InternalDemo.primary,
                 lowContrast: .InternalDemo.primaryLow,
                 highContrast: .InternalDemo.primaryHigh)))
+    }
 }
 
 

@@ -27,7 +27,7 @@ class ProfileTests: XCTestCase {
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
-        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .magicLinkMonitor,
+        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .appStateMonitor, .magicLinkMonitor,
                                .userProfileFetchMonitor, .authProvider, .blockedUserIdsProvider, .configRepository)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
@@ -46,6 +46,8 @@ class ProfileTests: XCTestCase {
         }
         injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
         injector.register { FrictionlessProfileMigrator(injector: $0) }
+        injector.register { ToastsRepository(injector: $0) }
+        injector.register { SdkEventsEmitter(injector: $0) }
 
         profileRepository = ProfileRepositoryDefault(appManagedFields: [], injector: injector)
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
@@ -63,7 +65,9 @@ class ProfileTests: XCTestCase {
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
                                                 originalNickname: nil,
-                                                email: nil, bio: nil, pictureUrl: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
                                                 hasSeenOnboarding: nil, hasAcceptedCgu: nil,
                                                 hasConfirmedNickname: nil, hasConfirmedBio: nil,
                                                 hasConfirmedPicture: nil,
@@ -149,16 +153,26 @@ class ProfileTests: XCTestCase {
     }
 
     func testProfileUpdate() async throws {
-        var profile: CurrentUserProfile?
+        let profilePresentExpectation = XCTestExpectation(description: "Profile present")
+        let profileUpdatedExpectation = XCTestExpectation(description: "Profile updated")
+
         profileRepository.profilePublisher.sink {
-            profile = $0
+            if let profile = $0, profile.nickname == "nickname" {
+                if profile.bio == nil {
+                    profilePresentExpectation.fulfill()
+                } else if profile.bio == "Bio" {
+                    profileUpdatedExpectation.fulfill()
+                }
+            }
         }.store(in: &storage)
 
         // start with a connected user
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
                                                 originalNickname: nil,
-                                                email: nil, bio: nil, pictureUrl: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
                                                 hasSeenOnboarding: nil, hasAcceptedCgu: nil,
                                                 hasConfirmedNickname: nil, hasConfirmedBio: nil,
                                                 hasConfirmedPicture: nil,
@@ -167,8 +181,7 @@ class ProfileTests: XCTestCase {
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 
-        try await delay()
-        XCTAssertNotNil(profile)
+        await fulfillment(of: [profilePresentExpectation], timeout: 0.5)
 
         mockUserService.injectNextUpdateProfileResponse(.with {
             $0.result = .success(
@@ -181,14 +194,7 @@ class ProfileTests: XCTestCase {
                 })
         })
         try await profileRepository.updateCurrentUserProfile(with: EditableProfile(nickname: .notUpdated, bio: .updated("Bio")))
-
-        try await delay()
-        guard let profile else {
-            XCTFail("Profile should be non nil")
-            return
-        }
-        XCTAssertEqual(profile.nickname, "nickname")
-        XCTAssertEqual(profile.bio, "Bio")
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 0.5)
     }
 
     func testFetchProfile() async throws {
@@ -223,7 +229,9 @@ class ProfileTests: XCTestCase {
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
                                                 originalNickname: nil,
-                                                email: nil, bio: nil, pictureUrl: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
                                                 hasSeenOnboarding: nil, hasAcceptedCgu: nil,
                                                 hasConfirmedNickname: nil, hasConfirmedBio: nil,
                                                 hasConfirmedPicture: nil,
@@ -259,7 +267,9 @@ class ProfileTests: XCTestCase {
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
                                                 originalNickname: nil,
-                                                email: nil, bio: nil, pictureUrl: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
                                                 hasSeenOnboarding: nil, hasAcceptedCgu: nil,
                                                 hasConfirmedNickname: false, hasConfirmedBio: false,
                                                 hasConfirmedPicture: false,
@@ -304,7 +314,9 @@ class ProfileTests: XCTestCase {
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "clientNickname1",
                                                 originalNickname: "clientNickname",
-                                                email: nil, bio: "clientBio", pictureUrl: nil,
+                                                email: nil, bio: "clientBio", pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
                                                 hasSeenOnboarding: nil, hasAcceptedCgu: nil,
                                                 hasConfirmedNickname: false, hasConfirmedBio: false,
                                                 hasConfirmedPicture: false,
@@ -341,7 +353,9 @@ class ProfileTests: XCTestCase {
         try await userProfileDatabase.upsert(
             profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
                                                 originalNickname: nil,
-                                                email: nil, bio: "clientBio", pictureUrl: nil,
+                                                email: nil, bio: "clientBio", pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
                                                 hasSeenOnboarding: nil, hasAcceptedCgu: nil,
                                                 hasConfirmedNickname: false, hasConfirmedBio: false,
                                                 hasConfirmedPicture: false,

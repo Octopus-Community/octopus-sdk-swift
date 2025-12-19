@@ -17,5 +17,4 @@ final class TrackingApi: ObservableObject {
     func trackTranslationButtonHit(translationDisplayed: Bool) {
         octopus.core.trackingRepository.trackTranslationButtonHit(translationDisplayed: translationDisplayed)
     }
-
 }

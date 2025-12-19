@@ -40,7 +40,7 @@ struct FreeGridLayout: Layout {
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         let subviewsAndSizes = subviews.map { ($0, $0.sizeThatFits(.unspecified)) }
 
-        var currentLineSize = bounds.minX
+        var currentLineSize: CGFloat = 0
 
         // build lines
         var subviewsByLines = [[(Subviews.Element, CGSize)]]()

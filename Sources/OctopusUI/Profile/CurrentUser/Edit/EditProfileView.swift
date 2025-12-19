@@ -66,7 +66,9 @@ struct EditProfileView: View {
                     Text("Common.CancelModifications", bundle: .module),
                     isPresented: $showChangesWillBeLostAlert) {
                         Button(L10n("Common.No"), role: .cancel, action: {})
-                        Button(L10n("Common.Yes"), role: .destructive, action: { presentationMode.wrappedValue.dismiss() })
+                        Button(L10n("Common.Yes"), role: .destructive, action: {
+                            presentationMode.wrappedValue.dismiss()
+                        })
                     }
             } else {
                 $0.alert(isPresented: $showChangesWillBeLostAlert) {
@@ -88,7 +90,8 @@ struct EditProfileView: View {
             Button(action: viewModel.updateProfile) {
                 Text("Common.Save", bundle: .module)
             }
-            .buttonStyle(OctopusButtonStyle(.mid, enabled: viewModel.saveAvailable))
+            .buttonStyle(OctopusButtonStyle(.mid, enabled: viewModel.saveAvailable,
+                                            externalVerticalPadding: 5))
             .disabled(!viewModel.saveAvailable)
         } else {
             if #available(iOS 14.0, *) {
@@ -97,7 +100,8 @@ struct EditProfileView: View {
                 Button(action: viewModel.updateProfile) {
                     Text("Common.Save", bundle: .module)
                 }
-                .buttonStyle(OctopusButtonStyle(.mid, enabled: false))
+                .buttonStyle(OctopusButtonStyle(.mid, enabled: false,
+                                                externalVerticalPadding: 5))
                 .disabled(true)
             }
         }
@@ -235,7 +239,7 @@ private struct EditProfileFormView: View {
                     placeholder: "Profile.Nickname.Placeholder",
                     hint: "Profile.Edit.Nickname.Explanation",
                     error: nicknameError,
-                    isFocused: nicknameFocused,
+                    isFocused: $nicknameFocused,
                     isDisabled: false // visually, let it as it was editable
                 )
                 .autocapitalization(.none)
@@ -263,8 +267,8 @@ private struct EditProfileFormView: View {
                     label: "Profile.Edit.Bio.Description",
                     placeholder: "Profile.Edit.Bio.Placeholder",
                     error: bioError,
-                    lineLimit: nil,
-                    isFocused: bioFocused,
+                    lineLimitRange: 8...,
+                    isFocused: $bioFocused,
                     isDisabled: false) // visually, let it as it was editable
                 .focused($bioFocused)
                 .onValueChanged(of: bio) { [oldValue = bio] newValue in
@@ -381,6 +385,7 @@ private struct PictureView: View {
                     ActionSheet.Button.cancel()
                 ])
             }
+            .accessibilityHintInBundle("Accessibility.Profile.Picture.Edit")
             .imagesPicker(isPresented: $openPhotosPicker, selection: $selectedItems, error: $imagePickingError,
                           maxSelectionCount: 1)
             .onValueChanged(of: selectedItems) {

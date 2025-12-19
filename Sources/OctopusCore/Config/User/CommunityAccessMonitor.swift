@@ -24,6 +24,7 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
     private let remoteClient: OctopusRemoteClient
     private let userDataStorage: UserDataStorage
     private let networkMonitor: NetworkMonitor
+    private let appStateMonitor: AppStateMonitor
     private let authenticatedCallProvider: AuthenticatedCallProvider
     private let userConfigDatabase: UserConfigDatabase
 
@@ -37,6 +38,7 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
+        appStateMonitor = injector.getInjected(identifiedBy: Injected.appStateMonitor)
         authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
     }
@@ -52,18 +54,26 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
     }
 
     private func getCommunityAccessWhenNecessary() {
-        cancellable = Publishers.CombineLatest(
-            userDataStorage.$userData
-                .removeDuplicates { $0?.id == $1?.id }
-                .filter { $0 != nil },
-            networkMonitor.connectionAvailablePublisher
-                .first(where: { $0 })
-        )
-        .sink { [unowned self] _ in
-            Task { [weak self] in
-                try await self?.getCommunityAccess()
+        cancellable = userDataStorage.$userData
+            .removeDuplicates { $0?.id == $1?.id }
+            // only do it the first time the app is in foreground and there is internet
+            .map { [unowned self] userData in
+                return Publishers.CombineLatest(
+                    networkMonitor.connectionAvailablePublisher.removeDuplicates(),
+                    appStateMonitor.appStatePublisher.removeDuplicates()
+                )
+                .filter { $0 && $1 == .active }
+                .first()
+                .map { _ in userData }
             }
-        }
+            .switchToLatest()
+            .filter { $0 != nil }
+            .first()
+            .sink { [unowned self] _ in
+                Task { [weak self] in
+                    try await self?.getCommunityAccess()
+                }
+            }
     }
 
     func getCommunityAccess() async throws {

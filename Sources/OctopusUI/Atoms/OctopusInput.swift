@@ -37,10 +37,10 @@ struct OctopusInput<InputView: View>: View {
                     .font(theme.fonts.caption1)
                     .fontWeight(.medium)
                     .foregroundColor(theme.colors.gray700)
+                    .accessibilityAddTraits(.isHeader)
             }
 
             inputView()
-                .padding(12)
                 .frame(maxWidth: .infinity)
                 .background(
                     RoundedRectangle(cornerRadius: 8)

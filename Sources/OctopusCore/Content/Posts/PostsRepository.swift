@@ -25,6 +25,8 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Post
     private let userInteractionsDelegate: UserInteractionsDelegate
+    private let toastsRepository: ToastsRepository
+    private let sdkEventsEmitter: SdkEventsEmitter
 
     public var postSentPublisher: AnyPublisher<Void, Never> {
         _postSentPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher()
@@ -43,6 +45,8 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
         validator = injector.getInjected(identifiedBy: Injected.validators).post
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
 
         commentFeedsStore = injector.getInjected(identifiedBy: Injected.commentFeedsStore)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
@@ -149,7 +153,10 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 try await postsDatabase.upsert(posts: [finalPost])
                 _postSentPublisher.send()
                 let imageData: Data? = if case let .image(imageData) = post.attachment { imageData } else { nil }
-                return (Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil), imageData)
+                toastsRepository.display(gamificationToast: .post)
+                let createdPost = Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
+                sdkEventsEmitter.emit(.contentCreated(content: createdPost))
+                return (createdPost, imageData)
             case let .fail(failure):
                 throw SendPost.Error.validation(.init(from: failure))
             case .none:
@@ -173,8 +180,12 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 post: postId,
                 authenticationMethod: try authCallProvider.authenticatedMethod())
 
+            let post = try? await postsDatabase.getPosts(ids: [postId]).first
+                .map { Post(storablePost: $0, commentFeedsStore: commentFeedsStore, featuredComment: nil) }
+
             try await postsDatabase.delete(contentId: postId)
             _postDeletedPublisher.send()
+            sdkEventsEmitter.emit(.contentDeleted(content: post))
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error
@@ -210,6 +221,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                     // get the value from the backend just in case
                     let backendPollAnswerId = content.pollVote.content.vote.pollAnswerID
                     try await postsDatabase.updateVote(answerId: backendPollAnswerId, postId: post.uuid)
+                    toastsRepository.display(gamificationToast: .vote)
                 case let .fail(failure):
                     throw PollVote.Error.validation(.init(from: failure))
                 case .none:

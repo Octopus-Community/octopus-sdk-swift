@@ -146,6 +146,7 @@ private struct ContentView<EmptyPostView: View>: View {
             } else {
                 Compat.ProgressView()
                     .frame(width: 100)
+                    .padding(.top, 20)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -173,7 +174,7 @@ private struct PostsView<EmptyPostView: View>: View {
 
     var body: some View {
         if !posts.isEmpty {
-            Compat.LazyVStack {
+            Compat.LazyVStack(spacing: 0) {
                 ForEach(posts, id: \.uuid) { post in
                     PostSummaryView(post: post, width: width,
                                     zoomableImageInfo: $zoomableImageInfo,

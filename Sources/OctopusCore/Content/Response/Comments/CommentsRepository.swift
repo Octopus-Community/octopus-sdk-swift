@@ -35,6 +35,9 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Comment
     private let userInteractionsDelegate: UserInteractionsDelegate
+    private let toastsRepository: ToastsRepository
+    private let sdkEventsEmitter: SdkEventsEmitter
+
 
     init(injector: Injector) {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
@@ -44,6 +47,8 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         replyFeedsStore = injector.getInjected(identifiedBy: Injected.replyFeedsStore)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
         validator = injector.getInjected(identifiedBy: Injected.validators).comment
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
 
@@ -116,6 +121,8 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
                 try await commentsDatabase.upsert(comments: [finalComment])
                 let newComment = Comment(storableComment: finalComment, replyFeedsStore: replyFeedsStore)
                 _commentSentPublisher.send(newComment)
+                toastsRepository.display(gamificationToast: .comment)
+                sdkEventsEmitter.emit(.contentCreated(content: newComment))
                 return (newComment, comment.imageData)
             case let .fail(failure):
                 throw SendComment.Error.validation(.init(from: failure))
@@ -145,6 +152,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
 
             try await commentsDatabase.delete(commentId: commentId)
             _commentDeletedPublisher.send(comment)
+            sdkEventsEmitter.emit(.contentDeleted(content: comment))
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error

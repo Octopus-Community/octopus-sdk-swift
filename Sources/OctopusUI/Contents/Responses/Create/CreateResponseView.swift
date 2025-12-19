@@ -105,7 +105,7 @@ private struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(alignment: .bottom, spacing: 8) {
+            HStack(alignment: .bottom, spacing: 6) {
                 Button(action: {
                     removeFocus()
                     openPhotosPicker = true
@@ -114,8 +114,10 @@ private struct ContentView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 24, height: 24)
+                        .accessibilityLabelInBundle("Accessibility.Content.AddPicture")
                 }
-                .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true, hasTrailingIcon: true))
+                .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true, hasTrailingIcon: true,
+                                               externalAllPadding: 2))
 
                 OctopusInput(error: pictureError ?? textError, isFocused: textFocused) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -124,6 +126,11 @@ private struct ContentView: View {
                                          placeholder: responseKind.createTextPlaceholder,
                                          lineLimit: picture != nil ? 4 : 5)
                         .focused($textFocused)
+                        .padding(12)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            textFocused = true
+                        }
 
                         if let imageAndData = picture {
                             ZStack(alignment: .topTrailing) {
@@ -148,11 +155,14 @@ private struct ContentView: View {
 
                                         )
                                         .frame(width: 26, height: 26)
-                                        .padding(4)
+                                        .padding([.leading, .bottom], 14)
+                                        .padding([.trailing, .top], 4)
 
                                 }
                                 .buttonStyle(.plain)
                             }
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 12)
                         }
                     }
                 }
@@ -173,12 +183,14 @@ private struct ContentView: View {
                     }
                 }
                 .buttonStyle(OctopusButtonStyle(.mid, enabled: sendAvailable && !isLoading,
-                                                hasLeadingIcon: true, hasTrailingIcon: true))
+                                                hasLeadingIcon: true, hasTrailingIcon: true,
+                                               externalAllPadding: 2))
                 .disabled(!sendAvailable || isLoading)
+                .accessibilityLabelInBundle("Accessibility.Content.Send")
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, (textFocused || displayCguText) ? 16 : 0)
+            .padding(.horizontal, 14)
+            .padding(.top, 14)
+            .padding(.bottom, (textFocused || displayCguText) ? 14 : 0)
             .background(RoundedRectangle(cornerRadius: 24)
                 .stroke(theme.colors.gray300, lineWidth: 1)
                 .padding(.horizontal, -1)
@@ -237,4 +249,26 @@ private extension ResponseKind {
         case .reply: "Reply.Create.Text.Placeholder"
         }
     }
+}
+
+#Preview {
+    CreateResponseView(
+        responseKind: .comment,
+        isLoading: false,
+        sendAvailable: true,
+        displayCguText: false,
+        text: .constant(""),
+        picture: .constant(nil),
+        textFocused: .constant(false),
+        alertError: nil,
+        textError: nil,
+        pictureError: nil,
+        termsOfUseUrl: URL(string: "https://www.mock.com")!,
+        privacyPolicyUrl: URL(string: "https://www.mock.com")!,
+        communityGuidelinesUrl: URL(string: "https://www.mock.com")!,
+        send: { },
+        userProfileTapped: { },
+        resetAlertError: { },
+        ensureConnected: { _ in true }
+    )
 }
