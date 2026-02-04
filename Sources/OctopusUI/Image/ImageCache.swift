@@ -15,6 +15,10 @@ final class ImageCache: @unchecked Sendable {
                                     ramCapacity: 200 * 1024 * 1024,     // 200Mb
                                     diskCapacity: 500 * 1024 * 1024)    // 500Mb
 
+    static let thumbnail = ImageCache(subfolder: "thumbnail",
+                                      ramCapacity: 50 * 1024 * 1024,     // 50Mb
+                                      diskCapacity: 100 * 1024 * 1024)   // 100Mb
+
     private let imageFolder: URL
     private let fileManager: FileManager = FileManager.default
     private let ramCache: NSCache<NSString, UIImage> = NSCache()
@@ -22,7 +26,10 @@ final class ImageCache: @unchecked Sendable {
     init(subfolder: String, ramCapacity: Int, diskCapacity: UInt64) {
         let rootFolder = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first ??
             fileManager.temporaryDirectory
-        imageFolder = rootFolder.appendingPathComponent("Images").appendingPathComponent(subfolder)
+        imageFolder = rootFolder
+            .appendingPathComponent("OctopusSDK")
+            .appendingPathComponent("Images")
+            .appendingPathComponent(subfolder)
         ramCache.totalCostLimit = ramCapacity
         do {
             try fileManager.createDirectory(at: imageFolder, withIntermediateDirectories: true)

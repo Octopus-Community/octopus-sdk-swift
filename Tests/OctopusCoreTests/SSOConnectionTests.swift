@@ -45,6 +45,7 @@ class SSOConnectionTests: XCTestCase {
         injector.register { ConfigRepositoryDefault(injector: $0) }
         injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
         injector.register { FrictionlessProfileMigrator(injector: $0) }
+        injector.register { GamificationRepository(injector: $0) }
         injector.register { ToastsRepository(injector: $0) }
         injector.register { SdkEventsEmitter(injector: $0) }
 

@@ -27,6 +27,7 @@ public protocol OctopusRemoteClient {
     func set(appSessionId: String?)
     func set(octopusUISessionId: String?)
     func set(hasAccessToCommunity: Bool?)
+    func set(localeIdentifier: String)
 }
 
 public class GrpcClient: OctopusRemoteClient {
@@ -54,7 +55,7 @@ public class GrpcClient: OctopusRemoteClient {
 
     private let serviceClients: [ServiceClient]
 
-    public init(apiKey: String, sdkVersion: String, installId: String,
+    public init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
                 getUserIdBlock: @escaping () -> String?,
                 updateTokenBlock: @escaping (String) -> Void) throws {
         // base URL can be overriden by env vars. This is used for the internal demo app for example
@@ -77,26 +78,34 @@ public class GrpcClient: OctopusRemoteClient {
         
         _octoService = OctoServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _magicLinkService = MagicLinkServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _magicLinkStreamService = MagicLinkStreamingServiceClient(
-            streamingChannel: streamingChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
+            streamingChannel: streamingChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier)
         _userService = UserServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _feedService = FeedServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _trackingService = TrackingServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _notificationService = NotificationServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _apiKeyService = ApiKeyServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
+            localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
 
         serviceClients = [_octoService, _magicLinkService, _magicLinkStreamService, _userService, _feedService,
@@ -113,6 +122,10 @@ public class GrpcClient: OctopusRemoteClient {
 
     public func set(hasAccessToCommunity: Bool?) {
         serviceClients.forEach { $0.hasAccessToCommunity = hasAccessToCommunity }
+    }
+
+    public func set(localeIdentifier: String) {
+        serviceClients.forEach { $0.localeIdentifier = localeIdentifier }
     }
 
     deinit {

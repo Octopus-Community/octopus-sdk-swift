@@ -27,6 +27,12 @@ class APITests {
         _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
     }
 
+    @Test func testSdkConfiguration() async throws {
+        _ = OctopusSDK.Configuration()
+        let configuration = OctopusSDK.Configuration(appManagedAudioSession: true)
+        _ = try OctopusSDK(apiKey: "API_KEY", configuration: configuration)
+    }
+
     @Test func testConnectionModeSSOWithoutAssociatedFields() throws {
         let ssoConfiguration = ConnectionMode.SSOConfiguration(
             loginRequired: { }
@@ -157,5 +163,150 @@ class APITests {
                        viewClientObjectButtonText: nil, signature: nil)
     }
 
+    @Test func testSetOnNavigateToUrlCallback() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        octopus.set(onNavigateToURLCallback: { url in
+            _ = url.host
+            return .handledByApp
+        })
+    }
 
+    @Test func testEvents() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        _ = octopus.eventPublisher.sink { event in
+            switch event {
+            case let .postCreated(context):
+                _ = context.content.contains(.text)
+                _ = context.content.contains(.poll)
+                _ = context.content.contains(.image)
+                let _: String = context.postId
+                let _: String = context.topicId
+                let _: Int = context.textLength
+            case let .commentCreated(context):
+                let _: String = context.commentId
+                let _: String = context.postId
+                let _: Int = context.textLength
+            case let .replyCreated(context):
+                let _: String = context.replyId
+                let _: String = context.commentId
+                let _: Int = context.textLength
+            case let .contentDeleted(context):
+                let _: String = context.contentId
+                let kind: OctopusEvent.ContentKind = context.kind
+                switch kind {
+                case .post: break
+                case .comment: break
+                case .reply: break
+                }
+            case let .reactionModified(context):
+                let _: String = context.contentId
+                let previousReaction: OctopusEvent.ReactionKind? = context.previousReaction
+                switch previousReaction {
+                case .heart: break
+                case .joy: break
+                case .mouthOpen: break
+                case .clap: break
+                case .cry: break
+                case .rage: break
+                case let .unknown(str):
+                    let _: String = str
+                case .none: break
+                }
+                let _: OctopusEvent.ReactionKind? = context.newReaction
+                let _: OctopusEvent.ContentKind = context.contentKind
+            case let .pollVoted(context):
+                let _: String = context.contentId
+                let _: String = context.optionId
+            case let .contentReported(context):
+                let _: String = context.contentId
+                let _: [OctopusEvent.ReportReason] = context.reasons
+            case let .gamificationPointsGained(context):
+                let action: OctopusEvent.GamificationPointsGainedAction = context.action
+                switch action {
+                case .post: break
+                case .comment: break
+                case .reply: break
+                case .reaction: break
+                case .vote: break
+                case .postCommented: break
+                case .profileCompleted: break
+                case .dailySession: break
+                }
+                let _: Int = context.pointsGained
+            case let .gamificationPointsRemoved(context):
+                let action: OctopusEvent.GamificationPointsRemovedAction = context.action
+                switch action {
+                case .postDeleted: break
+                case .commentDeleted: break
+                case .replyDeleted: break
+                case .reactionDeleted: break
+                }
+                let _: Int = context.pointsRemoved
+            case let .screenDisplayed(context):
+                switch context.screen {
+                case let .postsFeed(context):
+                    let _: String = context.feedId
+                case let .postDetail(context):
+                    let _: String = context.postId
+                case let .commentDetail(context):
+                    let _: String = context.commentId
+                case .createPost: break
+                case .profile: break
+                case let .otherUserProfile(context):
+                    let _: String = context.profileId
+                case .editProfile: break
+                case .reportContent: break
+                case .reportProfile: break
+                case .validateNickname: break
+                case .settingsList: break
+                case .settingsAccount: break
+                case .settingsAbout: break
+                case .reportExplanation: break
+                case .deleteAccount: break
+                }
+            case let .notificationClicked(context):
+                let _: String = context.notificationId
+                let _: String? = context.contentId
+            case let .postClicked(context):
+                let _: String = context.postId
+                let source: OctopusEvent.PostClickedSource = context.source
+                switch source {
+                case .feed: break
+                case .profile: break
+                }
+            case let .translationButtonClicked(context):
+                let _: String = context.contentId
+                let _:OctopusEvent.ContentKind = context.contentKind
+                let _: Bool = context.viewTranslated
+            case let .commentButtonClicked(context):
+                let _: String = context.postId
+            case let .replyButtonClicked(context):
+                let _: String = context.commentId
+            case let .seeRepliesButtonClicked(context):
+                let _: String = context.commentId
+            case let .profileModified(context):
+                let nickname: OctopusEvent.ProfileFieldUpdate<OctopusEvent.NicknameUpdateContext> = context.nickname
+                switch nickname {
+                case .unchanged: break
+                case .updated: break
+                }
+                let bio: OctopusEvent.ProfileFieldUpdate<OctopusEvent.BioUpdateContext> = context.bio
+                switch bio {
+                case .unchanged: break
+                case let .updated(value):
+                    let _: Int = value.bioLength
+                }
+                let picture: OctopusEvent.ProfileFieldUpdate<OctopusEvent.PictureUpdateContext> = context.picture
+                switch picture {
+                case .unchanged: break
+                case let .updated(value):
+                    let _: Bool = value.hasPicture
+                }
+            case let .sessionStarted(context):
+                let _: String = context.sessionId
+            case let .sessionStopped(context):
+                let _: String = context.sessionId
+            }
+        }
+    }
 }

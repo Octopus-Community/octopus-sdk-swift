@@ -14,7 +14,7 @@ class UserInteractionsDelegate {
     private let authCallProvider: AuthenticatedCallProvider
     private let octoObjectsDatabase: OctoObjectsDatabase
     private let networkMonitor: NetworkMonitor
-    private let toastsRepository: ToastsRepository
+    private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
 
     init(injector: Injector) {
@@ -22,7 +22,7 @@ class UserInteractionsDelegate {
         octoObjectsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
-        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
     }
 
@@ -56,10 +56,15 @@ class UserInteractionsDelegate {
                                 id: reactionId),
                             contentId: content.uuid,
                             updateReactionCount: false)
-                        if existingReaction == nil {
-                            toastsRepository.display(gamificationToast: .reaction)
-                        }
                         sdkEventsEmitter.emit(.contentReactionChanged(content: content, reaction: reaction))
+                        sdkEventsEmitter.emit(.reactionModified(.init(
+                            corePreviousReaction: existingReaction?.kind.sdkEventValue,
+                            coreNewReaction: reaction.sdkEventValue,
+                            contentId: content.uuid,
+                            coreContentKind: content.contentKind.sdkEventValue)))
+                        if existingReaction == nil {
+                            gamificationRepository.register(action: .reaction)
+                        }
                     case let .fail(failure):
                         throw Reaction.Error.validation(.init(from: failure))
                     case .none:
@@ -78,6 +83,12 @@ class UserInteractionsDelegate {
                         reactionId: existingReaction.id,
                         authenticationMethod: try authCallProvider.authenticatedMethod())
                     sdkEventsEmitter.emit(.contentReactionChanged(content: content, reaction: reaction))
+                    sdkEventsEmitter.emit(.reactionModified(.init(
+                        corePreviousReaction: existingReaction.kind.sdkEventValue,
+                        coreNewReaction: reaction?.sdkEventValue,
+                        contentId: content.uuid,
+                        coreContentKind: content.contentKind.sdkEventValue)))
+                    gamificationRepository.unregister(action: .reaction)
                 } catch {
                     guard let error = error as? RemoteClientError,
                           case .notFound = error else {

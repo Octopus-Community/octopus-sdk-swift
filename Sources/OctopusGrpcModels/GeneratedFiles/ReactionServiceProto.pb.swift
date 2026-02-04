@@ -228,11 +228,22 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
     /// Clears the value of `reaction`. Subsequent reads from it will return its default value.
     public mutating func clearReaction() {self._reaction = nil}
 
+    ///For analytics
+    public var hasTargetVideoContent_p: Bool {
+      get {return _hasTargetVideoContent_p ?? false}
+      set {_hasTargetVideoContent_p = newValue}
+    }
+    /// Returns true if `hasTargetVideoContent_p` has been explicitly set.
+    public var hasHasTargetVideoContent_p: Bool {return self._hasTargetVideoContent_p != nil}
+    /// Clears the value of `hasTargetVideoContent_p`. Subsequent reads from it will return its default value.
+    public mutating func clearHasTargetVideoContent_p() {self._hasTargetVideoContent_p = nil}
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
 
     fileprivate var _reaction: Com_Octopuscommunity_OctoObject? = nil
+    fileprivate var _hasTargetVideoContent_p: Bool? = nil
   }
 
   public struct Fail: Sendable {
@@ -680,6 +691,7 @@ extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Messag
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "reaction"),
+    2: .same(proto: "hasTargetVideoContent"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -689,6 +701,7 @@ extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Messag
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._reaction) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self._hasTargetVideoContent_p) }()
       default: break
       }
     }
@@ -702,11 +715,15 @@ extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Messag
     try { if let v = self._reaction {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
+    try { if let v = self._hasTargetVideoContent_p {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PutReactionResponse.Success, rhs: Com_Octopuscommunity_PutReactionResponse.Success) -> Bool {
     if lhs._reaction != rhs._reaction {return false}
+    if lhs._hasTargetVideoContent_p != rhs._hasTargetVideoContent_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

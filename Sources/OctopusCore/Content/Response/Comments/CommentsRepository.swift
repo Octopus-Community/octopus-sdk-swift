@@ -35,7 +35,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Comment
     private let userInteractionsDelegate: UserInteractionsDelegate
-    private let toastsRepository: ToastsRepository
+    private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
 
 
@@ -47,7 +47,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         replyFeedsStore = injector.getInjected(identifiedBy: Injected.replyFeedsStore)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
         validator = injector.getInjected(identifiedBy: Injected.validators).comment
-        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
@@ -68,7 +68,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             let response = try await remoteClient.octoService.get(
-                octoObjectId: uuid,
+                octoObjectInfo: OctoObjectInfo(id: uuid, hasVideo: false),
                 options: .all,
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
@@ -121,8 +121,9 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
                 try await commentsDatabase.upsert(comments: [finalComment])
                 let newComment = Comment(storableComment: finalComment, replyFeedsStore: replyFeedsStore)
                 _commentSentPublisher.send(newComment)
-                toastsRepository.display(gamificationToast: .comment)
                 sdkEventsEmitter.emit(.contentCreated(content: newComment))
+                sdkEventsEmitter.emit(.commentCreated(.init(from: newComment)))
+                gamificationRepository.register(action: .comment)
                 return (newComment, comment.imageData)
             case let .fail(failure):
                 throw SendComment.Error.validation(.init(from: failure))
@@ -153,6 +154,8 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
             try await commentsDatabase.delete(commentId: commentId)
             _commentDeletedPublisher.send(comment)
             sdkEventsEmitter.emit(.contentDeleted(content: comment))
+            sdkEventsEmitter.emit(.contentDeleted(.init(contentId: commentId, coreKind: .comment)))
+            gamificationRepository.unregister(action: .comment)
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error
@@ -169,7 +172,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         do {
             if #available(iOS 14, *) { Logger.comments.trace("Fetching additional data for ids: \(ids)") }
             let batchResponse = try await remoteClient.octoService.getBatch(
-                ids: ids,
+                octoObjectInfos: ids.map { OctoObjectInfo(id: $0, hasVideo: false) },
                 options: [.aggregates, .interactions],
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())

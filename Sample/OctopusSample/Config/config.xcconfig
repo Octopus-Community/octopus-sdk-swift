@@ -1,7 +1,7 @@
 #include "secrets.xcconfig"
 
 // Version of the app
-APP_VERSION = 1.8.0
+APP_VERSION = 1.9.0
 // Default build number. Overridden by build system
 BUILD_NUMBER = 0
 

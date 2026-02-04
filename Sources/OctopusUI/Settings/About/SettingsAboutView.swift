@@ -9,6 +9,7 @@ import OctopusCore
 
 struct SettingsAboutView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var trackingApi: TrackingApi
 
     @Compat.StateObject private var viewModel: LinksProviderViewModel
 
@@ -36,5 +37,6 @@ struct SettingsAboutView: View {
             PoweredByOctopusView()
         }
         .navigationBarTitle(Text("Settings.About", bundle: .module), displayMode: .inline)
+        .emitScreenDisplayed(.settingsAbout, trackingApi: trackingApi)
     }
 }

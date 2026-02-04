@@ -67,7 +67,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     private let postFeedsStore: PostFeedsStore
     private let clientUserProvider: ClientUserProvider
     private let configRepository: ConfigRepository
-    private let toastsRepository: ToastsRepository
+    private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
     private let clientUserProfileMerger: ClientUserProfileMerger
     private let frictionlessProfileMigrator: FrictionlessProfileMigrator
@@ -86,15 +86,15 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
         clientUserProvider = injector.getInjected(identifiedBy: Injected.clientUserProvider)
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
-        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         clientUserProfileMerger = injector.getInjected(identifiedBy: Injected.clientUserProfileMerger)
         frictionlessProfileMigrator = injector.getInjected(identifiedBy: Injected.frictionlessProfileMigrator)
 
         userDataStorage.$userData
             .receive(on: DispatchQueue.main)
-            .map { [unowned self] userData in
-                guard let userData else {
+            .map { [weak self] userData in
+                guard let self, let userData else {
                     return Just<(CurrentUserProfile, String?)?>(nil).eraseToAnyPublisher()
                 }
                 return Publishers.CombineLatest(
@@ -103,8 +103,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                     configRepository.communityConfigPublisher.map { $0?.gamificationConfig?.gamificationLevels }
                         .removeDuplicates()
                 )
-                .map { [unowned self] in
-                    guard let storableProfile = $0 else { return nil }
+                .map { [weak self] in
+                    guard let self, let storableProfile = $0 else { return nil }
                     return (CurrentUserProfile(storableProfile: storableProfile, gamificationLevels: $1 ?? [],
                                                postFeedsStore: postFeedsStore), userData.clientId)
                 }
@@ -119,10 +119,11 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 return profile1 == profile2 && clientId1 == clientId2
             })
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] in
+            .sink { [weak self] in
+                guard let self else { return }
                 let profile = $0?.0
                 let clientUserId = $0?.1
-                self.profileClientUserId = clientUserId
+                profileClientUserId = clientUserId
                 self.profile = profile
                 hasLoadedProfile = true
             }.store(in: &storage)
@@ -133,8 +134,10 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         )
         .map { ($0.0, $0.1, $1) }
         .receive(on: DispatchQueue.main)
-        .sink { [unowned self] response, userId, _ in
-            Task {
+        .sink { [weak self] response, userId, _ in
+            guard let self else { return }
+            Task { [weak self] in
+                guard let self else { return }
                 do {
                     try await processCurrentUserProfileResponse(response, userId: userId)
                 } catch {
@@ -150,8 +153,9 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
             networkMonitor.connectionAvailablePublisher,
             configRepository.userConfigPublisher.map { $0?.canAccessCommunity ?? false }.removeDuplicates().filter { $0 }
         )
-        .sink { [unowned self] profile, clientUser, connectionAvailable, _ in
-            guard connectionAvailable,
+        .sink { [weak self] profile, clientUser, connectionAvailable, _ in
+            guard let self,
+                  connectionAvailable,
                   let profile,
                   let clientUser,
                   // ensure the client user is matching the current profile
@@ -159,7 +163,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                   // just in case there is a version where the client id was not stored
                   clientUser.userId == (profileClientUserId ?? clientUser.userId),
                   !profile.isGuest else { return }
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 try await updateProfileWithClientUser(clientUser, profile: profile)
             }
         }.store(in: &storage)
@@ -190,7 +195,9 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     @discardableResult
     public func updateCurrentUserProfile(with profile: EditableProfile)
     async throws(UpdateProfile.Error) -> (CurrentUserProfile, Data?) {
-        try await createOrUpdateUserProfile(with: profile)
+        let value = try await createOrUpdateUserProfile(with: profile)
+        sdkEventsEmitter.emit(.profileModified(.init(profile: profile)))
+        return value
     }
 
     func deleteCurrentUserProfile(profileId: String) async throws {
@@ -291,7 +298,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
             var resizedPicture: Data?
-            var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated
+            var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .unchanged
             if case let .updated(imageData) = profile.picture {
                 if let imageData {
                     let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
@@ -322,7 +329,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 _onCurrentUserProfileUpdated.send()
                 if content.hasShouldDisplayProfileCompletedGamificationToast,
                    content.shouldDisplayProfileCompletedGamificationToast {
-                    toastsRepository.display(gamificationToast: .profileCompleted)
+                    gamificationRepository.register(action: .profileCompleted)
                 }
 
                 sdkEventsEmitter.emit(.profileUpdated)

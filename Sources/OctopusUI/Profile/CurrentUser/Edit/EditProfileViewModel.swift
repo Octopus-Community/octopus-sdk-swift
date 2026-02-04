@@ -66,17 +66,17 @@ class EditProfileViewModel: ObservableObject {
     private var editableProfile: EditableProfile? {
         let nicknameUpdate: EditableProfile.FieldUpdate<String> =
             savedProfile?.nickname.nilIfEmpty != nickname.nilIfEmpty ?
-            .updated(nickname) : .notUpdated
+            .updated(nickname) : .unchanged
         let bioUpdate: EditableProfile.FieldUpdate<String?> = savedProfile?.bio?.nilIfEmpty != bio.nilIfEmpty ?
-            .updated(bio) : .notUpdated
+            .updated(bio) : .unchanged
         let pictureUpdate: EditableProfile.FieldUpdate<Data?> = switch picture {
-        case .unchanged: .notUpdated
+        case .unchanged: .unchanged
         case let .changed(imageData, _):
             .updated(imageData)
         case .deleted: .updated(nil)
         }
 
-        if case .notUpdated = nicknameUpdate, case .notUpdated = bioUpdate, case .notUpdated = pictureUpdate {
+        if case .unchanged = nicknameUpdate, case .unchanged = bioUpdate, case .unchanged = pictureUpdate {
             return nil
         }
 
@@ -199,7 +199,8 @@ class EditProfileViewModel: ObservableObject {
         $picture
             .removeDuplicates()
             .receive(on: DispatchQueue.main) // needed because we can reset the picture
-            .sink { [unowned self] picture in
+            .sink { [weak self] picture in
+                guard let self else { return }
                 switch picture {
                 case let .changed(_, image):
                     let validator = octopus.core.validators.picture

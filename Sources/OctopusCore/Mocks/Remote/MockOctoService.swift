@@ -52,7 +52,7 @@ class MockOctoService: OctoService {
 
     init() { }
 
-    func get(octoObjectId: String, options: GetOptions, incrementViewCount: Bool,
+    func get(octoObjectInfo: OctoObjectInfo, options: GetOptions, incrementViewCount: Bool,
              authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetResponse {
@@ -62,7 +62,7 @@ class MockOctoService: OctoService {
         return response
     }
 
-    func getBatch(ids: [String], options: GetOptions, incrementViewCount: Bool,
+    func getBatch(octoObjectInfos: [OctoObjectInfo], options: GetOptions, incrementViewCount: Bool,
                   authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetBatchResponse {

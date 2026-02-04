@@ -17,4 +17,12 @@ final class TrackingApi: ObservableObject {
     func trackTranslationButtonHit(translationDisplayed: Bool) {
         octopus.core.trackingRepository.trackTranslationButtonHit(translationDisplayed: translationDisplayed)
     }
+
+    func trackPostCustomActionButtonHit(postId: String) {
+        octopus.core.trackingRepository.trackCtaPostButtonHit(postId: postId)
+    }
+
+    func emit(event: SdkEvent) {
+        octopus.core.sdkEventsEmitter.emit(event)
+    }
 }

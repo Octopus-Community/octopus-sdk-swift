@@ -15,6 +15,10 @@ class PostEntity: OctoObjectEntity {
     @NSManaged public var translatedCatchPhrase: String?
     @NSManaged public var ctaText: String?
     @NSManaged public var translatedCtaText: String?
+    @NSManaged public var customActionText: String?
+    @NSManaged public var customActionTranslatedText: String?
+    @NSManaged public var customActionTargetLink: String?
+
     @NSManaged public var mediasRelationship: NSOrderedSet
     @NSManaged public var pollOptionsRelationship: NSOrderedSet?
 
@@ -36,10 +40,7 @@ class PostEntity: OctoObjectEntity {
         originalLanguage = post.text.originalLanguage
         mediasRelationship = NSOrderedSet(array: post.medias.map {
             let mediaEntity = MediaEntity(context: context)
-            mediaEntity.url = $0.url
-            mediaEntity.type = $0.kind.entity.rawValue
-            mediaEntity.width = $0.size.width
-            mediaEntity.height = $0.size.height
+            mediaEntity.fill(with: $0, context: context)
             return mediaEntity
         })
 
@@ -55,11 +56,15 @@ class PostEntity: OctoObjectEntity {
             pollOptionsRelationship = nil
         }
 
-        clientObjectId = post.clientObjectId
-        catchPhrase = post.catchPhrase?.originalText
-        translatedCatchPhrase = post.catchPhrase?.translatedText
-        ctaText = post.ctaText?.originalText
-        translatedCtaText = post.ctaText?.translatedText
+        clientObjectId = post.bridgeClientObjectId
+        catchPhrase = post.bridgeCatchPhrase?.originalText
+        translatedCatchPhrase = post.bridgeCatchPhrase?.translatedText
+        ctaText = post.bridgeCtaText?.originalText
+        translatedCtaText = post.bridgeCtaText?.translatedText
+
+        customActionText = post.customActionText?.originalText
+        customActionTranslatedText = post.customActionText?.translatedText
+        customActionTargetLink = post.customActionTargetLink
 
         if descChildrenFeedId?.nilIfEmpty == nil || post.descCommentFeedId?.nilIfEmpty != nil {
             descChildrenFeedId = post.descCommentFeedId

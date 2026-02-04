@@ -10,6 +10,7 @@ import OctopusCore
 
 struct CommentDetailView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
@@ -64,6 +65,7 @@ struct CommentDetailView: View {
                         }
                     },
                     openCreateReply: {
+                        trackingApi.emit(event: .replyButtonClicked(.init(commentId: viewModel.commentUuid)))
                         replyTextFocused = true
                     },
                     deleteComment: viewModel.deleteComment,
@@ -131,6 +133,7 @@ struct CommentDetailView: View {
         .onAppear() {
             viewModel.onAppear()
         }
+        .emitScreenDisplayed(.commentDetail(.init(commentId: viewModel.commentUuid)), trackingApi: trackingApi)
         .onDisappear() {
             viewModel.onDisappear()
         }
@@ -139,8 +142,8 @@ struct CommentDetailView: View {
                 $0.alert(
                     Text("Common.CancelModifications", bundle: .module),
                     isPresented: $showChangesWillBeLostAlert) {
-                        Button(L10n("Common.No"), role: .cancel, action: {})
-                        Button(L10n("Common.Yes"), role: .destructive, action: { navigator.pop() })
+                        Button(role: .cancel, action: {}) { Text("Common.No", bundle: .module) }
+                        Button(role: .destructive, action: { navigator.pop() })  { Text("Common.Yes", bundle: .module) }
                     }
             } else {
                 $0.alert(isPresented: $showChangesWillBeLostAlert) {
@@ -350,13 +353,16 @@ private struct CommentDetailContentView: View {
                                         Menu(content: {
                                             if comment.canBeDeleted {
                                                 Button(action: { displayWillDeleteAlert = true }) {
-                                                    Label(L10n("Comment.Delete.Button"), systemImage: "trash")
+                                                    Label(title: { Text("Comment.Delete.Button", bundle: .module) },
+                                                          icon: { Image(systemName: "trash") })
                                                 }
                                                 .buttonStyle(.plain)
+
                                             }
                                             if comment.canBeModerated {
                                                 Button(action: { displayContentModeration(comment.uuid) }) {
-                                                    Label(L10n("Moderation.Content.Button"), systemImage: "flag")
+                                                    Label(title: { Text("Moderation.Content.Button", bundle: .module) },
+                                                          icon: { Image(systemName: "flag") })
                                                 }
                                                 .buttonStyle(.plain)
                                             }
@@ -400,7 +406,8 @@ private struct CommentDetailContentView: View {
 
                                 if translatableText.hasTranslation {
                                     ToggleTextTranslationButton(
-                                        contentId: comment.uuid, originalLanguage: translatableText.originalLanguage)
+                                        contentId: comment.uuid, originalLanguage: translatableText.originalLanguage,
+                                        contentKind: .comment)
                                 } else {
                                     Spacer().frame(height: 8)
                                 }

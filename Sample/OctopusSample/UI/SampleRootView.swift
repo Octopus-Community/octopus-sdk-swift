@@ -15,7 +15,7 @@ struct SampleRootView: View {
     var body: some View {
         Group {
             if displaySDKConfig {
-                SDKConfigView()
+                SDKConfigScreen()
             } else {
                 SampleTabView()
             }

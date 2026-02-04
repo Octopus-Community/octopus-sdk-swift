@@ -68,20 +68,18 @@ class ProfileSummaryViewModel: ObservableObject {
             }.store(in: &storage)
 
         Task {
-            do {
-                try await octopus.core.profileRepository.fetchProfile(profileId: profileId)
-            } catch {
-                if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
-                    self.error = error.displayableMessage
-                }
-            }
+            await refreshProfile()
         }
     }
 
     func refresh() async {
+        await refreshProfile()
+        await postFeedViewModel?.refresh()
+    }
+
+    private func refreshProfile() async {
         do {
             try await octopus.core.profileRepository.fetchProfile(profileId: profileId)
-            await postFeedViewModel?.refresh()
         } catch {
             self.error = error.displayableMessage
         }

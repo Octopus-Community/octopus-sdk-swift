@@ -1391,6 +1391,16 @@ public struct Com_Octopuscommunity_PrivateProfile: @unchecked Sendable {
     set {_uniqueStorage()._usersBlockList = newValue}
   }
 
+  ///JSON string
+  public var metadata: String {
+    get {return _storage._metadata ?? String()}
+    set {_uniqueStorage()._metadata = newValue}
+  }
+  /// Returns true if `metadata` has been explicitly set.
+  public var hasMetadata: Bool {return _storage._metadata != nil}
+  /// Clears the value of `metadata`. Subsequent reads from it will return its default value.
+  public mutating func clearMetadata() {_uniqueStorage()._metadata = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1419,9 +1429,21 @@ public struct Com_Octopuscommunity_PublicGamificationScore: Sendable {
 
   public var level: Int32 = 0
 
+  ///For BO users only
+  public var score: Int32 {
+    get {return _score ?? 0}
+    set {_score = newValue}
+  }
+  /// Returns true if `score` has been explicitly set.
+  public var hasScore: Bool {return self._score != nil}
+  /// Clears the value of `score`. Subsequent reads from it will return its default value.
+  public mutating func clearScore() {self._score = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _score: Int32? = nil
 }
 
 public struct Com_Octopuscommunity_BanUserRequest: Sendable {
@@ -3901,6 +3923,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     50: .same(proto: "totalMessages"),
     51: .same(proto: "accountCreatedAt"),
     100: .same(proto: "usersBlockList"),
+    999: .same(proto: "metadata"),
   ]
 
   fileprivate class _StorageClass {
@@ -3924,6 +3947,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     var _totalMessages: Int32? = nil
     var _accountCreatedAt: UInt64? = nil
     var _usersBlockList: [String] = []
+    var _metadata: String? = nil
 
     #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
@@ -3958,6 +3982,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
       _totalMessages = source._totalMessages
       _accountCreatedAt = source._accountCreatedAt
       _usersBlockList = source._usersBlockList
+      _metadata = source._metadata
     }
   }
 
@@ -3996,6 +4021,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
         case 113: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedNickname_p) }()
         case 114: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedPicture_p) }()
         case 115: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedBio_p) }()
+        case 999: try { try decoder.decodeSingularStringField(value: &_storage._metadata) }()
         default: break
         }
       }
@@ -4068,6 +4094,9 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
       try { if let v = _storage._hasConfirmedBio_p {
         try visitor.visitSingularBoolField(value: v, fieldNumber: 115)
       } }()
+      try { if let v = _storage._metadata {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 999)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -4097,6 +4126,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
         if _storage._totalMessages != rhs_storage._totalMessages {return false}
         if _storage._accountCreatedAt != rhs_storage._accountCreatedAt {return false}
         if _storage._usersBlockList != rhs_storage._usersBlockList {return false}
+        if _storage._metadata != rhs_storage._metadata {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -4148,6 +4178,7 @@ extension Com_Octopuscommunity_PublicGamificationScore: SwiftProtobuf.Message, S
   public static let protoMessageName: String = _protobuf_package + ".PublicGamificationScore"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "level"),
+    2: .same(proto: "score"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -4157,20 +4188,29 @@ extension Com_Octopuscommunity_PublicGamificationScore: SwiftProtobuf.Message, S
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.level) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self._score) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.level != 0 {
       try visitor.visitSingularInt32Field(value: self.level, fieldNumber: 1)
     }
+    try { if let v = self._score {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 2)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PublicGamificationScore, rhs: Com_Octopuscommunity_PublicGamificationScore) -> Bool {
     if lhs.level != rhs.level {return false}
+    if lhs._score != rhs._score {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -19,9 +19,11 @@ struct StorablePost: StorableContent, Equatable {
     let parentId: String
     let descCommentFeedId: String?
     let ascCommentFeedId: String?
-    let clientObjectId: String?
-    let catchPhrase: TranslatableText?
-    let ctaText: TranslatableText?
+    let bridgeClientObjectId: String?
+    let bridgeCatchPhrase: TranslatableText?
+    let bridgeCtaText: TranslatableText?
+    let customActionText: TranslatableText?
+    let customActionTargetLink: String?
 
     let aggregatedInfo: AggregatedInfo?
     let userInteractions: UserInteractions?
@@ -40,11 +42,16 @@ extension StorablePost {
         status = StorableStatus(rawValue: entity.statusValue)
         statusReasons = .init(storableCodes: entity.statusReasonCodes, storableMessages: entity.statusReasonMessages)
         parentId = entity.parentId
-        clientObjectId = entity.clientObjectId
-        catchPhrase = TranslatableText(originalText: entity.catchPhrase, originalLanguage: entity.originalLanguage,
-                                       translatedText: entity.translatedCatchPhrase)
-        ctaText = TranslatableText(originalText: entity.ctaText, originalLanguage: entity.originalLanguage,
-                                   translatedText: entity.translatedCtaText)
+        bridgeClientObjectId = entity.clientObjectId
+        bridgeCatchPhrase = TranslatableText(originalText: entity.catchPhrase, originalLanguage: entity.originalLanguage,
+                                             translatedText: entity.translatedCatchPhrase)
+        bridgeCtaText = TranslatableText(originalText: entity.ctaText, originalLanguage: entity.originalLanguage,
+                                         translatedText: entity.translatedCtaText)
+        customActionText = TranslatableText(originalText: entity.customActionText,
+                                            originalLanguage: entity.originalLanguage,
+                                            translatedText: entity.customActionTranslatedText)
+        customActionTargetLink = entity.customActionTargetLink
+
         descCommentFeedId = entity.descChildrenFeedId
         ascCommentFeedId = entity.ascChildrenFeedId
         aggregatedInfo = AggregatedInfo(from: entity)
@@ -62,10 +69,11 @@ extension StorablePost {
                                 translatedText: post.translatedText.nilIfEmpty)
         if post.hasMedia {
             var mutableMedias = [Media]()
-            if post.media.hasVideo, let videoMedia = Media(from: post.media.video, kind: .video) {
+            if post.media.hasVideo, let videoMedia = Media(from: post.media.video) {
                 mutableMedias.append(videoMedia)
             }
-            mutableMedias.append(contentsOf: post.media.images.compactMap { Media(from: $0, kind: .image)})
+            mutableMedias.append(contentsOf: post.media.images.compactMap { Media(from: $0) })
+
             medias = mutableMedias
         } else {
             medias = []
@@ -90,15 +98,21 @@ extension StorablePost {
         ascCommentFeedId = octoPost.ascChildrenFeedID
 
         let bridgeInfo = post.hasBridgeToClientObject ? post.bridgeToClientObject : nil
-        clientObjectId = bridgeInfo?.clientObjectID
-        catchPhrase = (bridgeInfo?.hasCatchPhrase ?? false) ?
+        bridgeClientObjectId = bridgeInfo?.clientObjectID
+        bridgeCatchPhrase = (bridgeInfo?.hasCatchPhrase ?? false) ?
             TranslatableText(originalText: bridgeInfo?.catchPhrase, originalLanguage: post.originalLanguage.nilIfEmpty,
                              translatedText: bridgeInfo?.translatedCatchPhrase)
             : nil
-        ctaText = (bridgeInfo?.hasCta ?? false) ?
+        bridgeCtaText = (bridgeInfo?.hasCta ?? false) ?
             TranslatableText(originalText: bridgeInfo?.cta.text, originalLanguage: post.originalLanguage.nilIfEmpty,
                              translatedText: bridgeInfo?.cta.translatedText)
             : nil
+
+        customActionText = post.hasCta ?
+            TranslatableText(originalText: post.cta.text, originalLanguage: post.originalLanguage.nilIfEmpty,
+                             translatedText: post.cta.translatedText)
+            : nil
+        customActionTargetLink = (post.hasCta && post.cta.hasTargetLink) ? post.cta.targetLink.nilIfEmpty : nil
 
         self.aggregatedInfo = aggregate.map { .init(from: $0) }
         self.userInteractions = userInteraction.map { .init(from: $0) }
@@ -115,9 +129,12 @@ extension StorablePost {
         status = post.innerStatus
         statusReasons = post.innerStatusReasons
         parentId = post.parentId
-        clientObjectId = post.clientObjectBridgeInfo?.objectId
-        catchPhrase = post.clientObjectBridgeInfo?.catchPhrase
-        ctaText = post.clientObjectBridgeInfo?.ctaText
+        bridgeClientObjectId = post.clientObjectBridgeInfo?.objectId
+        bridgeCatchPhrase = post.clientObjectBridgeInfo?.catchPhrase
+        bridgeCtaText = post.clientObjectBridgeInfo?.ctaText
+        customActionText = post.customAction?.ctaText
+        customActionTargetLink = post.customAction?.targetUrl.absoluteString
+
         descCommentFeedId = post.newestFirstCommentsFeed?.id
         ascCommentFeedId = post.oldestFirstCommentsFeed?.id
 

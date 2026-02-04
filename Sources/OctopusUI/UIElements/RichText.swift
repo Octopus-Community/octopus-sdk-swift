@@ -7,6 +7,8 @@ import SwiftUI
 
 struct RichText: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var urlOpener: URLOpener
+
     let text: String
 
     init(_ text: String) {
@@ -20,6 +22,10 @@ struct RichText: View {
                 options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text))
             .tint(theme.colors.link)
             .textSelection(.enabled)
+            .environment(\.openURL, OpenURLAction { url in
+                urlOpener.open(url: url)
+                return .handled
+            })
         } else {
             MarkdownText(text)
         }
@@ -27,6 +33,8 @@ struct RichText: View {
 }
 
 private struct MarkdownText: View {
+    @EnvironmentObject private var urlOpener: URLOpener
+
     let input: String
 
     init(_ text: String) {
@@ -112,7 +120,7 @@ private struct MarkdownText: View {
                 }
                 if !links.isEmpty {
                     fullText.onTapGesture {
-                        UIApplication.shared.open(links[0])
+                        urlOpener.open(url: links[0])
                     }
                 } else {
                     fullText

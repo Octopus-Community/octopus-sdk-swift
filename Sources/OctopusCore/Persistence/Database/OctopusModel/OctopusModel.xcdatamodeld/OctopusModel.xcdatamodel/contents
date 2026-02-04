@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24411" systemVersion="24G90" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="24G90" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BlockedUser" representedClassName="BlockedUserEntity" syncable="YES">
         <attribute name="profileId" optional="YES" attributeType="String"/>
         <relationship name="blockedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PrivateProfile" inverseName="blocking" inverseEntity="PrivateProfile"/>
@@ -34,8 +34,10 @@
     </entity>
     <entity name="Media" representedClassName="MediaEntity" syncable="YES">
         <attribute name="height" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="thumbnailUrl" optional="YES" attributeType="URI"/>
         <attribute name="type" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="url" attributeType="URI"/>
+        <attribute name="videoId" optional="YES" attributeType="String"/>
         <attribute name="width" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="commentMedia" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Comment" inverseName="mediasRelationship" inverseEntity="Comment"/>
         <relationship name="postMedia" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Post" inverseName="mediasRelationship" inverseEntity="Post"/>
@@ -106,6 +108,9 @@
         <attribute name="catchPhrase" optional="YES" attributeType="String"/>
         <attribute name="clientObjectId" optional="YES" attributeType="String"/>
         <attribute name="ctaText" optional="YES" attributeType="String"/>
+        <attribute name="customActionTargetLink" optional="YES" attributeType="String"/>
+        <attribute name="customActionText" optional="YES" attributeType="String"/>
+        <attribute name="customActionTranslatedText" optional="YES" attributeType="String"/>
         <attribute name="originalLanguage" optional="YES" attributeType="String"/>
         <attribute name="text" attributeType="String"/>
         <attribute name="translatedCatchPhrase" optional="YES" attributeType="String"/>
@@ -165,6 +170,7 @@
     <entity name="RootFeed" representedClassName="RootFeedEntity" syncable="YES">
         <attribute name="label" attributeType="String"/>
         <attribute name="position" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="relatedTopicId" optional="YES" attributeType="String"/>
         <attribute name="uuid" attributeType="String"/>
     </entity>
     <entity name="Topic" representedClassName="TopicEntity" parentEntity="OctoObject" syncable="YES">

@@ -170,6 +170,13 @@ extension GenImageResource {
         static let off = GenImageResource(name: "Toggle/off", bundle: resourceBundle)
         static let on = GenImageResource(name: "Toggle/on", bundle: resourceBundle)
     }
+    enum Video {
+        static let muted = GenImageResource(name: "Video/muted", bundle: resourceBundle)
+        static let notMuted = GenImageResource(name: "Video/notMuted", bundle: resourceBundle)
+        static let pause = GenImageResource(name: "Video/pause", bundle: resourceBundle)
+        static let play = GenImageResource(name: "Video/play", bundle: resourceBundle)
+        static let replay = GenImageResource(name: "Video/replay", bundle: resourceBundle)
+    }
 }
 
 // MARK: - Color Symbol Extensions -
@@ -269,6 +276,13 @@ extension UIKit.UIImage {
         enum Toggle {
             static var off: UIKit.UIImage { .init(res: .Toggle.off) }
             static var on: UIKit.UIImage { .init(res: .Toggle.on) }
+        }
+        enum Video {
+            static var muted: UIKit.UIImage { .init(res: .Video.muted) }
+            static var notMuted: UIKit.UIImage { .init(res: .Video.notMuted) }
+            static var pause: UIKit.UIImage { .init(res: .Video.pause) }
+            static var play: UIKit.UIImage { .init(res: .Video.play) }
+            static var replay: UIKit.UIImage { .init(res: .Video.replay) }
         }
     }
 }

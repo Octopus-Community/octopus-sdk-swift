@@ -25,6 +25,8 @@ struct SampleTabView: View {
     @State private var fullScreenItem: ScreenBuilder?
     @State private var sheetScreenItem: ScreenBuilder?
 
+    @State private var id = UUID()
+
     init() {
         let savedSelectedTab = Tab(rawValue: UserDefaults.standard.integer(forKey: savedSelectedTabKey)) ?? .modal
         _selectedTab = State(initialValue: savedSelectedTab)
@@ -69,14 +71,16 @@ struct SampleTabView: View {
                 }
             }.tag(Tab.more)
 
-            if case .sso = SDKConfigManager.instance.sdkConfig?.authKind {
+            if shouldDisplayAccountTab {
                 AccountView()
                     .tabItem {
                         VStack {
                             Image(systemName: "person.crop.circle")
                             Text("Account")
                         }
-                    }.tag(Tab.account)
+                    }
+                    .tag(Tab.account)
+                    .id(id) // to recompute if we need to display it
             }
         }
         .modify {
@@ -109,6 +113,16 @@ struct SampleTabView: View {
             // when a notification is received, we display the Octopus UI
             selectedTab = .modal
             openOctopusAsModal = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .apiKeyChanged)) { _ in
+            id = UUID()
+        }
+    }
+
+    var shouldDisplayAccountTab: Bool {
+        switch SDKConfigManager.instance.sdkConfig?.authKind {
+        case .octopus: return false
+        default: return true
         }
     }
 }

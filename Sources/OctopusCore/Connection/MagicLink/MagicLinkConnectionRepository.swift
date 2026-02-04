@@ -91,7 +91,8 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
             ).map { $0.0 }.removeDuplicates().receive(on: DispatchQueue.main)
         )
         .first()
-        .sink { [unowned self] userData, profile in
+        .sink { [weak self] userData, profile in
+            guard let self else { return }
             if profile == nil && userData == nil {
                 connectAsync()
             }
@@ -101,14 +102,16 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
         userDataStorage.$magicLinkData
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] magicLinkData in
+            .sink { [weak self] magicLinkData in
+                guard let self else { return }
                 magicLinkRequest = magicLinkData.map { MagicLinkRequest(email: $0.email, error: nil) }
             }.store(in: &storage)
 
         magicLinkMonitor
             .magicLinkAuthenticationResponsePublisher
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] response in
+            .sink { [weak self] response in
+                guard let self else { return }
                 // can ignore error that are threw because the connection state is also changed
                 _ = try? processMagicLinkConfirmation(response)
             }
@@ -263,7 +266,8 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
                         .replaceError(with: nil)
                         .first { $0 != nil }
                         .receive(on: DispatchQueue.main)
-                        .sink { [unowned self] result in
+                        .sink { [weak self] result in
+                            guard let self else { return }
                             userDataStorage.store(userData: .init(id: success.userID, jwtToken: success.jwt))
                             userDataStorage.store(magicLinkData: nil)
                             userInDbCancellable = nil

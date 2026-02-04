@@ -32,13 +32,6 @@ class PostListViewModel: ObservableObject {
     private let translationStore: ContentTranslationPreferenceStore
     private var storage = [AnyCancellable]()
     private var feedStorage = [AnyCancellable]()
-    private var relativeDateFormatter: RelativeDateTimeFormatter = {
-        let relativeDateFormatter = RelativeDateTimeFormatter()
-        relativeDateFormatter.dateTimeStyle = .numeric
-        relativeDateFormatter.unitsStyle = .short
-
-        return relativeDateFormatter
-    }()
 
     private var feed: Feed<Post, Comment>?
 

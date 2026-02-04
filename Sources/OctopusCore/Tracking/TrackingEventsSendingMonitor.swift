@@ -210,6 +210,17 @@ private extension Event {
                     .viewTranslationButtonHit(.with {
                         $0.viewTranslated = viewTranslated
                     })
+            case let .videoPlayed(objectId, videoId, watchTime, duration):
+                    .videoPlayed(.with {
+                        $0.objectID = objectId
+                        $0.videoID = videoId
+                        $0.watchTimeSec = Int32(safeCast: watchTime.rounded()) ?? 0
+                        $0.videoDurationSec = Int32(safeCast: duration.rounded()) ?? 0 
+                    })
+            case let .ctaPostButtonHit(objectId):
+                    .clickOnCta(.with {
+                        $0.objectID = objectId
+                    })
             case let .custom(customEvent):
                     .customEvent(.with {
                         $0.name = customEvent.name

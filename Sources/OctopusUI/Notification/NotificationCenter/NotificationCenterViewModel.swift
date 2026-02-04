@@ -23,22 +23,17 @@ class NotificationCenterViewModel: ObservableObject {
     private var viewIsDisplayed = false
     private var modelPushNotificationEnabled = false
 
-    private var relativeDateFormatter: RelativeDateTimeFormatter = {
-        let relativeDateFormatter = RelativeDateTimeFormatter()
-        relativeDateFormatter.dateTimeStyle = .numeric
-        relativeDateFormatter.unitsStyle = .short
-
-        return relativeDateFormatter
-    }()
+    private var relativeDateFormatterProvider: RelativeDateTimeFormatterProvider
 
     init(octopus: OctopusSDK) {
         self.octopus = octopus
+        relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
 
         octopus.core.notificationsRepository.getNotifications()
             .replaceError(with: [])
             .sink { [unowned self] in
                 notifications = $0.map {
-                    DisplayableNotification(notification: $0, dateFormatter: relativeDateFormatter)
+                    DisplayableNotification(notification: $0, dateFormatter: relativeDateFormatterProvider.formatter)
                 }
             }.store(in: &storage)
 

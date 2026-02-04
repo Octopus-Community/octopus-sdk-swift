@@ -26,6 +26,7 @@ struct ValidateNicknameScreen: View {
 
 struct ValidateNicknameView: View {
     @EnvironmentObject var navigator: Navigator<ValidateNicknameFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
 
     @Compat.StateObject private var viewModel: ValidateNicknameViewModel
     @Binding var isPresented: Bool
@@ -59,6 +60,7 @@ struct ValidateNicknameView: View {
             message: { error in
                 error.textView
             })
+        .emitScreenDisplayed(.validateNickname, trackingApi: trackingApi)
         .onReceive(viewModel.$error) { error in
             guard let error else { return }
             displayableError = error

@@ -726,7 +726,9 @@ class FeedTests: XCTestCase {
                      updateDate: updateDate,
                      status: .published, statusReasons: [],
                      parentId: "",
-                     descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                     descCommentFeedId: "", ascCommentFeedId: "",
+                     bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                     customActionText: nil, customActionTargetLink: nil,
                      aggregatedInfo: .empty, userInteractions: .empty)
     }
 

@@ -38,7 +38,6 @@ final class GamificationRulesViewManager: ObservableObject {
 
     func gamificationRulesDisplayed() {
         rulesDisplayedOnce = true
-        shouldDisplayGamificationRules = false
     }
 
     func incrementViewCountIfNeeded() {

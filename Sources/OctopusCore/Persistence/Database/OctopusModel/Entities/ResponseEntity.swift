@@ -23,10 +23,7 @@ class ResponseEntity: OctoObjectEntity {
         originalLanguage = response.text?.originalLanguage
         mediasRelationship = NSOrderedSet(array: response.medias.map {
             let mediaEntity = MediaEntity(context: context)
-            mediaEntity.url = $0.url
-            mediaEntity.type = $0.kind.entity.rawValue
-            mediaEntity.width = $0.size.width
-            mediaEntity.height = $0.size.height
+            mediaEntity.fill(with: $0, context: context)
             return mediaEntity
         })
     }

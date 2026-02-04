@@ -98,7 +98,8 @@ class CreateReplyViewModel: ObservableObject {
         $picture
             .removeDuplicates()
             .receive(on: DispatchQueue.main) // needed because we can reset the picture
-            .sink { [unowned self] picture in
+            .sink { [weak self] picture in
+                guard let self else { return }
                 if let picture {
                     switch validator.validate(picture: picture.image) {
                     case .sideTooSmall, .ratioTooBig:
@@ -182,7 +183,8 @@ class CreateReplyViewModel: ObservableObject {
                 }
                 .switchToLatest()
                 .receive(on: DispatchQueue.main)
-                .sink { [unowned self] in
+                .sink { [weak self] in
+                    guard let self else { return }
                     DispatchQueue.main.async { [weak self] in
                         self?.picture = nil
                         self?.text = ""

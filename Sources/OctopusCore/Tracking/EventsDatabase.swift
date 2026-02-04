@@ -30,6 +30,15 @@ class EventsDatabase: InjectableObject {
             .eraseToAnyPublisher()
     }
 
+    func upsert(events: [Event]) async throws {
+        try await context.performAsync { [context] in
+            for event in events {
+                EventEntity.create(from: event, context: context)
+            }
+            try context.save()
+        }
+    }
+
     func upsert(event: Event) async throws {
         try await context.performAsync { [context] in
             EventEntity.create(from: event, context: context)

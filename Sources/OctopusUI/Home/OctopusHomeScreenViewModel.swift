@@ -15,6 +15,7 @@ class OctopusHomeScreenViewModel: ObservableObject {
     @Published private(set) var mainFlowPath = MainFlowPath()
     @Published private(set) var displayOnboarding = false
     @Published private(set) var displayCommunityAccessDenied = false
+    @Published private(set) var overridenLocale: Locale?
 
     let octopus: OctopusSDK
     private var storage = [AnyCancellable]()
@@ -33,6 +34,10 @@ class OctopusHomeScreenViewModel: ObservableObject {
                 return
             }
             displayCommunityAccessDenied = false
+        }.store(in: &storage)
+
+        octopus.core.languageRepository.$overridenLocale.sink { [unowned self] in
+            overridenLocale = $0
         }.store(in: &storage)
     }
 }

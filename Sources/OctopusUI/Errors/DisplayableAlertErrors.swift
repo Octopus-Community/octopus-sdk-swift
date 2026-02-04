@@ -24,7 +24,7 @@ extension DisplayableString {
         }
     }
 
-    var localizedString: String {
+    func localizedString(locale: Locale?) -> String {
         switch self {
         case let .localizedString(message):
             return message
@@ -32,7 +32,7 @@ extension DisplayableString {
             guard let stringKey = message.stringKey else {
                 return ""
             }
-            return L10n(stringKey)
+            return L10n(stringKey, locale: locale)
         }
     }
 }

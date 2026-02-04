@@ -22,7 +22,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
     private let remoteClient: OctopusRemoteClient
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
-    private let toastsRepository: ToastsRepository
+    private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
 
     private var latestClientUserSent: ClientUser?
@@ -33,7 +33,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
-        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
     }
 
@@ -92,12 +92,12 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
            (profileOriginalNickname ?? profileNickname) != clientNickname {
             if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profileNickname), new: \(clientNickname))") }
             nickname = .updated(clientNickname)
-            hasConfirmedNickname = appManagedFields.contains(.nickname) ? .updated(true) : .notUpdated
+            hasConfirmedNickname = appManagedFields.contains(.nickname) ? .updated(true) : .unchanged
             findAvailableNickname = !appManagedFields.contains(.nickname)
             hasUpdate = true
         } else {
-            nickname = .notUpdated
-            hasConfirmedNickname = .notUpdated
+            nickname = .unchanged
+            hasConfirmedNickname = .unchanged
             findAvailableNickname = false
         }
 
@@ -107,11 +107,11 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
            profileBio?.nilIfEmpty != clientUser.profile.bio?.nilIfEmpty {
             if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profileBio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
             bio = .updated(clientUser.profile.bio)
-            hasConfirmedBio = appManagedFields.contains(.bio) ? .updated(true) : .notUpdated
+            hasConfirmedBio = appManagedFields.contains(.bio) ? .updated(true) : .unchanged
             hasUpdate = true
         } else {
-            bio = .notUpdated
-            hasConfirmedBio = .notUpdated
+            bio = .unchanged
+            hasConfirmedBio = .unchanged
         }
 
         let picture: EditableProfile.FieldUpdate<Data?>
@@ -121,11 +121,11 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
            clientUser.profile.picture != nil || profilePictureUrl != nil {
             if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
             picture = .updated(clientUser.profile.picture)
-            hasConfirmedPicture = appManagedFields.contains(.picture) ? .updated(true) : .notUpdated
+            hasConfirmedPicture = appManagedFields.contains(.picture) ? .updated(true) : .unchanged
             hasUpdate = true
         } else {
-            picture = .notUpdated
-            hasConfirmedPicture = .notUpdated
+            picture = .unchanged
+            hasConfirmedPicture = .unchanged
         }
 
         guard hasUpdate else { return nil }
@@ -146,7 +146,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
         do {
             latestClientUserSent = clientUser
             latestClientUserPicture = clientUser.profile.picture
-            var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .notUpdated
+            var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .unchanged
             if case let .updated(imageData) = picture {
                 if let imageData {
                     let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
@@ -171,7 +171,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
             case let .success(content):
                 if content.hasShouldDisplayProfileCompletedGamificationToast,
                    content.shouldDisplayProfileCompletedGamificationToast {
-                    toastsRepository.display(gamificationToast: .profileCompleted)
+                    gamificationRepository.register(action: .profileCompleted)
                 }
 
                 sdkEventsEmitter.emit(.profileUpdated)

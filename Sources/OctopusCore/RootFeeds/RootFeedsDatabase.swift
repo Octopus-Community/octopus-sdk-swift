@@ -44,6 +44,7 @@ class RootFeedsDatabase: InjectableObject {
 
                 rootFeedEntity.uuid = rootFeed.feedId
                 rootFeedEntity.label = rootFeed.label
+                rootFeedEntity.relatedTopicId = rootFeed.relatedTopicId
                 rootFeedEntity.position = index
             }
 

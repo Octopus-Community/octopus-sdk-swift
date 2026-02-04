@@ -15,5 +15,9 @@ Pod::Spec.new do |spec|
   
   spec.source_files = 'Sources/OctopusRemoteClient/**/*.swift'
 
+  spec.pod_target_xcconfig = {
+    'OTHER_SWIFT_FLAGS' => '-package-name #{SharedPodSpecConfig::PACKAGE_NAME}'
+  }
+
   spec.dependency 'OctopusCommunityGrpcModels', SharedPodSpecConfig::VERSION
 end

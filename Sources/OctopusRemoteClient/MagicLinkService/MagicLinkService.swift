@@ -19,14 +19,14 @@ public protocol MagicLinkService {
 class MagicLinkServiceClient: ServiceClient, MagicLinkService {
     private let client: Com_Octopuscommunity_MagicLinkServiceAsyncClient
 
-    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_MagicLinkServiceAsyncClient(
             channel: unaryChannel,
             interceptors: MagicLinkServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
     }
 
     public func generateLink(email: String, deepLink: String?) async throws(RemoteClientError) -> Com_Octopuscommunity_GenerateLinkResponse {

@@ -7,6 +7,8 @@ import OctopusCore
 
 struct PostSummaryView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var trackingApi: TrackingApi
+    @EnvironmentObject private var languageManager: LanguageManager
 
     let post: DisplayablePost
     let width: CGFloat
@@ -86,12 +88,15 @@ struct PostSummaryView: View {
                                 Menu(content: {
                                     if post.canBeDeleted {
                                         Button(action: { displayDeleteAlert = true }) {
-                                            Label(L10n("Post.Delete.Button"), systemImage: "trash")
+                                            Label(title: { Text("Post.Delete.Button", bundle: .module) },
+                                                  icon: { Image(systemName: "trash") })
                                         }
+
                                     }
                                     if post.canBeModerated {
                                         Button(action: { displayContentModeration(post.uuid) }) {
-                                            Label(L10n("Moderation.Content.Button"), systemImage: "flag")
+                                            Label(title: { Text("Moderation.Content.Button", bundle: .module) },
+                                                  icon: { Image(systemName: "flag") })
                                         }
                                     }
                                 }, label: {
@@ -124,10 +129,13 @@ struct PostSummaryView: View {
                 switch post.content {
                 case let .published(postContent):
                     PublishedContentView(
-                        content: postContent, contentId: post.uuid, width: width,
+                        content: postContent, post: post, contentId: post.uuid, width: width,
                         zoomableImageInfo: $zoomableImageInfo,
                         childrenTapped: {
                             let comment = postContent.liveMeasuresValue.aggregatedInfo.childCount == 0
+                            if comment {
+                                trackingApi.emit(event: .commentButtonClicked(.init(postId: post.uuid)))
+                            }
                             displayPostDetail(post.uuid, comment, true, nil, post.hasFeaturedComment) },
                         reactionTapped: { reactionTapped($0, post.uuid) },
                         commentReactionTapped: commentReactionTapped,
@@ -217,19 +225,20 @@ struct PostSummaryView: View {
     }
 
     var accessibilityDescription: LocalizedStringKey {
-        let authorName = post.author.name.localizedString
+        let authorName = post.author.name.localizedString(locale: languageManager.overridenLocale)
         switch post.content {
         case let .published(postContent):
             let text = postContent.text.getText(translated: true)
             var textToRead = "\(text)\(postContent.text.getIsEllipsized(translated: true) ? "..." : "")"
             switch postContent.attachment {
-                case .image: return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+            case .image: return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+            case .video: return "Accessibility.Post.Summary.TextAndVideo_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
             case let .poll(poll):
                 let pollOptionsToRead = poll.options.enumerated()
                     .map { index, pollOption in
-                        let indexToRead = L10n("Accessibility.Poll.IdxOption_index:%lld_count:%lld", index + 1, poll.options.count)
+                        let indexToRead = L10n("Accessibility.Poll.IdxOption_index:%lld_count:%lld", locale: languageManager.overridenLocale, index + 1, poll.options.count)
                         let pollOptionToRead = pollOption.text.getText(translated: true)
-                        let isSelectedToRead = postContent.liveMeasuresValue.userInteractions.pollVoteId == pollOption.id ? L10n("Accessibility.Common.Selected") : ""
+                        let isSelectedToRead = postContent.liveMeasuresValue.userInteractions.pollVoteId == pollOption.id ? L10n("Accessibility.Common.Selected", locale: languageManager.overridenLocale) : ""
                         return "\(indexToRead): \(pollOptionToRead)\(isSelectedToRead)"
                     }
                     .joined(separator: ", ")
@@ -240,7 +249,9 @@ struct PostSummaryView: View {
             }
 
         case let .moderated(reasons):
-            let localizedReasons = reasons.map { $0.localizedString }.joined(separator: ", ")
+            let localizedReasons = reasons
+                .map { $0.localizedString(locale: languageManager.overridenLocale) }
+                .joined(separator: ", ")
             return "Accessibility.Post.Summary.Moderated_author:\(authorName)_date:\(post.relativeDate)_reasons:\(localizedReasons)"
         }
     }
@@ -249,8 +260,12 @@ struct PostSummaryView: View {
 private struct PublishedContentView: View {
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+    @EnvironmentObject private var videoManager: VideoManager
+    @EnvironmentObject private var trackingApi: TrackingApi
+    @EnvironmentObject private var urlOpener: URLOpener
 
     let content: DisplayablePost.PostContent
+    let post: DisplayablePost
     let contentId: String
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
@@ -315,7 +330,8 @@ private struct PublishedContentView: View {
             }
 
             if !hasPoll && content.text.hasTranslation {
-                ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage)
+                ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage,
+                                            contentKind: .post)
                     .padding(.horizontal, horizontalPadding)
             }
 
@@ -369,8 +385,26 @@ private struct PublishedContentView: View {
                                     }
                                 }
                             }
-                    })
+                    }
+                )
+                .modify {
+                    if #unavailable(iOS 17.0) {
+                        $0.fixedSize(horizontal: false, vertical: true)
+                    } else { $0 }
+                }
                 .padding(.top, content.text.hasTranslation ? 0 : 4)
+            case let .video(video):
+                VideoPlayerView(
+                    videoManager: videoManager,
+                    videoMedia: video,
+                    contentId: post.uuid,
+                    width: width
+                )
+                .aspectRatio(video.size.width/video.size.height, contentMode: .fit)
+                .padding(.top, content.text.hasTranslation ? 0 : 4)
+                .anchorPreference(key: VisibleItemsPreference.self, value: .bounds, transform: { anchor in
+                    [.init(item: post.toVisiblePost, bounds: anchor)]
+                })
             case let .poll(poll):
                 PollView(poll: poll,
                          aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
@@ -381,7 +415,8 @@ private struct PublishedContentView: View {
                 .padding(.top, 4)
 
                 if content.text.hasTranslation {
-                    ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage)
+                    ToggleTextTranslationButton(contentId: contentId, originalLanguage: content.text.originalLanguage,
+                                                contentKind: .post)
                         .padding(.horizontal, horizontalPadding)
                 }
             case .none:
@@ -401,10 +436,32 @@ private struct PublishedContentView: View {
                 .padding(.horizontal, horizontalPadding)
             }
 
-            PostAggregatedInfoView(
-                aggregatedInfo: liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo,
-                childrenTapped: childrenTapped)
-            .padding(.horizontal, horizontalPadding)
+            if let customAction = content.customAction {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        trackingApi.trackPostCustomActionButtonHit(postId: post.uuid)
+                        urlOpener.open(url: customAction.targetUrl)
+                    }) {
+                        Text(customAction.ctaText.getText(translated: displayTranslation))
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(OctopusButtonStyle(.mid, externalTopPadding: 10))
+                    Spacer()
+                }
+                .padding(.horizontal, horizontalPadding)
+            }
+
+            let aggregatedInfo = liveMeasures?.aggregatedInfo ?? content.liveMeasuresValue.aggregatedInfo
+            if !aggregatedInfo.reactions.isEmpty || aggregatedInfo.childCount > 0 || aggregatedInfo.viewCount > 0  {
+                PostAggregatedInfoView(
+                    aggregatedInfo: aggregatedInfo,
+                    childrenTapped: childrenTapped)
+                .padding(.horizontal, horizontalPadding)
+            } else {
+                Color.clear.frame(height: 16)
+            }
+
 
             AdaptiveAccessibleStack2Contents(
                 hStackSpacing: 16,
@@ -498,6 +555,7 @@ private struct PublishedContentView: View {
 
 private struct ModeratedPostContentView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var languageManager: LanguageManager
     let reasons: [DisplayableString]
 
     var body: some View {
@@ -510,7 +568,7 @@ private struct ModeratedPostContentView: View {
 
             Spacer().frame(height: 8)
 
-            Text("Post.List.ModeratedPost.Reason_reasons:\(reasons.map { $0.localizedString }.joined(separator: ", "))", bundle: .module)
+            Text("Post.List.ModeratedPost.Reason_reasons:\(reasons.map { $0.localizedString(locale: languageManager.overridenLocale) }.joined(separator: ", "))", bundle: .module)
                 .font(theme.fonts.caption1)
         }
         .padding(.horizontal, 16)
@@ -585,6 +643,7 @@ import Combine
                     translatedText: "A text"),
                 attachment: nil,
                 bridgeInfo: nil,
+                customAction: nil,
                 featuredComment: nil,
                 liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                     aggregatedInfo: .init(reactions: [
@@ -592,6 +651,8 @@ import Combine
                         .init(reactionKind: .clap, count: 5),
                     ], childCount: 5, viewCount: 4, pollResult: nil),
                     userInteractions: .empty)))),
+            position: 1,
+            isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
         zoomableImageInfo: .constant(nil),
@@ -636,6 +697,7 @@ import Combine
                     url: URL(string: "https://picsum.photos/700/750")!,
                     size: CGSize(width: 700, height: 750))),
                 bridgeInfo: nil,
+                customAction: nil,
                 featuredComment: nil,
                 liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                     aggregatedInfo: .init(reactions: [
@@ -643,6 +705,8 @@ import Combine
                         .init(reactionKind: .clap, count: 5),
                     ], childCount: 5, viewCount: 4, pollResult: nil),
                     userInteractions: .empty)))),
+            position: 1,
+            isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
         zoomableImageInfo: .constant(nil),
@@ -696,6 +760,7 @@ import Combine
                     ])
                 ),
                 bridgeInfo: nil,
+                customAction: nil,
                 featuredComment: nil,
                 liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                     aggregatedInfo: .init(reactions: [
@@ -703,6 +768,8 @@ import Combine
                         .init(reactionKind: .clap, count: 5),
                     ], childCount: 5, viewCount: 4, pollResult: nil),
                     userInteractions: .empty)))),
+            position: 1,
+            isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
         zoomableImageInfo: .constant(nil),
@@ -746,6 +813,7 @@ import Combine
                     url: URL(string: "https://picsum.photos/700/750")!,
                     size: CGSize(width: 700, height: 750))),
                 bridgeInfo: nil,
+                customAction: nil,
                 featuredComment: nil,
                 liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                     aggregatedInfo: .init(reactions: [
@@ -753,6 +821,8 @@ import Combine
                         .init(reactionKind: .clap, count: 5),
                     ], childCount: 5, viewCount: 4, pollResult: nil),
                     userInteractions: .empty)))),
+            position: 1,
+            isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
         zoomableImageInfo: .constant(nil),
@@ -808,6 +878,7 @@ import Combine
                         translatedText: "What do you think?"),
                     ctaText: ctaText
                 ),
+                customAction: nil,
                 featuredComment: nil,
                 liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                     aggregatedInfo: .init(reactions: [
@@ -815,6 +886,66 @@ import Combine
                         .init(reactionKind: .clap, count: 5),
                     ], childCount: 5, viewCount: 4, pollResult: nil),
                     userInteractions: .empty)))),
+            position: 1,
+            isLast: false,
+            displayEvents: .init(onAppear: {}, onDisappear: {})),
+        width: 0,
+        zoomableImageInfo: .constant(nil),
+        displayPostDetail: { _, _, _, _, _ in },
+        displayCommentDetail: { _, _ in },
+        displayProfile: { _ in },
+        deletePost: { _ in },
+        deleteComment: { _ in },
+        reactionTapped: { _, _ in },
+        commentReactionTapped: { _, _ in },
+        voteOnPoll: { _, _ in false },
+        displayContentModeration: { _ in },
+        displayClientObject: { _ in })
+    .mockContentTranslationPreferenceStore()
+}
+
+#Preview("Custom action with Text and Image") {
+    let ctaText = TranslatableText(
+        originalText: "Voir",
+        originalLanguage: "fr",
+        translatedText: "View")
+    PostSummaryView(
+        post: DisplayablePost(
+            uuid: "postUuid",
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "profileId",
+                    nickname: "Bobby",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: GamificationLevel(
+                    level: 1, name: "", startAt: 0, nextLevelAt: 100,
+                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
+                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+            relativeDate: "3d ago",
+            topic: "Help",
+            canBeDeleted: false,
+            canBeModerated: true,
+            canBeOpened: true,
+            content: .published(.init(
+                text: .init(
+                    originalText: "Un texte",
+                    originalLanguage: "fr",
+                    translatedText: "A text"),
+                attachment: .image(.init(
+                    url: URL(string: "https://picsum.photos/700/750")!,
+                    size: CGSize(width: 700, height: 750))),
+                bridgeInfo: nil,
+                customAction: .init(ctaText: ctaText, targetUrl: URL(string: "https://www.example.com")!),
+                featuredComment: nil,
+                liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
+                    aggregatedInfo: .init(reactions: [
+                        .init(reactionKind: .heart, count: 10),
+                        .init(reactionKind: .clap, count: 5),
+                    ], childCount: 5, viewCount: 4, pollResult: nil),
+                    userInteractions: .empty)))),
+            position: 1,
+            isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
         zoomableImageInfo: .constant(nil),

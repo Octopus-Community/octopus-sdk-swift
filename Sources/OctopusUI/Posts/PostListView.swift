@@ -10,11 +10,14 @@ import OctopusCore
 
 struct PostListView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: PostListViewModel
 
     @Binding var selectedRootFeed: RootFeed?
     @Binding private var zoomableImageInfo: ZoomableImageInfo?
+
+    @State private var lastScreenFeedIdSent: String?
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          selectedRootFeed: Binding<RootFeed?>, zoomableImageInfo: Binding<ZoomableImageInfo?>) {
@@ -34,6 +37,9 @@ struct PostListView: View {
                             viewModel: postFeedViewModel,
                             zoomableImageInfo: $zoomableImageInfo,
                             displayPostDetail: {
+                                if !$1 && !$2 && $3 == nil {
+                                    trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .feed)))
+                                }
                                 navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
                                                            scrollToMostRecentComment: $2, origin: .sdk,
                                                            hasFeaturedComment: $4))
@@ -96,10 +102,21 @@ struct PostListView: View {
         .onValueChanged(of: selectedRootFeed) {
             guard let selectedRootFeed = $0 else { return }
             viewModel.set(feed: selectedRootFeed.feed)
+            if lastScreenFeedIdSent != selectedRootFeed.feedId {
+                trackingApi.emit(event: .screenDisplayed(.postsFeed(.init(
+                    feedId: selectedRootFeed.feedId, relatedTopicId: selectedRootFeed.relatedTopicId))))
+                lastScreenFeedIdSent = selectedRootFeed.feedId
+            }
+
         }
         .onAppear() {
             guard let selectedRootFeed = selectedRootFeed else { return }
             viewModel.set(feed: selectedRootFeed.feed)
+            if lastScreenFeedIdSent != selectedRootFeed.feedId {
+                trackingApi.emit(event: .screenDisplayed(.postsFeed(.init(
+                    feedId: selectedRootFeed.feedId, relatedTopicId: selectedRootFeed.relatedTopicId))))
+                lastScreenFeedIdSent = selectedRootFeed.feedId
+            }
         }
     }
 }
@@ -118,5 +135,6 @@ private struct ContentView<PostsView: View>: View {
                 postsView
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .postsVisibilityScrollView()
     }
 }

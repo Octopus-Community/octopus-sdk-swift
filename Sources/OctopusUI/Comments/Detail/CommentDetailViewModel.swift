@@ -73,6 +73,7 @@ class CommentDetailViewModel: ObservableObject {
     let commentUuid: String
     let connectedActionChecker: ConnectedActionChecker
     private let translationStore: ContentTranslationPreferenceStore
+    private let languageRepository: LanguageRepository
 
     private var newestFirstRepliesFeed: Feed<Reply, Never>?
     private var reply: Bool
@@ -85,23 +86,20 @@ class CommentDetailViewModel: ObservableObject {
 
     private var storage = [AnyCancellable]()
 
-    private var relativeDateFormatter: RelativeDateTimeFormatter = {
-        let relativeDateFormatter = RelativeDateTimeFormatter()
-        relativeDateFormatter.dateTimeStyle = .numeric
-        relativeDateFormatter.unitsStyle = .short
-
-        return relativeDateFormatter
-    }()
+    private var relativeDateFormatterProvider: RelativeDateTimeFormatterProvider
 
     init(octopus: OctopusSDK,
          translationStore: ContentTranslationPreferenceStore,
          commentUuid: String, reply: Bool, replyToScrollTo: String?) {
         self.octopus = octopus
+        self.languageRepository = octopus.core.languageRepository
         self.translationStore = translationStore
         self.commentUuid = commentUuid
         self.reply = reply
         self.replyToScrollTo = replyToScrollTo
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
+
+        relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
 
         Publishers.CombineLatest3(
             octopus.core.commentsRepository.getComment(uuid: commentUuid).removeDuplicates().replaceError(with: nil),
@@ -134,7 +132,7 @@ class CommentDetailViewModel: ObservableObject {
             self.comment = CommentDetail(from: comment,
                                          gamificationLevels: gamificationLevels ?? [],
                                          thisUserProfileId: profile?.id,
-                                         dateFormatter: relativeDateFormatter)
+                                         dateFormatter: relativeDateFormatterProvider.formatter)
             newestFirstRepliesFeed = comment.newestFirstRepliesFeed
             if let oldestFirstRepliesFeed = comment.oldestFirstRepliesFeed {
                 set(feed: oldestFirstRepliesFeed)
@@ -223,7 +221,7 @@ class CommentDetailViewModel: ObservableObject {
                     from: reply,
                     gamificationLevels: gamificationLevels ?? [],
                     liveMeasurePublisher: liveMeasurePublisher,
-                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
+                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatterProvider.formatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
             }
             if newReplies.isEmpty {

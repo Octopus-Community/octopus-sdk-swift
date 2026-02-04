@@ -19,9 +19,10 @@ public protocol MagicLinkStreamService {
 class MagicLinkStreamingServiceClient: ServiceClient, MagicLinkStreamService {
     private let client: Com_Octopuscommunity_MagicLinkStreamServiceAsyncClient
 
-    init(streamingChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String) {
+    init(streamingChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+         localeIdentifier: String) {
         client = Com_Octopuscommunity_MagicLinkStreamServiceAsyncClient(channel: streamingChannel)
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
     }
 
     public func subscribe(magicLinkId: String, email: String) -> any AsyncSequenceOf<Com_Octopuscommunity_IsAuthenticatedResponse> {

@@ -12,6 +12,19 @@ import OctopusCore
 @MainActor
 class PostFeedViewModel: ObservableObject {
 
+    private struct PostInfo: Equatable, Hashable {
+        let id: String
+        let hasVideo: Bool
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+        }
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            return lhs.id == rhs.id
+        }
+    }
+
     @Published private(set) var posts: [DisplayablePost]?
     @Published private(set) var hasMoreData = true
     @Published private(set) var error: DisplayableString?
@@ -27,21 +40,15 @@ class PostFeedViewModel: ObservableObject {
     private let translationStore: ContentTranslationPreferenceStore
     private var storage = [AnyCancellable]()
 
-    private var visiblePostIds: Set<String> = []
-    private var additionalDataToFetch: CurrentValueSubject<Set<String>, Never> = .init([])
+    private var visiblePostIds: Set<PostInfo> = []
+    private var additionalDataToFetch: CurrentValueSubject<Set<PostInfo>, Never> = .init([])
     private var liveMeasures: [String: CurrentValueSubject<LiveMeasures, Never>] = [:]
 
     let ensureConnected: (UserAction) -> Bool
 
     var canDisplayClientObject: Bool { octopus.displayClientObjectCallback != nil }
 
-    private var relativeDateFormatter: RelativeDateTimeFormatter = {
-        let relativeDateFormatter = RelativeDateTimeFormatter()
-        relativeDateFormatter.dateTimeStyle = .numeric
-        relativeDateFormatter.unitsStyle = .short
-
-        return relativeDateFormatter
-    }()
+    private var relativeDateFormatterProvider: RelativeDateTimeFormatterProvider
 
     init(octopus: OctopusSDK, postFeed: Feed<Post, Comment>, displayModeratedPosts: Bool = false,
          translationStore: ContentTranslationPreferenceStore,
@@ -50,18 +57,10 @@ class PostFeedViewModel: ObservableObject {
         self.feed = postFeed
         self.translationStore = translationStore
         self.ensureConnected = ensureConnected
+        relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
         if #available(iOS 14, *) { Logger.posts.trace("Display post feed \(postFeed.id) \(Date())") }
 
         loadRemoteTopics()
-
-        /// Reload all posts when app moves to foreground
-        NotificationCenter.default
-            .publisher(for: UIApplication.willEnterForegroundNotification)
-            .sink { [unowned self] _ in
-                refreshFeed(isManual: false)
-                loadRemoteTopics()
-            }
-            .store(in: &storage)
 
         octopus.core.profileRepository.onCurrentUserProfileUpdated.sink { [unowned self] _ in
             refreshFeed(isManual: false)
@@ -97,30 +96,36 @@ class PostFeedViewModel: ObservableObject {
                     onAppear = { [weak self] in
                         if #available(iOS 14, *) { Logger.posts.trace("Will refresh post list due to trigger") }
                         self?.loadPreviousItems()
-                        self?.queueFetchAdditionalData(id: post.uuid)
-                        self?.visiblePostIds.insert(post.uuid)
+                        let postInfo = PostInfo(id: post.uuid, hasVideo: post.hasVideo)
+                        self?.queueFetchAdditionalData(postInfo: postInfo)
+                        self?.visiblePostIds.insert(postInfo)
                         if let featuredCommentUuid = post.featuredComment?.uuid {
-                            self?.queueFetchAdditionalData(id: featuredCommentUuid)
-                            self?.visiblePostIds.insert(featuredCommentUuid)
+                            let featuredCommentInfo = PostInfo(id: featuredCommentUuid, hasVideo: false)
+                            self?.queueFetchAdditionalData(postInfo: featuredCommentInfo)
+                            self?.visiblePostIds.insert(featuredCommentInfo)
                         }
                     }
                 } else {
                     onAppear = { [weak self] in
-                        self?.queueFetchAdditionalData(id: post.uuid)
-                        self?.visiblePostIds.insert(post.uuid)
+                        let postInfo = PostInfo(id: post.uuid, hasVideo: post.hasVideo)
+                        self?.queueFetchAdditionalData(postInfo: postInfo)
+                        self?.visiblePostIds.insert(postInfo)
                         if let featuredCommentUuid = post.featuredComment?.uuid {
-                            self?.queueFetchAdditionalData(id: featuredCommentUuid)
-                            self?.visiblePostIds.insert(featuredCommentUuid)
+                            let featuredCommentInfo = PostInfo(id: featuredCommentUuid, hasVideo: false)
+                            self?.queueFetchAdditionalData(postInfo: featuredCommentInfo)
+                            self?.visiblePostIds.insert(featuredCommentInfo)
                         }
                     }
                 }
 
                 let onDisappear: () -> Void = { [weak self] in
-                    self?.dequeueFetchAdditionalData(id: post.uuid)
-                    self?.visiblePostIds.remove(post.uuid)
+                    let postInfo = PostInfo(id: post.uuid, hasVideo: post.hasVideo)
+                    self?.dequeueFetchAdditionalData(postInfo: postInfo)
+                    self?.visiblePostIds.remove(postInfo)
                     if let featuredCommentUuid = post.featuredComment?.uuid {
-                        self?.queueFetchAdditionalData(id: featuredCommentUuid)
-                        self?.visiblePostIds.insert(featuredCommentUuid)
+                        let featuredCommentInfo = PostInfo(id: featuredCommentUuid, hasVideo: false)
+                        self?.dequeueFetchAdditionalData(postInfo: featuredCommentInfo)
+                        self?.visiblePostIds.remove(featuredCommentInfo)
                     }
                 }
 
@@ -139,11 +144,13 @@ class PostFeedViewModel: ObservableObject {
 
 
                 return DisplayablePost(from: post,
+                                       position: idx,
+                                       isLast: feed.hasMoreData && idx == posts.count - 1,
                                        gamificationLevels: gamificationLevels ?? [],
                                        liveMeasuresPublisher: liveMeasuresPublisher,
                                        childLiveMeasuresPublisher: childLiveMeasuresPublisher,
                                        thisUserProfileId: profile?.id, topic: topic,
-                                       dateFormatter: relativeDateFormatter,
+                                       dateFormatter: relativeDateFormatterProvider.formatter,
                                        onAppear: onAppear, onDisappear: onDisappear)
             }
             if self.posts != newPosts {
@@ -165,8 +172,9 @@ class PostFeedViewModel: ObservableObject {
                 let additionalDataToFetch = Array(additionalDataToFetch.value)
                 Task {
                     do {
-                        try await octopus.core.postsRepository.fetchAdditionalData(ids: additionalDataToFetch,
-                                                                                   incrementViewCount: true)
+                        try await octopus.core.postsRepository.fetchAdditionalData(
+                            ids: additionalDataToFetch.map { ($0.id, $0.hasVideo) },
+                            incrementViewCount: true)
                     } catch {
                         if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
                             self.error = error.displayableMessage
@@ -193,7 +201,7 @@ class PostFeedViewModel: ObservableObject {
             group.addTask { try? await topicsRepository.fetchTopics() }
             group.addTask { [self] in await refreshFeed(isManual: true) }
             group.addTask { [self] in
-                try? await postsRepository.fetchAdditionalData(ids: Array(visiblePostIds),
+                try? await postsRepository.fetchAdditionalData(ids: Array(visiblePostIds.map { ($0.id, $0.hasVideo) }),
                                                                incrementViewCount: false)
             }
 
@@ -260,9 +268,7 @@ class PostFeedViewModel: ObservableObject {
 
         do {
             try callback(clientObjectId)
-            Task {
-                try? await octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
-            }
+            octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
         } catch {
             self.error = .localizationKey("Error.Unknown")
         }
@@ -278,7 +284,7 @@ class PostFeedViewModel: ObservableObject {
                 // deleted
                 for error in argumentError.errors.values.flatMap({ $0 }) {
                     if case .missingParent = error.detail {
-                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
+                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid, hasVideo: false)
                         break
                     }
                 }
@@ -344,7 +350,7 @@ class PostFeedViewModel: ObservableObject {
                 // deleted
                 for error in argumentError.errors.values.flatMap({ $0 }) {
                     if case .missingParent = error.detail {
-                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
+                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid, hasVideo: false)
                         break
                     }
                 }
@@ -390,15 +396,15 @@ class PostFeedViewModel: ObservableObject {
         }
     }
 
-    private func queueFetchAdditionalData(id: String) {
+    private func queueFetchAdditionalData(postInfo: PostInfo) {
         var currentValue = additionalDataToFetch.value
-        currentValue.insert(id)
+        currentValue.insert(postInfo)
         additionalDataToFetch.send(currentValue)
     }
 
-    private func dequeueFetchAdditionalData(id: String) {
+    private func dequeueFetchAdditionalData(postInfo: PostInfo) {
         var currentValue = additionalDataToFetch.value
-        currentValue.remove(id)
+        currentValue.remove(postInfo)
         additionalDataToFetch.send(currentValue)
     }
 

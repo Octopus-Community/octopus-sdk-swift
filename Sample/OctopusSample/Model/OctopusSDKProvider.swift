@@ -14,7 +14,9 @@ class OctopusSDKProvider {
 
     static let instance = OctopusSDKProvider()
 
-    private(set) var octopus: OctopusSDK!
+    private(set) var octopus: OctopusSDK! {
+        didSet { octopusInstanceDidChange() }
+    }
     @Published var clientLoginRequired = false
     @Published var clientModifyUserField: ConnectionMode.SSOConfiguration.ProfileField?
     @Published var clientModifyUserAsked = false
@@ -23,6 +25,10 @@ class OctopusSDKProvider {
 
     private init() {
         initializeSDK()
+    }
+
+    private func octopusInstanceDidChange() {
+        storage = []
 
         NotificationManager.instance.$notificationDeviceToken
             .sink { [unowned self] notificationDeviceToken in
@@ -30,6 +36,9 @@ class OctopusSDKProvider {
                 print("Setting notification device token to octopus SDK")
                 octopus.set(notificationDeviceToken: notificationDeviceToken)
             }.store(in: &storage)
+
+        TrackingManager.instance.set(octopus: octopus)
+        URLManager.instance.set(octopus: octopus)
     }
 
     private func initializeSDK() {
@@ -91,14 +100,14 @@ class OctopusSDKProvider {
     }
 
     /// Initialize the Octopus SDK in Octopus auth (i.e. authentification will be done with a MagicLink)
-    private func initializeSdkWithOctopusAuth() {
+    func initializeSdkWithOctopusAuth() {
         octopus = try! OctopusSDK(
             apiKey: APIKeys.apiKey,
             connectionMode: .octopus(deepLink: nil) // EDIT THE DEEPLINK IF YOU WANT TO
         )
     }
 
-    private func initializeSDKForInternalUsage() {
+    func initializeSDKForInternalUsage() {
         guard let sdkConfig = SDKConfigManager.instance.sdkConfig else {
             fatalError("SDK config should be set before initializing the SDK")
         }

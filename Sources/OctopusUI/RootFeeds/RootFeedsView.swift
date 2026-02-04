@@ -212,7 +212,7 @@ private struct RootFeedChip: View {
         }) {
             Text(rootFeed.label)
         }
-        .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedRootFeed == rootFeed ? .on : .off))
+        .buttonStyle(OctopusBadgeButtonStyle(.medium, status: selectedRootFeed?.feedId == rootFeed.feedId ? .on : .off))
         .accessibilityValueInBundle(selectedRootFeed == rootFeed ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
     }
 }

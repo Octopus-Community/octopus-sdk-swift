@@ -10,6 +10,7 @@ class RootFeedEntity: NSManagedObject, Identifiable {
 
     @NSManaged public var uuid: String
     @NSManaged public var label: String
+    @NSManaged public var relatedTopicId: String?
     @NSManaged public var position: Int
 
     @nonobjc public class func fetchAllSorted() -> NSFetchRequest<RootFeedEntity> {

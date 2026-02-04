@@ -18,16 +18,18 @@ class ServiceClient {
     var appSessionId: String?
     var octopusUISessionId: String?
     var hasAccessToCommunity: Bool?
+    var localeIdentifier: String
 
     /// OSVersion container that can be accessed by a non isolated call
     private let sendableOSVersion = SendableOSVersion()
     // OS Version. Set on the main thread because UIDevice.current.systemVersion is main actor
     var osVersion: String? { sendableOSVersion.value }
 
-    init(apiKey: String, sdkVersion: String, installId: String) {
+    init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String) {
         self.apiKey = apiKey
         self.sdkVersion = sdkVersion
         self.installId = installId
+        self.localeIdentifier = localeIdentifier
 
         let osVersionBox = sendableOSVersion
 
@@ -59,7 +61,7 @@ class ServiceClient {
         }
         var metadata = [
             ("ApiKey", apiKey),
-            ("Accept-Language", Bundle.main.preferredLocalizations[0]),
+            ("Accept-Language", localeIdentifier),
             ("platform", "iOS"),
             ("sdkVersion", sdkVersion),
             ("installId", installId),

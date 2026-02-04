@@ -129,7 +129,7 @@ class FeedManager<Item: FeedItem, ChildItem: FeedItem>: @unchecked Sendable {
             if !allMissingItems.isEmpty {
                 if #available(iOS 14, *) { Logger.feed.trace("Missing \(allMissingItems.count) feedItems, fetching them") }
                 let batchResponse = try await remoteClient.octoService.getBatch(
-                    ids: allMissingItems,
+                    octoObjectInfos: allMissingItems.map { OctoObjectInfo(id: $0, hasVideo: false) }, // set hasVideo to false is ok because we don't register the view
                     options: getOptions,
                     incrementViewCount: false,
                     authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
@@ -216,7 +216,7 @@ class FeedManager<Item: FeedItem, ChildItem: FeedItem>: @unchecked Sendable {
             if !allMissingItems.isEmpty {
                 if #available(iOS 14, *) { Logger.feed.trace("Missing \(allMissingItems.count) feedItems, fetching them") }
                 let batchResponse = try await remoteClient.octoService.getBatch(
-                    ids: allMissingItems,
+                    octoObjectInfos: allMissingItems.map { OctoObjectInfo(id: $0, hasVideo: false) }, // set hasVideo to false is ok because we don't register the view
                     options: getOptions,
                     incrementViewCount: false,
                     authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())

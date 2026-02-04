@@ -67,13 +67,17 @@ class CoreDataStackManager: @unchecked Sendable {
             persistentContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
 
-        persistentContainer.loadPersistentStores { persistentStoreDescription, error in
+        persistentContainer.loadPersistentStores { [weak self] persistentStoreDescription, error in
+            guard let self else { return }
             if let error {
                 if #available(iOS 14, *) {
                     Logger.other.debug("Persistent store couldn't be loaded: \(error) try to reset it at: \(persistentStoreDescription.url?.path ?? "URL not found")")
                 }
                 do {
-                    try self.reset()
+                    if let storeUrl = persistentStoreDescription.url {
+                        try deleteSQLiteFiles(at: storeUrl)
+                    }
+                    try reset()
                 } catch {
                     if #available(iOS 14, *) { Logger.other.debug("failed to delete Persistent store: \(error)") }
                 }

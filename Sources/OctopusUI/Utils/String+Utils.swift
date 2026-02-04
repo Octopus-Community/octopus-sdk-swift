@@ -103,4 +103,36 @@ extension String {
             return format(num / 1_000_000_000, suffix: "B")
         }
     }
+
+    static func formattedDuration(_ seconds: TimeInterval, displayHours: Bool) -> String {
+        if #available(iOS 16, *) {
+            let duration = Duration.seconds(seconds)
+            return duration.formatted(
+                .time(
+                    pattern: displayHours ? .hourMinuteSecond(padHourToLength: 2) : .minuteSecond(padMinuteToLength: 2)
+                )
+            )
+        } else {
+            // Round to nearest whole second first (handles 59.999 → 60)
+            let totalSeconds = Int(round(seconds))
+
+            let hours = totalSeconds / 3600
+            let minutes = (totalSeconds % 3600) / 60
+            let secs = totalSeconds % 60
+
+            if displayHours {
+                // HH:MM:SS
+                return String(
+                    format: "%02d:%02d:%02d",
+                    hours, minutes, secs
+                )
+            } else {
+                // MM:SS
+                return String(
+                    format: "%02d:%02d",
+                    minutes + (hours * 60), secs
+                )
+            }
+        }
+    }
 }

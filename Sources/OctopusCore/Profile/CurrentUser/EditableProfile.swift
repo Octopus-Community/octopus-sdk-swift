@@ -7,12 +7,12 @@ import OctopusRemoteClient
 
 public struct EditableProfile: Sendable {
     public enum FieldUpdate<T: Sendable>: Sendable {
-        case notUpdated
+        case unchanged
         case updated(T)
 
         var isUpdated: Bool {
             switch self {
-            case .notUpdated: return false
+            case .unchanged: return false
             case .updated: return true
             }
         }
@@ -28,14 +28,14 @@ public struct EditableProfile: Sendable {
     public let hasConfirmedBio: FieldUpdate<Bool>
     public let hasConfirmedPicture: FieldUpdate<Bool>
 
-    public init(nickname: FieldUpdate<String> = .notUpdated,
-                bio: FieldUpdate<String?> = .notUpdated,
-                picture: FieldUpdate<Data?> = .notUpdated,
-                hasSeenOnboarding: FieldUpdate<Bool> = .notUpdated,
-                hasAcceptedCgu: FieldUpdate<Bool> = .notUpdated,
-                hasConfirmedNickname: FieldUpdate<Bool> = .notUpdated,
-                hasConfirmedBio: FieldUpdate<Bool> = .notUpdated,
-                hasConfirmedPicture: FieldUpdate<Bool> = .notUpdated
+    public init(nickname: FieldUpdate<String> = .unchanged,
+                bio: FieldUpdate<String?> = .unchanged,
+                picture: FieldUpdate<Data?> = .unchanged,
+                hasSeenOnboarding: FieldUpdate<Bool> = .unchanged,
+                hasAcceptedCgu: FieldUpdate<Bool> = .unchanged,
+                hasConfirmedNickname: FieldUpdate<Bool> = .unchanged,
+                hasConfirmedBio: FieldUpdate<Bool> = .unchanged,
+                hasConfirmedPicture: FieldUpdate<Bool> = .unchanged
     ) {
         self.nickname = nickname
         self.bio = bio
@@ -52,14 +52,14 @@ public struct EditableProfile: Sendable {
 extension EditableProfile.FieldUpdate {
     var backendValue: UpdateProfileData.FieldUpdate<T> {
         switch self {
-        case .notUpdated: return .notUpdated
+        case .unchanged: return .notUpdated
         case .updated(let value): return .updated(value)
         }
     }
 
     func map<U>(_ transform: (T) throws -> U) rethrows -> EditableProfile.FieldUpdate<U> {
         switch self {
-        case .notUpdated: return .notUpdated
+        case .unchanged: return .unchanged
         case .updated(let value): return .updated(try transform(value))
         }
     }

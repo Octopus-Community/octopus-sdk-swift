@@ -32,8 +32,8 @@ final class ToastContainerViewModel: ObservableObject {
         octopus.core.toastsRepository.$toasts
             .receive(on: DispatchQueue.main)
             .removeDuplicates()
-            .sink { [unowned self] in
-                guard !$0.isEmpty else { return }
+            .sink { [weak self] in
+                guard let self, !$0.isEmpty else { return }
                 for toast in $0 {
                     if !toasts.contains(where: { $0.toast == toast }) {
                         show(toast: toast)
@@ -58,7 +58,8 @@ final class ToastContainerViewModel: ObservableObject {
 
         // Post an announcement to the toast content.
         if #available(iOS 17, *) {
-            var highPriorityAnnouncement = AttributedString(toast.localizedString)
+            var highPriorityAnnouncement = AttributedString(toast.localizedString(
+                locale: octopus.core.languageRepository.overridenLocale))
             highPriorityAnnouncement.accessibilitySpeechAnnouncementPriority = .high
             AccessibilityNotification.Announcement(highPriorityAnnouncement).post()
         }

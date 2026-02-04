@@ -11,6 +11,7 @@ import OctopusCore
 struct PostDetailView: View {
     @Environment(\.presentationMode) private var presentationMode
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
@@ -28,6 +29,8 @@ struct PostDetailView: View {
     @State private var commentHasChanges = false
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
+
+    @State private var width: CGFloat = 0
 
     private let canClose: Bool
     
@@ -57,6 +60,7 @@ struct PostDetailView: View {
                     post: viewModel.post, comments: viewModel.comments,
                     hasMoreComments: viewModel.hasMoreData,
                     hideLoadMoreCommentsLoader: viewModel.hideLoadMoreCommentsLoader,
+                    width: width,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
                     zoomableImageInfo: $zoomableImageInfo,
@@ -73,7 +77,10 @@ struct PostDetailView: View {
                             navigator.push(.publicProfile(profileId: profileId))
                         }
                     },
-                    openCreateComment: { commentTextFocused = true },
+                    openCreateComment: {
+                        trackingApi.emit(event: .commentButtonClicked(.init(postId: viewModel.postUuid)))
+                        commentTextFocused = true
+                    },
                     deletePost: viewModel.deletePost,
                     deleteComment: viewModel.deleteComment,
                     reactionTapped: viewModel.setReaction(_:),
@@ -110,6 +117,7 @@ struct PostDetailView: View {
                     )
             }
         }
+        .readWidth($width)
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
@@ -137,6 +145,7 @@ struct PostDetailView: View {
         .onAppear() {
             viewModel.onAppear()
         }
+        .emitScreenDisplayed(.postDetail(.init(postId: viewModel.postUuid)), trackingApi: trackingApi)
         .onDisappear() {
             viewModel.onDisappear()
         }
@@ -145,14 +154,14 @@ struct PostDetailView: View {
                 $0.alert(
                     Text("Common.CancelModifications", bundle: .module),
                     isPresented: $showChangesWillBeLostAlert) {
-                        Button(L10n("Common.No"), role: .cancel, action: {})
-                        Button(L10n("Common.Yes"), role: .destructive, action: {
+                        Button(role: .cancel, action: {}) { Text("Common.No", bundle: .module) }
+                        Button(role: .destructive, action: {
                             if canClose {
                                 presentationMode.wrappedValue.dismiss()
                             } else {
                                 navigator.pop()
                             }
-                        })
+                        }) { Text("Common.Yes", bundle: .module) }
                     }
             } else {
                 $0.alert(isPresented: $showChangesWillBeLostAlert) {
@@ -260,6 +269,7 @@ private struct ContentView: View {
     let comments: [DisplayableFeedResponse]?
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
+    let width: CGFloat
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
@@ -292,6 +302,7 @@ private struct ContentView: View {
                 Compat.LazyVStack(spacing: 0) {
                     if let post {
                         PostDetailContentView(post: post,
+                                              width: width,
                                               zoomableImageInfo: $zoomableImageInfo,
                                               displayProfile: displayProfile,
                                               openCreateComment: openCreateComment,
@@ -334,7 +345,7 @@ private struct ContentView: View {
                         .foregroundColor(theme.colors.gray500)
                     }
                 }
-            }
+            }.postsVisibilityScrollView()
         }
     }
 }
@@ -342,8 +353,12 @@ private struct ContentView: View {
 private struct PostDetailContentView: View {
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+    @EnvironmentObject private var videoManager: VideoManager
+    @EnvironmentObject private var trackingApi: TrackingApi
+    @EnvironmentObject private var urlOpener: URLOpener
 
     let post: PostDetailViewModel.Post
+    let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let displayProfile: (String) -> Void
     let openCreateComment: () -> Void
@@ -394,12 +409,14 @@ private struct PostDetailContentView: View {
                                 Menu(content: {
                                     if post.canBeDeleted {
                                         Button(action: { displayWillDeleteAlert = true }) {
-                                            Label(L10n("Post.Delete.Button"), systemImage: "trash")
+                                            Label(title: { Text("Post.Delete.Button", bundle: .module) },
+                                                  icon: { Image(systemName: "trash") })
                                         }
                                     }
                                     if post.canBeModerated {
                                         Button(action: { displayContentModeration(post.uuid) }) {
-                                            Label(L10n("Moderation.Content.Button"), systemImage: "flag")
+                                            Label(title: { Text("Moderation.Content.Button", bundle: .module) },
+                                                  icon: { Image(systemName: "flag") })
                                         }
                                     }
                                 }, label: {
@@ -446,7 +463,8 @@ private struct PostDetailContentView: View {
 
                     if !hasPoll && post.text.hasTranslation {
                         ToggleTextTranslationButton(
-                            contentId: post.uuid, originalLanguage: post.text.originalLanguage)
+                            contentId: post.uuid, originalLanguage: post.text.originalLanguage,
+                            contentKind: .post)
                     }
                 }.padding(.horizontal, horizontalPadding)
                 switch post.attachment {
@@ -481,6 +499,23 @@ private struct PostDetailContentView: View {
                                 }
                         })
                     .frame(maxWidth: .infinity)
+                    .modify {
+                        if #unavailable(iOS 17.0) {
+                            $0.fixedSize(horizontal: false, vertical: true)
+                        } else { $0 }
+                    }
+                    .padding(.top, post.text.hasTranslation ? 4 : 8)
+                case let .video(video):
+                    VideoPlayerView(
+                        videoManager: videoManager,
+                        videoMedia: video,
+                        contentId: post.uuid,
+                        width: width
+                    )
+                    .aspectRatio(video.size.width/video.size.height, contentMode: .fit)
+                    .anchorPreference(key: VisibleItemsPreference.self, value: .bounds, transform: { anchor in
+                        [.init(item: post.toVisiblePost, bounds: anchor)]
+                    })
                     .padding(.top, post.text.hasTranslation ? 4 : 8)
                 case let .poll(poll):
                     PollView(poll: poll,
@@ -492,7 +527,8 @@ private struct PostDetailContentView: View {
                     .padding(.top, post.text.hasTranslation ? 4 : 8)
 
                     if post.text.hasTranslation {
-                        ToggleTextTranslationButton(contentId: post.uuid, originalLanguage: post.text.originalLanguage)
+                        ToggleTextTranslationButton(contentId: post.uuid, originalLanguage: post.text.originalLanguage,
+                                                    contentKind: .post)
                             .padding(.horizontal, horizontalPadding)
                     }
                 case .none:
@@ -513,10 +549,32 @@ private struct PostDetailContentView: View {
                     .padding(.top, 8)
                 }
 
-                PostAggregatedInfoView(
-                    aggregatedInfo: post.aggregatedInfo,
-                    childrenTapped: { openCreateComment() })
-                .padding(.horizontal, horizontalPadding)
+                if let customAction = post.customAction {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            trackingApi.trackPostCustomActionButtonHit(postId: post.uuid)
+                            urlOpener.open(url: customAction.targetUrl)
+                        }) {
+                            Text(customAction.ctaText.getText(translated: displayTranslation))
+                                .lineLimit(1)
+                        }
+                        .buttonStyle(OctopusButtonStyle(.mid))
+                        Spacer()
+                    }
+                    .padding(.horizontal, horizontalPadding)
+                    .padding(.top, 8)
+                }
+
+                let aggregatedInfo = post.aggregatedInfo
+                if !aggregatedInfo.reactions.isEmpty || aggregatedInfo.childCount > 0 || aggregatedInfo.viewCount > 0  {
+                    PostAggregatedInfoView(
+                        aggregatedInfo: aggregatedInfo,
+                        childrenTapped: openCreateComment)
+                    .padding(.horizontal, horizontalPadding)
+                } else {
+                    Color.clear.frame(height: 16)
+                }
 
                 AdaptiveAccessibleStack2Contents(
                     hStackSpacing: 16,
@@ -723,10 +781,12 @@ private struct CommentsView: View {
             canBeDeleted: false,
             canBeModerated: true,
             catchPhrase: nil,
-            bridgeCTA: nil),
+            bridgeCTA: nil,
+            customAction: nil),
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
+        width: 375,
         scrollToBottom: .constant(false),
         scrollToId: .constant(nil),
         zoomableImageInfo: .constant(nil),
@@ -777,10 +837,12 @@ private struct CommentsView: View {
             canBeDeleted: false,
             canBeModerated: true,
             catchPhrase: nil,
-            bridgeCTA: nil),
+            bridgeCTA: nil,
+            customAction: nil),
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
+        width: 375,
         scrollToBottom: .constant(false),
         scrollToId: .constant(nil),
         zoomableImageInfo: .constant(nil),
@@ -840,10 +902,12 @@ private struct CommentsView: View {
             canBeDeleted: false,
             canBeModerated: true,
             catchPhrase: nil,
-            bridgeCTA: nil),
+            bridgeCTA: nil,
+            customAction: nil),
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
+        width: 375,
         scrollToBottom: .constant(false),
         scrollToId: .constant(nil),
         zoomableImageInfo: .constant(nil),
@@ -900,10 +964,12 @@ private struct CommentsView: View {
             canBeDeleted: false,
             canBeModerated: true,
             catchPhrase: nil,
-            bridgeCTA: nil),
+            bridgeCTA: nil,
+            customAction: nil),
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
+        width: 375,
         scrollToBottom: .constant(false),
         scrollToId: .constant(nil),
         zoomableImageInfo: .constant(nil),
@@ -957,11 +1023,13 @@ private struct CommentsView: View {
                 originalText: "Qu'en pensez vous ?",
                 originalLanguage: "fr",
                 translatedText: "What do you think?"),
-            bridgeCTA: nil
+            bridgeCTA: nil,
+            customAction: nil
         ),
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
+        width: 375,
         scrollToBottom: .constant(false),
         scrollToId: .constant(nil),
         zoomableImageInfo: .constant(nil),

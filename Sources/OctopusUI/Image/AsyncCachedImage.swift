@@ -64,8 +64,8 @@ private final class Loader: ObservableObject, @unchecked Sendable {
             .map { result -> URLSession.DataTaskPublisher.Output? in result}
             .replaceError(with: nil)
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] result in
-                guard let result, let image = UIImage(data: result.data) else { return }
+            .sink { [weak self] result in
+                guard let self, let result, let image = UIImage(data: result.data) else { return }
                 if #available(iOS 14, *) {
                     if Self.verbose {
                         Logger.images.trace("Image \(self.url.imageIdentifier) received at \(Date()), storing it in cache")

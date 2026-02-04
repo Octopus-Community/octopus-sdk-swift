@@ -69,7 +69,7 @@ public class ToastsRepository: InjectableObject, @unchecked Sendable {
                !gamificationToastAlreadyDisplayed.contains(action) {
                 toasts.append(.gamification(GamificationToast(
                     action: action,
-                    formattedPoints: "\(points) \(points > 1 ? config.abbrevPointPlural : config.abbrevPointPlural)")))
+                    formattedPoints: "\(points) \(points > 1 ? config.abbrevPointPlural : config.abbrevPointSingular)")))
                 // since we do not want to display both reply and comment actions,
                 if action == .reply || action == .comment {
                     gamificationToastAlreadyDisplayed.insert(.reply)

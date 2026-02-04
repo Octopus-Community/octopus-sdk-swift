@@ -4,6 +4,9 @@
     "" : {
 
     },
+    "%@" : {
+
+    },
     "%lld comments" : {
 
     },
@@ -117,6 +120,9 @@
     "Canele Recipe" : {
 
     },
+    "Change Community" : {
+
+    },
     "Custom events" : {
 
     },
@@ -142,6 +148,9 @@
 
     },
     "Error" : {
+
+    },
+    "Events" : {
 
     },
     "Force login on strong actions" : {
@@ -198,6 +207,12 @@
     "Octopus" : {
 
     },
+    "Octopus SDK lets you override the language use in the UI." : {
+
+    },
+    "Octopus SDK publishes events to inform you about what the user is doing inside the community. You can use these events to feed your own analytics tool." : {
+
+    },
     "Open Octopus Home Screen" : {
 
     },
@@ -211,6 +226,9 @@
 
     },
     "Override cohort attribution" : {
+
+    },
+    "Override the language of the SDK" : {
 
     },
     "Picture" : {
@@ -231,6 +249,9 @@
     "SDK configured with: %@" : {
 
     },
+    "Select the language by tapping on the name." : {
+
+    },
     "Send CustomEvent1" : {
 
     },
@@ -238,6 +259,9 @@
 
     },
     "Some App Managed Fields" : {
+
+    },
+    "Sometimes, you need to change the API key. Although it is not something we recommend, it can be useful if you want to switch communities." : {
 
     },
     "SSO" : {

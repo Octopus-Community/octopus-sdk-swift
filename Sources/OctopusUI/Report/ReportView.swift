@@ -9,6 +9,7 @@ import OctopusCore
 
 struct ReportView: View {
     @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject private var trackingApi: TrackingApi
 
     enum Context {
         case content(contentId: String)
@@ -39,6 +40,8 @@ struct ReportView: View {
             Text(viewModel.context.isContent ? "Moderation.Content.Title" : "Moderation.Profile.Title",
                  bundle: .module),
             displayMode: .inline)
+        .emitScreenDisplayed(viewModel.context.isContent ? .reportContent : .reportProfile,
+                             trackingApi: trackingApi)
         .compatAlert(
             "Common.Error",
             isPresented: $displayError,

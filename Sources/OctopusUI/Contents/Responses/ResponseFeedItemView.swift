@@ -9,6 +9,8 @@ import OctopusCore
 struct ResponseFeedItemView: View {
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+    @EnvironmentObject private var trackingApi: TrackingApi
+    @EnvironmentObject private var languageManager: LanguageManager
 
     let response: DisplayableFeedResponse
     var displayChildCount: Bool = true
@@ -64,13 +66,15 @@ struct ResponseFeedItemView: View {
                                     Menu(content: {
                                         if response.canBeDeleted {
                                             Button(action: { displayDeleteAlert = true }) {
-                                                Label(L10n(response.kind.deleteButtonTextStr), systemImage: "trash")
+                                                Label(title: { Text(response.kind.deleteButtonText, bundle: .module) },
+                                                      icon: { Image(systemName: "trash") })
                                             }
                                             .buttonStyle(.plain)
                                         }
                                         if response.canBeModerated {
                                             Button(action: { displayContentModeration(response.uuid) }) {
-                                                Label(L10n("Moderation.Content.Button"), systemImage: "flag")
+                                                Label(title: { Text("Moderation.Content.Button", bundle: .module) },
+                                                      icon: { Image(systemName: "flag") })
                                             }
                                             .buttonStyle(.plain)
                                         }
@@ -127,7 +131,8 @@ struct ResponseFeedItemView: View {
 
                             if translatableText.hasTranslation {
                                 ToggleTextTranslationButton(contentId: response.uuid,
-                                                            originalLanguage: translatableText.originalLanguage)
+                                                            originalLanguage: translatableText.originalLanguage,
+                                                            contentKind: response.kind == .comment ? .comment : .reply)
                             } else {
                                 Spacer().frame(height: 8)
                             }
@@ -183,11 +188,21 @@ struct ResponseFeedItemView: View {
                     canReply: response.kind.canReply,
                     reactions: aggregatedInfo.reactions,
                     reactionTapped: { reactionTapped($0, response.uuid) },
-                    openCreateReply: { displayResponseDetail(response.uuid, true) }
+                    openCreateReply: {
+                        if response.kind == .comment {
+                            trackingApi.emit(event: .replyButtonClicked(.init(commentId: response.uuid)))
+                        }
+                        displayResponseDetail(response.uuid, true)
+                    }
                 )
 
                 if response.kind.canReply && displayChildCount && aggregatedInfo.childCount > 0 {
-                    Button(action: { displayResponseDetail(response.uuid, false) }) {
+                    Button(action: {
+                        if response.kind == .comment {
+                            trackingApi.emit(event: .seeRepliesButtonClicked(.init(commentId: response.uuid)))
+                        }
+                        displayResponseDetail(response.uuid, false)
+                    }) {
                         HStack {
                             Image(systemName: "arrow.right")
                                 .accessibilityHidden(true)
@@ -271,7 +286,7 @@ struct ResponseFeedItemView: View {
     }
 
     var accessibilityDescription: LocalizedStringKey {
-        let authorName = response.author.name.localizedString
+        let authorName = response.author.name.localizedString(locale: languageManager.overridenLocale)
 
         if let responseText = response.text {
             let text = responseText.getText(translated: true)

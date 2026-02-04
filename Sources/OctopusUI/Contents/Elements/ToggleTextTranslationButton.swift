@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 struct ToggleTextTranslationButton: View {
     @Environment(\.octopusTheme) private var theme
@@ -11,12 +12,15 @@ struct ToggleTextTranslationButton: View {
     @EnvironmentObject private var trackingApi: TrackingApi
     let contentId: String
     let originalLanguage: String?
+    let contentKind: SdkEvent.ContentKind
 
     var body: some View {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.2)) {
                 let newValue = translationStore.toggleDisplayTranslation(for: contentId)
                 trackingApi.trackTranslationButtonHit(translationDisplayed: newValue)
+                trackingApi.emit(event: .translationButtonClicked(.init(
+                    contentId: contentId, viewTranslated: newValue, contentKind: contentKind)))
             }
         }) {
             Text(localizedKey, bundle: .module)

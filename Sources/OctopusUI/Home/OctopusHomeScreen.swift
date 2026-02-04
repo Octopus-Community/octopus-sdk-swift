@@ -56,6 +56,9 @@ public struct OctopusHomeScreen: View {
     @Compat.StateObject private var translationStore: ContentTranslationPreferenceStore
     @Compat.StateObject private var trackingApi: TrackingApi
     @Compat.StateObject private var gamificationRulesViewManager: GamificationRulesViewManager
+    @Compat.StateObject private var videoManager: VideoManager
+    @Compat.StateObject private var urlOpener: URLOpener
+    @Compat.StateObject private var languageManager: LanguageManager
 
     /// Constructor of the `OctopusHomeScreen`.
     /// - Parameters:
@@ -90,6 +93,9 @@ public struct OctopusHomeScreen: View {
             repository: octopus.core.contentTranslationPreferenceRepository))
         _trackingApi = Compat.StateObject(wrappedValue: TrackingApi(octopus: octopus))
         _gamificationRulesViewManager = Compat.StateObject(wrappedValue: GamificationRulesViewManager(octopus: octopus))
+        _videoManager = Compat.StateObject(wrappedValue: VideoManager(octopus: octopus))
+        _urlOpener = Compat.StateObject(wrappedValue: URLOpener(octopus: octopus))
+        _languageManager = Compat.StateObject(wrappedValue: LanguageManager(octopus: octopus))
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
         self.navBarLeadingItem = navBarLeadingItem
@@ -172,6 +178,10 @@ public struct OctopusHomeScreen: View {
         .environmentObject(translationStore)
         .environmentObject(trackingApi)
         .environmentObject(gamificationRulesViewManager)
+        .environmentObject(videoManager)
+        .environmentObject(urlOpener)
+        .environmentObject(languageManager)
+        .overrideLanguageIfNeeded(languageManager: languageManager)
         .sheet(isPresented: $gamificationRulesViewManager.shouldDisplayGamificationRules) {
             if let gamificationConfig = gamificationRulesViewManager.gamificationConfig {
                 GamificationRulesScreen(gamificationConfig: gamificationConfig,

@@ -47,10 +47,10 @@ extension StorableReply {
                                 translatedText: reply.translatedText.nilIfEmpty)
         if reply.hasMedia {
             var mutableMedias = [Media]()
-            if reply.media.hasVideo, let videoMedia = Media(from: reply.media.video, kind: .video) {
+            if reply.media.hasVideo, let videoMedia = Media(from: reply.media.video) {
                 mutableMedias.append(videoMedia)
             }
-            mutableMedias.append(contentsOf: reply.media.images.compactMap { Media(from: $0, kind: .image)})
+            mutableMedias.append(contentsOf: reply.media.images.compactMap { Media(from: $0) })
             medias = mutableMedias
         } else {
             medias = []

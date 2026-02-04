@@ -32,7 +32,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
     private let repliesDatabase: RepliesDatabase
     private let networkMonitor: NetworkMonitor
     private let validator: Validators.Reply
-    private let toastsRepository: ToastsRepository
+    private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
     private let userInteractionsDelegate: UserInteractionsDelegate
 
@@ -42,7 +42,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
         repliesDatabase = injector.getInjected(identifiedBy: Injected.repliesDatabase)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         validator = injector.getInjected(identifiedBy: Injected.validators).reply
-        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
@@ -74,8 +74,9 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
                 try await repliesDatabase.upsert(replies: [finalReply])
                 let newReply = Reply(storableComment: finalReply)
                 _replySentPublisher.send(newReply)
-                toastsRepository.display(gamificationToast: .reply)
                 sdkEventsEmitter.emit(.contentCreated(content: newReply))
+                sdkEventsEmitter.emit(.replyCreated(.init(from: newReply)))
+                gamificationRepository.register(action: .reply)
                 return (newReply, reply.imageData)
             case let .fail(failure):
                 throw SendReply.Error.validation(.init(from: failure))
@@ -106,6 +107,8 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
             try await repliesDatabase.delete(replyId: replyId)
             _replyDeletedPublisher.send(reply)
             sdkEventsEmitter.emit(.contentDeleted(content: reply))
+            sdkEventsEmitter.emit(.contentDeleted(.init(contentId: replyId, coreKind: .reply)))
+            gamificationRepository.unregister(action: .reply)
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error
@@ -122,7 +125,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
         do {
             if #available(iOS 14, *) { Logger.comments.trace("Fetching additional data for ids: \(ids)") }
             let batchResponse = try await remoteClient.octoService.getBatch(
-                ids: ids,
+                octoObjectInfos: ids.map { OctoObjectInfo(id: $0, hasVideo: false) },
                 options: [.aggregates, .interactions],
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())

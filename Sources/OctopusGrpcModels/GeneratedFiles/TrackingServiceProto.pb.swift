@@ -176,6 +176,22 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .viewTranslationButtonHit(newValue)}
     }
 
+    public var videoPlayed: Com_Octopuscommunity_TrackRequest.VideoPlayed {
+      get {
+        if case .videoPlayed(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.VideoPlayed()
+      }
+      set {eventType = .videoPlayed(newValue)}
+    }
+
+    public var clickOnCta: Com_Octopuscommunity_TrackRequest.ClickOnCta {
+      get {
+        if case .clickOnCta(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ClickOnCta()
+      }
+      set {eventType = .clickOnCta(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_EventType: Equatable, Sendable {
@@ -194,6 +210,8 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case viewProfile(Com_Octopuscommunity_TrackRequest.ViewProfile)
       case searchTopicButtonHit(Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit)
       case viewTranslationButtonHit(Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit)
+      case videoPlayed(Com_Octopuscommunity_TrackRequest.VideoPlayed)
+      case clickOnCta(Com_Octopuscommunity_TrackRequest.ClickOnCta)
 
     }
 
@@ -569,6 +587,36 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
+  public struct VideoPlayed: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var objectID: String = String()
+
+    public var watchTimeSec: Int32 = 0
+
+    public var videoDurationSec: Int32 = 0
+
+    public var videoID: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct ClickOnCta: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var objectID: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -638,6 +686,8 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     23: .same(proto: "viewProfile"),
     24: .same(proto: "searchTopicButtonHit"),
     25: .same(proto: "viewTranslationButtonHit"),
+    26: .same(proto: "videoPlayed"),
+    27: .same(proto: "clickOnCta"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -831,6 +881,32 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .viewTranslationButtonHit(v)
         }
       }()
+      case 26: try {
+        var v: Com_Octopuscommunity_TrackRequest.VideoPlayed?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .videoPlayed(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .videoPlayed(v)
+        }
+      }()
+      case 27: try {
+        var v: Com_Octopuscommunity_TrackRequest.ClickOnCta?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .clickOnCta(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .clickOnCta(v)
+        }
+      }()
       default: break
       }
     }
@@ -906,6 +982,14 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     case .viewTranslationButtonHit?: try {
       guard case .viewTranslationButtonHit(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 25)
+    }()
+    case .videoPlayed?: try {
+      guard case .videoPlayed(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 26)
+    }()
+    case .clickOnCta?: try {
+      guard case .clickOnCta(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 27)
     }()
     case nil: break
     }
@@ -1659,6 +1743,88 @@ extension Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit: SwiftProto
 
   public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit, rhs: Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit) -> Bool {
     if lhs.viewTranslated != rhs.viewTranslated {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.VideoPlayed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".VideoPlayed"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "objectId"),
+    2: .same(proto: "watchTimeSec"),
+    3: .same(proto: "videoDurationSec"),
+    4: .same(proto: "videoId"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.objectID) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.watchTimeSec) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.videoDurationSec) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.videoID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.objectID.isEmpty {
+      try visitor.visitSingularStringField(value: self.objectID, fieldNumber: 1)
+    }
+    if self.watchTimeSec != 0 {
+      try visitor.visitSingularInt32Field(value: self.watchTimeSec, fieldNumber: 2)
+    }
+    if self.videoDurationSec != 0 {
+      try visitor.visitSingularInt32Field(value: self.videoDurationSec, fieldNumber: 3)
+    }
+    if !self.videoID.isEmpty {
+      try visitor.visitSingularStringField(value: self.videoID, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.VideoPlayed, rhs: Com_Octopuscommunity_TrackRequest.VideoPlayed) -> Bool {
+    if lhs.objectID != rhs.objectID {return false}
+    if lhs.watchTimeSec != rhs.watchTimeSec {return false}
+    if lhs.videoDurationSec != rhs.videoDurationSec {return false}
+    if lhs.videoID != rhs.videoID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ClickOnCta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClickOnCta"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "objectId"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.objectID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.objectID.isEmpty {
+      try visitor.visitSingularStringField(value: self.objectID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClickOnCta, rhs: Com_Octopuscommunity_TrackRequest.ClickOnCta) -> Bool {
+    if lhs.objectID != rhs.objectID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

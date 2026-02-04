@@ -18,29 +18,34 @@ class AppUserManager {
     private var storage = [AnyCancellable]()
 
     private init() {
-        appUserStore.$user
-            .removeDuplicates()
-            .sink { [unowned self] in
-                appUser = $0
+        Publishers.CombineLatest(
+            appUserStore.$user.removeDuplicates(),
+            NotificationCenter.default.publisher(for: .apiKeyChanged).prepend(Notification(name: .apiKeyChanged))
+        ).sink { [unowned self] appUser, _ in
+            self.appUser = appUser
 
-                let octopus = OctopusSDKProvider.instance.octopus
-                let sdkConfig = SDKConfigManager.instance.sdkConfig
-                guard case .sso = sdkConfig?.authKind, let octopus else { return }
-                if let appUser {
-                    let clientUser = ClientUser(
-                        userId: appUser.userId,
-                        profile: .init(nickname: appUser.nickname, bio: appUser.bio,
-                                       picture: appUser.picture))
-                    octopus.connectUser(
-                        clientUser,
-                        tokenProvider: { [weak self] in
-                            guard let self else { throw NSError(domain: "", code: 0, userInfo: nil) }
-                            return try await self.tokenProvider.getClientUserToken(userId: appUser.userId)
-                        })
-                } else {
-                    octopus.disconnectUser()
-                }
-            }.store(in: &storage)
+            guard let octopus = OctopusSDKProvider.instance.octopus else { return }
+            let sdkConfig = SDKConfigManager.instance.sdkConfig
+            switch sdkConfig?.authKind {
+            case .octopus: return
+            default: break // if config is nil, or if sso, we can continue
+            }
+
+            if let appUser {
+                let clientUser = ClientUser(
+                    userId: appUser.userId,
+                    profile: .init(nickname: appUser.nickname, bio: appUser.bio,
+                                   picture: appUser.picture))
+                octopus.connectUser(
+                    clientUser,
+                    tokenProvider: { [weak self] in
+                        guard let self else { throw NSError(domain: "", code: 0, userInfo: nil) }
+                        return try await self.tokenProvider.getClientUserToken(userId: appUser.userId)
+                    })
+            } else {
+                octopus.disconnectUser()
+            }
+        }.store(in: &storage)
     }
 
     func set(appUser: AppUser?) {
