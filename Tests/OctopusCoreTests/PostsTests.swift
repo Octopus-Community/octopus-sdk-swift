@@ -30,6 +30,7 @@ class PostsTests: XCTestCase {
         injector.register { ReplyFeedsStore(injector: $0) }
         injector.register { RepliesDatabase(injector: $0) }
         injector.register { ToastsRepository(injector: $0) }
+        injector.register { GamificationRepository(injector: $0) }
         injector.register { SdkEventsEmitter(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
         injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider,
@@ -59,7 +60,9 @@ class PostsTests: XCTestCase {
             creationDate: Date(), updateDate: Date(),
             status: .published, statusReasons: [],
             parentId: "topicId",
-            descCommentFeedId: nil, ascCommentFeedId: nil, clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+            descCommentFeedId: nil, ascCommentFeedId: nil,
+            bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+            customActionText: nil, customActionTargetLink: nil,
             aggregatedInfo: .empty, userInteractions: .empty))
         let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
         try await postsRepository.send(post)
@@ -85,9 +88,11 @@ class PostsTests: XCTestCase {
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  descCommentFeedId: "", ascCommentFeedId: "",
+                  bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                  customActionText: nil, customActionTargetLink: nil,
                   aggregatedInfo: .empty, userInteractions: .empty))
-        _ = try await postsRepository.fetchPost(uuid: "1")
+        _ = try await postsRepository.fetchPost(uuid: "1", hasVideo: false)
 
         await fulfillment(of: [localExpectation], timeout: 0.5)
     }
@@ -101,7 +106,9 @@ class PostsTests: XCTestCase {
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  descCommentFeedId: "", ascCommentFeedId: "",
+                  bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                  customActionText: nil, customActionTargetLink: nil,
                   aggregatedInfo: .empty, userInteractions: .empty)
         ])
 
@@ -141,7 +148,9 @@ class PostsTests: XCTestCase {
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  descCommentFeedId: "", ascCommentFeedId: "",
+                  bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                  customActionText: nil, customActionTargetLink: nil,
                   aggregatedInfo: .empty, userInteractions: .empty)
         ])
 
@@ -170,7 +179,9 @@ class PostsTests: XCTestCase {
                   creationDate: Date(), updateDate: Date(),
                   status: .published, statusReasons: [],
                   parentId: "Sport",
-                  descCommentFeedId: "", ascCommentFeedId: "", clientObjectId: nil, catchPhrase: nil, ctaText: nil,
+                  descCommentFeedId: "", ascCommentFeedId: "",
+                  bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                  customActionText: nil, customActionTargetLink: nil,
                   aggregatedInfo: .init(
                     reactions: [
                         ReactionCount(reactionKind: .heart, count: 4),

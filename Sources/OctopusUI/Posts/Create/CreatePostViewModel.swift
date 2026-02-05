@@ -156,7 +156,8 @@ class CreatePostViewModel: ObservableObject {
         $attachment
             .removeDuplicates()
             .receive(on: DispatchQueue.main) // needed because we can reset the picture
-            .sink { [unowned self] attachment in
+            .sink { [weak self] attachment in
+                guard let self else { return }
                 switch attachment {
                 case let .image(imageAndData):
                     let validator = octopus.core.validators.picture

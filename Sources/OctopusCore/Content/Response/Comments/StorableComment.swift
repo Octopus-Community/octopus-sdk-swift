@@ -51,10 +51,10 @@ extension StorableComment {
                                 translatedText: comment.translatedText.nilIfEmpty)
         if comment.hasMedia {
             var mutableMedias = [Media]()
-            if comment.media.hasVideo, let videoMedia = Media(from: comment.media.video, kind: .video) {
+            if comment.media.hasVideo, let videoMedia = Media(from: comment.media.video) {
                 mutableMedias.append(videoMedia)
             }
-            mutableMedias.append(contentsOf: comment.media.images.compactMap { Media(from: $0, kind: .image)})
+            mutableMedias.append(contentsOf: comment.media.images.compactMap { Media(from: $0) })
             medias = mutableMedias
         } else {
             medias = []

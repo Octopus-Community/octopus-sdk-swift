@@ -21,7 +21,9 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     private let authCallProvider: AuthenticatedCallProvider
     private let octopusUISessionManager: SessionManager
     private let appSessionManager: SessionManager
-    private let toastsRepository: ToastsRepository
+    private let gamificationRepository: GamificationRepository
+    private let videosRepository: VideosRepository
+    private let sdkEventsEmitter: SdkEventsEmitter
     private var storage = [AnyCancellable]()
 
     /// Whether the Octopus UI is currently displayed. Used to end the UI session when the app session is ended
@@ -31,7 +33,9 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         database = injector.getInjected(identifiedBy: Injected.eventsDatabase)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
-        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
+        videosRepository = injector.getInjected(identifiedBy: Injected.videosRepository)
+        sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
 
         octopusUISessionManager = SessionManager(kind: .octopusUI)
         appSessionManager = SessionManager(kind: .app)
@@ -46,6 +50,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                 remoteClient.set(octopusUISessionId: session.uuid)
                 triggerEnteringOctopusEvent(octoUISession: session)
                 callEnteringOctopus()
+                sdkEventsEmitter.emit(.sessionStarted(.init(sessionId: session.uuid)))
             }.store(in: &storage)
 
         // listen to previous UI session in order to create `leavingUI` event
@@ -53,8 +58,10 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
             .sink { [unowned self] in
                 guard let session = $0 else { return }
                 if #available(iOS 14, *) { Logger.tracking.trace("UI session stopped with uuid: \(session.uuid)") }
+                trackVideosPlayed(appSessionId: appSessionManager.currentSession?.uuid, uiSessionId: session.uuid)
                 remoteClient.set(octopusUISessionId: nil)
                 triggerLeavingOctopusEvent(octoUISession: session)
+                sdkEventsEmitter.emit(.sessionStopped(.init(sessionId: session.uuid)))
             }.store(in: &storage)
 
         // listen to current app session in order to create `enteringApp` event
@@ -97,30 +104,20 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         remoteClient.set(hasAccessToCommunity: hasAccessToCommunity)
     }
 
-    public func trackPostOpened(origin: PostOpenedOrigin, success: Bool) async throws {
-        try await database.upsert(event: Event(
-            date: Date(),
-            appSessionId: appSessionManager.currentSession?.uuid,
-            uiSessionId: octopusUISessionManager.currentSession?.uuid,
-            content: .postOpened(origin: origin.internalValue, success: success)))
+    public func trackPostOpened(origin: PostOpenedOrigin, success: Bool) {
+        track(content: .postOpened(origin: origin.internalValue, success: success))
     }
 
-    public func trackClientObjectOpenedFromBridge() async throws {
-        try await database.upsert(event: Event(
-            date: Date(),
-            appSessionId: appSessionManager.currentSession?.uuid,
-            uiSessionId: octopusUISessionManager.currentSession?.uuid,
-            content: .openClientObjectFromBridge))
+    public func trackClientObjectOpenedFromBridge() {
+        track(content: .openClientObjectFromBridge)
     }
 
     public func trackTranslationButtonHit(translationDisplayed: Bool) {
-        Task {
-            try await database.upsert(event: Event(
-                date: Date(),
-                appSessionId: appSessionManager.currentSession?.uuid,
-                uiSessionId: octopusUISessionManager.currentSession?.uuid,
-                content: .translationButtonHit(translationDisplayed: translationDisplayed)))
-        }
+        track(content: .translationButtonHit(translationDisplayed: translationDisplayed))
+    }
+
+    public func trackCtaPostButtonHit(postId: String) {
+        track(content: .ctaPostButtonHit(objectId: postId))
     }
 
     public func track(customEvent: CustomEvent) async throws {
@@ -148,19 +145,12 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     }
 
     private func triggerEnteringAppEvent(appSession session: Session) {
-        Task {
-            do {
-                try await database.upsert(
-                    event: Event(
-                        date: session.startDate,
-                        appSessionId: session.uuid,
-                        uiSessionId: octopusUISessionManager.currentSession?.uuid,
-                        content: .enteringApp(firstSession: session.firstSession))
-                )
-            } catch {
-                if #available(iOS 14, *) { Logger.tracking.trace("Error triggering entering app event: \(error)") }
-            }
-        }
+        track(event: Event(
+            date: session.startDate,
+            appSessionId: session.uuid,
+            uiSessionId: octopusUISessionManager.currentSession?.uuid,
+            content: .enteringApp(firstSession: session.firstSession))
+        )
     }
 
     private func triggerLeavingAppEvent(appSession session: CompleteSession) {
@@ -182,19 +172,12 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     }
 
     private func triggerEnteringOctopusEvent(octoUISession session: Session) {
-        Task {
-            do {
-                try await database.upsert(
-                    event: Event(
-                        date: session.startDate,
-                        appSessionId: appSessionManager.currentSession?.uuid,
-                        uiSessionId: session.uuid,
-                        content: .enteringUI(firstSession: session.firstSession))
-                )
-            } catch {
-                if #available(iOS 14, *) { Logger.tracking.debug("Error triggering entering UI event: \(error)") }
-            }
-        }
+        track(event: Event(
+            date: session.startDate,
+            appSessionId: appSessionManager.currentSession?.uuid,
+            uiSessionId: session.uuid,
+            content: .enteringUI(firstSession: session.firstSession))
+        )
     }
 
     private func triggerLeavingOctopusEvent(octoUISession session: CompleteSession) {
@@ -222,14 +205,70 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                     authenticationMethod: try authCallProvider.authenticatedMethod())
                 if response.hasShouldDisplayGamificationLoginToast,
                     response.shouldDisplayGamificationLoginToast {
-                    toastsRepository.display(gamificationToast: .dailySession)
+                    gamificationRepository.register(action: .dailySession)
                 }
                 if response.hasShouldDisplayGamificationAnswerToast,
                    response.shouldDisplayGamificationAnswerToast {
-                    toastsRepository.display(gamificationToast: .postCommented)
+                    gamificationRepository.register(action: .postCommented)
                 }
             } catch {
                 if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving UI event: \(error)") }
+            }
+        }
+    }
+
+    private func trackVideosPlayed(appSessionId: String?, uiSessionId: String?) {
+        let watchTimeInfos = videosRepository.collectTrackedWatchTimeInfos()
+        if !watchTimeInfos.isEmpty {
+            let date = Date()
+            track(events: watchTimeInfos.compactMap {
+                guard $0.totalWatchTime > 0 else { return nil }
+                return Event(
+                    date: date,
+                    appSessionId: appSessionId,
+                    uiSessionId: uiSessionId,
+                    content: .videoPlayed(
+                        objectId: $0.contentId,
+                        videoId: $0.videoId,
+                        watchTime: $0.totalWatchTime,
+                        duration: $0.duration)
+                )
+            })
+        }
+    }
+
+    /// Track an event content.
+    /// Current date, current app session and current UI session will be picked. If you want custom value, use
+    /// `track(events:)` instead.
+    /// - Parameter content: the event content
+    private func track(content: Event.Content) {
+        track(contents: [content])
+    }
+    
+    /// Track some events content.
+    /// Current date, current app session and current UI session will be picked. If you want custom value, use
+    /// `track(events:)` instead.
+    /// - Parameter contents: the event contents
+    private func track(contents: [Event.Content]) {
+        let date = Date()
+        let appSessionId = appSessionManager.currentSession?.uuid
+        let uiSessionId = octopusUISessionManager.currentSession?.uuid
+        track(events: contents.map {
+            Event(date: date, appSessionId: appSessionId, uiSessionId: uiSessionId, content: $0)
+        })
+    }
+
+    private func track(event: Event) {
+        track(events: [event])
+    }
+
+    private func track(events: [Event]) {
+        guard !events.isEmpty else { return }
+        Task {
+            do {
+                try await database.upsert(events: events)
+            } catch {
+                if #available(iOS 14, *) { Logger.tracking.debug("Error storing events \(events): \(error)") }
             }
         }
     }

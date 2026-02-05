@@ -9,6 +9,7 @@ import Octopus
 
 struct SettingsListView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Compat.StateObject private var viewModel: SettingsListViewModel
 
     @State private var displayError = false
@@ -27,6 +28,7 @@ struct SettingsListView: View {
                     openReportContent: { navigator.push(.reportExplanation) },
                     logout: viewModel.logout)
         .navigationBarTitle(Text("Settings.Community.Title", bundle: .module))
+        .emitScreenDisplayed(.settingsList, trackingApi: trackingApi)
         .compatAlert(
             "Common.Error",
             isPresented: $displayError,

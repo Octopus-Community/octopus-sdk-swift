@@ -19,6 +19,10 @@ Pod::Spec.new do |spec|
     'OctopusUI' => ['Sources/OctopusUI/Resources/**/*.{xcassets,xcstrings}']
   }
 
+  spec.pod_target_xcconfig = {
+    'OTHER_SWIFT_FLAGS' => '-package-name #{SharedPodSpecConfig::PACKAGE_NAME}'
+  }
+
   spec.dependency 'OctopusCommunity', SharedPodSpecConfig::VERSION
   spec.dependency 'OctopusCommunityCore', SharedPodSpecConfig::VERSION
 end

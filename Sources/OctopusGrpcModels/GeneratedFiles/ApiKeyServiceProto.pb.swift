@@ -60,6 +60,8 @@ public struct Com_Octopuscommunity_ApiKeyConfig: Sendable {
 
   public var displayAccountAge: Bool = false
 
+  public var languages: [String] = []
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -281,6 +283,7 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
     1: .same(proto: "clientLoginMandatory"),
     2: .same(proto: "gamificationConfig"),
     3: .same(proto: "displayAccountAge"),
+    4: .same(proto: "languages"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -292,6 +295,7 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
       case 1: try { try decoder.decodeSingularBoolField(value: &self.clientLoginMandatory) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._gamificationConfig) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.displayAccountAge) }()
+      case 4: try { try decoder.decodeRepeatedStringField(value: &self.languages) }()
       default: break
       }
     }
@@ -311,6 +315,9 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
     if self.displayAccountAge != false {
       try visitor.visitSingularBoolField(value: self.displayAccountAge, fieldNumber: 3)
     }
+    if !self.languages.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.languages, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -318,6 +325,7 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
     if lhs.clientLoginMandatory != rhs.clientLoginMandatory {return false}
     if lhs._gamificationConfig != rhs._gamificationConfig {return false}
     if lhs.displayAccountAge != rhs.displayAccountAge {return false}
+    if lhs.languages != rhs.languages {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -31,6 +31,7 @@ class CommentsTests: XCTestCase {
         injector.register { ReplyFeedsStore(injector: $0) }
         injector.register { RepliesDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
+        injector.register { GamificationRepository(injector: $0) }
         injector.register { ToastsRepository(injector: $0) }
         injector.register { SdkEventsEmitter(injector: $0) }
 

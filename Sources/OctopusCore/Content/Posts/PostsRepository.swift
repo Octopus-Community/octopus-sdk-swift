@@ -25,7 +25,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Post
     private let userInteractionsDelegate: UserInteractionsDelegate
-    private let toastsRepository: ToastsRepository
+    private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
 
     public var postSentPublisher: AnyPublisher<Void, Never> {
@@ -45,7 +45,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
         validator = injector.getInjected(identifiedBy: Injected.validators).post
-        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
 
         commentFeedsStore = injector.getInjected(identifiedBy: Injected.commentFeedsStore)
@@ -64,6 +64,11 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }.eraseToAnyPublisher()
     }
 
+    public func getPostValue(uuid: String) async throws -> Post? {
+        guard let storablePost = try await postsDatabase.getPosts(ids: [uuid]).first else { return nil }
+        return Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
+    }
+
     public func getClientObjectRelatedPost(clientObjectId: String) -> AnyPublisher<Post?, Error> {
         postsDatabase.clientObjectRelatedPostPublisher(objectId: clientObjectId)
             .map { [unowned self] in
@@ -73,11 +78,12 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             .eraseToAnyPublisher()
     }
 
-    public func fetchPost(uuid: String, incrementViewCount: Bool = false) async throws(ServerCallError) {
+    public func fetchPost(uuid: String, hasVideo: Bool, incrementViewCount: Bool = false)
+    async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             let response = try await remoteClient.octoService.get(
-                octoObjectId: uuid,
+                octoObjectInfo: OctoObjectInfo(id: uuid, hasVideo: hasVideo),
                 options: .all,
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
@@ -100,12 +106,17 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             }
         }
     }
-
-    public func fetchAdditionalData(ids: [String], incrementViewCount: Bool = false) async throws(ServerCallError) {
+    
+    /// Fetch additional data
+    /// - Parameters:
+    ///   - ids: list of tuple containing the id of the object and a boolean to know if the object has a video
+    ///   - incrementViewCount: whether to increment the view count
+    public func fetchAdditionalData(ids: [(id: String, hasVideo: Bool)],
+                                    incrementViewCount: Bool = false) async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             let batchResponse = try await remoteClient.octoService.getBatch(
-                ids: ids,
+                octoObjectInfos: ids.map { OctoObjectInfo(id: $0, hasVideo: $1) },
                 options: [.aggregates, .interactions],
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
@@ -153,9 +164,10 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 try await postsDatabase.upsert(posts: [finalPost])
                 _postSentPublisher.send()
                 let imageData: Data? = if case let .image(imageData) = post.attachment { imageData } else { nil }
-                toastsRepository.display(gamificationToast: .post)
                 let createdPost = Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
                 sdkEventsEmitter.emit(.contentCreated(content: createdPost))
+                sdkEventsEmitter.emit(.postCreated(.init(from: createdPost)))
+                gamificationRepository.register(action: .post)
                 return (createdPost, imageData)
             case let .fail(failure):
                 throw SendPost.Error.validation(.init(from: failure))
@@ -186,6 +198,8 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             try await postsDatabase.delete(contentId: postId)
             _postDeletedPublisher.send()
             sdkEventsEmitter.emit(.contentDeleted(content: post))
+            sdkEventsEmitter.emit(.contentDeleted(.init(contentId: postId, coreKind: .post)))
+            gamificationRepository.unregister(action: .post)
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error
@@ -221,7 +235,8 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                     // get the value from the backend just in case
                     let backendPollAnswerId = content.pollVote.content.vote.pollAnswerID
                     try await postsDatabase.updateVote(answerId: backendPollAnswerId, postId: post.uuid)
-                    toastsRepository.display(gamificationToast: .vote)
+                    sdkEventsEmitter.emit(.pollVoted(.init(contentId: post.uuid, optionId: pollAnswerId)))
+                    gamificationRepository.register(action: .vote)
                 case let .fail(failure):
                     throw PollVote.Error.validation(.init(from: failure))
                 case .none:

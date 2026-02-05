@@ -10,6 +10,7 @@ import OctopusCore
 struct CurrentUserProfileSummaryView: View {
     @EnvironmentObject private var gamificationRulesViewManager: GamificationRulesViewManager
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
@@ -58,6 +59,9 @@ struct CurrentUserProfileSummaryView: View {
                         viewModel: postFeedViewModel,
                         zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
+                            if !$1 && !$2 && $3 == nil {
+                                trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
+                            }
                             navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
                                                        scrollToMostRecentComment: $2, origin: .sdk,
                                                        hasFeaturedComment: $4))
@@ -136,6 +140,7 @@ struct CurrentUserProfileSummaryView: View {
         .onAppear {
             isDisplayed = true
         }
+        .emitScreenDisplayed(.profile, trackingApi: trackingApi)
         .onDisappear {
             isDisplayed = false
         }
@@ -189,7 +194,8 @@ struct CurrentUserProfileSummaryView: View {
     private var trailingBarItem: some View {
         Button(action: { navigator.push(.settingsList) }) {
             if #available(iOS 26.0, *) {
-                Label(L10n("Accessibility.Common.More"), systemImage: "ellipsis")
+                Label(title: { Text("Accessibility.Common.More", bundle: .module) },
+                      icon: { Image(systemName: "ellipsis") })
             } else {
                 Image(systemName: "ellipsis")
                     .font(theme.fonts.navBarItem)
@@ -402,7 +408,7 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                                 if bio.isEllipsized {
                                     Text(verbatim: "\(bio.getText(ellipsized: !displayFullBio))\(!displayFullBio ? "... " : " ")")
                                     +
-                                    Text(displayFullBio ? L10n("Common.ReadLess") : L10n("Common.ReadMore"))
+                                    Text(displayFullBio ? "Common.ReadLess" : "Common.ReadMore", bundle: .module)
                                         .fontWeight(.medium)
                                         .foregroundColor(theme.colors.gray500)
                                 } else {
@@ -492,6 +498,7 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                 }
             }
             .coordinateSpace(name: scrollViewCoordinateSpace)
+            .postsVisibilityScrollView()
 
             if displayStickyHeader {
                 CustomSegmentedControl(tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],

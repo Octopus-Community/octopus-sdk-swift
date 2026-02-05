@@ -9,6 +9,7 @@ import OctopusCore
 
 struct ProfileSummaryView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
@@ -40,6 +41,9 @@ struct ProfileSummaryView: View {
                         viewModel: postFeedViewModel,
                         zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
+                            if !$1 && !$2 && $3 == nil {
+                                trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
+                            }
                             navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
                                                        scrollToMostRecentComment: $2, origin: .sdk,
                                                        hasFeaturedComment: $4))
@@ -71,6 +75,7 @@ struct ProfileSummaryView: View {
             message: { error in
                 error.textView
             })
+        .emitScreenDisplayed(.otherUserProfile(.init(profileId: viewModel.profileId)), trackingApi: trackingApi)
         .onReceive(viewModel.$error) { error in
             guard let error else { return }
             displayableError = error
@@ -151,17 +156,20 @@ struct ProfileSummaryView: View {
                     guard viewModel.ensureConnected(action: .moderation) else { return }
                     navigator.push(.reportProfile(profileId: viewModel.profileId))
                 }) {
-                    Label(L10n("Moderation.Profile.Button"), systemImage: "flag")
+                    Label(title: { Text("Moderation.Profile.Button", bundle: .module) },
+                          icon: { Image(systemName: "flag") })
                 }
                 Button(action: {
                     guard viewModel.ensureConnected(action: .blockUser) else { return }
                     displayBlockUserAlert = true
                 }) {
-                    Label(L10n("Block.Profile.Button"), systemImage: "person.slash")
+                    Label(title: { Text("Block.Profile.Button", bundle: .module) },
+                          icon: { Image(systemName: "person.slash") })
                 }
             }, label: {
                 if #available(iOS 26.0, *) {
-                    Label(L10n("Settings.Community.Title"), systemImage: "ellipsis")
+                    Label(title: { Text("Settings.Community.Title", bundle: .module) },
+                          icon: { Image(systemName: "ellipsis") })
                 } else {
                     Image(systemName: "ellipsis")
                         .font(theme.fonts.navBarItem)
@@ -269,7 +277,7 @@ private struct ProfileContentView<PostsView: View>: View {
                             if bio.isEllipsized {
                                 Text(verbatim: "\(bio.getText(ellipsized: !displayFullBio))\(!displayFullBio ? "... " : " ")")
                                 +
-                                Text(displayFullBio ? " \(L10n("Common.ReadLess"))" : L10n("Common.ReadMore"))
+                                Text(displayFullBio ? "Common.ReadLess" : "Common.ReadMore", bundle: .module)
                                     .fontWeight(.medium)
                                     .foregroundColor(theme.colors.gray500)
                             } else {
@@ -299,6 +307,7 @@ private struct ProfileContentView<PostsView: View>: View {
                 postsView
             }
         }
+        .postsVisibilityScrollView()
     }
 
     private var avatar: Author.Avatar {

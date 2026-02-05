@@ -53,6 +53,10 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
              case .uploadIssue:                     .uploadIssue
              case .badPollAnswerNumber:             .badPollAnswerNumber
              case .missingClientObjectID:           .unknown // not supported for the moment
+             case .invalidAuthor:                   .unknown // not supported for the moment
+             case .missingCtaText:                  .unknown // not supported for the moment
+             case .missingCtaTarget:                .unknown // not supported for the moment
+             case .invalidCtaTarget:                .unknown // not supported for the moment
              case .none:                            .unknown
              }
              let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail)

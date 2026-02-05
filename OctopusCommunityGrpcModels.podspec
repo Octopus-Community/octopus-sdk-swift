@@ -15,6 +15,10 @@ Pod::Spec.new do |spec|
   
   spec.source_files = 'Sources/OctopusGrpcModels/**/*.swift'
 
+  spec.pod_target_xcconfig = {
+    'OTHER_SWIFT_FLAGS' => '-package-name #{SharedPodSpecConfig::PACKAGE_NAME}'
+  }
+
   spec.dependency 'OctopusCommunityDependencyInjection', SharedPodSpecConfig::VERSION
   spec.dependency 'SwiftProtobuf'
   spec.dependency 'gRPC-Swift'

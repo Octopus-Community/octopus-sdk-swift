@@ -33,4 +33,6 @@ class MockRemoteClient: OctopusRemoteClient, InjectableObject {
     func set(octopusUISessionId: String?) { }
 
     func set(hasAccessToCommunity: Bool?) { }
+
+    func set(localeIdentifier: String) { }
 }

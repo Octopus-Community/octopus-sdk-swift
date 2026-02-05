@@ -8,6 +8,7 @@ import Octopus
 
 struct SettingProfileView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Compat.StateObject private var viewModel: SettingProfileViewModel
     @Environment(\.octopusTheme) private var theme
 
@@ -72,5 +73,6 @@ struct SettingProfileView: View {
             PoweredByOctopusView()
         }
         .navigationBarTitle(Text("Settings.Profile", bundle: .module), displayMode: .inline)
+        .emitScreenDisplayed(.settingsAccount, trackingApi: trackingApi)
     }
 }

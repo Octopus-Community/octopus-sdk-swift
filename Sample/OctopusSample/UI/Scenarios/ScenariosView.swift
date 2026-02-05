@@ -20,6 +20,9 @@ struct ScenariosView: View {
                 ForceOctopusABTestsCell(showFullScreen: showFullScreen)
                 CustomEventsCell()
                 BridgeToClientObjectCell(showFullScreen: showFullScreen)
+                ChangeApiKeyCell(showFullScreen: showFullScreen)
+                EventsCell()
+                LanguageCell()
             }
             .listStyle(.plain)
             .navigationBarTitle(Text("Scenarios"), displayMode: .inline)

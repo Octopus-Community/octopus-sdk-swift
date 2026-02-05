@@ -46,6 +46,7 @@ class ProfileTests: XCTestCase {
         }
         injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
         injector.register { FrictionlessProfileMigrator(injector: $0) }
+        injector.register { GamificationRepository(injector: $0) }
         injector.register { ToastsRepository(injector: $0) }
         injector.register { SdkEventsEmitter(injector: $0) }
 
@@ -193,7 +194,7 @@ class ProfileTests: XCTestCase {
                     }
                 })
         })
-        try await profileRepository.updateCurrentUserProfile(with: EditableProfile(nickname: .notUpdated, bio: .updated("Bio")))
+        try await profileRepository.updateCurrentUserProfile(with: EditableProfile(nickname: .unchanged, bio: .updated("Bio")))
         await fulfillment(of: [profileUpdatedExpectation], timeout: 0.5)
     }
 

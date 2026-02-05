@@ -105,9 +105,9 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             }
         }.store(in: &storage)
 
-        octopus.core.sdkEventsEmitter.events
-            .sink { [unowned self] event in
-                switch event {
+        octopus.core.sdkEventsEmitter.internalEvents
+            .sink { [unowned self] internalEvent in
+                switch internalEvent {
                 case .contentCreated, .contentDeleted, .contentReactionChanged:
                     fetchProfile()
                 case .profileUpdated: break

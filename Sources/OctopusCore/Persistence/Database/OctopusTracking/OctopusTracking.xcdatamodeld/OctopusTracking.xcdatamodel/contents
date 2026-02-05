@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788.4" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CtaPostButtonHit" representedClassName="CtaPostButtonHitEntity" parentEntity="Event" syncable="YES">
+        <attribute name="octoObjectId" attributeType="String"/>
+    </entity>
     <entity name="CustomEvent" representedClassName="CustomEventEntity" parentEntity="Event" syncable="YES">
         <attribute name="name" attributeType="String"/>
         <relationship name="hasProperties" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CustomEventProperty" inverseName="isPropertyOf" inverseEntity="CustomEventProperty"/>
@@ -40,5 +43,11 @@
     </entity>
     <entity name="TranslationButtonHitEvent" representedClassName="TranslationButtonHitEventEntity" parentEntity="Event" syncable="YES">
         <attribute name="translationDisplayed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="VideoPlayedEvent" representedClassName="VideoPlayedEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="duration" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="octoObjectId" attributeType="String"/>
+        <attribute name="videoId" attributeType="String"/>
+        <attribute name="watchTime" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
 </model>

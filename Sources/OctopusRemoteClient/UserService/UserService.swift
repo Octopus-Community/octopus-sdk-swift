@@ -99,13 +99,13 @@ public protocol UserService {
 class UserServiceClient: ServiceClient, UserService {
     private let client: Com_Octopuscommunity_UserServiceAsyncClient
 
-    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          getUserIdBlock:  @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_UserServiceAsyncClient(
             channel: unaryChannel, interceptors: UserServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
     }
 
     func getPublicProfile(

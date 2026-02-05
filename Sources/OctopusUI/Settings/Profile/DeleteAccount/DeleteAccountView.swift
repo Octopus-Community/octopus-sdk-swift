@@ -10,6 +10,7 @@ import OctopusCore
 
 struct DeleteAccountView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Compat.StateObject private var viewModel: DeleteAccountViewModel
     @Environment(\.octopusTheme) private var theme
 
@@ -120,6 +121,7 @@ struct DeleteAccountView: View {
             }, message: { error in
                 error.textView
             })
+        .emitScreenDisplayed(.deleteAccount, trackingApi: trackingApi)
         .onReceive(viewModel.$error) { displayableError in
             guard let displayableError else { return }
             self.displayableError = displayableError

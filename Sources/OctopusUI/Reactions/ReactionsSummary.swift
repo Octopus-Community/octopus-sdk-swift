@@ -57,7 +57,6 @@ private struct ContentView: View {
         HStack(spacing: 2) {
             if countPlacement == .leading {
                 countView
-                    .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
             }
             HStack(spacing: -5) {
                 ForEach(reactionsToDisplay, id: \.self) { reactionKind in
@@ -67,7 +66,6 @@ private struct ContentView: View {
             }
             if countPlacement == .trailing {
                 countView
-                    .frame(minWidth: 10) // fix a weird bug in the CommentDetailView where the layout is broken
             }
         }
         .font(theme.fonts.caption1)

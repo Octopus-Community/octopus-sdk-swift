@@ -19,13 +19,13 @@ public protocol ApiKeyService {
 class ApiKeyServiceClient: ServiceClient, ApiKeyService {
     private let client: Com_Octopuscommunity_ApiKeyServiceAsyncClient
 
-    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_ApiKeyServiceAsyncClient(
             channel: unaryChannel, interceptors: ApiKeyServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
     }
 
     func getConfig() async throws(RemoteClientError)

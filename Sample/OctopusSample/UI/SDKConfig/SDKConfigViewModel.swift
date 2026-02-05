@@ -13,12 +13,12 @@ class SDKConfigViewModel: ObservableObject {
         case sso
     }
 
-    @Published var authMode: AuthMode?
+    @Published var authMode: AuthMode = .sso
     @Published var nicknameIsAssociated = false
     @Published var bioIsAssociated = false
     @Published var pictureIsAssociated = false
     @Published var forceLoginOnStringAction = false
-    @Published var canSave = true
+    @Published var canSave = false
 
     private var storage = [AnyCancellable]()
 
@@ -39,14 +39,13 @@ class SDKConfigViewModel: ObservableObject {
                 default: canSave = false
 
                 }
-            default: self.canSave = true
+            case .octopus: canSave = true
             }
 
         }.store(in: &storage)
     }
 
     func save() {
-        guard let authMode else { return }
         switch authMode {
         case .octopus:
             SDKConfigManager.instance.set(config: .init(authKind: .octopus))

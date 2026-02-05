@@ -14,4 +14,8 @@ Pod::Spec.new do |spec|
   spec.swift_version = SharedPodSpecConfig::SWIFT_VERSION
   
   spec.source_files = 'Sources/OctopusDependencyInjection/**/*.swift'
+
+  spec.pod_target_xcconfig = {
+    'OTHER_SWIFT_FLAGS' => '-package-name #{SharedPodSpecConfig::PACKAGE_NAME}'
+  }
 end

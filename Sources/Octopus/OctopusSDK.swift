@@ -24,13 +24,43 @@ public final class OctopusSDK: ObservableObject {
     /// It is `true` when the user can access community features, `false` otherwise.
     @Published public private(set) var hasAccessToCommunity: Bool = false
 
+    /// Event publisher.
+    /// This publisher emits an event each time the user do something particular.
+    /// - See `OctopusEvent` to have an full list of all events that can be emitted.
+    ///
+    /// If you have your own tracking service, you can use this publisher to listen to events that occured inside the
+    /// Octopus UI part and feed your tracking service with them.
+    ///
+    /// Listen to this publisher with:
+    /// ```
+    /// octopus.eventPublisher.sink { event in
+    ///     switch event {
+    ///         ...
+    ///     }
+    /// }
+    /// ```
+    public var eventPublisher: AnyPublisher<OctopusEvent, Never> { _eventPublisher.eraseToAnyPublisher() }
+
     /// The block that will be called when a user taps on the bridge post button to display the client object
     public private(set) var displayClientObjectCallback: ((String) throws -> Void)?
 
+    /// The block that will be called when a user tries to open a link inside the community.
+    /// This link can come from a Post/Comment/Reply or when tapping on a Post with CTA button.
+    /// If this callback returns `.handledByApp`, it means that the app has handled the URL itself,
+    /// hence the Octopus SDK won't do anything more.
+    /// If it is `handledByOctopus`, the URL will be opened by the Octopus SDK using `UIApplication.shared.open(URL)`.
+    public private(set) var onNavigateToURLCallback: ((URL) -> URLOpeningStrategy)?
+
+#if swift(>=5.9)
+    /// Core interface. This object should not be used by external devs, it is only used by the UI lib
+    package let core: OctopusSDKCore
+#else
     /// Core interface. This object should not be used by external devs, it is only used by the UI lib
     public let core: OctopusSDKCore
-    private let injector: Injector
+#endif
 
+    private let injector: Injector
+    private let _eventPublisher = PassthroughSubject<OctopusEvent, Never>()
     private var storage = [AnyCancellable]()
 
     /// Constructor of the `OctopusSDK`.
@@ -39,10 +69,23 @@ public final class OctopusSDK: ObservableObject {
     ///
     /// - Parameters:
     ///   - apiKey: the API key that identifies your community
-    ///   - connectionMode: the kind of connection to handle the user
-    public init(apiKey: String, connectionMode: ConnectionMode = .octopus(deepLink: nil)) throws {
+    ///   - connectionMode: the kind of connection to handle the user. Default is Octopus connection mode.
+    ///   - configuration: the sdk configuration. Default is default configuration.
+    public init(
+        apiKey: String,
+        connectionMode: ConnectionMode = .octopus(deepLink: nil),
+        configuration: Configuration = .init()
+    ) throws {
         self.injector = Injector()
-        core = try OctopusSDKCore(apiKey: apiKey, connectionMode: connectionMode.coreValue, injector: injector)
+        core = try OctopusSDKCore(apiKey: apiKey,
+                                  connectionMode: connectionMode.coreValue,
+                                  sdkConfig: configuration.coreValue,
+                                  injector: injector)
+
+        core.sdkEventsEmitter.events
+            .sink { [unowned self] in
+                self._eventPublisher.send(.init(from: $0))
+            }.store(in: &storage)
 
         core.profileRepository.profilePublisher
             .sink { [unowned self] in
@@ -301,5 +344,43 @@ extension OctopusSDK {
     /// - Note: Even if you do not call `fetchTopics()`, the update might be done internally by the SDK at any time.
     public func fetchTopics() async throws {
         try await core.topicsRepository.fetchTopics()
+    }
+}
+
+// MARK: - URL catch
+extension OctopusSDK {
+    /// Set the callback that will be called when a user tries to open a link inside the community.
+    /// This link can come from a Post/Comment/Reply or when tapping on a Post with CTA button.
+    ///
+    /// If this function is never called, or called with nil, it will behave as if the result is `handledByOctopus`,
+    /// meaning that all links will be opened by Octopus using `UIApplication.shared.open(URL)`.
+    ///
+    /// - Parameters:
+    ///   - onNavigateToURLCallback: the callback that will be called when a user tries to open a link inside
+    ///                              the community.
+    ///                              The parameter of the callback is the URL to open.
+    ///                              If this callback returns `.handledByApp`, it means that the app has handled the
+    ///                              URL itself, hence the Octopus SDK won't do anything more.
+    ///                              If it is `handledByOctopus`, the URL will be opened by the Octopus SDK using
+    ///                              `UIApplication.shared.open(URL)`.
+    public func set(onNavigateToURLCallback: ((URL) -> URLOpeningStrategy)?) {
+        self.onNavigateToURLCallback = onNavigateToURLCallback
+    }
+}
+
+// MARK: - Language
+extension OctopusSDK {
+    /// Override the default (i.e. system or app based) locale.
+    /// 
+    /// Some apps do not use the default way of handling the language which provide the system/app defined language by
+    /// the user. If you have a custom setting inside your app that does not set the system AppLanguage, you can call
+    /// this function in order to customize the language used (so Octopus does not use the system language but yours
+    /// instead).
+    /// That being said, we recommend using the default system way of handling the locale, so system alerts are
+    /// displayed in the desired language.
+    ///
+    /// - Parameter locale: the locale that you want to set. Set nil if you want Octopus to use the system setting.
+    public func overrideDefaultLocale(with locale: Locale?) {
+        core.languageRepository.overrideDefaultLocale(with: locale)
     }
 }

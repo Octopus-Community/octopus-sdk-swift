@@ -11,27 +11,31 @@ import Combine
 public struct RootFeed: Equatable, Hashable {
     public let label: String
     public let feedId: String
+    public let relatedTopicId: String?
     public let feed: Feed<Post, Comment>
 
-    init(label: String, feedId: String, postFeedsStore: PostFeedsStore) {
+    init(label: String, feedId: String, relatedTopicId: String?, postFeedsStore: PostFeedsStore) {
         self.label = label
         self.feedId = feedId
+        self.relatedTopicId = relatedTopicId
         feed = postFeedsStore.getOrCreate(feedId: feedId)
     }
 
     public static func == (lhs: RootFeed, rhs: RootFeed) -> Bool {
-        lhs.label == rhs.label && lhs.feedId == rhs.feedId
+        lhs.label == rhs.label && lhs.feedId == rhs.feedId && lhs.relatedTopicId == rhs.relatedTopicId
     }
 
     public func hash(into hasher: inout Hasher) {
         hasher.combine(label)
         hasher.combine(feedId)
+        hasher.combine(relatedTopicId)
     }
 }
 
 struct StorableRootFeed: Equatable {
     public let label: String
     public let feedId: String
+    public let relatedTopicId: String?
 }
 
 extension Injected {
@@ -58,7 +62,8 @@ public class RootFeedsRepository: InjectableObject, @unchecked Sendable {
             .map { [weak self] rootFeeds in
                 guard let self else { return [] }
                 return rootFeeds.map {
-                    RootFeed(label: $0.label, feedId: $0.feedId, postFeedsStore: self.postFeedsStore)
+                    RootFeed(label: $0.label, feedId: $0.feedId, relatedTopicId: $0.relatedTopicId,
+                             postFeedsStore: self.postFeedsStore)
                 }
             }
             .eraseToAnyPublisher()
@@ -85,10 +90,12 @@ extension StorableRootFeed {
     init(from entity: RootFeedEntity) {
         label = entity.label
         feedId = entity.uuid
+        relatedTopicId = entity.relatedTopicId
     }
 
     init(from serverRootFeed: Com_Octopuscommunity_FeedInfo) {
         feedId = serverRootFeed.id
         label = serverRootFeed.label
+        relatedTopicId = serverRootFeed.hasRelatedTopicID ? serverRootFeed.relatedTopicID.nilIfEmpty : nil
     }
 }

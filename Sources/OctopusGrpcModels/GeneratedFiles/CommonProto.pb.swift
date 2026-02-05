@@ -241,6 +241,26 @@ public struct Com_Octopuscommunity_ErrorDetails: Sendable {
     public init() {}
   }
 
+  public struct MissingCtaTarget: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct InvalidCtaTarget: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -674,6 +694,44 @@ extension Com_Octopuscommunity_ErrorDetails.InvalidAuthor: SwiftProtobuf.Message
   }
 
   public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.InvalidAuthor, rhs: Com_Octopuscommunity_ErrorDetails.InvalidAuthor) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.MissingCtaTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".MissingCtaTarget"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.MissingCtaTarget, rhs: Com_Octopuscommunity_ErrorDetails.MissingCtaTarget) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.InvalidCtaTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".InvalidCtaTarget"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.InvalidCtaTarget, rhs: Com_Octopuscommunity_ErrorDetails.InvalidCtaTarget) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

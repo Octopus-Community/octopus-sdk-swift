@@ -14,6 +14,7 @@ public struct Post: Equatable, Sendable {
     public let updateDate: Date
     public let parentId: String
     public let clientObjectBridgeInfo: ClientObjectBridgeInfo?
+    public let customAction: CustomAction?
     public let newestFirstCommentsFeed: Feed<Comment, Never>?
     public let oldestFirstCommentsFeed: Feed<Comment, Never>?
     public let featuredComment: Comment?
@@ -35,10 +36,20 @@ public struct Post: Equatable, Sendable {
         }
     }
 
+    public var hasVideo: Bool {
+        guard case .published = status else { return false }
+        return medias.contains(where: { $0.kind == .video })
+    }
+
     public struct ClientObjectBridgeInfo: Equatable, Sendable {
         public let objectId: String
         public let catchPhrase: TranslatableText?
         public let ctaText: TranslatableText?
+    }
+
+    public struct CustomAction: Equatable, Sendable {
+        public let ctaText: TranslatableText
+        public let targetUrl: URL
     }
 }
 
@@ -54,13 +65,20 @@ extension Post {
         innerStatus = storablePost.status
         innerStatusReasons = storablePost.statusReasons
         parentId = storablePost.parentId
-        if let clientObjectId = storablePost.clientObjectId {
+        if let clientObjectId = storablePost.bridgeClientObjectId {
             clientObjectBridgeInfo = ClientObjectBridgeInfo(
                 objectId: clientObjectId,
-                catchPhrase: storablePost.catchPhrase,
-                ctaText: storablePost.ctaText)
+                catchPhrase: storablePost.bridgeCatchPhrase,
+                ctaText: storablePost.bridgeCtaText)
         } else {
             clientObjectBridgeInfo = nil
+        }
+        if let customActionText = storablePost.customActionText,
+           let customActionTargetLink = storablePost.customActionTargetLink,
+           let customActionUrl = URL(string: customActionTargetLink) {
+            customAction = CustomAction(ctaText: customActionText, targetUrl: customActionUrl)
+        } else {
+            customAction = nil
         }
         if let descCommentFeedId = storablePost.descCommentFeedId {
             newestFirstCommentsFeed = commentFeedsStore.getOrCreate(feedId: descCommentFeedId)

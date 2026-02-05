@@ -9,6 +9,7 @@ import OctopusCore
 
 struct ReportExplanationView: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var trackingApi: TrackingApi
     @Compat.StateObject private var viewModel: LinksProviderViewModel
 
     @Compat.ScaledMetric(relativeTo: .title1) var iconSize: CGFloat = 20 // title1 to vary from 18 to 40
@@ -56,6 +57,7 @@ struct ReportExplanationView: View {
             PoweredByOctopusView()
         }
         .navigationBarTitle(Text("Settings.ReportContent", bundle: .module), displayMode: .inline)
+        .emitScreenDisplayed(.reportExplanation, trackingApi: trackingApi)
     }
 
     var contentPolicyView: some View {

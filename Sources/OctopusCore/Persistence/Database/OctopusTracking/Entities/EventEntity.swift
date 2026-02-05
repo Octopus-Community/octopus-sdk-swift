@@ -54,6 +54,17 @@ class EventEntity: NSManagedObject, Identifiable {
             let specializedEntity = TranslationButtonHitEventEntity(context: context)
             specializedEntity.translationDisplayed = translationDisplayed
             entity = specializedEntity
+        case let .videoPlayed(objectId, videoId, watchTime, duration):
+            let specializedEntity = VideoPlayedEventEntity(context: context)
+            specializedEntity.octoObjectId = objectId
+            specializedEntity.videoId = videoId
+            specializedEntity.watchTime = watchTime
+            specializedEntity.duration = duration
+            entity = specializedEntity
+        case let .ctaPostButtonHit(objectId):
+            let specializedEntity = CtaPostButtonHitEntity(context: context)
+            specializedEntity.octoObjectId = objectId
+            entity = specializedEntity
         case let .custom(customEvent):
             let specializedEntity = CustomEventEntity(context: context)
             specializedEntity.name = customEvent.name

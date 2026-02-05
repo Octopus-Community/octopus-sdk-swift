@@ -42,7 +42,8 @@ class ClientUserProvider: InjectableObject, @unchecked Sendable {
                 .switchToLatest()
                 .removeDuplicates()
                 .receive(on: DispatchQueue.main)
-                .sink { [unowned self] in
+                .sink { [weak self] in
+                    guard let self else { return }
                     self.clientUser = $0
                     self.hasLoadedClientUser = true
                 }.store(in: &storage)

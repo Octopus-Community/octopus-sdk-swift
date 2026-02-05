@@ -60,16 +60,15 @@ extension ModelCoreDataStack {
             }
 
             var updatedToVersion = latestVersion
-            // uncomment if the version X needs a custom migration
-            // do {
-            //     if latestVersion < X {
-            //         try await migrateToVersionX() (see in ModelCoreDataStack.Migrator for an example)
-            //         updatedToVersion = 1
-            //     }
+            do {
+                if latestVersion < 2 {
+                    try await addVideoAndCtaToPosts(context: context)
+                    updatedToVersion = 2
+                }
                 updatedToVersion = targetVersion
-            // } catch {
-            //     if #available(iOS 14, *) { Logger.other.debug("Error during migration from version \(updatedToVersion) to \(targetVersion): \(error)") }
-            // }
+            } catch {
+                if #available(iOS 14, *) { Logger.other.debug("Error during migration from version \(updatedToVersion) to \(targetVersion): \(error)") }
+            }
 
             return updatedToVersion
         }
@@ -87,6 +86,22 @@ extension ModelCoreDataStack {
 
                 for existingContent in existingContents {
                     existingContent.updateTimestamp = Date.distantPast.timeIntervalSince1970
+                }
+                try context.save()
+            }
+        }
+
+        /// This migration was introduced in the 1.9.0, to upgrade to version 2.
+        /// Since posts now have videos and CTA, we need to re-fetch them. Hence, we set their update timestamp to
+        /// distant past.
+        static func addVideoAndCtaToPosts(context: NSManagedObjectContext) async throws {
+            if #available(iOS 14, *) { Logger.other.trace("Migrating Model db: adding videos and CTA to posts") }
+            try await context.performAsync { [context] in
+                let request = PostEntity.fetchAll()
+                let existingPosts = try context.fetch(request)
+
+                for existingPost in existingPosts {
+                    existingPost.updateTimestamp = Date.distantPast.timeIntervalSince1970
                 }
                 try context.save()
             }

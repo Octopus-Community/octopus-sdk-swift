@@ -9,6 +9,7 @@ import OctopusCore
 
 struct NotificationCenterView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
+    @EnvironmentObject var trackingApi: TrackingApi
     @Compat.StateObject private var viewModel: NotificationCenterViewModel
 
     @State private var displayError = false
@@ -25,6 +26,8 @@ struct NotificationCenterView: View {
             notifications: viewModel.notifications,
             action: { notification in
                 viewModel.markNotificationAsRead(notifId: notification.uuid)
+                trackingApi.emit(event: .notificationClicked(.init(notificationId: notification.uuid,
+                                                                   action: notification.action)))
                 if let action = notification.action {
                     switch action {
                     case let .open(contentsToOpen):

@@ -10,6 +10,7 @@ import OctopusCore
 struct CreatePostView: View {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject private var trackingApi: TrackingApi
 
     @Compat.StateObject private var viewModel: CreatePostViewModel
 
@@ -59,8 +60,10 @@ struct CreatePostView: View {
                 $0.alert(
                     Text("Common.CancelModifications", bundle: .module),
                     isPresented: $showChangesWillBeLostAlert) {
-                        Button(L10n("Common.No"), role: .cancel, action: {})
-                        Button(L10n("Common.Yes"), role: .destructive, action: { presentationMode.wrappedValue.dismiss() })
+                        Button(role: .cancel, action: {}) { Text("Common.No", bundle: .module) }
+                        Button(role: .destructive, action: { presentationMode.wrappedValue.dismiss() }) {
+                            Text("Common.Yes", bundle: .module)
+                        }
                     }
             } else {
                 $0.alert(isPresented: $showChangesWillBeLostAlert) {
@@ -74,6 +77,7 @@ struct CreatePostView: View {
                 }
             }
         }
+        .emitScreenDisplayed(.createPost, trackingApi: trackingApi)
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
             presentationMode.wrappedValue.dismiss()

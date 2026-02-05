@@ -21,11 +21,16 @@ class PostDetailViewModel: ObservableObject {
     struct Post: Equatable {
         enum Attachment: Equatable {
             case image(ImageMedia)
+            case video(VideoMedia)
             case poll(DisplayablePoll)
         }
         struct BridgeCTA: Equatable {
             let text: TranslatableText
             let clientObjectId: String
+        }
+        struct CustomAction: Equatable {
+            let ctaText: TranslatableText
+            let targetUrl: URL
         }
         let uuid: String
         let text: TranslatableText
@@ -39,6 +44,7 @@ class PostDetailViewModel: ObservableObject {
         let canBeModerated: Bool
         let catchPhrase: TranslatableText?
         let bridgeCTA: BridgeCTA?
+        let customAction: CustomAction?
     }
 
     enum PostDeletion {
@@ -104,13 +110,7 @@ class PostDetailViewModel: ObservableObject {
     private var storage = [AnyCancellable]()
     private var hasFetchedPostOnce = false
 
-    private var relativeDateFormatter: RelativeDateTimeFormatter = {
-        let relativeDateFormatter = RelativeDateTimeFormatter()
-        relativeDateFormatter.dateTimeStyle = .numeric
-        relativeDateFormatter.unitsStyle = .short
-
-        return relativeDateFormatter
-    }()
+    private var relativeDateFormatterProvider: RelativeDateTimeFormatterProvider
 
     private var postOpenedOrigin: PostOpenedOrigin {
         switch origin {
@@ -132,6 +132,7 @@ class PostDetailViewModel: ObservableObject {
         self.hasFeaturedComment = hasFeaturedComment
         self.translationStore = translationStore
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
+        relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
 
         Publishers.CombineLatest4(
             octopus.core.postsRepository.getPost(uuid: postUuid).removeDuplicates().replaceError(with: nil),
@@ -170,7 +171,7 @@ class PostDetailViewModel: ObservableObject {
             self.post = Post(from: post,
                              gamificationLevels: gamificationLevels ?? [],
                              thisUserProfileId: profile?.id, topic: topic,
-                             dateFormatter: relativeDateFormatter)
+                             dateFormatter: relativeDateFormatterProvider.formatter)
             newestFirstCommentsFeed = post.newestFirstCommentsFeed
             if let oldestFirstCommentsFeed = post.oldestFirstCommentsFeed {
                 set(feed: oldestFirstCommentsFeed)
@@ -258,7 +259,7 @@ class PostDetailViewModel: ObservableObject {
                 return DisplayableFeedResponse(
                     from: comment, gamificationLevels: gamificationLevels ?? [],
                     liveMeasurePublisher: liveMeasurePublisher,
-                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatter,
+                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatterProvider.formatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
             }
             if newComments.isEmpty {
@@ -369,7 +370,7 @@ class PostDetailViewModel: ObservableObject {
         // update the child count and view number when the view is displayed
         Task {
             do {
-                try await octopus.core.postsRepository.fetchAdditionalData(ids: [postUuid],
+                try await octopus.core.postsRepository.fetchAdditionalData(ids: [(postUuid, post?.hasVideo ?? false)],
                                                                            incrementViewCount: false)
             } catch {
                 if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
@@ -387,9 +388,7 @@ class PostDetailViewModel: ObservableObject {
 
         do {
             try callback(clientObjectId)
-            Task {
-                try? await octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
-            }
+            octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
         } catch {
             self.error = .localizationKey("Error.Unknown")
         }
@@ -570,14 +569,21 @@ class PostDetailViewModel: ObservableObject {
 
     private func fetchPost(uuid: String, incrementViewCount: Bool) async throws(ServerCallError) {
         do {
-            try await octopus.core.postsRepository.fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
+            let hasVideo: Bool
+            if let post {
+                hasVideo = post.hasVideo
+            } else {
+                hasVideo = (try? await octopus.core.postsRepository.getPostValue(uuid: uuid)?.hasVideo) ?? false
+            }
+            try await octopus.core.postsRepository.fetchPost(uuid: postUuid, hasVideo: hasVideo,
+                                                             incrementViewCount: incrementViewCount)
             if !hasFetchedPostOnce {
                 let postOpenedOrigin: PostOpenedOrigin =
                 switch origin {
                 case .clientApp: .clientApp
                 case .sdk: .sdk(hasFeaturedComment: hasFeaturedComment)
                 }
-                try? await octopus.core.trackingRepository.trackPostOpened(origin: postOpenedOrigin, success: true)
+                octopus.core.trackingRepository.trackPostOpened(origin: postOpenedOrigin, success: true)
             }
             hasFetchedPostOnce = true
         } catch {
@@ -590,7 +596,7 @@ class PostDetailViewModel: ObservableObject {
                     case .clientApp: .clientApp
                     case .sdk: .sdk(hasFeaturedComment: hasFeaturedComment)
                     }
-                    try? await octopus.core.trackingRepository.trackPostOpened(origin: postOpenedOrigin, success: false)
+                    octopus.core.trackingRepository.trackPostOpened(origin: postOpenedOrigin, success: false)
                 }
             }
             hasFetchedPostOnce = true
@@ -698,7 +704,7 @@ class PostDetailViewModel: ObservableObject {
                 // deleted
                 for error in argumentError.errors.values.flatMap({ $0 }) {
                     if case .missingParent = error.detail {
-                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
+                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid, hasVideo: post.hasVideo)
                         break
                     }
                 }
@@ -750,7 +756,7 @@ class PostDetailViewModel: ObservableObject {
                 // been deleted
                 for error in argumentError.errors.values.flatMap({ $0 }) {
                     if case .missingParent = error.detail {
-                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid)
+                        try? await octopus.core.postsRepository.fetchPost(uuid: post.uuid, hasVideo: post.hasVideo)
                         break
                     }
                 }
@@ -809,6 +815,9 @@ extension PostDetailViewModel.Post.Attachment {
     init?(from post: Post) {
         if let poll = post.poll {
             self = .poll(DisplayablePoll(from: poll))
+        } else if let media = post.medias.first(where: { $0.kind == .video }),
+                  let videoMedia = VideoMedia(from: media) {
+            self = .video(videoMedia)
         } else if let media = post.medias.first(where: { $0.kind == .image }),
                   let imageMedia = ImageMedia(from: media) {
             self = .image(imageMedia)
@@ -842,6 +851,25 @@ extension PostDetailViewModel.Post {
         } else {
             nil
         }
+        customAction = if let customAction = post.customAction {
+            CustomAction(ctaText: customAction.ctaText, targetUrl: customAction.targetUrl)
+        } else {
+            nil
+        }
         catchPhrase = post.clientObjectBridgeInfo?.catchPhrase
+    }
+
+    var hasVideo: Bool {
+        switch attachment {
+        case .video: return true
+        default: return false
+        }
+    }
+
+    var videoId: String? {
+        switch attachment {
+        case let .video(video): return video.videoId
+        default: return nil
+        }
     }
 }

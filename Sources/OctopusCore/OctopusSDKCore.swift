@@ -21,27 +21,36 @@ public class OctopusSDKCore: ObservableObject {
     public let configRepository: ConfigRepository
     public let contentTranslationPreferenceRepository: ContentTranslationPreferenceRepository
     public let toastsRepository: ToastsRepository
+    public let videosRepository: VideosRepository
     public let sdkEventsEmitter: SdkEventsEmitter
+    public let languageRepository: LanguageRepository
 
     public let validators: Validators
+
+    public let sdkConfig: OctopusSDKConfiguration
 
     private let injector: Injector
     private let connectionMode: ConnectionMode
 
     /// Constructor
     /// - Parameter apiKey: the API key that identifies your project
-    public init(apiKey: String, connectionMode: ConnectionMode, injector: Injector) throws {
+    public init(apiKey: String, connectionMode: ConnectionMode, sdkConfig: OctopusSDKConfiguration,
+                injector: Injector) throws {
         self.connectionMode = connectionMode
+        self.sdkConfig = sdkConfig
         self.injector = injector
         let installIdProvider = InstallIdProvider()
         let modelCoreDataStack = try ModelCoreDataStack()
         let trackingCoreDataStack = try TrackingCoreDataStack()
         let configCoreDataStack = try ConfigCoreDataStack()
+        injector.register { LanguageRepository(injector: $0) }
         injector.register { _ in SecuredStorageDefault(apiKey: apiKey, isNewInstall: installIdProvider.isNewInstall) }
         injector.register { UserDataStorage(injector: $0) }
+        languageRepository = injector.getInjected(identifiedBy: Injected.languageRepository)
         let userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         let remoteClient = try GrpcClient(
             apiKey: apiKey, sdkVersion: version, installId: installIdProvider.installId,
+            localeIdentifier: languageRepository.localeIdentifier,
             getUserIdBlock: { [userDataStorage] in
                 userDataStorage.userData?.id
             },
@@ -74,6 +83,8 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { ExternalLinksRepository(injector: $0, apiKey: apiKey) }
         injector.register { ContentTranslationPreferenceRepositoryDefault(injector: $0) }
         injector.register { ToastsRepository(injector: $0) }
+        injector.register { VideosRepository(injector: $0) }
+        injector.register { GamificationRepository(injector: $0) }
 
         // Feed
         injector.register { PostFeedsStore(injector: $0) }
@@ -162,6 +173,7 @@ public class OctopusSDKCore: ObservableObject {
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
         contentTranslationPreferenceRepository = injector.getInjected(identifiedBy: Injected.contentTranslationPreferenceRepository)
         toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
+        videosRepository = injector.getInjected(identifiedBy: Injected.videosRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
     }
 

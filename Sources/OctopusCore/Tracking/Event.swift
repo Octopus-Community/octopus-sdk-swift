@@ -36,6 +36,11 @@ struct Event {
         case openClientObjectFromBridge
         /// Triggered when the "View original" or "View translation" button is tapped
         case translationButtonHit(translationDisplayed: Bool)
+        /// Triggered when a video has been played. Watch Time can be more than duration if the video has been played
+        /// more than once fully.
+        case videoPlayed(objectId: String, videoId: String, watchTime: TimeInterval, duration: TimeInterval)
+        /// Triggered when the user taps on the button of a post with CTA
+        case ctaPostButtonHit(objectId: String)
         /// Custom event, set by the client
         case custom(CustomEvent)
     }
@@ -97,6 +102,15 @@ extension Event.Content: CustomStringConvertible {
         case let .translationButtonHit(viewTranslated):
             name = "translationButtonHit"
             extra = "        viewTranslated: \(viewTranslated)"
+        case let .videoPlayed(objectId, videoId, watchTime, duration):
+            name = "videoPlayed"
+            extra = "        objectId: \(objectId)\n" +
+                    "        videoId: \(videoId)\n" +
+                    "        watchTime: \(Int(watchTime))\n" +
+                    "        duration: \(Int(duration))"
+        case let .ctaPostButtonHit(objectId):
+            name = "ctaPostButtonHit"
+            extra = "        objectId: \(objectId)"
         case let .custom(customEvent):
             name = "custom"
             extra = "        name: \(customEvent.name)\n" +
@@ -141,6 +155,14 @@ extension Event {
                 .openClientObjectFromBridge
         case let evt as TranslationButtonHitEventEntity:
                 .translationButtonHit(translationDisplayed: evt.translationDisplayed)
+        case let evt as VideoPlayedEventEntity:
+                .videoPlayed(objectId: evt.octoObjectId,
+                             videoId: evt.videoId,
+                             watchTime: evt.watchTime,
+                             duration: evt.duration
+                )
+        case let evt as CtaPostButtonHitEntity:
+                .ctaPostButtonHit(objectId: evt.octoObjectId)
         case let evt as CustomEventEntity:
                 .custom(CustomEvent(
                     name: evt.name,

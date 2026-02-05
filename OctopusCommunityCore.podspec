@@ -19,6 +19,10 @@ Pod::Spec.new do |spec|
       'OctopusCore' => ['Sources/OctopusCore/Persistence/**/*.{xcdatamodeld}']
   }
 
+  spec.pod_target_xcconfig = {
+    'OTHER_SWIFT_FLAGS' => '-package-name #{SharedPodSpecConfig::PACKAGE_NAME}'
+  }
+
   spec.dependency 'KeychainAccess'
   spec.dependency 'OctopusCommunityRemoteClient', SharedPodSpecConfig::VERSION
   spec.dependency 'OctopusCommunityGrpcModels', SharedPodSpecConfig::VERSION

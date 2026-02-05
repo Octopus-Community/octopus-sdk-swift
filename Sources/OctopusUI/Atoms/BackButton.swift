@@ -17,6 +17,8 @@ struct BackButton: View {
             Button(action: action) {
                 Image(systemName: "chevron.left")
                     .font(theme.fonts.navBarItem.weight(.semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
                     .contentShape(Rectangle())
                     .accessibilityLabelInBundle("Accessibility.Common.Back")
             }

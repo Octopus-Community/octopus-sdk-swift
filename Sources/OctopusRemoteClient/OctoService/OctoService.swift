@@ -12,13 +12,23 @@ import OctopusGrpcModels
 import SwiftProtobuf
 import Logging
 
+public struct OctoObjectInfo {
+    public let id: String
+    public let hasVideo: Bool
+
+    public init(id: String, hasVideo: Bool) {
+        self.id = id
+        self.hasVideo = hasVideo
+    }
+}
+
 public protocol OctoService {
-    func get(octoObjectId: String, options: GetOptions, incrementViewCount: Bool,
+    func get(octoObjectInfo: OctoObjectInfo, options: GetOptions, incrementViewCount: Bool,
              authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetResponse
 
-    func getBatch(ids: [String], options: GetOptions, incrementViewCount: Bool,
+    func getBatch(octoObjectInfos: [OctoObjectInfo], options: GetOptions, incrementViewCount: Bool,
                   authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetBatchResponse
@@ -71,26 +81,27 @@ class OctoServiceClient: ServiceClient, OctoService {
     
     private let client: Com_Octopuscommunity_OctoObjectServiceAsyncClient
 
-    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String,
+    init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_OctoObjectServiceAsyncClient(
             channel: unaryChannel,
             interceptors: OctoServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
     }
 
-    public func get(octoObjectId: String, options: GetOptions, incrementViewCount: Bool,
+    public func get(octoObjectInfo: OctoObjectInfo, options: GetOptions, incrementViewCount: Bool,
                     authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetResponse {
         let request = Com_Octopuscommunity_GetRequest.with {
-            $0.octoObjectID = octoObjectId
+            $0.octoObjectID = octoObjectInfo.id
             $0.fetchObject = options.contains(.object)
             $0.fetchAggregate = options.contains(.aggregates)
             $0.fetchRequesterCtx = options.contains(.interactions)
             $0.registerView = incrementViewCount
+            $0.hasVideo_p = octoObjectInfo.hasVideo
         }
 
         return try await callRemote(authenticationMethod) {
@@ -98,18 +109,19 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
     }
 
-    func getBatch(ids: [String], options: GetOptions, incrementViewCount: Bool,
+    func getBatch(octoObjectInfos: [OctoObjectInfo], options: GetOptions, incrementViewCount: Bool,
                   authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetBatchResponse {
         let request = Com_Octopuscommunity_GetBatchRequest.with {
-            $0.requests = ids.map { id in
+            $0.requests = octoObjectInfos.map { octoObjectInfo in
                 Com_Octopuscommunity_GetRequest.with {
-                    $0.octoObjectID = id
+                    $0.octoObjectID = octoObjectInfo.id
                     $0.fetchObject = options.contains(.object)
                     $0.fetchAggregate = options.contains(.aggregates)
                     $0.fetchRequesterCtx = options.contains(.interactions)
                     $0.registerView = incrementViewCount
+                    $0.hasVideo_p = octoObjectInfo.hasVideo
                 }
             }
         }
