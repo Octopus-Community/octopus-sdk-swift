@@ -279,6 +279,24 @@ extension OctopusSDK {
 
 // MARK: Bridge
 extension OctopusSDK {
+    /// Sets a reaction on the user's behalf on a given client object related post (i.e. bridge post)
+    /// - Parameters:
+    ///   - reaction: the reaction to set.
+    ///               Nil if the reaction should be removed.
+    ///               `.unknown` reactions are not supported.
+    ///   - clientObjectRelatedPostId: the post id
+    ///
+    /// - Throws: an error if:
+    ///   - no network
+    ///   - you pass an `unknown` reaction
+    ///   - the post id does not match with an existing post
+    ///   - the post is not a client object related post (i.e. a bridge post)
+    ///   - other internal errors
+    public func set(reaction: OctopusReactionKind?, clientObjectRelatedPostId: String) async throws {
+        try await core.postsRepository.set(reaction: reaction?.coreValue,
+                                           clientObjectRelatedPostId: clientObjectRelatedPostId)
+    }
+
     /// Gets the Octopus post id related to the given object id.
     ///
     /// If the Octopus post does not exist yet, it will be created. The content will only be used if the post does not

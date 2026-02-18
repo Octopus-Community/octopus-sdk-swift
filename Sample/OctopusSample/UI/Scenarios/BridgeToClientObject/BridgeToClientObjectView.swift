@@ -170,6 +170,11 @@ private struct RecipeView: View {
                                 }
                             }
                             .padding(.vertical)
+
+                            ReactionsBar(userSelectedReaction: post.userReaction, react: {
+                                viewModel.set(reaction: $0)
+                            })
+
                         }
                         if #available(iOS 15, *) {
                             Text((try? AttributedString(
@@ -209,6 +214,38 @@ private struct RecipeView: View {
                         })
                 } else {
                     $0
+                }
+            }
+        }
+    }
+}
+
+/// A view that display all the available reactions and let the user select one. If a reaction is selected, its style
+/// will be different.
+private struct ReactionsBar: View {
+    let userSelectedReaction: OctopusReactionKind?
+    let react: (OctopusReactionKind?) -> Void
+
+    private let reactions: [OctopusReactionKind] = [.heart, .joy, .mouthOpen, .clap, .cry, .rage]
+
+    var body: some View {
+        HStack {
+            ForEach(reactions.indices, id: \.self) { idx in
+                let reaction = reactions[idx]
+                Button(action: {
+                    if userSelectedReaction == reaction {
+                        react(nil)
+                    } else {
+                        react(reaction)
+                    }
+                }) {
+                    Text(reaction.unicode)
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(
+                            Capsule()
+                                .stroke(userSelectedReaction == reaction ? Color.black : Color.gray.opacity(0.3))
+                        )
                 }
             }
         }

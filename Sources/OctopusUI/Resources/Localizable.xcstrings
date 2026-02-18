@@ -93,6 +93,24 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld komentarz"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld komentarze"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -106,6 +124,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld comentários"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld kommentar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld kommentarer"
                 }
               }
             }
@@ -163,10 +199,22 @@
             "value" : "Indietro"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wstecz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Voltar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tillbaka"
           }
         },
         "tr" : {
@@ -209,10 +257,22 @@
             "value" : "Altro"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Więcej"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mais"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mer"
           }
         },
         "tr" : {
@@ -255,10 +315,22 @@
             "value" : "Non selezionato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niewybrane"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não selecionado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inte markerad"
           }
         },
         "tr" : {
@@ -301,10 +373,22 @@
             "value" : "Offerto da Octopus: www.octopuscommunity.com"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powered by Octopus: www.octopuscommunity.com"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desenvolvido pela Octopus : www.octopuscommunity.com"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powered by Octopus: www.octopuscommunity.com"
           }
         },
         "tr" : {
@@ -347,10 +431,22 @@
             "value" : "Selezionato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybrane"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selecionado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markerad"
           }
         },
         "tr" : {
@@ -393,10 +489,22 @@
             "value" : "Apri dettaglio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwórz szczegóły"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abrir detalhe"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öppna detaljer"
           }
         },
         "tr" : {
@@ -440,10 +548,22 @@
             "value" : "Esplora elemento"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeglądaj element"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Explorar item"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utforska objekt"
           }
         },
         "tr" : {
@@ -487,10 +607,22 @@
             "value" : "Mostra riepilogo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż podsumowanie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar resumo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa sammanfattning"
           }
         },
         "tr" : {
@@ -533,10 +665,22 @@
             "value" : "Vedi il profilo dell’autore"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz profil autora"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver perfil do autor"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa författarens profil"
           }
         },
         "tr" : {
@@ -579,10 +723,22 @@
             "value" : "Aggiungi un'immagine"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj obraz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar uma imagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till en bild"
           }
         },
         "tr" : {
@@ -625,10 +781,22 @@
             "value" : "Invia"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyślij"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enviar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skicka"
           }
         },
         "tr" : {
@@ -671,10 +839,22 @@
             "value" : "Contenuto del feed"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zawartość kanału"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conteúdo do feed"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flödesinnehåll"
           }
         },
         "tr" : {
@@ -717,10 +897,22 @@
             "value" : "Selezione feed"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybór kanału"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seleção de feed"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Val av flöde"
           }
         },
         "tr" : {
@@ -763,10 +955,22 @@
             "value" : "Elimina immagine"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń obraz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar imagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort bilden"
           }
         },
         "tr" : {
@@ -809,10 +1013,22 @@
             "value" : "Sposta in basso"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesuń w dół"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mover para baixo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flytta ner"
           }
         },
         "tr" : {
@@ -855,10 +1071,22 @@
             "value" : "Sposta a sinistra"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesuń w lewo"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mover para a esquerda"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flytta åt vänster"
           }
         },
         "tr" : {
@@ -901,10 +1129,22 @@
             "value" : "Sposta a destra"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesuń w prawo"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mover para a direita"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flytta åt höger"
           }
         },
         "tr" : {
@@ -947,10 +1187,22 @@
             "value" : "Sposta in alto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesuń w górę"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mover para cima"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flytta upp"
           }
         },
         "tr" : {
@@ -993,10 +1245,22 @@
             "value" : "Ingrandisci"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiększ"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aumentar zoom"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zooma in"
           }
         },
         "tr" : {
@@ -1039,10 +1303,22 @@
             "value" : "Riduci"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomniejsz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Diminuir zoom"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zooma ut"
           }
         },
         "tr" : {
@@ -1085,10 +1361,22 @@
             "value" : "Elimina il sondaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń ankietę"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar a sondagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort omröstning"
           }
         },
         "tr" : {
@@ -1131,10 +1419,22 @@
             "value" : "pzione %1$lld di %2$lld"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcja %1$lld z %2$lld"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opção %1$lld de %2$lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternativ %1$lld av %2$lld"
           }
         },
         "tr" : {
@@ -1177,10 +1477,22 @@
             "value" : "Elimina l'opzione del sondaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń opcję ankiety"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar a opção da sondagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort omröstningsalternativ"
           }
         },
         "tr" : {
@@ -1223,10 +1535,22 @@
             "value" : "Tocchi due volte per leggere i dettagli del post"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stuknij dwukrotnie, aby przeczytać szczegóły posta"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toque duas vezes para ver o detalhe da publicação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dubbeltryck för att läsa inläggets detaljer"
           }
         },
         "tr" : {
@@ -1269,10 +1593,22 @@
             "value" : "%1$@ ha scritto %2$@ un contenuto che è stato moderato per i seguenti motivi: %3$@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ napisał(a) %2$@ treść, która została zmoderowana z następujących powodów: %3$@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ escreveu %2$@ um conteúdo que foi moderado pelos seguintes motivos: %3$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ skrev %2$@ ett innehåll som har modererats av följande skäl: %3$@"
           }
         },
         "tr" : {
@@ -1315,10 +1651,22 @@
             "value" : "%1$@ ha scritto %2$@ su %3$@: «%4$@» e ha allegato un'immagine"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ napisał(a) %2$@ w %3$@: „%4$@” i dołączył(a) obraz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ escreveu %2$@ em %3$@: «%4$@» e anexou uma imagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ skrev %2$@ i %3$@: ”%4$@” och bifogade en bild"
           }
         },
         "tr" : {
@@ -1361,10 +1709,22 @@
             "value" : "%1$@ ha scritto %2$@ su %3$@: « %4$@ » e ha allegato un video"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ napisał(a) %2$@ w %3$@: „%4$@” i dołączył(a) wideo"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ escreveu %2$@ em %3$@: « %4$@ » e anexou um vídeo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ skrev %2$@ i %3$@: ”%4$@” och bifogade en video"
           }
         },
         "tr" : {
@@ -1407,10 +1767,22 @@
             "value" : "%1$@ ha scritto %2$@ su %3$@: %4$@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ napisał(a) %2$@ w %3$@: %4$@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ escreveu %2$@ em %3$@: %4$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ skrev %2$@ i %3$@: %4$@"
           }
         },
         "tr" : {
@@ -1453,10 +1825,22 @@
             "value" : "Foto profilo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdjęcie profilowe"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto de perfil"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profilbild"
           }
         },
         "tr" : {
@@ -1499,10 +1883,22 @@
             "value" : "Tocchi due volte per cambiare la sua foto profilo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stuknij dwukrotnie, aby zmienić zdjęcie profilowe"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toque duas vezes para alterar a sua foto de perfil"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dubbeltryck för att ändra din profilbild"
           }
         },
         "tr" : {
@@ -1546,10 +1942,22 @@
             "value" : "Reazione : %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reakcja: %1$@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reação : %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reaktion: %1$@"
           }
         },
         "tr" : {
@@ -1592,10 +2000,22 @@
             "value" : "Bravo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gratulacje"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bravo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grattis"
           }
         },
         "tr" : {
@@ -1698,6 +2118,24 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld reakcja"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld reakcje"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -1711,6 +2149,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld reações"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld reaktion"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld reaktioner"
                 }
               }
             }
@@ -1829,6 +2285,36 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%2$lld %1$@ reakcje"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%2$lld %1$@ reakcji"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%2$lld reakcja %1$@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%2$lld reakcje %1$@"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -1842,6 +2328,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%2$lld %1$@ reações"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%2$lld %1$@-reaktion"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%2$lld %1$@-reaktioner"
                 }
               }
             }
@@ -1899,10 +2403,22 @@
             "value" : "Triste"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smutek"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Triste"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ledsen"
           }
         },
         "tr" : {
@@ -1945,10 +2461,22 @@
             "value" : "Gioia"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Radość"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alegria"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glädje"
           }
         },
         "tr" : {
@@ -1991,10 +2519,22 @@
             "value" : "Mi piace"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lubię to"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gosto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gilla"
           }
         },
         "tr" : {
@@ -2037,10 +2577,22 @@
             "value" : "Rabbia"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Złość"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Raiva"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ilska"
           }
         },
         "tr" : {
@@ -2083,10 +2635,22 @@
             "value" : "Tocchi due volte per vedere tutte le reazioni"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stuknij dwukrotnie, aby zobaczyć wszystkie reakcje"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toque duas vezes para ver todas as reações"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dubbeltryck för att se alla reaktioner"
           }
         },
         "tr" : {
@@ -2129,10 +2693,22 @@
             "value" : "Sorpresa"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaskoczenie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Surpresa"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Överraskning"
           }
         },
         "tr" : {
@@ -2175,10 +2751,22 @@
             "value" : "Sconosciuta"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieznana"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desconhecida"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Okänd"
           }
         },
         "tr" : {
@@ -2221,10 +2809,22 @@
             "value" : "%1$@ ha inviato un'immagine %2$@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ wysłał(a) obraz %2$@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ enviou uma imagem %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ skickade en bild %2$@"
           }
         },
         "tr" : {
@@ -2267,10 +2867,22 @@
             "value" : "%1$@ ha scritto %2$@: «%3$@» e ha allegato un'immagine"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ napisał(a) %2$@: „%3$@” i dołączył(a) obraz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ escreveu %2$@: «%3$@» e anexou uma imagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ skrev %2$@: ”%3$@” och bifogade en bild"
           }
         },
         "tr" : {
@@ -2313,10 +2925,22 @@
             "value" : "%1$@ ha scritto %2$@: «%3$@»"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ napisał(a) %2$@: „%3$@”"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ escreveu %2$@: «%3$@»"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ skrev %2$@: ”%3$@”"
           }
         },
         "tr" : {
@@ -2359,10 +2983,22 @@
             "value" : "Chiudere la notifica"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamknij to powiadomienie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fechar a notificação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stäng den här notisen"
           }
         },
         "tr" : {
@@ -2405,10 +3041,22 @@
             "value" : "Disattiva audio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycisz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Silenciar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tysta"
           }
         },
         "tr" : {
@@ -2451,10 +3099,22 @@
             "value" : "Pausa"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauza"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pausar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa"
           }
         },
         "tr" : {
@@ -2497,10 +3157,22 @@
             "value" : "Riproduci"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odtwarzaj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reproduzir"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spela upp"
           }
         },
         "tr" : {
@@ -2543,10 +3215,22 @@
             "value" : "Attiva audio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz dźwięk"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ativar som"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slå på ljud"
           }
         },
         "tr" : {
@@ -2649,6 +3333,24 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld wyświetlenie"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld wyświetlenia"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -2662,6 +3364,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld visualizações"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld visning"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld visningar"
                 }
               }
             }
@@ -2719,10 +3439,22 @@
             "value" : "Che cosa desidera fare ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Co chcesz zrobić?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O que pretende fazer ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vad vill du göra?"
           }
         },
         "tr" : {
@@ -2765,10 +3497,22 @@
             "value" : "Utente eliminato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunięty użytkownik"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilizador eliminado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borttagen användare"
           }
         },
         "tr" : {
@@ -2811,10 +3555,22 @@
             "value" : "Bloccando questo utente non potrà più vedere i suoi messaggi o il suo profilo. Desidera continuare ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Po zablokowaniu tego użytkownika nie będziesz już widzieć jego wiadomości ani otrzymywać jego powiadomień."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ao bloquear este utilizador, deixará de ver as mensagens e o perfil dele. Pretende continuar ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om du blockerar den här användaren kommer du inte längre att se deras meddelanden eller få deras aviseringar."
           }
         },
         "tr" : {
@@ -2857,10 +3613,22 @@
             "value" : "Bloccare questo utente"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zablokować tego użytkownika"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bloquear este utilizador"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blockera den här användaren"
           }
         },
         "tr" : {
@@ -2903,10 +3671,22 @@
             "value" : "Blocca"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zablokuj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bloquear"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blockera"
           }
         },
         "tr" : {
@@ -2949,10 +3729,22 @@
             "value" : "Questo utente è bloccato."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten użytkownik jest zablokowany."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este utilizador está bloqueado."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här användaren är blockerad."
           }
         },
         "tr" : {
@@ -2995,10 +3787,22 @@
             "value" : "Aggiungi un commento"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj komentarz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar um comentário"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till en kommentar"
           }
         },
         "tr" : {
@@ -3041,10 +3845,22 @@
             "value" : "Elimina questo commento"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń mój komentarz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar este comentário"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort min kommentar"
           }
         },
         "tr" : {
@@ -3087,10 +3903,22 @@
             "value" : "Desidera davvero eliminare questo commento ? Questa azione è irreversibile."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy na pewno chcesz usunąć ten komentarz? Tej operacji nie można cofnąć."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tem a certeza de que quer apagar este comentário ? Esta ação é irreversível."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Är du säker på att du vill ta bort den här kommentaren? Den här åtgärden kan inte ångras."
           }
         },
         "tr" : {
@@ -3133,10 +3961,22 @@
             "value" : "Commento eliminato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Komentarz usunięty"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comentário apagado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kommentaren har tagits bort"
           }
         },
         "tr" : {
@@ -3179,10 +4019,22 @@
             "value" : "Risposte"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpowiedzi"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Respostas"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svar"
           }
         },
         "tr" : {
@@ -3225,10 +4077,22 @@
             "value" : "Vedi la discussione originale"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz oryginalną dyskusję"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver a conversa original"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa originaltråden"
           }
         },
         "tr" : {
@@ -3272,10 +4136,22 @@
             "value" : "Annulla"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anuluj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anular"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avbryt"
           }
         },
         "tr" : {
@@ -3318,10 +4194,22 @@
             "value" : "È sicuro di voler uscire dalla modifica ? Il contenuto andrà perso."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy na pewno chcesz opuścić tryb edycji? Zawartość zostanie utracona."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tem a certeza de que quer sair da edição ? O conteúdo será perdido."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Är du säker på att du vill lämna redigeringen? Innehållet kommer att gå förlorat."
           }
         },
         "tr" : {
@@ -3365,10 +4253,22 @@
             "value" : "Chiudi"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamknij"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fechar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stäng"
           }
         },
         "tr" : {
@@ -3411,10 +4311,22 @@
             "value" : "Continua"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontynuuj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continuar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsätt"
           }
         },
         "tr" : {
@@ -3458,10 +4370,22 @@
             "value" : "Elimina"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort"
           }
         },
         "tr" : {
@@ -3504,10 +4428,22 @@
             "value" : "Fine"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gotowe"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Concluído"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klar"
           }
         },
         "tr" : {
@@ -3610,6 +4546,36 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld dni"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld dni"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld dzień"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld dni"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -3623,6 +4589,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%1$lld dias"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld dag"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld dagar"
                 }
               }
             }
@@ -3740,6 +4724,36 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld miesiące"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld miesięcy"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld miesiąc"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld miesięcy"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -3753,6 +4767,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%1$lld meses"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld månad"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld månader"
                 }
               }
             }
@@ -3870,6 +4902,36 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld tygodnie"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld tygodni"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld tydzień"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld tygodnie"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -3883,6 +4945,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%1$lld semanas"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld vecka"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld veckor"
                 }
               }
             }
@@ -4000,6 +5080,36 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld lata"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld lat"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld rok"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld lat"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -4013,6 +5123,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%1$lld anos"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld år"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%1$lld år"
                 }
               }
             }
@@ -4070,10 +5198,22 @@
             "value" : "Modifica"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edição"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigera"
           }
         },
         "tr" : {
@@ -4117,10 +5257,22 @@
             "value" : "Errore"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Błąd"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Erro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fel"
           }
         },
         "tr" : {
@@ -4163,10 +5315,22 @@
             "value" : "No"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nej"
           }
         },
         "tr" : {
@@ -4209,7 +5373,19 @@
             "value" : "OK"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
         "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
@@ -4252,13 +5428,25 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Powered by"
+            "value" : "Powered by "
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powered by "
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Com tecnologia de "
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powered by "
           }
         },
         "tr" : {
@@ -4301,10 +5489,22 @@
             "value" : "meno"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mniej"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "menos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mindre"
           }
         },
         "tr" : {
@@ -4348,10 +5548,22 @@
             "value" : "altro"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "więcej"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "mais"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mer"
           }
         },
         "tr" : {
@@ -4394,10 +5606,22 @@
             "value" : "Riprova"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spróbuj ponownie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tentar novamente"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Försök igen"
           }
         },
         "tr" : {
@@ -4440,10 +5664,22 @@
             "value" : "Salva"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapisz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spara"
           }
         },
         "tr" : {
@@ -4486,10 +5722,22 @@
             "value" : "Vedi l'originale"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz oryginał"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver original"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa original"
           }
         },
         "tr" : {
@@ -4532,10 +5780,22 @@
             "value" : "Vedi l'originale (%1$@)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz oryginał (%1$@)"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver original (%1$@)"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa original (%1$@)"
           }
         },
         "tr" : {
@@ -4578,10 +5838,22 @@
             "value" : "Vedi la traduzione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz tłumaczenie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver tradução"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa översättningen"
           }
         },
         "tr" : {
@@ -4624,10 +5896,22 @@
             "value" : "Sì"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tak"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sim"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja"
           }
         },
         "tr" : {
@@ -4671,10 +5955,22 @@
             "value" : "Condivida, discuta e si lasci ispirare in una comunità pensata per Lei."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dziel się, rozmawiaj i inspiruj się w społeczności stworzonej dla Ciebie."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partilhe, discuta e inspire-se numa comunidade feita para si."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dela, prata och inspireras i ett community som är gjort för dig."
           }
         },
         "tr" : {
@@ -4718,10 +6014,22 @@
             "value" : "Il suo indirizzo email è sufficiente per iniziare :"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wystarczy Twój adres e-mail:"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Basta o seu endereço de email para começar :"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det enda som behövs är din e-postadress:"
           }
         },
         "tr" : {
@@ -4765,10 +6073,22 @@
             "value" : "La sua email"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twój adres e-mail"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O seu email"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din e-postadress"
           }
         },
         "tr" : {
@@ -4812,10 +6132,22 @@
             "value" : "Conferma"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potwierdź"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Validar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräfta"
           }
         },
         "tr" : {
@@ -4859,10 +6191,22 @@
             "value" : "Ops, si è verificato un errore. Inserisca nuovamente il suo indirizzo email."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ups, coś poszło nie tak. Wpisz ponownie swój adres e-mail."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocorreu um erro. Introduza novamente o seu endereço de email."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoppsan, något gick fel. Ange din e-postadress igen."
           }
         },
         "tr" : {
@@ -4906,10 +6250,22 @@
             "value" : "Provi con un altro indirizzo email"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spróbuj z innym adresem e-mail"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tente outro endereço de email"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Försök med en annan e-postadress"
           }
         },
         "tr" : {
@@ -4953,10 +6309,22 @@
             "value" : "Non hai ricevuto l'e-mail? Controlla la cartella spam."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie otrzymałeś e-maila? Sprawdź spam."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não recebeu o e-mail ? Verifique a pasta de spam."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fick du inget mejl? Kontrollera skräpposten."
           }
         },
         "tr" : {
@@ -4999,10 +6367,22 @@
             "value" : "Il link di accesso è scaduto. Richieda cortesemente un nuovo link."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link logowania wygasł. Poproś o nowy."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A ligação de acesso expirou. Peça uma nova."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inloggningslänken har gått ut. Be om en ny."
           }
         },
         "tr" : {
@@ -5045,10 +6425,22 @@
             "value" : "Link inviato. Controlli la sua email per confermare oppure clicchi su \"Provi con un altro indirizzo email\""
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link wysłany. Sprawdź e-mail, aby go potwierdzić, lub kliknij „Spróbuj z innym adresem e-mail”."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ligação enviada. Consulte o seu email para a confirmar ou clique em \"tente outro endereço de email\""
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Länken har skickats. Kontrollera din e-post för att bekräfta eller klicka på ”Försök med en annan e-postadress”."
           }
         },
         "tr" : {
@@ -5092,10 +6484,22 @@
             "value" : "Ops, si è verificato un errore. Inserisca nuovamente il suo indirizzo email."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ups, coś poszło nie tak. Wpisz ponownie swój adres e-mail."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocorreu um erro. Introduza novamente o seu endereço de email."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoppsan, något gick fel. Ange din e-postadress igen."
           }
         },
         "tr" : {
@@ -5139,10 +6543,22 @@
             "value" : "Le abbiamo inviato un'email a %1$@ con un link su cui può cliccare per accedere. Si assicuri di aprire il link da questo dispositivo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wysłaliśmy e-mail na adres %1$@ z linkiem, który umożliwia logowanie. Upewnij się, że klikasz link na tym urządzeniu."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enviámos um email para %1$@ com uma ligação para iniciar sessão. Certifique-se de que clica nessa ligação a partir deste dispositivo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vi har skickat ett mejl till %1$@ med en länk som du kan klicka på för att logga in. Se till att öppna länken på den här enheten."
           }
         },
         "tr" : {
@@ -5186,10 +6602,22 @@
             "value" : "Aggiorna"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odśwież"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Atualizar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppdatera"
           }
         },
         "tr" : {
@@ -5233,10 +6661,22 @@
             "value" : "Controlli le sue email"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź swoją skrzynkę e-mail"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Verifique o seu email"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrollera din e-post"
           }
         },
         "tr" : {
@@ -5280,10 +6720,22 @@
             "value" : "Pronto per accedere ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gotowy, aby dołączyć?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pronto para iniciar sessão ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redo att sätta igång?"
           }
         },
         "tr" : {
@@ -5326,10 +6778,22 @@
             "value" : "Stiamo cercando di recuperare i suoi dati. Riprovi tra qualche istante."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próbujemy pobrać Twoje dane. Spróbuj ponownie za chwilę."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estamos a tentar recuperar os seus dados. Tente novamente dentro de alguns instantes."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vi försöker hämta dina uppgifter. Försök igen om en stund."
           }
         },
         "tr" : {
@@ -5372,10 +6836,22 @@
             "value" : "Rispondi"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpowiedz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Responder"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svara"
           }
         },
         "tr" : {
@@ -5418,10 +6894,22 @@
             "value" : "Commenta"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skomentuj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comentar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kommentera"
           }
         },
         "tr" : {
@@ -5464,10 +6952,22 @@
             "value" : "Mi piace"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lubię to"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gosto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gilla"
           }
         },
         "tr" : {
@@ -5510,10 +7010,22 @@
             "value" : "Numero di visualizzazioni"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liczba wyświetleń"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Número de visualizações"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antal visningar"
           }
         },
         "tr" : {
@@ -5556,7 +7068,19 @@
             "value" : "Foto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdjęcie"
+          }
+        },
         "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto"
@@ -5603,10 +7127,22 @@
             "value" : "Sondaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ankieta"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sondagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omröstning"
           }
         },
         "tr" : {
@@ -5649,10 +7185,22 @@
             "value" : "Pubblicando il mio messaggio, accetto i [Termini di utilizzo](%1$@), l’[informativa sulla privacy](%2$@) e le [regole della community](%3$@)."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publikując wiadomość, akceptuję [Regulamin](%1$@), [Politykę prywatności](%2$@) oraz [Zasady społeczności](%3$@)."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ao publicar a minha mensagem, aceito os [Termos de Uso](%1$@), a [Política de Privacidade](%2$@) e as [Regras da Comunidade](%3$@)."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genom att publicera mitt inlägg godkänner jag [Användarvillkoren](%1$@), [Integritetspolicyn](%2$@) och [Communityreglerna](%3$@)."
           }
         },
         "tr" : {
@@ -5695,10 +7243,22 @@
             "value" : "Contenuto non disponibile"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treść niedostępna"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conteúdo indisponível"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Innehållet är inte tillgängligt"
           }
         },
         "tr" : {
@@ -5741,10 +7301,22 @@
             "value" : "Guarda di nuovo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obejrzyj ponownie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver novamente"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se igen"
           }
         },
         "tr" : {
@@ -5788,10 +7360,22 @@
             "value" : "Nessuna connessione a Internet. Controlli la sua connessione."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak połączenia z internetem. Sprawdź swoje połączenie."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sem ligação à internet. Verifique a sua ligação."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen internetanslutning. Kontrollera din anslutning."
           }
         },
         "tr" : {
@@ -5834,10 +7418,22 @@
             "value" : "Questo testo non può essere vuoto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten tekst nie może być pusty"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este texto não pode estar vazio"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texten får inte vara tom"
           }
         },
         "tr" : {
@@ -5880,10 +7476,22 @@
             "value" : "Ha superato il limite di caratteri (%1$lld/%2$lld)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przekroczono limit znaków (%1$lld/%2$lld)"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ultrapassou o limite de caracteres (%1$lld/%2$lld)"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har överskridit teckengränsen (%1$lld/%2$lld)"
           }
         },
         "tr" : {
@@ -5926,10 +7534,22 @@
             "value" : "La sua pubblicazione deve contenere almeno %1$lld caratteri."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoja publikacja musi zawierać co najmniej %1$lld znaków."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A sua publicação deve ter pelo menos %1$lld caracteres."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ditt inlägg måste innehålla minst %1$lld tecken."
           }
         },
         "tr" : {
@@ -5973,10 +7593,22 @@
             "value" : "Ops, si è verificato un errore. Riprovi più tardi."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ups, wystąpił błąd. Spróbuj ponownie później."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocorreu um erro. Tente novamente mais tarde."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoppsan, ett fel uppstod. Försök igen senare."
           }
         },
         "tr" : {
@@ -6019,10 +7651,22 @@
             "value" : "Filtra per gruppo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtruj według grupy"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Filtrar por grupo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtrera efter grupp"
           }
         },
         "tr" : {
@@ -6065,10 +7709,22 @@
             "value" : "💬 Commentare"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💬 Skomentuj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "💬 Comentar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💬 Kommentera"
           }
         },
         "tr" : {
@@ -6111,10 +7767,22 @@
             "value" : "🗓️ Tornare ogni giorno"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🗓️ Wracaj codziennie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "🗓️ Voltar todos os dias"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🗓️ Logga in varje dag"
           }
         },
         "tr" : {
@@ -6157,10 +7825,22 @@
             "value" : "✍️ Creare una pubblicazione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✍️ Utwórz post"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "✍️ Criar uma publicação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✍️ Skapa ett inlägg"
           }
         },
         "tr" : {
@@ -6203,10 +7883,22 @@
             "value" : "🤝 Ricevere un commento sulla propria pubblicazione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🤝 Otrzymaj komentarz do swojego posta"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "🤝 Receber um comentário na sua publicação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🤝 Få en kommentar på ditt inlägg"
           }
         },
         "tr" : {
@@ -6249,10 +7941,22 @@
             "value" : "👤 Completare il proprio profilo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👤 Uzupełnij swój profil"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "👤 Completar o seu perfil"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👤 Fyll i din profil"
           }
         },
         "tr" : {
@@ -6295,10 +7999,22 @@
             "value" : "❤️ Reagire a un messaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Zareaguj na post"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "❤️ Reagir a uma mensagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Reagera på ett inlägg"
           }
         },
         "tr" : {
@@ -6341,10 +8057,22 @@
             "value" : "Guadagni punti e sblocchi badge :"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdobywaj punkty i odblokowuj odznaki:"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ganhe pontos e desbloqueie medalhas :"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Samla poäng och lås upp märken:"
           }
         },
         "tr" : {
@@ -6387,10 +8115,22 @@
             "value" : "✅ Votare"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✅ Głosuj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "✅ Votar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✅ Rösta"
           }
         },
         "tr" : {
@@ -6433,10 +8173,22 @@
             "value" : "💬 +%1$@ per il suo commento, complimenti !"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💬 +%1$@ za Twój komentarz, brawo!"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "💬 +%1$@ pelo seu comentário, parabéns !"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💬 +%1$@ för din kommentar, bra jobbat!"
           }
         },
         "tr" : {
@@ -6479,10 +8231,22 @@
             "value" : "💬 Qualcuno ha risposto alla sua pubblicazione : +%1$@ !"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💬 Ktoś odpowiedział na Twój post: +%1$@!"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "💬 Alguém respondeu à sua publicação : +%1$@ !"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "💬 Någon svarade på ditt inlägg: +%1$@!"
           }
         },
         "tr" : {
@@ -6525,10 +8289,22 @@
             "value" : "👍 Felici di rivederla ! +%1$@ per il suo accesso di oggi"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👍 Miło Cię widzieć ponownie! +%1$@ za logowanie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "👍 Que bom tê-lo de volta ! +%1$@ pela sua ligação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👍 Välkommen tillbaka! +%1$@ för dagens inloggning"
           }
         },
         "tr" : {
@@ -6571,10 +8347,22 @@
             "value" : "✍️ Ha appena pubblicato un messaggio : +%1$@ !"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✍️ Właśnie opublikowałeś(-aś) post: +%1$@!"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "✍️ Acabou de publicar uma mensagem : +%1$@ !"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✍️ Du har just publicerat ett inlägg: +%1$@!"
           }
         },
         "tr" : {
@@ -6617,10 +8405,22 @@
             "value" : "👤 Il suo profilo è ora completo : +%1$@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👤 Twój profil jest teraz kompletny: +%1$@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "👤 O seu perfil está agora completo : +%1$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "👤 Din profil är nu komplett: +%1$@"
           }
         },
         "tr" : {
@@ -6663,10 +8463,22 @@
             "value" : "❤️ La sua reazione le ha fruttato +%1$@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ Twoja reakcja dała Ci +%1$@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "❤️ A sua reação deu-lhe +%1$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "❤️ +%1$@ för din reaktion"
           }
         },
         "tr" : {
@@ -6709,10 +8521,22 @@
             "value" : "✔️ +%1$@ per il suo voto !"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✔️ +%1$@ za Twój głos!"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "✔️ +%1$@ pelo seu voto !"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "✔️ +%1$@ för din röst!"
           }
         },
         "tr" : {
@@ -6755,10 +8579,22 @@
             "value" : "Grazie, la sua segnalazione è stata ricevuta e sarà esaminata dal nostro team."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dziękujemy, Twoje zgłoszenie zostało przyjęte i zostanie rozpatrzone przez nasz zespół."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Obrigado, a sua denúncia foi recebida e será analisada pela nossa equipa."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tack, din anmälan har tagits emot och kommer att hanteras av vårt team."
           }
         },
         "tr" : {
@@ -6801,10 +8637,22 @@
             "value" : "Segnalazione inviata"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zgłoszenie wysłane"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Denúncia enviada"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmälan skickad"
           }
         },
         "tr" : {
@@ -6847,10 +8695,22 @@
             "value" : "Segnala questo contenuto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zgłoś tę treść"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sinalizar este conteúdo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmäl detta innehåll"
           }
         },
         "tr" : {
@@ -6893,10 +8753,22 @@
             "value" : "Perché desidera segnalare questo contenuto ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dlaczego chcesz zgłosić tę treść?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Porque deseja sinalizar este conteúdo ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Varför vill du anmäla detta innehåll?"
           }
         },
         "tr" : {
@@ -6939,10 +8811,22 @@
             "value" : "Segnala contenuto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zgłosić treść"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sinalizar conteúdo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmäl innehåll"
           }
         },
         "tr" : {
@@ -6985,10 +8869,22 @@
             "value" : "Segnala questo utente"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zgłoś tego użytkownika"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sinalizar este utilizador"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmäl den här användaren"
           }
         },
         "tr" : {
@@ -7031,10 +8927,22 @@
             "value" : "Perché desidera segnalare questo utente ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dlaczego chcesz zgłosić tego użytkownika?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Porque deseja sinalizar este utilizador ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Varför vill du anmäla den här användaren?"
           }
         },
         "tr" : {
@@ -7077,10 +8985,22 @@
             "value" : "Segnala un utente"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zgłosić użytkownika"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sinalizar um utilizador"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmäl användare"
           }
         },
         "tr" : {
@@ -7123,10 +9043,22 @@
             "value" : "Nudità o attività sessuale"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagość lub aktywność seksualna"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nudez ou atividade sexual"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nakenhet eller sexuell aktivitet"
           }
         },
         "tr" : {
@@ -7169,10 +9101,22 @@
             "value" : "Sfruttamento sessuale"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykorzystywanie seksualne"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exploração sexual"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sexuellt utnyttjande"
           }
         },
         "tr" : {
@@ -7215,10 +9159,22 @@
             "value" : "Aggressività"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agresywne zachowanie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Agressividade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggressivt beteende"
           }
         },
         "tr" : {
@@ -7261,10 +9217,22 @@
             "value" : "Intimidazione e molestie"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastraszanie lub nękanie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Intimidação e assédio"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mobbning eller trakasserier"
           }
         },
         "tr" : {
@@ -7307,10 +9275,22 @@
             "value" : "Abuso su minori"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Materiały związane z wykorzystywaniem seksualnym dzieci"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abuso de menores"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Material med sexuella övergrepp på barn"
           }
         },
         "tr" : {
@@ -7353,10 +9333,22 @@
             "value" : "Violazione della proprietà intellettuale"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naruszenie praw autorskich lub własności intelektualnej"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Violação de propriedade intelectual"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upphovsrätts- eller immaterialrättsintrång"
           }
         },
         "tr" : {
@@ -7399,10 +9391,22 @@
             "value" : "Violenza"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drastyczna przemoc"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Violência"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grovt våld"
           }
         },
         "tr" : {
@@ -7445,10 +9449,22 @@
             "value" : "Contenuto dannoso o illecito"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treści szkodliwe lub przestępcze"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conteúdo prejudicial ou criminoso"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skadligt eller kriminellt innehåll"
           }
         },
         "tr" : {
@@ -7491,10 +9507,22 @@
             "value" : "Contenuto d'odio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treści nacechowane nienawiścią"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conteúdo de ódio"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hatiskt beteende"
           }
         },
         "tr" : {
@@ -7537,10 +9565,22 @@
             "value" : "Sfruttamento umano"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykorzystywanie ludzi"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exploração humana"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Människoexploatering"
           }
         },
         "tr" : {
@@ -7583,10 +9623,22 @@
             "value" : "Furto d'identità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podszywanie się"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Roubo de identidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identitetsstöld"
           }
         },
         "tr" : {
@@ -7629,10 +9681,22 @@
             "value" : "Disinformazione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dezinformacja"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desinformação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desinformation"
           }
         },
         "tr" : {
@@ -7675,10 +9739,22 @@
             "value" : "Altro"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inne"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Outro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annat"
           }
         },
         "tr" : {
@@ -7721,10 +9797,22 @@
             "value" : "Condivisione di informazioni personali"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Udostępnianie danych osobowych"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partilha de informações pessoais"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delning av personuppgifter"
           }
         },
         "tr" : {
@@ -7767,10 +9855,22 @@
             "value" : "Prodotti regolamentati"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Towary regulowane"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Produtos regulamentados"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reglerade varor"
           }
         },
         "tr" : {
@@ -7813,10 +9913,22 @@
             "value" : "Richiesta sessuale o linguaggio esplicito"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propozycje seksualne lub wulgarny język"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Solicitação sexual ou linguagem explícita"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sexuella inviter eller explicit språk"
           }
         },
         "tr" : {
@@ -7859,10 +9971,22 @@
             "value" : "Contenuto sessualmente allusivo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treści o charakterze seksualnym"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conteúdo sexualmente sugestivo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sexuellt suggestivt innehåll"
           }
         },
         "tr" : {
@@ -7905,10 +10029,22 @@
             "value" : "Spam o truffe"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam lub oszustwa"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spam ou burlas"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam eller bedrägerier"
           }
         },
         "tr" : {
@@ -7951,10 +10087,22 @@
             "value" : "Suicidio e autolesionismo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Samobójstwo lub samookaleczenie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suicídio e automutilação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Självmord eller självskadebeteende"
           }
         },
         "tr" : {
@@ -7997,10 +10145,22 @@
             "value" : "Terrorismo o odio organizzato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terroryzm lub zorganizowana nienawiść"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terrorismo ou ódio organizado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terrorism eller organiserat hat"
           }
         },
         "tr" : {
@@ -8043,10 +10203,22 @@
             "value" : "Regole relative ai nomi utente"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zasady dotyczące nazw użytkownika"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Regras relativas aos nomes de utilizador"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regler för användarnamn"
           }
         },
         "tr" : {
@@ -8089,10 +10261,22 @@
             "value" : "Istigazione alla violenza"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podżeganie do przemocy"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Incitação à violência"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppvigling till våld"
           }
         },
         "tr" : {
@@ -8135,10 +10319,22 @@
             "value" : "Non ha nuove notifiche."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie masz nowych powiadomień."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não tem novas notificações."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har inga nya notiser."
           }
         },
         "tr" : {
@@ -8181,10 +10377,22 @@
             "value" : "Attiva le notifiche push"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włącz powiadomienia push"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ativar as notificações push"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivera push-notiser"
           }
         },
         "tr" : {
@@ -8227,10 +10435,22 @@
             "value" : "La foto selezionata non è valida. Scelga un'immagine con un rapporto massimo di %1$@ e una risoluzione di almeno %2$lld pixel."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybrane zdjęcie jest nieprawidłowe. Wybierz obraz o maksymalnych proporcjach %1$@ i rozdzielczości co najmniej %2$lld pikseli."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A foto selecionada não é válida. Escolha uma imagem com uma proporção máxima de %1$@ e uma resolução de pelo menos %2$lld píxeis."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den valda bilden är ogiltig. Välj en bild med ett maximalt bildförhållande på %1$@ och en upplösning på minst %2$lld pixlar."
           }
         },
         "tr" : {
@@ -8273,10 +10493,22 @@
             "value" : "Aggiungi un'opzione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj opcję"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar uma opção"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till ett alternativ"
           }
         },
         "tr" : {
@@ -8319,10 +10551,22 @@
             "value" : "Opzione %1$lld"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcja %1$lld"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opção %1$lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alternativ %1$lld"
           }
         },
         "tr" : {
@@ -8365,10 +10609,22 @@
             "value" : "Sondaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ankieta"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sondagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omröstning"
           }
         },
         "tr" : {
@@ -8411,10 +10667,22 @@
             "value" : "Vota per vedere le risposte"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zagłosuj, aby zobaczyć odpowiedzi"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vote para ver as respostas"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rösta för att se svaren"
           }
         },
         "tr" : {
@@ -8457,10 +10725,22 @@
             "value" : "Vota per vedere le %1$@ risposte"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zagłosuj, aby zobaczyć %1$@ odpowiedzi"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vote para ver as %1$@ respostas"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rösta för att se de %1$@ svaren"
           }
         },
         "tr" : {
@@ -8503,10 +10783,22 @@
             "value" : "%1$@ voto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ głos"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ voto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ röst"
           }
         },
         "tr" : {
@@ -8549,10 +10841,22 @@
             "value" : "%1$@ voti"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ głosy"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ votos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ röster"
           }
         },
         "tr" : {
@@ -8596,10 +10900,22 @@
             "value" : "Pubblica"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opublikuj"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Publicar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publicera"
           }
         },
         "tr" : {
@@ -8642,10 +10958,22 @@
             "value" : "Condivida un consiglio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podziel się wskazówką"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partilhe um conselho"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dela ett tips"
           }
         },
         "tr" : {
@@ -8688,10 +11016,22 @@
             "value" : "Si presenti"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przedstaw się"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apresente-se"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presentera dig"
           }
         },
         "tr" : {
@@ -8734,10 +11074,22 @@
             "value" : "Dia la sua opinione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyraź swoją opinię"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dê a sua opinião"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dela din åsikt"
           }
         },
         "tr" : {
@@ -8780,10 +11132,22 @@
             "value" : "Condivida un'esperienza"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podziel się doświadczeniem"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partilhe uma experiência"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dela en erfarenhet"
           }
         },
         "tr" : {
@@ -8826,10 +11190,22 @@
             "value" : "Crei un sondaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utwórz ankietę"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crie uma sondagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skapa en omröstning"
           }
         },
         "tr" : {
@@ -8872,10 +11248,22 @@
             "value" : "Scriva una pubblicazione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napisz post"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escreva uma publicação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skriv ett inlägg"
           }
         },
         "tr" : {
@@ -8918,10 +11306,22 @@
             "value" : "Condivida le sue prime idee con la comunità !"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podziel się swoimi pierwszymi pomysłami ze społecznością!"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partilhe as suas primeiras ideias com a comunidade !"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dela dina första idéer med communityt!"
           }
         },
         "tr" : {
@@ -8965,10 +11365,22 @@
             "value" : "Si esprima: condivida una domanda, un'idea, un sondaggio, un parere..."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wypowiedz się: podziel się pytaniem, pomysłem, ankietą lub opinią…"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exprima-se : partilhe uma pergunta, uma ideia, uma sondagem, uma opinião..."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Säg något: dela en fråga, en idé, en omröstning eller en åsikt…"
           }
         },
         "tr" : {
@@ -9012,10 +11424,22 @@
             "value" : "Nuova pubblicazione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nowa publikacja"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nova publicação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nytt inlägg"
           }
         },
         "tr" : {
@@ -9059,10 +11483,22 @@
             "value" : "Scelga un gruppo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz grupę"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escolher um grupo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Välj en grupp"
           }
         },
         "tr" : {
@@ -9106,10 +11542,22 @@
             "value" : "Scelga il gruppo in cui pubblicare il suo messaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz grupę, w której chcesz opublikować swój post"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escolha o grupo onde pretende publicar a sua mensagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Välj vilken grupp du vill publicera ditt inlägg i"
           }
         },
         "tr" : {
@@ -9152,10 +11600,22 @@
             "value" : "Elimina questo messaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń ten post"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar esta mensagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort det här inlägget"
           }
         },
         "tr" : {
@@ -9198,10 +11658,22 @@
             "value" : "Desidera davvero eliminare questo messaggio ? Questa azione è irreversibile."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy na pewno chcesz usunąć ten post? Tej operacji nie można cofnąć."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tem a certeza de que quer apagar esta mensagem ? Esta ação é irreversível."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Är du säker på att du vill ta bort det här inlägget? Den här åtgärden kan inte ångras."
           }
         },
         "tr" : {
@@ -9244,10 +11716,22 @@
             "value" : "Messaggio eliminato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Post usunięty"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mensagem apagada"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inlägget har tagits bort"
           }
         },
         "tr" : {
@@ -9290,10 +11774,22 @@
             "value" : "Che cosa ne pensa ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Co o tym myślisz?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O que acha ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vad tycker du?"
           }
         },
         "tr" : {
@@ -9336,10 +11832,22 @@
             "value" : "Sia il primo a pubblicare !"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bądź pierwszym, który opublikuje!"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seja o primeiro a publicar !"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starta konversationen!"
           }
         },
         "tr" : {
@@ -9382,10 +11890,22 @@
             "value" : "Questo contenuto è stato moderato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta treść została poddana moderacji"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este conteúdo foi moderado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det här innehållet har modererats"
           }
         },
         "tr" : {
@@ -9428,10 +11948,22 @@
             "value" : "Motivo: %1$@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powód: %1$@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Motivo : %1$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orsak: %1$@"
           }
         },
         "tr" : {
@@ -9475,10 +12007,22 @@
             "value" : "Crea una pubblicazione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utwórz publikację"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Criar uma publicação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skapa ett inlägg"
           }
         },
         "tr" : {
@@ -9521,10 +12065,22 @@
             "value" : "Questo utente non ha ancora condiviso alcuna pubblicazione."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten użytkownik nie opublikował jeszcze żadnych postów."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este utilizador ainda não partilhou nenhuma publicação."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den här användaren har inte publicerat några inlägg ännu."
           }
         },
         "tr" : {
@@ -9567,10 +12123,22 @@
             "value" : "Moderato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmoderowany"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Moderado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modererat"
           }
         },
         "tr" : {
@@ -9613,10 +12181,22 @@
             "value" : "Anzianità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Staż konta"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Antiguidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontots ålder"
           }
         },
         "tr" : {
@@ -9659,10 +12239,22 @@
             "value" : "Aggiunga una bio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj bio"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicione uma bio"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till en bio"
           }
         },
         "tr" : {
@@ -9705,10 +12297,22 @@
             "value" : "Messaggio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiadomość"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mensagem"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelande"
           }
         },
         "tr" : {
@@ -9751,10 +12355,22 @@
             "value" : "Messaggi"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiadomości"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mensagens"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meddelanden"
           }
         },
         "tr" : {
@@ -9797,7 +12413,19 @@
             "value" : "Bio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bio"
+          }
+        },
         "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bio"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bio"
@@ -9843,10 +12471,22 @@
             "value" : "Stell dich in ein paar Worten vor! Wer bist du und was erwartest du dir von der Community…"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przedstaw się w kilku słowach! Kim jesteś i czego oczekujesz od społeczności…"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apresenta-te em poucas palavras! Quem és tu e o que esperas da comunidade…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presentera dig med några ord! Vem är du och vad hoppas du få ut av communityt…"
           }
         },
         "tr" : {
@@ -9889,10 +12529,22 @@
             "value" : "Modifica profilo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj profil"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar perfil"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigera profil"
           }
         },
         "tr" : {
@@ -9935,10 +12587,22 @@
             "value" : "La reindirizzeremo alla pagina dedicata per modificare questo elemento."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przekierujemy Cię na dedykowaną stronę, aby edytować ten element."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vamos redirecioná-lo para a página dedicada para alterar este elemento."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kommer att omdirigeras till en särskild sida för att redigera detta."
           }
         },
         "tr" : {
@@ -9981,10 +12645,22 @@
             "value" : "Lo pseudonimo deve contenere tra %1$lld e %2$lld caratteri"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pseudonim musi mieć od %1$lld do %2$lld znaków."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O pseudónimo deve ter entre %1$lld e %2$lld caracteres"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Användarnamnet måste vara mellan %1$lld och %2$lld tecken långt."
           }
         },
         "tr" : {
@@ -10027,10 +12703,22 @@
             "value" : "Pseudonimo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pseudonim"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pseudónimo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Användarnamn"
           }
         },
         "tr" : {
@@ -10074,10 +12762,22 @@
             "value" : "È il nome con cui interagirà con la comunità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To nazwa, pod którą będziesz wchodzić w interakcje ze społecznością."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "É o nome com o qual vai interagir com a comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det här är namnet du kommer att använda när du interagerar med communityt."
           }
         },
         "tr" : {
@@ -10120,10 +12820,22 @@
             "value" : "Sostituisci la foto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmień zdjęcie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Substituir a foto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Byt foto"
           }
         },
         "tr" : {
@@ -10166,10 +12878,22 @@
             "value" : "Elimina la foto"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń zdjęcie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar a foto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort bild"
           }
         },
         "tr" : {
@@ -10213,10 +12937,22 @@
             "value" : "Il suo pseudonimo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twój pseudonim"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O seu pseudónimo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ditt användarnamn"
           }
         },
         "tr" : {
@@ -10259,10 +12995,22 @@
             "value" : "Notifiche"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiadomienia"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notificações"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiser"
           }
         },
         "tr" : {
@@ -10305,10 +13053,22 @@
             "value" : "Pubblicazioni"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publikacje"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Publicações"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inlägg"
           }
         },
         "tr" : {
@@ -10351,7 +13111,19 @@
             "value" : "Admin"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin"
+          }
+        },
         "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin"
+          }
+        },
+        "sv" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Admin"
@@ -10397,10 +13169,22 @@
             "value" : "Rispondi al commento"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpowiedz na komentarz"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Responder ao comentário"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svara på kommentaren"
           }
         },
         "tr" : {
@@ -10443,10 +13227,22 @@
             "value" : "Elimina la risposta"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń odpowiedź"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apagar a resposta"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort mitt svar"
           }
         },
         "tr" : {
@@ -10489,10 +13285,22 @@
             "value" : "Desidera davvero eliminare questa risposta ? Questa azione è irreversibile."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy na pewno chcesz usunąć tę odpowiedź? Tej operacji nie można cofnąć."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tem a certeza de que quer apagar esta resposta ? Esta ação é irreversível."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Är du säker på att du vill ta bort det här svaret? Den här åtgärden kan inte ångras."
           }
         },
         "tr" : {
@@ -10535,10 +13343,22 @@
             "value" : "Risposta eliminata"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpowiedź usunięta"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resposta apagada"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svaret har tagits bort"
           }
         },
         "tr" : {
@@ -10641,6 +13461,36 @@
             }
           }
         },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Zobacz %1$lld odpowiedzi"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Zobacz %1$lld odpowiedzi"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Zobacz %1$lld odpowiedź"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Zobacz %1$lld odpowiedzi"
+                }
+              }
+            }
+          }
+        },
         "pt" : {
           "variations" : {
             "plural" : {
@@ -10654,6 +13504,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Ver %1$lld respostas"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Visa %1$lld svar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Visa %1$lld svar"
                 }
               }
             }
@@ -10711,10 +13579,22 @@
             "value" : "Sfruttamento o abuso di minori"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykorzystywanie lub nadużycia wobec nieletnich"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exploração ou abuso de menores"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utnyttjande eller övergrepp mot barn"
           }
         },
         "tr" : {
@@ -10757,10 +13637,22 @@
             "value" : "Contenuto sessuale o inappropriato"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treści seksualne lub nieodpowiednie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conteúdo sexual ou inapropriado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sexuellt eller olämpligt innehåll"
           }
         },
         "tr" : {
@@ -10803,10 +13695,22 @@
             "value" : "Profili falsi o furto d'identità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fałszywe profile lub podszywanie się"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Perfis falsos ou roubo de identidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falska profiler eller identitetsstöld"
           }
         },
         "tr" : {
@@ -10849,10 +13753,22 @@
             "value" : "Discorsi d'odio, discriminazione e molestie"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mowa nienawiści, dyskryminacja lub nękanie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Discurso de ódio, discriminação e assédio"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hatpropaganda, diskriminering eller trakasserier"
           }
         },
         "tr" : {
@@ -10895,10 +13811,22 @@
             "value" : "Violazione della proprietà intellettuale"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naruszenie własności intelektualnej"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Violação de propriedade intelectual"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intrång i immateriella rättigheter"
           }
         },
         "tr" : {
@@ -10941,10 +13869,22 @@
             "value" : "Altro"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inne"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Outro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annat"
           }
         },
         "tr" : {
@@ -10987,10 +13927,22 @@
             "value" : "Spam e truffe"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam lub oszustwa"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spams e burlas"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spam eller bedrägerier"
           }
         },
         "tr" : {
@@ -11033,10 +13985,22 @@
             "value" : "Suicidio o comportamenti autolesionisti"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Samobójstwo lub zachowania autodestrukcyjne"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suicídio ou comportamentos autodestrutivos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Självmord eller självskadebeteende"
           }
         },
         "tr" : {
@@ -11079,10 +14043,22 @@
             "value" : "Violenza e terrorismo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przemoc i terroryzm"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Violência e terrorismo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Våld och terrorism"
           }
         },
         "tr" : {
@@ -11125,10 +14101,22 @@
             "value" : "Informazioni sulla comunità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O społeczności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sobre a comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om communityt"
           }
         },
         "tr" : {
@@ -11171,10 +14159,22 @@
             "value" : "Impostazioni della comunità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustawienia społeczności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Definições da comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community-inställningar"
           }
         },
         "tr" : {
@@ -11217,10 +14217,22 @@
             "value" : "Regole della comunità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zasady społeczności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Regras da comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Communityregler"
           }
         },
         "tr" : {
@@ -11263,10 +14275,22 @@
             "value" : "Disconnettiti dalla comunità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyloguj się ze społeczności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminar sessão na comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logga ut från communityt"
           }
         },
         "tr" : {
@@ -11309,10 +14333,22 @@
             "value" : "La disconnessione è avvenuta con successo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zostałeś(-aś) pomyślnie wylogowany(-a)."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminou sessão com sucesso."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har loggats ut."
           }
         },
         "tr" : {
@@ -11355,10 +14391,22 @@
             "value" : "Informativa sulla privacy"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polityka prywatności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Política de privacidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Integritetspolicy"
           }
         },
         "tr" : {
@@ -11401,10 +14449,22 @@
             "value" : "Il mio account comunitario"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moje konto społeczności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A minha conta comunitária"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitt communitykonto"
           }
         },
         "tr" : {
@@ -11447,10 +14507,22 @@
             "value" : "Conferma eliminazione"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potwierdź usunięcie"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Confirmar eliminação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bekräfta borttagning"
           }
         },
         "tr" : {
@@ -11493,10 +14565,22 @@
             "value" : "Eliminando il suo account non potrà più partecipare alla comunità. Il suo profilo sarà eliminato definitivamente e le sue pubblicazioni saranno anonimizzate. Questa azione è irreversibile. Desidera continuare ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwając konto, nie będziesz mógł/mogła dalej uczestniczyć w społeczności. Twój profil zostanie trwale usunięty, a publikacje zanonimizowane. Ta operacja jest nieodwracalna. Czy chcesz kontynuować?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ao eliminar a sua conta, deixará de poder participar na comunidade. O seu perfil será eliminado definitivamente e as suas publicações serão anonimizadas. Esta ação é irreversível. Pretende continuar ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om du tar bort ditt konto kommer du inte längre att kunna delta i communityt. Din profil tas bort permanent och dina inlägg anonymiseras. Den här åtgärden kan inte ångras. Vill du fortsätta?"
           }
         },
         "tr" : {
@@ -11539,10 +14623,22 @@
             "value" : "È sicuro ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czy na pewno?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tem a certeza ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Är du säker?"
           }
         },
         "tr" : {
@@ -11585,10 +14681,22 @@
             "value" : "La tua richiesta di eliminazione è stata presa in carico. Non hai più accesso al tuo account. In caso di domande, contattaci a %@."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twoja prośba o usunięcie konta została przyjęta. Nie masz już dostępu do swojego konta. W razie pytań skontaktuj się z nami pod adresem %@."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O seu pedido de eliminação foi registado. Já não tem acesso à sua conta. Em caso de dúvida, contacte-nos para %@."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Din begäran om borttagning har behandlats. Du har inte längre tillgång till ditt konto. Vid frågor, kontakta oss på %@."
           }
         },
         "tr" : {
@@ -11631,10 +14739,22 @@
             "value" : "Eliminazione confermata"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunięcie potwierdzone"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminação confirmada"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borttagning bekräftad"
           }
         },
         "tr" : {
@@ -11677,10 +14797,22 @@
             "value" : "Ci dispiace vederla andare via. Vorremmo sapere perché desidera eliminare il suo account :"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przykro nam, że odchodzisz. Chcielibyśmy zrozumieć, dlaczego chcesz usunąć konto:"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lamentamos que queira sair. Gostaríamos de saber porque pretende eliminar a sua conta :"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tråkigt att se dig lämna. Vi vill gärna förstå varför du vill ta bort ditt konto:"
           }
         },
         "tr" : {
@@ -11723,10 +14855,22 @@
             "value" : "Elimina il mio account comunitario"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń moje konto społeczności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar a minha conta comunitária"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort mitt communitykonto"
           }
         },
         "tr" : {
@@ -11769,10 +14913,22 @@
             "value" : "Elimina il mio account"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń moje konto"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar a minha conta"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort mitt konto"
           }
         },
         "tr" : {
@@ -11815,10 +14971,22 @@
             "value" : "Non sono soddisfatto della moderazione o della qualità della comunità."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie jestem zadowolony(-a) z jakości treści lub moderacji społeczności."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Não estou satisfeito(a) com a moderação ou com a qualidade da comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Innehållet eller modereringen i communityt motsvarar inte mina förväntningar."
           }
         },
         "tr" : {
@@ -11861,10 +15029,22 @@
             "value" : "Sono preoccupato per la riservatezza dei miei dati."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Martwię się o prywatność moich danych."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preocupa-me a confidencialidade dos meus dados"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jag är orolig för integriteten kring mina uppgifter."
           }
         },
         "tr" : {
@@ -11907,10 +15087,22 @@
             "value" : "Mancano funzionalità essenziali."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brakuje kluczowych funkcji"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Faltam funcionalidades essenciais"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viktiga funktioner saknas"
           }
         },
         "tr" : {
@@ -11953,10 +15145,22 @@
             "value" : "I contenuti della comunità non mi interessano più."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treści społeczności nie są już dla mnie interesujące."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Já não me interessa o conteúdo da comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jag är inte längre intresserad av communityt."
           }
         },
         "tr" : {
@@ -11999,10 +15203,22 @@
             "value" : "Altro"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inne"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Outro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annat"
           }
         },
         "tr" : {
@@ -12045,10 +15261,22 @@
             "value" : "Voglio ridurre il tempo che trascorro sui social network."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chcę ograniczyć czas spędzany w mediach społecznościowych."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quero reduzir o tempo passado nas redes sociais"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jag vill minska tiden jag spenderar på sociala nätverk."
           }
         },
         "tr" : {
@@ -12091,10 +15319,22 @@
             "value" : "Rilevo dei problemi tecnici."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napotykam problemy techniczne"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estou a ter problemas técnicos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jag upplever tekniska problem"
           }
         },
         "tr" : {
@@ -12137,10 +15377,22 @@
             "value" : "Eliminazione dell'account"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunięcie konta"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminação da conta"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort konto"
           }
         },
         "tr" : {
@@ -12183,10 +15435,22 @@
             "value" : "La mia email :"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mój adres e-mail:"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O meu email :"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Min e-postadress:"
           }
         },
         "tr" : {
@@ -12229,10 +15493,22 @@
             "value" : "1. Vada al contenuto che desidera segnalare (messaggio, commento o profilo utente).\n2. Tocchi i tre puntini in alto a destra dell'elemento.\n3. Selezioni l'opzione \"Segnala\".\n4. Indichi il motivo della segnalazione selezionando un'opzione nell'elenco e confermi.\n\nIn caso di dubbi o domande, sono disponibili maggiori dettagli nelle [Regole della Comunità](%1$@)."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Przejdź do treści, którą chcesz zgłosić (post, komentarz lub profil użytkownika).\n2. Naciśnij trzy kropki w prawym górnym rogu elementu.\n3. Wybierz opcję „Zgłoś”.\n4. Wskaż powód zgłoszenia z listy i zatwierdź.\n\nW razie pytań więcej informacji znajdziesz w [Zasadach społeczności](%1$@)."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "1. Aceda ao conteúdo problemático (uma mensagem, um comentário ou um perfil de utilizador).\n2. Toque nos 3 pontos no canto superior direito do elemento a sinalizar.\n3. Escolha a opção \"Sinalizar\"\n4. Indique o motivo da denúncia, selecionando uma opção na lista apresentada e valide.\n\nEm caso de dúvida, encontra mais detalhes nas [Regras da Comunidade](%1$@)."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Gå till innehållet du vill anmäla (inlägg, kommentar eller användarprofil).\n2. Tryck på de tre punkterna uppe till höger.\n3. Välj ”Anmäl”.\n4. Välj en anledning från listan och bekräfta.\n\nVid frågor finns mer information i [Communityregler](%1$@)."
           }
         },
         "tr" : {
@@ -12275,10 +15551,22 @@
             "value" : "Come segnalare un contenuto ?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jak zgłosić treść?"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Como sinalizar um conteúdo ?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hur anmäler man innehåll?"
           }
         },
         "tr" : {
@@ -12321,10 +15609,22 @@
             "value" : "Segnala un contenuto problematico"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zgłoś nieodpowiednią treść"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sinalizar conteúdo problemático"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmäl olämpligt innehåll"
           }
         },
         "tr" : {
@@ -12367,10 +15667,22 @@
             "value" : "Termini di utilizzo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warunki korzystania"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Condições Gerais de Utilização"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Användarvillkor"
           }
         },
         "tr" : {
@@ -12413,10 +15725,22 @@
             "value" : "Per accedere alle funzionalità della comunità, aggiorni il suo iPhone a iOS 14 o versioni successive. In questo modo usufruirà della migliore esperienza, con le funzionalità più recenti e gli ultimi aggiornamenti di sicurezza."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aby uzyskać dostęp do funkcji społeczności, zaktualizuj iPhone’a do iOS 14 lub nowszej wersji. Zapewni to najlepsze wrażenia oraz dostęp do najnowszych funkcji i aktualizacji zabezpieczeń."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Para aceder às funcionalidades da comunidade, atualize o seu iPhone para o iOS 14 ou uma versão posterior. Isto garante-lhe a melhor experiência com as funcionalidades mais recentes e com as últimas atualizações de segurança."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "För att få tillgång till communityfunktionerna behöver du uppdatera din iPhone till iOS 14 eller senare. Det ger dig den bästa upplevelsen samt de senaste funktionerna och säkerhetsuppdateringarna."
           }
         },
         "tr" : {
@@ -12459,10 +15783,22 @@
             "value" : "Aggiornamento necessario per accedere alla comunità"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wymagana aktualizacja, aby dołączyć do społeczności"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Atualização necessária para se juntar à comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppdatering krävs för att gå med i communityt"
           }
         },
         "tr" : {
@@ -12505,10 +15841,22 @@
             "value" : "Più tardi"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Później"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mais tarde"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Senare"
           }
         },
         "tr" : {
@@ -12551,10 +15899,22 @@
             "value" : "Personalizzo il mio pseudonimo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edytuj mój pseudonim"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personalizar o meu pseudónimo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigera mitt användarnamn"
           }
         },
         "tr" : {
@@ -12597,10 +15957,22 @@
             "value" : "Può modificarlo subito dal suo profilo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Możesz go teraz zmienić w swoim profilu."
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pode alterá-lo já a partir do seu perfil."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kan ändra det direkt i din profil."
           }
         },
         "tr" : {
@@ -12643,10 +16015,22 @@
             "value" : "Il suo pseudonimo è :"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twój pseudonim to:"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "O seu pseudónimo é :"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ditt användarnamn är:"
           }
         },
         "tr" : {
@@ -12689,10 +16073,22 @@
             "value" : "Complimenti per il suo primo messaggio !"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brawo za Twój pierwszy post!"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Parabéns pela sua primeira mensagem !"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grattis till ditt första inlägg!"
           }
         },
         "tr" : {

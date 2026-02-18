@@ -15,15 +15,5 @@ public protocol OctopusReactionCount: Equatable, Sendable {
 
 /// Internal conformance of ReactionCount to OctopusReactionCount
 extension ReactionCount: OctopusReactionCount {
-    public var reaction: OctopusReactionKind {
-        switch self.reactionKind {
-        case .heart: .heart
-        case .joy: .joy
-        case .mouthOpen: .mouthOpen
-        case .clap: .clap
-        case .cry: .cry
-        case .rage: .rage
-        case let .unknown(string): .unknown(string)
-        }
-    }
+    public var reaction: OctopusReactionKind { OctopusReactionKind(from: self.reactionKind) }
 }

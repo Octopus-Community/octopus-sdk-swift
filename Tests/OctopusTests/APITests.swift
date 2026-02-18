@@ -135,13 +135,25 @@ class APITests {
             let reaction = reactionCount.reaction
             let _: String = reaction.unicode
         }
+        let _: OctopusReactionKind? = post.userReaction
 
         _ = octopus.getClientObjectRelatedPostPublisher(clientObjectId: "").sink { post in
             guard let post else { return }
             let _: String = post.id
             let _: Int = post.commentCount
             let _: Int = post.viewCount
+            if let reactionCount = post.reactions.first {
+                let _: Int = reactionCount.count
+                let reaction = reactionCount.reaction
+                let _: String = reaction.unicode
+            }
+            let _: OctopusReactionKind? = post.userReaction
         }
+    }
+
+    @Test func testSetReactionOnClientObjectRelatedPost() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        try await octopus.set(reaction: .clap, clientObjectRelatedPostId: "")
     }
 
     @Test func testSetDisplayClientObjectCallback() throws {

@@ -5,6 +5,7 @@
 import Foundation
 import SwiftUI
 import AVFoundation
+import UIKit
 
 struct VideoPlayerView: View {
     @Environment(\.octopusTheme) private var theme
@@ -77,17 +78,19 @@ struct VideoPlayerView: View {
                         Circle().foregroundColor(theme.colors.gray800.opacity(0.3))
                     )
             } else if isEnded {
-                Text("Content.Video.Replay", bundle: .module)
-                    .font(theme.fonts.body2)
-                    .fontWeight(.medium)
-                    .foregroundColor(theme.colors.hover)
-                    .padding(.vertical, btInternalVPadding)
-                    .padding(.horizontal, btInternalHPadding)
-                    .background(
-                        Capsule().foregroundColor(theme.colors.gray800.opacity(0.6))
-                    )
-                    .padding(10)
-                    .opacity(showControls ? 1 : 0)
+                Button(action: viewModel.togglePlayPause) {
+                    Text("Content.Video.Replay", bundle: .module)
+                        .font(theme.fonts.body2)
+                        .fontWeight(.medium)
+                        .foregroundColor(theme.colors.hover)
+                        .padding(.vertical, btInternalVPadding)
+                        .padding(.horizontal, btInternalHPadding)
+                        .background(
+                            Capsule().foregroundColor(theme.colors.gray800.opacity(0.6))
+                        )
+                        .padding(10)
+                        .opacity(showControls ? 1 : 0)
+                }
             }
 
             VStack {
@@ -135,7 +138,7 @@ struct VideoPlayerView: View {
 
     private func scheduleControlsHide() {
         hideControlsTask?.cancel()
-
+        guard !UIAccessibility.isVoiceOverRunning else { return }
         hideControlsTask = Task {
             try? await Task.sleep(nanoseconds: 2_000_000_000)
             guard !Task.isCancelled else { return }

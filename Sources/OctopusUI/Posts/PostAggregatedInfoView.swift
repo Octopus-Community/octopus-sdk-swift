@@ -49,7 +49,7 @@ struct PostAggregatedInfoView: View {
                                     .padding(.horizontal)
                                     .presentationCompactAdaptation((.popover))
                             }
-                        }
+                        } else { $0 }
                     }
                 }
             }.animation(.default, value: animate)

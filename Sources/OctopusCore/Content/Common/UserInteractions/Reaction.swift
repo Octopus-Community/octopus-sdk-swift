@@ -17,6 +17,22 @@ public enum Reaction {
     public typealias Error = AuthenticatedInputActionError<ValidationErrors<Field, ErrorDetail>>
 }
 
+public enum SetReactionOnBridgePostError: Error, CustomDebugStringConvertible {
+    case unknownReaction
+    case postNotFound
+    case postIsNotABridge
+    case reactionError(Reaction.Error)
+
+    public var debugDescription: String {
+        switch self {
+        case .unknownReaction: "Unknown reaction not permitted (SetReactionOnBridgePostError.unknownReaction)"
+        case .postNotFound: "Post not found (SetReactionOnBridgePostError.postNotFound)"
+        case .postIsNotABridge: "Post is not a bridge (SetReactionOnBridgePostError.postIsNotABridge)"
+        case let .reactionError(error): "Set reaction failed: \(error) (SetReactionOnBridgePostError.reactionError)"
+        }
+    }
+}
+
 extension ValidationErrors where Field == Reaction.Field, ErrorDetail == Reaction.ErrorDetail {
     init(from failure: Com_Octopuscommunity_PutReactionResponse.Fail) {
         var dictionary = [DisplayKind: [ValidationErrors.Error]]()
