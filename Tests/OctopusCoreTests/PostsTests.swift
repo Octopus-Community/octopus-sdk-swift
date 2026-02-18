@@ -249,6 +249,133 @@ class PostsTests: XCTestCase {
         await fulfillment(of: [aggregatesAndUserInteractionPresentExpectation], timeout: 0.5)
     }
 
+    func testSetReactionToBridgePostWhenPostAlreadyKnown() async throws {
+        // precondition: a post with aggregates and user interactions is in db
+        try await postsDatabase.upsert(posts: [
+            .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
+                  medias: [], poll: nil,
+                  author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil, gamificationLevel: nil),
+                  creationDate: Date(), updateDate: Date(),
+                  status: .published, statusReasons: [],
+                  parentId: "Sport",
+                  descCommentFeedId: "", ascCommentFeedId: "",
+                  bridgeClientObjectId: "clientObjectId", bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                  customActionText: nil, customActionTargetLink: nil,
+                  aggregatedInfo: .init(
+                    reactions: [
+                        ReactionCount(reactionKind: .heart, count: 4),
+                        ReactionCount(reactionKind: .clap, count: 5),
+                    ],
+                    childCount: 20, viewCount: 30, pollResult: nil),
+                  userInteractions: .init(reaction: nil, pollVoteId: "VOTE_ID"))
+        ])
+
+        let postPresentExpectation = XCTestExpectation(description: "Post is present and no user interaction")
+
+        postsRepository.getPost(uuid: "1")
+            .replaceError(with: nil)
+            .sink { post in
+                if post != nil && post?.userInteractions.reaction == nil {
+                    postPresentExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [postPresentExpectation], timeout: 0.5)
+        storage = []
+
+        let reactionSetExpectation = XCTestExpectation(description: "Reaction is set on post")
+
+        mockOctoService.injectNextPutReactionResponse(.with {
+            $0.result = .success(.with {
+                $0.reaction = .with {
+                    $0.parentID = "1"
+                    $0.id = "REACT_ID"
+                    $0.content = .with {
+                        $0.reaction = .with {
+                            $0.unicode = "❤️"
+                        }
+                    }
+                }
+            })
+        })
+
+        _ = try await postsRepository.set(reaction: .heart, clientObjectRelatedPostId: "1")
+
+        postsRepository.getPost(uuid: "1")
+            .replaceError(with: nil)
+            .sink { post in
+                if let post, post.userInteractions.reaction == UserReaction(kind: .heart, id: "REACT_ID") {
+                    reactionSetExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [reactionSetExpectation], timeout: 0.5)
+    }
+
+    func testSetReactionToBridgePostWhenPostIsNotLocal() async throws {
+        // precondition: no post in the db
+        let postNotPresentExpectation = XCTestExpectation(description: "Post is not present in the db")
+
+        postsRepository.getPost(uuid: "1")
+            .replaceError(with: nil)
+            .sink { post in
+                if post == nil {
+                    postNotPresentExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [postNotPresentExpectation], timeout: 0.5)
+        storage = []
+
+        let reactionSetExpectation = XCTestExpectation(description: "Reaction is set on post")
+
+        // since post is not in db, we fetch it from remote
+        injectGetPost(.init(
+            uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
+            medias: [], poll: nil,
+            author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil, gamificationLevel: nil),
+            creationDate: Date(), updateDate: Date(),
+            status: .published, statusReasons: [],
+            parentId: "Sport",
+            descCommentFeedId: "", ascCommentFeedId: "",
+            bridgeClientObjectId: "clientObjectId", bridgeCatchPhrase: nil, bridgeCtaText: nil,
+            customActionText: nil, customActionTargetLink: nil,
+            aggregatedInfo: .init(
+                reactions: [
+                    ReactionCount(reactionKind: .heart, count: 4),
+                    ReactionCount(reactionKind: .clap, count: 5),
+                ],
+                childCount: 20, viewCount: 30, pollResult: nil),
+            userInteractions: .init(reaction: nil, pollVoteId: "VOTE_ID"))
+        )
+
+        mockOctoService.injectNextPutReactionResponse(.with {
+            $0.result = .success(.with {
+                $0.reaction = .with {
+                    $0.parentID = "1"
+                    $0.id = "REACT_ID"
+                    $0.content = .with {
+                        $0.reaction = .with {
+                            $0.unicode = "❤️"
+                        }
+                    }
+                }
+            })
+        })
+
+        _ = try await postsRepository.set(reaction: .heart, clientObjectRelatedPostId: "1")
+
+        postsRepository.getPost(uuid: "1")
+            .replaceError(with: nil)
+            .sink { post in
+                if let post, post.userInteractions.reaction == UserReaction(kind: .heart, id: "REACT_ID") {
+                    reactionSetExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [reactionSetExpectation], timeout: 0.5)
+    }
+
     func injectGetPost(_ item: StorablePost) {
         let post = octoPost(from: item)
 
@@ -304,6 +431,11 @@ class PostsTests: XCTestCase {
                                 $0.height = 100
                             }
                         ]
+                    }
+                    if let bridgeClientObjectId = item.bridgeClientObjectId {
+                        $0.bridgeToClientObject = .with {
+                            $0.clientObjectID = bridgeClientObjectId
+                        }
                     }
                 }
             }

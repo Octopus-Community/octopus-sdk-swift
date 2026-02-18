@@ -539,7 +539,7 @@ private struct PostDetailContentView: View {
                     HStack {
                         Spacer()
                         Button(action: { displayClientObject(bridgeCTA.clientObjectId) }) {
-                            Text(bridgeCTA.text.getText(translated: displayTranslation))
+                            Text(bridgeCTA.text.getText(translated: true))
                                 .lineLimit(1)
                         }
                         .buttonStyle(OctopusButtonStyle(.mid))
@@ -556,7 +556,7 @@ private struct PostDetailContentView: View {
                             trackingApi.trackPostCustomActionButtonHit(postId: post.uuid)
                             urlOpener.open(url: customAction.targetUrl)
                         }) {
-                            Text(customAction.ctaText.getText(translated: displayTranslation))
+                            Text(customAction.ctaText.getText(translated: true))
                                 .lineLimit(1)
                         }
                         .buttonStyle(OctopusButtonStyle(.mid))

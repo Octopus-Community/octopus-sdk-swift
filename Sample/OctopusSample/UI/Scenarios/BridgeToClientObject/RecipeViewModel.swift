@@ -47,7 +47,18 @@ class RecipeViewModel: ObservableObject {
         }
     }
 
-    func getBridgePost(recipe: Recipe) async {
+    func set(reaction: OctopusReactionKind?) {
+        Task {
+            do {
+                guard let post else { throw NSError(domain: "No post to react to", code: 1) }
+                try await octopus.set(reaction: reaction, clientObjectRelatedPostId: post.id)
+            } catch {
+                self.error = error
+            }
+        }
+    }
+
+    private func getBridgePost(recipe: Recipe) async {
         // convert the image into an SDK Attachement
         let attachment: ClientPost.Attachment? = switch recipe.img {
         case let .local(imgResource):

@@ -17,6 +17,8 @@ public protocol OctopusPost: Sendable {
     var commentCount: Int { get }
     /// The view count for this content.
     var viewCount: Int { get }
+    /// The reaction of the current user on this post. Nil if the user did not react to this post.
+    var userReaction: OctopusReactionKind? { get }
 }
 
 /// Internal conformance of Post to OctopusPost
@@ -24,4 +26,8 @@ extension Post: OctopusPost {
     public var reactions: [any OctopusReactionCount] { aggregatedInfo.reactions }
     public var commentCount: Int { aggregatedInfo.childCount }
     public var viewCount: Int { aggregatedInfo.viewCount }
+    public var userReaction: OctopusReactionKind? {
+        guard let reactionKind = userInteractions.reaction?.kind else { return nil }
+        return OctopusReactionKind(from: reactionKind)
+    }
 }

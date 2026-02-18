@@ -26,7 +26,7 @@ class UserInteractionsDelegate {
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
     }
 
-    func set(reaction: ReactionKind?, content: any OctopusContent, parentIsTranslated: Bool)
+    func set(reaction: ReactionKind?, content: any OctopusContent, parentIsTranslated: Bool?)
     async throws(Reaction.Error) {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {

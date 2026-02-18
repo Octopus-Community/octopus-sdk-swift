@@ -131,7 +131,8 @@ class MockOctoService: OctoService {
         return response
     }
 
-    func react(reactionKind: String, objectId: String, parentIsTranslated: Bool, authenticationMethod: AuthenticationMethod)
+    func react(reactionKind: String, objectId: String, parentIsTranslated: Bool?,
+               authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse {
         guard let response = putReactionResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextReactionResponse must be called before"))
@@ -211,7 +212,7 @@ extension MockOctoService {
         deleteReplyResponses.insert(response, at: 0)
     }
 
-    func injectNextReactionResponse(_ response: Com_Octopuscommunity_PutReactionResponse) {
+    func injectNextPutReactionResponse(_ response: Com_Octopuscommunity_PutReactionResponse) {
         putReactionResponses.insert(response, at: 0)
     }
 

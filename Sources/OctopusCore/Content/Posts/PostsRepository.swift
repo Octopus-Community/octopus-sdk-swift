@@ -211,6 +211,48 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
+    /// Sets a reaction on the user's behalf on a given post
+    /// - Parameters:
+    ///   - reaction: the reaction to set. Nil if the reaction should be removed.
+    ///   - clientObjectRelatedPostId: the post id
+    public func set(reaction: ReactionKind?, clientObjectRelatedPostId: String)
+    async throws(SetReactionOnBridgePostError) {
+        do {
+            if case .unknown = reaction {
+                throw SetReactionOnBridgePostError.unknownReaction
+            }
+            // first try to get the post locally
+            var storablePost = try await postsDatabase.getPosts(ids: [clientObjectRelatedPostId]).first
+            if storablePost == nil {
+                // If not found, fetch the post
+                try await fetchPost(uuid: clientObjectRelatedPostId, hasVideo: false)
+                storablePost = try await postsDatabase.getPosts(ids: [clientObjectRelatedPostId]).first
+            }
+            guard let storablePost else {
+                if #available(iOS 14, *) { Logger.posts.debug("Post not found when trying to set reaction") }
+                throw SetReactionOnBridgePostError.postNotFound
+            }
+            let post = Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
+            guard post.clientObjectBridgeInfo != nil else {
+                if #available(iOS 14, *) { Logger.posts.debug("Post is not a client object related post (i.e. bridge post)") }
+                throw SetReactionOnBridgePostError.postIsNotABridge
+            }
+            try await userInteractionsDelegate.set(reaction: reaction, content: post,
+                                                   parentIsTranslated: nil)
+        } catch {
+            if let error = error as? SetReactionOnBridgePostError {
+                throw error
+            }
+            if let error = error as? Reaction.Error {
+                throw .reactionError(error)
+            } else if let error = error as? RemoteClientError {
+                throw .reactionError(.serverCall(.serverError(ServerError(remoteClientError: error))))
+            } else {
+                throw .reactionError(.serverCall(.other(error)))
+            }
+        }
+    }
+
     public func set(reaction: ReactionKind?, post: Post, parentIsTranslated: Bool) async throws(Reaction.Error) {
         try await userInteractionsDelegate.set(reaction: reaction, content: post,
                                                parentIsTranslated: parentIsTranslated)

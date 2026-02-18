@@ -92,8 +92,9 @@ class VideoPlayerViewModel: NSObject, ObservableObject {
 
         NotificationCenter.default
             .publisher(for: AVPlayerItem.didPlayToEndTimeNotification)
-            .sink { [unowned self] _ in
-                if let durationInSeconds = player.currentItem?.duration.seconds, durationInSeconds.isFinite {
+            .sink { [unowned self] notif in
+                guard let notifPlayerItem = notif.object as? AVPlayerItem, notifPlayerItem == playerItem else { return }
+                if let durationInSeconds = playerItem?.duration.seconds, durationInSeconds.isFinite {
                     currentTime = durationInSeconds
                     videoManager.video(id: videoId, isPlaying: false)
                 }

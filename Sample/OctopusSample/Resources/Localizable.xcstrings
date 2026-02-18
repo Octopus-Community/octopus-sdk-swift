@@ -70,10 +70,22 @@
             "value" : "App version: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version: %@"
+          }
+        },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "App version: %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version: %@"
           }
         },
         "tr" : {

@@ -427,7 +427,7 @@ private struct PublishedContentView: View {
                 HStack {
                     Spacer()
                     Button(action: { displayClientObject(bridgeInfo.objectId) }) {
-                        Text(ctaText.getText(translated: displayTranslation))
+                        Text(ctaText.getText(translated: true))
                             .lineLimit(1)
                     }
                     .buttonStyle(OctopusButtonStyle(.mid, externalTopPadding: 10))
@@ -443,7 +443,7 @@ private struct PublishedContentView: View {
                         trackingApi.trackPostCustomActionButtonHit(postId: post.uuid)
                         urlOpener.open(url: customAction.targetUrl)
                     }) {
-                        Text(customAction.ctaText.getText(translated: displayTranslation))
+                        Text(customAction.ctaText.getText(translated: true))
                             .lineLimit(1)
                     }
                     .buttonStyle(OctopusButtonStyle(.mid, externalTopPadding: 10))

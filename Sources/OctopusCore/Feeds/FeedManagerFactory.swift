@@ -34,7 +34,8 @@ enum PostsFeedManager {
                 .compactMap {
                     guard !$0.author.isBlocked(in: blockedUserIdsProvider.blockedUserIds) else { return nil }
                     let featuredComment: Comment? = if let featuredCommentId = featuredChildByPostId[$0.uuid],
-                                                       let storableComment = featuredComments.first(where: { $0.uuid == featuredCommentId }) {
+                                                       let storableComment = featuredComments.first(where: { $0.uuid == featuredCommentId }),
+                                                       !storableComment.author.isBlocked(in: blockedUserIdsProvider.blockedUserIds) {
                         Comment(storableComment: storableComment, replyFeedsStore: replyFeedsStore)
                     } else { nil }
                     return Post(storablePost: $0, commentFeedsStore: commentFeedsStore,
@@ -64,7 +65,8 @@ enum PostsFeedManager {
                 posts.compactMap {
                     guard !$0.author.isBlocked(in: blockedUserIds) else { return nil }
                     let featuredComment: Comment? = if let featuredCommentId = featuredChildByPostId[$0.uuid],
-                                                       let storableComment = featuredComments.first(where: { $0.uuid == featuredCommentId }) {
+                                                       let storableComment = featuredComments.first(where: { $0.uuid == featuredCommentId }),
+                                                       !storableComment.author.isBlocked(in: blockedUserIds) {
                         Comment(storableComment: storableComment, replyFeedsStore: replyFeedsStore)
                     } else { nil }
                     return Post(storablePost: $0, commentFeedsStore: commentFeedsStore,

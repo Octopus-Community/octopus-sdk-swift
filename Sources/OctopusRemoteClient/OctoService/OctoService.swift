@@ -48,7 +48,7 @@ public protocol OctoService {
 
     func react(reactionKind: String,
                objectId: String,
-               parentIsTranslated: Bool,
+               parentIsTranslated: Bool?,
                authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse
 
@@ -211,7 +211,7 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
     }
 
-    func react(reactionKind: String, objectId: String, parentIsTranslated: Bool,
+    func react(reactionKind: String, objectId: String, parentIsTranslated: Bool?,
                authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutReactionResponse {
         let request = Com_Octopuscommunity_PutRequest.with {
@@ -223,7 +223,9 @@ class OctoServiceClient: ServiceClient, OctoService {
                     }
                 }
             }
-            $0.translatedContent = parentIsTranslated
+            if let parentIsTranslated {
+                $0.translatedContent = parentIsTranslated
+            }
         }
         return try await callRemote(authenticationMethod) {
             try await client.putReaction(
