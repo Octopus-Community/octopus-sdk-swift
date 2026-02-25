@@ -4,6 +4,7 @@
 
 import SwiftUI
 
+@MainActor
 private struct PostsVisibilityScrollView: ViewModifier {
     @EnvironmentObject private var videoManager: VideoManager
 
@@ -14,7 +15,7 @@ private struct PostsVisibilityScrollView: ViewModifier {
     func body(content: Content) -> some View {
         GeometryReader { proxy in
             content
-                .onPreferenceChange(VisibleItemsPreference<VisiblePost>.self) { value in
+                .onPreferenceChange(VisibleItemsPreference<VisiblePost>.self) { @MainActor value in
                     let now = Date()
                     let interval: TimeInterval = 0.3
 
@@ -99,3 +100,4 @@ extension View {
         self.modifier(PostsVisibilityScrollView())
     }
 }
+

@@ -7,6 +7,8 @@ import SwiftUI
 import OctopusCore
 
 struct ResponseReactionBarView: View {
+    @EnvironmentObject private var languageManager: LanguageManager
+
     let userReaction: UserReaction?
     let canReply: Bool
     let reactions: [ReactionCount]
@@ -63,7 +65,7 @@ struct ResponseReactionBarView: View {
             image: userReaction != nil ? .emoji(userReaction!.kind) : .resource(.AggregatedInfo.like),
             text: "Content.AggregatedInfo.Like")
         .accessibilityElement(children: .ignore)
-        .accessibilityLabelInBundle("Accessibility.Reaction.Button_reaction:\((userReaction?.kind ?? ReactionKind.heart).accessibilityValue)")
+        .accessibilityLabelInBundle("Accessibility.Reaction.Button_reaction:\((userReaction?.kind ?? ReactionKind.heart).accessibilityValue(locale: languageManager.overridenLocale))")
         .accessibilityValueInBundle(userReaction != nil ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
         .modify {
             if #available(iOS 17.0, *) {

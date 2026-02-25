@@ -166,6 +166,7 @@ private struct ContentView: View {
 
 private struct WritingPostForm: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var languageManager: LanguageManager
     let displayCguText: Bool
 
     @Binding var text: String
@@ -194,16 +195,9 @@ private struct WritingPostForm: View {
     @State private var previousText = ""
 
     var legalTextStr: String {
-        if #available(iOS 15, *) {
-            return String(
-                localized: "Content.Create.Legal_termOfUse:\(termsOfUseUrl.absoluteString)_privacyPolicy:\(privacyPolicyUrl.absoluteString)_communityGuidelines:\(communityGuidelinesUrl.absoluteString)",
-                bundle: .module)
-        } else {
-            return NSLocalizedString(
-                "Content.Create.Legal_termOfUse:\(termsOfUseUrl.absoluteString)_privacyPolicy:\(privacyPolicyUrl.absoluteString)_communityGuidelines:\(communityGuidelinesUrl.absoluteString)",
-                bundle: .module,
-                comment: "")
-        }
+        L10n("Content.Create.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@",
+             locale: languageManager.overridenLocale,
+             termsOfUseUrl.absoluteString, privacyPolicyUrl.absoluteString, communityGuidelinesUrl.absoluteString)
     }
 
     var body: some View {

@@ -98,6 +98,7 @@ struct ReactionsPickerView: View {
 
 private struct ReactionButton: View {
     @Environment(\.octopusTheme) private var theme
+    @EnvironmentObject private var languageManager: LanguageManager
 
     let reaction: ReactionKind
     let isSelected: Bool
@@ -125,7 +126,7 @@ private struct ReactionButton: View {
                                backgroundColor: isSelected ? theme.colors.primaryLowContrast : nil,
                                externalVerticalPadding: 5))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabelInBundle("Accessibility.Reaction.Button_reaction:\(reaction.accessibilityValue)")
+        .accessibilityLabelInBundle("Accessibility.Reaction.Button_reaction:\(reaction.accessibilityValue(locale: languageManager.overridenLocale))")
         .accessibilityValueInBundle(isSelected ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
         .modify {
             if #available(iOS 17.0, *) {

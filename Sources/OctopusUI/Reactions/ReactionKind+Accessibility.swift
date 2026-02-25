@@ -7,8 +7,7 @@ import SwiftUI
 import OctopusCore
 
 extension ReactionKind {
-    @available(iOS 15, *)
-    private var accessibilityKey: String.LocalizationValue {
+    private var accessibilityKey: String {
         switch self {
         case .heart: "Accessibility.Reaction.Like"
         case .joy: "Accessibility.Reaction.Joy"
@@ -20,23 +19,7 @@ extension ReactionKind {
         }
     }
 
-    private var description: String {
-        switch self {
-        case .heart: "Like"
-        case .joy: "Joy"
-        case .mouthOpen: "Surprise"
-        case .clap: "Congrats"
-        case .cry: "Cry"
-        case .rage: "Rage"
-        case .unknown: "Unknown"
-        }
-    }
-
-    var accessibilityValue: String {
-        if #available(iOS 15, *) {
-            return String(localized: accessibilityKey, bundle: .module)
-        } else {
-            return description
-        }
+    func accessibilityValue(locale: Locale?) -> String {
+        L10n(accessibilityKey, locale: locale)
     }
 }

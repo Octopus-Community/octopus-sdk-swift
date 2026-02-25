@@ -26,7 +26,7 @@ class LanguageViewModel: ObservableObject {
 
     let languages: [Language] = [
         Language(locale: Locale(identifier: "fr"), name: "French", comment: ""),
-        Language(locale: Locale(identifier: "fr-BE"), name: "Belgian French", comment: ""),
+        Language(locale: Locale(identifier: "fr_BE"), name: "Belgian French", comment: ""), // You should prefer fr-BE but this is to ensure that the sdk is correctly handling the _
         Language(locale: Locale(identifier: "en"), name: "English", comment: ""),
         Language(locale: Locale(identifier: "zh-Hant"), name: "Chinese", comment: "As this language is not supported yet, it will default to the base language (english)"),
         Language(locale: nil, name: "System", comment: "Set nil as overriden locale to let Octopus use default locale again."),
