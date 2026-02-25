@@ -24,6 +24,7 @@ struct ReactionsCountSheetScreen: View {
 struct ReactionsCountView: View {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject private var languageManager: LanguageManager
 
     let reactions: [ReactionCount]
 
@@ -38,7 +39,7 @@ struct ReactionsCountView: View {
                 .foregroundColor(theme.colors.gray700)
                 .padding(.horizontal, 12)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabelInBundle("Accessibility.Reaction.Count_reaction:\(reaction.reactionKind.accessibilityValue)_count:\(reaction.count)")
+                .accessibilityLabelInBundle("Accessibility.Reaction.Count_reaction:\(reaction.reactionKind.accessibilityValue(locale: languageManager.overridenLocale))_count:\(reaction.count)")
                 .frame(maxWidth: .infinity)
             }
         }

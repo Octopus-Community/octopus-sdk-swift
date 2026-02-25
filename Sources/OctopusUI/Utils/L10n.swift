@@ -31,6 +31,10 @@ fileprivate extension Locale {
             }
         }
 
+        // Since en is the default language in case we don't have the translation, append `en` at the end of the
+        // fallbacks
+        fallbacks.append("en")
+
         return fallbacks
     }
 }

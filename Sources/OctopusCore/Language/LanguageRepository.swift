@@ -29,7 +29,11 @@ public class LanguageRepository: InjectableObject, @unchecked Sendable {
                 localeIdentifier = Bundle.main.preferredLocalizations[0]
                 return
             }
-            localeIdentifier = overridenLocale.identifier
+            if #available(iOS 16, *) {
+                localeIdentifier = overridenLocale.language.minimalIdentifier
+            } else if let languageCode = overridenLocale.languageCode {
+                localeIdentifier = "\(languageCode)\(overridenLocale.regionCode.map { "-\($0)" } ?? "")"
+            }
         }.store(in: &storage)
     }
 
