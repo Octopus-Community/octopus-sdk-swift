@@ -299,7 +299,7 @@ private struct ContentView: View {
 #endif
             Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
                               refreshAction: refresh) {
-                Compat.LazyVStack(spacing: 0) {
+                LazyIfPossibleVStack(spacing: 0, preventLaziness: scrollToBottom || scrollToId != nil) {
                     if let post {
                         PostDetailContentView(post: post,
                                               width: width,
@@ -703,38 +703,36 @@ private struct CommentsView: View {
 
     var body: some View {
         if !comments.isEmpty {
-            Compat.LazyVStack(spacing: 0) {
-                ForEach(comments, id: \.uuid) { comment in
-                    ResponseFeedItemView(
-                        response: comment,
-                        zoomableImageInfo: $zoomableImageInfo,
-                        displayResponseDetail: displayCommentDetail, displayParentDetail: { _ in },
-                        displayProfile: displayProfile, deleteResponse: deleteComment,
-                        reactionTapped: reactionTapped,
-                        displayContentModeration: displayContentModeration)
+            ForEach(comments, id: \.uuid) { comment in
+                ResponseFeedItemView(
+                    response: comment,
+                    zoomableImageInfo: $zoomableImageInfo,
+                    displayResponseDetail: displayCommentDetail, displayParentDetail: { _ in },
+                    displayProfile: displayProfile, deleteResponse: deleteComment,
+                    reactionTapped: reactionTapped,
+                    displayContentModeration: displayContentModeration)
+                .onAppear {
+                    comment.displayEvents.onAppear()
+                }
+                .onDisappear() {
+                    comment.displayEvents.onDisappear()
+                }
+                .modify {
+                    if #available(iOS 17.0, *) {
+                        $0.geometryGroup()
+                    } else {
+                        $0
+                    }
+                }
+            }
+            if hasMoreData && !hideLoader {
+                Compat.ProgressView()
+                    .frame(width: 100)
+                    .frame(maxWidth: .infinity)
                     .onAppear {
-                        comment.displayEvents.onAppear()
+                        if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
+                        loadPreviousComments()
                     }
-                    .onDisappear() {
-                        comment.displayEvents.onDisappear()
-                    }
-                    .modify {
-                        if #available(iOS 17.0, *) {
-                            $0.geometryGroup()
-                        } else {
-                            $0
-                        }
-                    }
-                }
-                if hasMoreData && !hideLoader {
-                    Compat.ProgressView()
-                        .frame(width: 100)
-                        .frame(maxWidth: .infinity)
-                        .onAppear {
-                            if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
-                            loadPreviousComments()
-                        }
-                }
             }
         } else {
             Button(action: openCreateComment) {
