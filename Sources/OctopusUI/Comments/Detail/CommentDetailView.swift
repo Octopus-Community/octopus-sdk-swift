@@ -247,7 +247,7 @@ private struct ContentView: View {
         Compat.ScrollView(
             scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
             refreshAction: refresh) {
-                Compat.LazyVStack(spacing: 0) {
+                LazyIfPossibleVStack(spacing: 0, preventLaziness: scrollToBottom || scrollToId != nil) {
                     if let comment {
                         CommentDetailContentView(comment: comment,
                                                  displayGoToParentButton: displayGoToParentButton,
