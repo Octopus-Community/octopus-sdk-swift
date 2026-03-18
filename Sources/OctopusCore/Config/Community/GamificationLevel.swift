@@ -31,13 +31,13 @@ extension GamificationLevel {
         self.startAt = startAt ?? 0
         nextLevelAt = entity.nextLevelAt
         if let badgeLightColorHex = entity.badgeLightColorHex, let badgeDarkColorHex = entity.badgeDarkColorHex {
-            badgeColor = DynamicColor(hexLight: badgeLightColorHex, hexDark: badgeDarkColorHex)
+            badgeColor = DynamicColor(lightValue: badgeLightColorHex, darkValue: badgeDarkColorHex)
         } else {
             badgeColor = nil
         }
         if let badgeTextLightColorHex = entity.badgeTextLightColorHex,
            let badgeTextDarkColorHex = entity.badgeTextDarkColorHex {
-            badgeTextColor = DynamicColor(hexLight: badgeTextLightColorHex, hexDark: badgeTextDarkColorHex)
+            badgeTextColor = DynamicColor(lightValue: badgeTextLightColorHex, darkValue: badgeTextDarkColorHex)
         } else {
             badgeTextColor = nil
         }
@@ -49,13 +49,14 @@ extension GamificationLevel {
         self.startAt = startAt.map { Int($0) } ?? 0
         nextLevelAt = gamifLevel.hasNextLevelAt ? Int(gamifLevel.nextLevelAt) : nil
         if gamifLevel.hasBadgeDarkColorHex, gamifLevel.hasBadgeLightColorHex {
-            badgeColor = DynamicColor(hexLight: gamifLevel.badgeLightColorHex, hexDark: gamifLevel.badgeDarkColorHex)
+            badgeColor = DynamicColor(lightValue: gamifLevel.badgeLightColorHex,
+                                      darkValue: gamifLevel.badgeDarkColorHex)
         } else {
             badgeColor = nil
         }
         if gamifLevel.hasBadgeTextDarkColorHex, gamifLevel.hasBadgeTextLightColorHex {
-            badgeTextColor = DynamicColor(hexLight: gamifLevel.badgeTextLightColorHex,
-                                          hexDark: gamifLevel.badgeTextDarkColorHex)
+            badgeTextColor = DynamicColor(lightValue: gamifLevel.badgeTextLightColorHex,
+                                          darkValue: gamifLevel.badgeTextDarkColorHex)
         } else {
             badgeTextColor = nil
         }

@@ -19,6 +19,10 @@ class ModelCoreDataStack: InjectableObject, @unchecked Sendable {
         stackManager.saveContext
     }()
 
+    lazy var viewContext: NSManagedObjectContext = {
+        stackManager.viewContext
+    }()
+
     private static let persistentContainerName = "OctopusModel"
     /// Current version of the database. Used to determine which kind of migration is needed
     private static let currentVersion: Int = 2
@@ -28,10 +32,11 @@ class ModelCoreDataStack: InjectableObject, @unchecked Sendable {
     /// latest version of the database. If it differs from currentVersion, a migration will be done
     static private let latestVersionKey = "OctopusSDK.\(persistentContainerName).Migrator.dbVersion"
 
-    init(inRam: Bool = false) throws(CoreDataErrors) {
+    init(forceReset: Bool = false, inRam: Bool = false) throws(CoreDataErrors) {
         let latestVersion = UserDefaults.standard.integer(forKey: Self.latestVersionKey)
+        var resetDb = forceReset
         if latestVersion != Self.currentVersion {
-            let resetDb = Migrator.shouldResetDb(latestVersion: latestVersion, targetVersion: Self.currentVersion)
+            resetDb = resetDb || Migrator.shouldResetDb(latestVersion: latestVersion, targetVersion: Self.currentVersion)
             if resetDb {
                 UserDefaults.standard.set(Self.currentVersion, forKey: Self.latestVersionKey)
             }
@@ -54,8 +59,12 @@ class ModelCoreDataStack: InjectableObject, @unchecked Sendable {
         } else {
             stackManager = try CoreDataStackManager(
                 persistentContainerName: Self.persistentContainerName,
-                eraseExistingContainer: false,
+                eraseExistingContainer: resetDb,
                 inRam: inRam)
         }
+    }
+
+    func teardown() throws {
+        try stackManager.reset()
     }
 }

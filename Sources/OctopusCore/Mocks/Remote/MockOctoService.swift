@@ -165,6 +165,23 @@ class MockOctoService: OctoService {
         return response
     }
 
+    func getBridgePost(clientObjectId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        guard let response = getOrCreateBridgePostResponse.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextGetOrCreateBridgePostResponse must be called before"))
+        }
+        return response
+    }
+
+    func createBridgePost(post: OctopusGrpcModels.Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
+                          authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        guard let response = getOrCreateBridgePostResponse.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextGetOrCreateBridgePostResponse must be called before"))
+        }
+        return response
+    }
+
     func getOrCreateBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
                                authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {

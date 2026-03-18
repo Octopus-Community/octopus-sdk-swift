@@ -16,6 +16,10 @@ class CoreDataStackManager: @unchecked Sendable {
         return context
     }()
 
+    lazy var viewContext: NSManagedObjectContext = {
+        persistentContainer.viewContext
+    }()
+
     // use only one model even in the Unit Tests.
     // cf https://stackoverflow.com/questions/51851485/multiple-nsentitydescriptions-claim-nsmanagedobject-subclass
     nonisolated(unsafe) static var models = [String: NSManagedObjectModel]()
@@ -28,7 +32,7 @@ class CoreDataStackManager: @unchecked Sendable {
         persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
 
         if eraseExistingContainer {
-            if #available(iOS 14, *) { Logger.other.trace("Migration of \(persistentContainerName) needs reset of the db") }
+            if #available(iOS 14, *) { Logger.other.trace("Reset of the \(persistentContainerName) db needed") }
             do {
                 try deleteSQLiteStoreFiles(for: persistentContainer)
             } catch {
@@ -95,7 +99,7 @@ class CoreDataStackManager: @unchecked Sendable {
     ///
     /// - Note: Call this method to completely wipe all stored datas. `load(inRam:)`
     ///     must be called to recreate a brand new file.
-    private func reset() throws {
+    func reset() throws {
         for persistentStore in persistentContainer.persistentStoreCoordinator.persistentStores {
             try persistentContainer.persistentStoreCoordinator.remove(persistentStore)
 

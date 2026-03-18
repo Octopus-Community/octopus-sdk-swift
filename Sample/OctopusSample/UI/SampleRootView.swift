@@ -25,7 +25,3 @@ struct SampleRootView: View {
         }
     }
 }
-
-#Preview {
-    SampleRootView()
-}

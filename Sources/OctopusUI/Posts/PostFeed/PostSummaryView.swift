@@ -12,6 +12,7 @@ struct PostSummaryView: View {
 
     let post: DisplayablePost
     let width: CGFloat
+    let displayGroup: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
@@ -38,7 +39,7 @@ struct PostSummaryView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Group { // group views to have the same horizontal padding
-                    HStack(alignment: .top, spacing: 0) {
+                    HStack(spacing: 0) {
                         OpenProfileButton(author: post.author, displayProfile: displayProfile) {
                             HStack {
                                 AuthorAvatarView(avatar: post.author.avatar)
@@ -57,16 +58,22 @@ struct PostSummaryView: View {
                                 topPadding: 16, displayProfile: displayProfile,
                                 displayContent: { displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment) })
                             HStack(spacing: 4) {
-                                OpenDetailButton(
-                                    post: post,
-                                    displayPostDetail: { displayPostDetail($0, false, false, nil, post.hasFeaturedComment) }) {
-                                        HStack {
-                                            Text(post.topic)
-                                                .octopusBadgeStyle(.small, status: .off)
-                                            Spacer()
+                                if displayGroup {
+                                    OpenDetailButton(
+                                        post: post,
+                                        displayPostDetail: {
+                                            displayPostDetail($0, false, false, nil, post.hasFeaturedComment)
+                                        }) {
+                                            HStack {
+                                                Text(post.topic)
+                                                    .font(theme.fonts.caption1)
+                                                    .fontWeight(.medium)
+                                                    .foregroundColor(theme.colors.primary)
+                                                Spacer()
+                                            }
+                                            .padding(.top, 3)
                                         }
-                                        .padding(.top, 3)
-                                    }
+                                }
                                 if case .moderated = post.content {
                                     Text("Post.Status.Moderated", bundle: .module)
                                         .font(theme.fonts.caption2)
@@ -89,19 +96,19 @@ struct PostSummaryView: View {
                                     if post.canBeDeleted {
                                         Button(action: { displayDeleteAlert = true }) {
                                             Label(title: { Text("Post.Delete.Button", bundle: .module) },
-                                                  icon: { Image(systemName: "trash") })
+                                                  icon: { Image(uiImage: theme.assets.icons.content.delete) })
                                         }
 
                                     }
                                     if post.canBeModerated {
                                         Button(action: { displayContentModeration(post.uuid) }) {
                                             Label(title: { Text("Moderation.Content.Button", bundle: .module) },
-                                                  icon: { Image(systemName: "flag") })
+                                                  icon: { Image(uiImage: theme.assets.icons.content.report) })
                                         }
                                     }
                                 }, label: {
                                     HStack(alignment: .top) {
-                                        Image(res: .more)
+                                        Image(uiImage: theme.assets.icons.common.moreActions)
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
@@ -114,7 +121,7 @@ struct PostSummaryView: View {
                                 .padding(.top, 16)
                             } else {
                                 Button(action: { openActions = true }) {
-                                    Image(res: .more)
+                                    Image(uiImage: theme.assets.icons.common.moreActions)
                                         .resizable()
                                         .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
                                         .foregroundColor(theme.colors.gray500)
@@ -476,7 +483,7 @@ private struct PublishedContentView: View {
 
                     if !UIAccessibility.isVoiceOverRunning {
                         Button(action: childrenTapped) {
-                            CreateChildInteractionView(image: .AggregatedInfo.comment,
+                            CreateChildInteractionView(image: theme.assets.icons.content.comment.creation.open,
                                                        text: "Content.AggregatedInfo.Comment",
                                                        kind: .comment)
                         }
@@ -493,7 +500,7 @@ private struct PublishedContentView: View {
                         HStack(spacing: 0) {
                             Spacer()
                             Button(action: childrenTapped) {
-                                CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                CreateChildInteractionView(image: theme.assets.icons.content.comment.creation.open,
                                                            text: "Content.AggregatedInfo.Comment",
                                                            kind: .comment)
                             }
@@ -508,7 +515,7 @@ private struct PublishedContentView: View {
                 HStack(spacing: 0) {
                     Spacer()
                     Button(action: childrenTapped) {
-                        CreateChildInteractionView(image: .AggregatedInfo.comment,
+                        CreateChildInteractionView(image: theme.assets.icons.content.comment.creation.open,
                                                    text: "Content.AggregatedInfo.Comment",
                                                    kind: .comment)
                     }
@@ -629,8 +636,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
             canBeDeleted: false,
@@ -655,6 +662,7 @@ import Combine
             isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
+        displayGroup: true,
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
@@ -681,8 +689,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
             canBeDeleted: false,
@@ -709,6 +717,7 @@ import Combine
             isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
+        displayGroup: true,
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
@@ -735,8 +744,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
             canBeDeleted: false,
@@ -772,6 +781,7 @@ import Combine
             isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
+        displayGroup: true,
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
@@ -798,8 +808,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
             canBeDeleted: false,
@@ -825,6 +835,7 @@ import Combine
             isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
+        displayGroup: true,
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
@@ -855,8 +866,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
             canBeDeleted: false,
@@ -890,6 +901,7 @@ import Combine
             isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
+        displayGroup: true,
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
@@ -920,8 +932,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
             canBeDeleted: false,
@@ -948,6 +960,7 @@ import Combine
             isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {})),
         width: 0,
+        displayGroup: true,
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },

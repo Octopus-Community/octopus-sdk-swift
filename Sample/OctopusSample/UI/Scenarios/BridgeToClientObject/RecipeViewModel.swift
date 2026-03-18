@@ -29,7 +29,7 @@ class RecipeViewModel: ObservableObject {
 
         // Ask to update the topics
         Task {
-            try await octopus.fetchTopics()
+            try? await octopus.fetchTopics()
             await getBridgePost(recipe: recipe)
         }
 
@@ -73,11 +73,6 @@ class RecipeViewModel: ObservableObject {
             topics.first(where: { $0.name == topicName })?.id
         } else { nil }
 
-        let signature: String? = switch SDKConfigManager.instance.sdkConfig?.authKind {
-        case .sso: try? TokenProvider().getBridgeSignature()
-        default: nil
-        }
-
         do {
             post = try await octopus.fetchOrCreateClientObjectRelatedPost(
                 content: ClientPost(
@@ -86,14 +81,19 @@ class RecipeViewModel: ObservableObject {
                     text: recipe.title,
                     catchPhrase: recipe.octopusCatchPhrase,
                     attachment: attachment,
-                    viewClientObjectButtonText: recipe.octopusViewClientObjectButtonText,
+                    viewClientObjectButtonText: recipe.octopusViewClientObjectButtonText
+                ),
+                tokenProvider: { bridgeFingerprint in
                     // you should use a signature if your community configuration requires it. We recommand configuring
                     // your community to require a signature for security reasons.
-                    // An example of how the signature might be constructed is available in `TokenProvider` (without the
-                    // need of the `sub` info in the token), but it is safer if it is your backend that provides the
-                    // signature.
-                    signature: signature
-                )
+                    // An example of how the signature might be constructed is available in `TokenProvider`,
+                    // but it is safer if it is your backend that provides the signature.
+                    let signature: String? = switch SDKConfigManager.instance.sdkConfig?.authKind {
+                    case .sso: try TokenProvider().getBridgeSignature(bridgeFingerprint: bridgeFingerprint)
+                    default: nil
+                    }
+                    return signature
+                }
             )
         } catch {
             self.error = error

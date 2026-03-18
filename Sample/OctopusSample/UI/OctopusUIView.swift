@@ -11,8 +11,8 @@ import Octopus
 struct OctopusUIView: View {
     let octopus: OctopusSDK
     let bottomSafeAreaInset: CGFloat
-    let navBarLeadingItem: OctopusHomeScreen.NavBarLeadingItemKind
-    let navBarPrimaryColor: Bool
+    let mainFeedNavBarTitle: OctopusMainFeedTitle?
+    let mainFeedColoredNavBar: Bool
     let postId: String?
 
     @Binding var octopusNotification: UNNotificationResponse?
@@ -25,14 +25,14 @@ struct OctopusUIView: View {
     init(
         octopus: OctopusSDK,
         bottomSafeAreaInset: CGFloat = 0,
-        navBarLeadingItem: OctopusHomeScreen.NavBarLeadingItemKind = .logo,
-        navBarPrimaryColor: Bool = false,
+        mainFeedNavBarTitle: OctopusMainFeedTitle? = nil,
+        mainFeedColoredNavBar: Bool = false,
         postId: String? = nil,
         octopusNotification: Binding<UNNotificationResponse?> = .constant(nil)) {
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
-        self.navBarLeadingItem = navBarLeadingItem
-        self.navBarPrimaryColor = navBarPrimaryColor
+        self.mainFeedNavBarTitle = mainFeedNavBarTitle
+        self.mainFeedColoredNavBar = mainFeedColoredNavBar
         self.postId = postId
         self._octopusNotification = octopusNotification
     }
@@ -41,8 +41,10 @@ struct OctopusUIView: View {
         OctopusHomeScreen(
             octopus: octopus,
             bottomSafeAreaInset: bottomSafeAreaInset,
-            navBarLeadingItem: navBarLeadingItem,
-            navBarPrimaryColor: navBarPrimaryColor,
+            mainFeedNavBarTitle: mainFeedNavBarTitle ?? .init(
+                content: .text(.init(text: NSLocalizedString("Community", comment: ""))),
+                placement: .leading),
+            mainFeedColoredNavBar: mainFeedColoredNavBar,
             postId: postId,
             notificationResponse: $octopusNotification
         )

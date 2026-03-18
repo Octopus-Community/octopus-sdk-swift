@@ -101,7 +101,7 @@ struct CreatePollView: View {
                         deletePoll()
                     }
                 }) {
-                    Image(res: .trash)
+                    Image(uiImage: theme.assets.icons.content.post.creation.deletePoll)
                         .resizable()
                         .frame(width: 24, height: 24)
                         .foregroundColor(theme.colors.gray900)
@@ -190,7 +190,7 @@ private struct OptionView: View {
             }
 
             Button(action: deleteOption) {
-                Image(systemName: "xmark")
+                Image(uiImage: theme.assets.icons.content.post.creation.deletePollOption)
                     .font(theme.fonts.body2)
                     .foregroundColor(canDelete ? theme.colors.gray900 : theme.colors.gray200)
                     .accessibilityLabelInBundle("Accessibility.Poll.Option.Delete")
@@ -213,7 +213,7 @@ private struct AddOptionView: View {
     var body: some View {
         Button(action: addOption) {
             HStack {
-                Image(systemName: "plus")
+                IconImage(theme.assets.icons.content.post.creation.addPollOption)
                 Text("Poll.Create.Option.Add", bundle: .module)
             }
             .font(theme.fonts.body2)

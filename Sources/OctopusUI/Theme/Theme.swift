@@ -60,8 +60,12 @@ public struct OctopusTheme: Sendable {
         public let onDisabled: Color = .Gen.Theme.gray500
         /// Color for elements that represents an error
         public let error: Color = .Gen.Theme.danger200
-        /// Color for elements that represents an error
+        /// Low contrast color for elements that represents an error
         public let errorLowContrast: Color = .Gen.Theme.alertLowContrast
+        /// Color for elements that represents a success
+        public let success: Color = .Gen.Theme.success
+        /// Low contrast color for elements that represents a success
+        public let successLowContrast: Color = .Gen.Theme.successLowContrast
         /// Color of links
         public let link: Color = .Gen.Theme.link
         /// Color of the like button when the content is liked
@@ -91,10 +95,13 @@ public struct OctopusTheme: Sendable {
         public let logo: UIImage
         let logoIsCustomized: Bool
 
+        public let icons: Icons
+
         /// Constructor of assets
         /// - Parameter logo: the logo. Nil if you want the default value (Octopus logo) to be used.
-        public init(logo: UIImage? = nil) {
+        public init(logo: UIImage? = nil, icons: Icons = .init()) {
             self.logo = logo ?? .Gen.Theme.logo
+            self.icons = icons
             logoIsCustomized = logo != nil
         }
     }

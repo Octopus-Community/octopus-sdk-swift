@@ -45,20 +45,28 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
             .sink { userData in
                 guard userData == nil else { return }
                 Task { [self] in
-                    if #available(iOS 14, *) { Logger.profile.trace("Cleaning user based data due to a logout") }
-                    do {
-                        clientUserProfileMerger.clearLatestClientUser()
-                        try await octoObjectsDatabase.resetUserInteractions()
-                        try await notificationsDatabase.replaceAll(notifications: [])
-                        try await userConfigDatabase.deleteConfig()
-                    } catch {
-                        if #available(iOS 14, *) { Logger.profile.debug("Error while cleaning user based data: \(error)") }
-                    }
+                    try await clean()
                 }
             }.store(in: &storage)
     }
 
+    func forceClean() async throws {
+        try await clean()
+    }
+
     func stop() {
         storage.removeAll()
+    }
+
+    private func clean() async throws {
+        if #available(iOS 14, *) { Logger.profile.trace("Cleaning user based data due to a logout") }
+        do {
+            clientUserProfileMerger.clearLatestClientUser()
+            try await octoObjectsDatabase.resetUserInteractions()
+            try await notificationsDatabase.replaceAll(notifications: [])
+            try await userConfigDatabase.deleteConfig()
+        } catch {
+            if #available(iOS 14, *) { Logger.profile.debug("Error while cleaning user based data: \(error)") }
+        }
     }
 }

@@ -640,6 +640,15 @@ public struct Com_Octopuscommunity_Content: Sendable {
 
   ///Only one of the following should be set
   ///I don't use oneof because it's just syntactic sugar, and don't throw error if multiple fields are set (it keep the last one)
+  public var section: Com_Octopuscommunity_Section {
+    get {return _section ?? Com_Octopuscommunity_Section()}
+    set {_section = newValue}
+  }
+  /// Returns true if `section` has been explicitly set.
+  public var hasSection: Bool {return self._section != nil}
+  /// Clears the value of `section`. Subsequent reads from it will return its default value.
+  public mutating func clearSection() {self._section = nil}
+
   public var topic: Com_Octopuscommunity_Topic {
     get {return _topic ?? Com_Octopuscommunity_Topic()}
     set {_topic = newValue}
@@ -726,6 +735,7 @@ public struct Com_Octopuscommunity_Content: Sendable {
 
   public init() {}
 
+  fileprivate var _section: Com_Octopuscommunity_Section? = nil
   fileprivate var _topic: Com_Octopuscommunity_Topic? = nil
   fileprivate var _post: Com_Octopuscommunity_Post? = nil
   fileprivate var _comment: Com_Octopuscommunity_Comment? = nil
@@ -809,9 +819,76 @@ public struct Com_Octopuscommunity_Topic: Sendable {
 
   public var name: String = String()
 
-  ///string imgUrl = 4;
-  ///Children should be Post
   public var description_p: String = String()
+
+  ///string imgUrl = 4;
+  public var sectionIds: [String] = []
+
+  ///Children should be Post
+  public var followStatus: Com_Octopuscommunity_Topic.FollowStatus = .unspecifiedFollowStatus
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum FollowStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+    case unspecifiedFollowStatus // = 0
+    case topicFollowed // = 1
+    case topicNotFollowed // = 2
+
+    /// cannot be unfollowed
+    case topicForceFollowed // = 3
+
+    /// cannot be followed
+    case topicForceNotFollowed // = 4
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unspecifiedFollowStatus
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unspecifiedFollowStatus
+      case 1: self = .topicFollowed
+      case 2: self = .topicNotFollowed
+      case 3: self = .topicForceFollowed
+      case 4: self = .topicForceNotFollowed
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unspecifiedFollowStatus: return 0
+      case .topicFollowed: return 1
+      case .topicNotFollowed: return 2
+      case .topicForceFollowed: return 3
+      case .topicForceNotFollowed: return 4
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [Com_Octopuscommunity_Topic.FollowStatus] = [
+      .unspecifiedFollowStatus,
+      .topicFollowed,
+      .topicNotFollowed,
+      .topicForceFollowed,
+      .topicForceNotFollowed,
+    ]
+
+  }
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_Section: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///Translated
+  public var label: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2182,6 +2259,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
 extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Content"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    100: .same(proto: "section"),
     101: .same(proto: "topic"),
     102: .same(proto: "post"),
     103: .same(proto: "comment"),
@@ -2199,6 +2277,7 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
+      case 100: try { try decoder.decodeSingularMessageField(value: &self._section) }()
       case 101: try { try decoder.decodeSingularMessageField(value: &self._topic) }()
       case 102: try { try decoder.decodeSingularMessageField(value: &self._post) }()
       case 103: try { try decoder.decodeSingularMessageField(value: &self._comment) }()
@@ -2218,6 +2297,9 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._section {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 100)
+    } }()
     try { if let v = self._topic {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 101)
     } }()
@@ -2249,6 +2331,7 @@ extension Com_Octopuscommunity_Content: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 
   public static func ==(lhs: Com_Octopuscommunity_Content, rhs: Com_Octopuscommunity_Content) -> Bool {
+    if lhs._section != rhs._section {return false}
     if lhs._topic != rhs._topic {return false}
     if lhs._post != rhs._post {return false}
     if lhs._comment != rhs._comment {return false}
@@ -2427,6 +2510,8 @@ extension Com_Octopuscommunity_Topic: SwiftProtobuf.Message, SwiftProtobuf._Mess
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
     2: .same(proto: "description"),
+    5: .same(proto: "sectionIds"),
+    10: .same(proto: "followStatus"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -2437,6 +2522,8 @@ extension Com_Octopuscommunity_Topic: SwiftProtobuf.Message, SwiftProtobuf._Mess
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.description_p) }()
+      case 5: try { try decoder.decodeRepeatedStringField(value: &self.sectionIds) }()
+      case 10: try { try decoder.decodeSingularEnumField(value: &self.followStatus) }()
       default: break
       }
     }
@@ -2449,12 +2536,62 @@ extension Com_Octopuscommunity_Topic: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if !self.description_p.isEmpty {
       try visitor.visitSingularStringField(value: self.description_p, fieldNumber: 2)
     }
+    if !self.sectionIds.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.sectionIds, fieldNumber: 5)
+    }
+    if self.followStatus != .unspecifiedFollowStatus {
+      try visitor.visitSingularEnumField(value: self.followStatus, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_Topic, rhs: Com_Octopuscommunity_Topic) -> Bool {
     if lhs.name != rhs.name {return false}
     if lhs.description_p != rhs.description_p {return false}
+    if lhs.sectionIds != rhs.sectionIds {return false}
+    if lhs.followStatus != rhs.followStatus {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_Topic.FollowStatus: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNSPECIFIED_FOLLOW_STATUS"),
+    1: .same(proto: "TOPIC_FOLLOWED"),
+    2: .same(proto: "TOPIC_NOT_FOLLOWED"),
+    3: .same(proto: "TOPIC_FORCE_FOLLOWED"),
+    4: .same(proto: "TOPIC_FORCE_NOT_FOLLOWED"),
+  ]
+}
+
+extension Com_Octopuscommunity_Section: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Section"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "label"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.label) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.label.isEmpty {
+      try visitor.visitSingularStringField(value: self.label, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_Section, rhs: Com_Octopuscommunity_Section) -> Bool {
+    if lhs.label != rhs.label {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

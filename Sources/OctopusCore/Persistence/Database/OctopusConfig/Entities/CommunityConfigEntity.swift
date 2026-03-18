@@ -10,6 +10,7 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
     @NSManaged public var forceLoginOnStrongActions: Bool
     @NSManaged public var displayAccountAge: Bool
     @NSManaged public var gamificationConfig: GamificationConfigEntity?
+    @NSManaged public var displayConfig: DisplayConfigEntity?
 
     func fill(with config: CommunityConfig, context: NSManagedObjectContext) {
         forceLoginOnStrongActions = config.forceLoginOnStrongActions
@@ -17,6 +18,11 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
         gamificationConfig = config.gamificationConfig.map { gamificationConfig in
             let entity = GamificationConfigEntity(context: context)
             entity.fill(with: gamificationConfig, context: context)
+            return entity
+        }
+        displayConfig = config.displayConfig.map { displayConfig in
+            let entity = DisplayConfigEntity(context: context)
+            entity.fill(with: displayConfig, context: context)
             return entity
         }
     }

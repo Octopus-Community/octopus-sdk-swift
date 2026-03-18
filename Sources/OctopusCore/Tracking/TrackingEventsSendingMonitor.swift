@@ -63,7 +63,14 @@ final class TrackingEventsSendingMonitor: InjectableObject, @unchecked Sendable 
     func stop() {
         storage = []
     }
-    
+
+    func sendAllEvents() async throws {
+        try? await TaskUtils.wait(for: !isSendingEvents, timeout: 5)
+        guard networkMonitor.connectionAvailable else { throw ServerCallError.noNetwork }
+        let allEvents = try await database.getAllEvents()
+        try await sendEventsInBatch(events: allEvents)
+    }
+
     /// Send events in batch and individually for the ones that have a sending attempt equal to the max.
     private func send(events: [Event]) {
         guard !events.isEmpty else { return }
@@ -81,8 +88,6 @@ final class TrackingEventsSendingMonitor: InjectableObject, @unchecked Sendable 
             }
         }
 
-        let eventsToBatchIds = eventsToBatch.map { $0.uuid }
-
         Task {
             do {
                 // first, try send all the expiring events
@@ -90,17 +95,12 @@ final class TrackingEventsSendingMonitor: InjectableObject, @unchecked Sendable 
 
                 if !eventsToBatch.isEmpty {
                     // Then send the events in batch
-                    if #available(iOS 14, *) { Logger.tracking.trace("Will send events: \(eventsToBatch)") }
-                    _ = try await remoteClient.trackingService.track(
-                        events: eventsToBatch.map { $0.toProto },
-                        authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
-                    if #available(iOS 14, *) { Logger.tracking.trace("Will delete events from db") }
-                    try await database.deleteAll(ids: eventsToBatchIds)
+                    try await sendEventsInBatch(events: eventsToBatch)
                     nbFailingAttempts = 0
                 }
             } catch {
                 if #available(iOS 14, *) { Logger.tracking.trace("Error while sending events, will increment sending attempts and retry later: \(error)") }
-                try? await database.incrementSendingAttempts(ids: eventsToBatchIds)
+                try? await database.incrementSendingAttempts(ids: eventsToBatch.map { $0.uuid })
                 // in case of error, wait before attempting a new time to send events according to `nbFailingAttempts`
                 let waitingTime = getWaitingTime(for: nbFailingAttempts)
                 if #available(iOS 14, *) { Logger.tracking.trace("Waiting for \(waitingTime) seconds before observing events again") }
@@ -137,7 +137,17 @@ final class TrackingEventsSendingMonitor: InjectableObject, @unchecked Sendable 
             throw lastError
         }
     }
-    
+
+    private func sendEventsInBatch(events: [Event]) async throws {
+        guard !events.isEmpty else { return }
+        if #available(iOS 14, *) { Logger.tracking.trace("Will send events: \(events)") }
+        _ = try await remoteClient.trackingService.track(
+            events: events.map { $0.toProto },
+            authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+        if #available(iOS 14, *) { Logger.tracking.trace("Will delete events from db") }
+        try await database.deleteAll(ids: events.map { $0.uuid })
+    }
+
     /// Get the waiting time according to the number of failing attempts.
     /// The first time (`nbFailingAttempts` = 0), it will retry immediatly.
     private func getWaitingTime(for nbFailingAttempts: Int) -> TimeInterval {

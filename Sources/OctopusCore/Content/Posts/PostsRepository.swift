@@ -26,6 +26,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let validator: Validators.Post
     private let userInteractionsDelegate: UserInteractionsDelegate
     private let gamificationRepository: GamificationRepository
+    private let toastsRepository: ToastsRepository
     private let sdkEventsEmitter: SdkEventsEmitter
 
     public var postSentPublisher: AnyPublisher<Void, Never> {
@@ -46,6 +47,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
         validator = injector.getInjected(identifiedBy: Injected.validators).post
         gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
+        toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
 
         commentFeedsStore = injector.getInjected(identifiedBy: Injected.commentFeedsStore)
@@ -62,6 +64,12 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             guard !storablePost.author.isBlocked(in: $1) else { return nil }
             return Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
         }.eraseToAnyPublisher()
+    }
+
+    @MainActor
+    public func getPost(uuid: String) throws -> Post? {
+        try postsDatabase.getPostOnMainThread(id: uuid)
+            .map { Post(storablePost: $0, commentFeedsStore: commentFeedsStore, featuredComment: nil) }
     }
 
     public func getPostValue(uuid: String) async throws -> Post? {
@@ -95,6 +103,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             }
             try await postsDatabase.upsert(posts: [post])
         } catch {
+            if #available(iOS 14, *) { Logger.posts.debug("Error when fetching post: \(error)") }
             if let error = error as? RemoteClientError {
                 if case .notFound = error {
                     try? await postsDatabase.delete(contentId: uuid)
@@ -168,6 +177,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 sdkEventsEmitter.emit(.contentCreated(content: createdPost))
                 sdkEventsEmitter.emit(.postCreated(.init(from: createdPost)))
                 gamificationRepository.register(action: .post)
+                toastsRepository.display(userAction: .postCreated)
                 return (createdPost, imageData)
             case let .fail(failure):
                 throw SendPost.Error.validation(.init(from: failure))
@@ -300,6 +310,115 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
+    public func getOrCreateClientObjectRelatedPost(
+        content: ClientPost,
+        tokenProvider: @Sendable @escaping (String) async throws -> String?)
+    async throws(GetOrCreateClientPost.Error) -> Post {
+        do {
+            // first try to get the post if it already exists
+            if let post = try await remotelyGetExistingBridgePost(clientObjectId: content.clientObjectId) {
+                return post
+            }
+            // if the post is empty, it means that it was not created before, so create it
+            let clientToken = try await tokenProvider(content.getHashForSignature())
+            if let post = try await remotelyCreateClientObjectRelatedPost(clientPost: content, clientToken: clientToken) {
+                return post
+            }
+            // if the post is empty, it means that the backend already had the post. It might another user that created
+            // it between our calls `get` and `create`. Hence, get it again.
+            if let post = try await remotelyGetExistingBridgePost(clientObjectId: content.clientObjectId) {
+                return post
+            }
+            // if we are here, the create returned get returned a .postAlreadyExists and the get returned .postNotFound
+            throw InternalError.incorrectState
+        } catch {
+            if #available(iOS 14, *) { Logger.posts.debug("Error when getting/creating bridge post: \(error)") }
+            if let error = error as? GetOrCreateClientPost.Error {
+                throw error
+            } else {
+                throw .other(error)
+            }
+        }
+    }
+
+    private func remotelyGetExistingBridgePost(clientObjectId: String)
+    async throws(GetOrCreateClientPost.Error) -> Post? {
+        guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
+        do {
+            let response = try await remoteClient.octoService.getBridgePost(
+                clientObjectId: clientObjectId,
+                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            switch response.result {
+            case let .success(content):
+                let aggregate = content.hasAggregate ? content.aggregate : nil
+                guard let finalPost = StorablePost(octoPost: content.postBridge, aggregate: aggregate, userInteraction: nil) else {
+                    throw InternalError.objectMalformed
+                }
+                try await postsDatabase.upsert(posts: [finalPost])
+                return Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
+            case let .fail(failure):
+                // if the backend has not found the post, return nil
+                if failure.hasError(.postNotFound(.init())) {
+                    return nil
+                }
+                throw GetOrCreateClientPost.Error.validation(.init(from: failure))
+            case .none:
+                throw InternalError.objectMalformed
+            }
+        } catch {
+            if let error = error as? GetOrCreateClientPost.Error {
+                throw error
+            } else if let error = error as? RemoteClientError {
+                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
+            } else {
+                throw .other(error)
+            }
+        }
+    }
+
+    private func remotelyCreateClientObjectRelatedPost(clientPost: ClientPost, clientToken: String?)
+    async throws(GetOrCreateClientPost.Error) -> Post? {
+        guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
+        do {
+            let response = try await remoteClient.octoService.createBridgePost(
+                // send imageIsCompressed = true because we don't know what the client did on the image so avoid
+                // re-compressing it
+                post: clientPost.rwOctoPost(imageIsCompressed: true),
+                topicId: clientPost.topicId,
+                clientToken: clientToken,
+                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+
+            switch response.result {
+            case let .success(content):
+                let aggregate = content.hasAggregate ? content.aggregate : nil
+                guard let finalPost = StorablePost(octoPost: content.postBridge, aggregate: aggregate, userInteraction: nil) else {
+                    throw InternalError.objectMalformed
+                }
+                try await postsDatabase.upsert(posts: [finalPost])
+                return Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
+            case let .fail(failure):
+                // if the backend already has the post, return nil
+                if failure.hasError(.postAlreadyExists(.init())) {
+                    return nil
+                }
+                throw GetOrCreateClientPost.Error.validation(.init(from: failure))
+            case .none:
+                throw GetOrCreateClientPost.Error.serverCall(.other(nil))
+            }
+        } catch {
+            if let error = error as? GetOrCreateClientPost.Error {
+                throw error
+            } else if let error = error as? RemoteClientError {
+                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
+            } else {
+                throw .other(error)
+            }
+        }
+    }
+}
+
+/// Extension of PostsRepository for deprecated APIs
+extension PostsRepository {
     public func getOrCreateClientObjectRelatedPostId(content: ClientPost)
     async throws(GetOrCreateClientPost.Error) -> String {
         try await getOrCreateClientObjectRelatedPost(content: content).uuid
@@ -341,7 +460,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             case let .success(content):
                 let aggregate = content.hasAggregate ? content.aggregate : nil
                 guard let finalPost = StorablePost(octoPost: content.postBridge, aggregate: aggregate, userInteraction: nil) else {
-                    throw SendComment.Error.serverCall(.other(nil))
+                    throw InternalError.objectMalformed
                 }
                 try await postsDatabase.upsert(posts: [finalPost])
                 return Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
@@ -361,4 +480,3 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 }
-

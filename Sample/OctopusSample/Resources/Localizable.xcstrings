@@ -132,8 +132,72 @@
     "Canele Recipe" : {
 
     },
-    "Change Community" : {
+    "Center the title" : {
 
+    },
+    "Community" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemeinschaft"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Community"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Communauté"
+          }
+        },
+        "fr-BE" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Communauté"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunità"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Społeczność"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comunidade"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemenskap"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Topluluk"
+          }
+        }
+      }
     },
     "Custom events" : {
 
@@ -172,6 +236,9 @@
 
     },
     "Have a post directly linked to a specific object (article, product, item...) of your app" : {
+
+    },
+    "Icons customization:" : {
 
     },
     "If you are managing an AB Test to enable/disable community access to your users, inform the SDK if the user cannot access the community UI to improve the analytics data we provide." : {
@@ -273,10 +340,13 @@
     "Some App Managed Fields" : {
 
     },
-    "Sometimes, you need to change the API key. Although it is not something we recommend, it can be useful if you want to switch communities." : {
+    "Sometimes, you need to change of community. Although it is not something we recommend, it can be useful for example when you have one community per country." : {
 
     },
     "SSO" : {
+
+    },
+    "Switch Community" : {
 
     },
     "The following switch simulates an A/B test.\nWhen off, the community is hidden to the user." : {

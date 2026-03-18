@@ -20,6 +20,7 @@ class TokenProvider {
     }
 
     private struct BridgePostPayload: Encodable {
+        let bridgeFingerprint: String
         let exp: Int
     }
 
@@ -33,10 +34,12 @@ class TokenProvider {
         }
         let privateKey = SymmetricKey(data: Data(secret.utf8))
 
-        let headerJSONData = try JSONEncoder().encode(Header())
+        let jsonEncoder = JSONEncoder()
+
+        let headerJSONData = try jsonEncoder.encode(Header())
         let headerBase64String = headerJSONData.urlSafeBase64EncodedString()
 
-        let payloadJSONData = try JSONEncoder().encode(
+        let payloadJSONData = try jsonEncoder.encode(
             ClientUserTokenPayload(sub: userId, exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
         )
         let payloadBase64String = payloadJSONData.urlSafeBase64EncodedString()
@@ -51,7 +54,7 @@ class TokenProvider {
         return token
     }
 
-    func getBridgeSignature() throws -> String {
+    func getBridgeSignature(bridgeFingerprint: String) throws -> String {
         // ⚠️ the content of this function is for the sample uniquely, in order to create a token easilly without
         // depending on a backend.
         // In your app, you should proably call a backend route that provides you this token.
@@ -61,11 +64,15 @@ class TokenProvider {
         }
         let privateKey = SymmetricKey(data: Data(secret.utf8))
 
-        let headerJSONData = try JSONEncoder().encode(Header())
+        let jsonEncoder = JSONEncoder()
+        jsonEncoder.keyEncodingStrategy = .convertToSnakeCase
+
+        let headerJSONData = try jsonEncoder.encode(Header())
         let headerBase64String = headerJSONData.urlSafeBase64EncodedString()
 
-        let payloadJSONData = try JSONEncoder().encode(
-            BridgePostPayload(exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
+        let payloadJSONData = try jsonEncoder.encode(
+            BridgePostPayload(bridgeFingerprint: bridgeFingerprint,
+                              exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
         )
         let payloadBase64String = payloadJSONData.urlSafeBase64EncodedString()
 

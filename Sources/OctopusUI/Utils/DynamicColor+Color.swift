@@ -9,7 +9,7 @@ import OctopusCore
 extension DynamicColor {
     var color: Color {
         Color(UIColor { traitCollection in
-            let hex = (traitCollection.userInterfaceStyle == .dark) ? hexDark : hexLight
+            let hex = (traitCollection.userInterfaceStyle == .dark) ? darkValue : lightValue
             return UIColor(hex: hex) ?? .clear
         })
     }

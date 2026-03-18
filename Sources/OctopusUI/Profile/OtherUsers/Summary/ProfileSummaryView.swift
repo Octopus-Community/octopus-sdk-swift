@@ -65,7 +65,8 @@ struct ProfileSummaryView: View {
         }
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
-                                defaultTrailingBarItem: trailingBarItem)
+                                defaultTrailingBarItem: trailingBarItem,
+                                defaultNavigationBarTitle: Text("Profile.Title", bundle: .module))
         .toastContainer(octopus: viewModel.octopus)
         .compatAlert(
             "Common.Error",
@@ -157,21 +158,21 @@ struct ProfileSummaryView: View {
                     navigator.push(.reportProfile(profileId: viewModel.profileId))
                 }) {
                     Label(title: { Text("Moderation.Profile.Button", bundle: .module) },
-                          icon: { Image(systemName: "flag") })
+                          icon: { Image(uiImage: theme.assets.icons.profile.report) })
                 }
                 Button(action: {
                     guard viewModel.ensureConnected(action: .blockUser) else { return }
                     displayBlockUserAlert = true
                 }) {
                     Label(title: { Text("Block.Profile.Button", bundle: .module) },
-                          icon: { Image(systemName: "person.slash") })
+                          icon: { Image(uiImage: theme.assets.icons.profile.blockUser) })
                 }
             }, label: {
                 if #available(iOS 26.0, *) {
                     Label(title: { Text("Settings.Community.Title", bundle: .module) },
-                          icon: { Image(systemName: "ellipsis") })
+                          icon: { Image(uiImage: theme.assets.icons.common.moreActions) })
                 } else {
-                    Image(systemName: "ellipsis")
+                    Image(uiImage: theme.assets.icons.common.moreActions)
                         .font(theme.fonts.navBarItem)
                         .padding(.vertical)
                         .padding(.leading)
@@ -181,7 +182,7 @@ struct ProfileSummaryView: View {
             .buttonStyle(.plain)
         } else {
             Button(action: { openActions = true }) {
-                Image(systemName: "ellipsis")
+                Image(uiImage: theme.assets.icons.common.moreActions)
                     .padding(.vertical)
                     .padding(.leading)
                     .font(theme.fonts.navBarItem)

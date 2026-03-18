@@ -28,10 +28,11 @@ class ConfigCoreDataStack: InjectableObject, @unchecked Sendable {
 
     private let stackManager: CoreDataStackManager
 
-    init(inRam: Bool = false) throws(CoreDataErrors) {
+    init(forceReset: Bool = false, inRam: Bool = false) throws(CoreDataErrors) {
         let latestVersion = UserDefaults.standard.integer(forKey: Self.latestVersionKey)
+        var resetDb = forceReset
         if latestVersion != Self.currentVersion {
-            let resetDb = Migrator.shouldResetDb(latestVersion: latestVersion, targetVersion: Self.currentVersion)
+            resetDb = resetDb || Migrator.shouldResetDb(latestVersion: latestVersion, targetVersion: Self.currentVersion)
             if resetDb {
                 UserDefaults.standard.set(latestVersion, forKey: Self.latestVersionKey)
             }
@@ -53,8 +54,12 @@ class ConfigCoreDataStack: InjectableObject, @unchecked Sendable {
         } else {
             stackManager = try CoreDataStackManager(
                 persistentContainerName: Self.persistentContainerName,
-                eraseExistingContainer: false,
+                eraseExistingContainer: resetDb,
                 inRam: inRam)
         }
+    }
+
+    func teardown() throws {
+        try stackManager.reset()
     }
 }

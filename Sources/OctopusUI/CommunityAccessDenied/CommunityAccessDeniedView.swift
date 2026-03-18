@@ -25,7 +25,7 @@ struct CommunityAccessDeniedView: View {
                     $0.navigationBarItems(
                         leading:
                             Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                                Image(systemName: "xmark")
+                                IconImage(theme.assets.icons.common.close)
                                     .font(theme.fonts.navBarItem)
                                     .accessibilityLabelInBundle("Common.Close")
                             }

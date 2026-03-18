@@ -113,6 +113,8 @@ extension GenColorResource {
         static let gray900 = GenColorResource(name: "Theme/gray900", bundle: resourceBundle)
         static let hover = GenColorResource(name: "Theme/hover", bundle: resourceBundle)
         static let link = GenColorResource(name: "Theme/link", bundle: resourceBundle)
+        static let success = GenColorResource(name: "Theme/success", bundle: resourceBundle)
+        static let successLowContrast = GenColorResource(name: "Theme/successLowContrast", bundle: resourceBundle)
         enum Primary {
             static let highContrast = GenColorResource(name: "Theme/Primary/highContrast", bundle: resourceBundle)
             static let lowContrast = GenColorResource(name: "Theme/Primary/lowContrast", bundle: resourceBundle)
@@ -124,15 +126,26 @@ extension GenColorResource {
 // MARK: - Image Symbols -
 
 extension GenImageResource {
+    static let add = GenImageResource(name: "add", bundle: resourceBundle)
     static let addMedia = GenImageResource(name: "addMedia", bundle: resourceBundle)
+    static let arrowRight = GenImageResource(name: "arrowRight", bundle: resourceBundle)
     static let bell = GenImageResource(name: "bell", bundle: resourceBundle)
+    static let blockUser = GenImageResource(name: "blockUser", bundle: resourceBundle)
+    static let cellNavIndicator = GenImageResource(name: "cellNavIndicator", bundle: resourceBundle)
+    static let check = GenImageResource(name: "check", bundle: resourceBundle)
+    static let circledCheck = GenImageResource(name: "circledCheck", bundle: resourceBundle)
+    static let close = GenImageResource(name: "close", bundle: resourceBundle)
     static let congrats = GenImageResource(name: "congrats", bundle: resourceBundle)
     static let contentNotAvailable = GenImageResource(name: "contentNotAvailable", bundle: resourceBundle)
     static let createPost = GenImageResource(name: "createPost", bundle: resourceBundle)
+    static let down = GenImageResource(name: "down", bundle: resourceBundle)
     static let editPicture = GenImageResource(name: "editPicture", bundle: resourceBundle)
+    static let flag = GenImageResource(name: "flag", bundle: resourceBundle)
+    static let info = GenImageResource(name: "info", bundle: resourceBundle)
     static let more = GenImageResource(name: "more", bundle: resourceBundle)
     static let noCurrentUserPost = GenImageResource(name: "noCurrentUserPost", bundle: resourceBundle)
     static let noPosts = GenImageResource(name: "noPosts", bundle: resourceBundle)
+    static let notConnected = GenImageResource(name: "notConnected", bundle: resourceBundle)
     static let poll = GenImageResource(name: "poll", bundle: resourceBundle)
     static let poweredByOctopus = GenImageResource(name: "poweredByOctopus", bundle: resourceBundle)
     static let search = GenImageResource(name: "search", bundle: resourceBundle)
@@ -195,6 +208,8 @@ extension SwiftUI.Color {
             static var gray900: SwiftUI.Color { .init(res: .Theme.gray900) }
             static var hover: SwiftUI.Color { .init(res: .Theme.hover) }
             static var link: SwiftUI.Color { .init(res: .Theme.link) }
+            static var success: SwiftUI.Color { .init(res: .Theme.success) }
+            static var successLowContrast: SwiftUI.Color { .init(res: .Theme.successLowContrast) }
             enum Primary {
                 static var highContrast: SwiftUI.Color { .init(res: .Theme.Primary.highContrast) }
                 static var lowContrast: SwiftUI.Color { .init(res: .Theme.Primary.lowContrast) }
@@ -218,6 +233,8 @@ extension UIKit.UIColor {
             static var gray900: UIKit.UIColor { .init(res: .Theme.gray900) }
             static var hover: UIKit.UIColor { .init(res: .Theme.hover) }
             static var link: UIKit.UIColor { .init(res: .Theme.link) }
+            static var success: UIKit.UIColor { .init(res: .Theme.success) }
+            static var successLowContrast: UIKit.UIColor { .init(res: .Theme.successLowContrast) }
             enum Primary {
                 static var highContrast: UIKit.UIColor { .init(res: .Theme.Primary.highContrast) }
                 static var lowContrast: UIKit.UIColor { .init(res: .Theme.Primary.lowContrast) }
@@ -231,15 +248,26 @@ extension UIKit.UIColor {
 
 extension UIKit.UIImage {
     enum Gen {
+        static var add: UIKit.UIImage { .init(res: .add) }
         static var addMedia: UIKit.UIImage { .init(res: .addMedia) }
+        static var arrowRight: UIKit.UIImage { .init(res: .arrowRight) }
         static var bell: UIKit.UIImage { .init(res: .bell) }
+        static var blockUser: UIKit.UIImage { .init(res: .blockUser) }
+        static var cellNavIndicator: UIKit.UIImage { .init(res: .cellNavIndicator) }
+        static var check: UIKit.UIImage { .init(res: .check) }
+        static var circledCheck: UIKit.UIImage { .init(res: .circledCheck) }
+        static var close: UIKit.UIImage { .init(res: .close) }
         static var congrats: UIKit.UIImage { .init(res: .congrats) }
         static var contentNotAvailable: UIKit.UIImage { .init(res: .contentNotAvailable) }
         static var createPost: UIKit.UIImage { .init(res: .createPost) }
+        static var down: UIKit.UIImage { .init(res: .down) }
         static var editPicture: UIKit.UIImage { .init(res: .editPicture) }
+        static var flag: UIKit.UIImage { .init(res: .flag) }
+        static var info: UIKit.UIImage { .init(res: .info) }
         static var more: UIKit.UIImage { .init(res: .more) }
         static var noCurrentUserPost: UIKit.UIImage { .init(res: .noCurrentUserPost) }
         static var noPosts: UIKit.UIImage { .init(res: .noPosts) }
+        static var notConnected: UIKit.UIImage { .init(res: .notConnected) }
         static var poll: UIKit.UIImage { .init(res: .poll) }
         static var poweredByOctopus: UIKit.UIImage { .init(res: .poweredByOctopus) }
         static var search: UIKit.UIImage { .init(res: .search) }

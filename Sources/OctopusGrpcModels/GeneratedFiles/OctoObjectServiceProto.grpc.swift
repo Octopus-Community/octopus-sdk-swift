@@ -130,6 +130,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
 
+  func getBridgePost(
+    _ request: Com_Octopuscommunity_GetBridgePostRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_GetBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func createBridgePost(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func getOctoObjectTranslations(
+    _ request: Com_Octopuscommunity_GetOctoObjectTranslationsRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_GetOctoObjectTranslationsRequest, Com_Octopuscommunity_GetOctoObjectTranslationsResponse>
+
   func putLike(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
@@ -534,7 +549,7 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
-  /// Unary call to GetOrCreateBridgePost
+  ///deprecated
   ///
   /// - Parameters:
   ///   - request: Request to send to GetOrCreateBridgePost.
@@ -549,6 +564,60 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to GetBridgePost
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetBridgePost.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func getBridgePost(
+    _ request: Com_Octopuscommunity_GetBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_GetBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetBridgePostInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to CreateBridgePost
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to CreateBridgePost.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func createBridgePost(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  /// for public API
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetOctoObjectTranslations.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func getOctoObjectTranslations(
+    _ request: Com_Octopuscommunity_GetOctoObjectTranslationsRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_GetOctoObjectTranslationsRequest, Com_Octopuscommunity_GetOctoObjectTranslationsResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOctoObjectTranslations.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetOctoObjectTranslationsInterceptors() ?? []
     )
   }
 
@@ -796,6 +865,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func makeGetBridgePostCall(
+    _ request: Com_Octopuscommunity_GetBridgePostRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func makeCreateBridgePostCall(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func makeGetOctoObjectTranslationsCall(
+    _ request: Com_Octopuscommunity_GetOctoObjectTranslationsRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOctoObjectTranslationsRequest, Com_Octopuscommunity_GetOctoObjectTranslationsResponse>
 
   func makePutLikeCall(
     _ request: Com_Octopuscommunity_PutRequest,
@@ -1089,6 +1173,42 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetOrCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  public func makeGetBridgePostCall(
+    _ request: Com_Octopuscommunity_GetBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetBridgePostInterceptors() ?? []
+    )
+  }
+
+  public func makeCreateBridgePostCall(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  public func makeGetOctoObjectTranslationsCall(
+    _ request: Com_Octopuscommunity_GetOctoObjectTranslationsRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetOctoObjectTranslationsRequest, Com_Octopuscommunity_GetOctoObjectTranslationsResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOctoObjectTranslations.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetOctoObjectTranslationsInterceptors() ?? []
     )
   }
 
@@ -1407,6 +1527,42 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func getBridgePost(
+    _ request: Com_Octopuscommunity_GetBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetBridgePostInterceptors() ?? []
+    )
+  }
+
+  public func createBridgePost(
+    _ request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createBridgePost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateBridgePostInterceptors() ?? []
+    )
+  }
+
+  public func getOctoObjectTranslations(
+    _ request: Com_Octopuscommunity_GetOctoObjectTranslationsRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_GetOctoObjectTranslationsResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOctoObjectTranslations.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetOctoObjectTranslationsInterceptors() ?? []
+    )
+  }
+
   public func putLike(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions? = nil
@@ -1541,6 +1697,15 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
   /// - Returns: Interceptors to use when invoking 'getOrCreateBridgePost'.
   func makeGetOrCreateBridgePostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'getBridgePost'.
+  func makeGetBridgePostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'createBridgePost'.
+  func makeCreateBridgePostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getOctoObjectTranslations'.
+  func makeGetOctoObjectTranslationsInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetOctoObjectTranslationsRequest, Com_Octopuscommunity_GetOctoObjectTranslationsResponse>]
+
   /// - Returns: Interceptors to use when invoking 'putLike'.
   func makePutLikeInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
 
@@ -1581,6 +1746,9 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.reportContent,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOrCreateBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOctoObjectTranslations,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putLike,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReaction,
@@ -1721,6 +1889,24 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let getBridgePost = GRPCMethodDescriptor(
+      name: "GetBridgePost",
+      path: "/com.octopuscommunity.OctoObjectService/GetBridgePost",
+      type: GRPCCallType.unary
+    )
+
+    public static let createBridgePost = GRPCMethodDescriptor(
+      name: "CreateBridgePost",
+      path: "/com.octopuscommunity.OctoObjectService/CreateBridgePost",
+      type: GRPCCallType.unary
+    )
+
+    public static let getOctoObjectTranslations = GRPCMethodDescriptor(
+      name: "GetOctoObjectTranslations",
+      path: "/com.octopuscommunity.OctoObjectService/GetOctoObjectTranslations",
+      type: GRPCCallType.unary
+    )
+
     public static let putLike = GRPCMethodDescriptor(
       name: "PutLike",
       path: "/com.octopuscommunity.OctoObjectService/PutLike",
@@ -1796,7 +1982,15 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
   ///Do nothing if moderation mod is off
   func reportContent(request: Com_Octopuscommunity_ReportContentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ReportContentResponse>
 
+  ///deprecated
   func getOrCreateBridgePost(request: Com_Octopuscommunity_GetOrCreateBridgePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func getBridgePost(request: Com_Octopuscommunity_GetBridgePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  func createBridgePost(request: Com_Octopuscommunity_GetOrCreateBridgePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetOrCreateBridgePostResponse>
+
+  /// for public API
+  func getOctoObjectTranslations(request: Com_Octopuscommunity_GetOctoObjectTranslationsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetOctoObjectTranslationsResponse>
 
   ///reactions
   func putLike(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutLikeResponse>
@@ -2019,6 +2213,33 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         userFunction: self.getOrCreateBridgePost(request:context:)
       )
 
+    case "GetBridgePost":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetBridgePostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
+        interceptors: self.interceptors?.makeGetBridgePostInterceptors() ?? [],
+        userFunction: self.getBridgePost(request:context:)
+      )
+
+    case "CreateBridgePost":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetOrCreateBridgePostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
+        interceptors: self.interceptors?.makeCreateBridgePostInterceptors() ?? [],
+        userFunction: self.createBridgePost(request:context:)
+      )
+
+    case "GetOctoObjectTranslations":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetOctoObjectTranslationsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOctoObjectTranslationsResponse>(),
+        interceptors: self.interceptors?.makeGetOctoObjectTranslationsInterceptors() ?? [],
+        userFunction: self.getOctoObjectTranslations(request:context:)
+      )
+
     case "PutLike":
       return UnaryServerHandler(
         context: context,
@@ -2175,10 +2396,27 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_ReportContentResponse
 
+  ///deprecated
   func getOrCreateBridgePost(
     request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
+
+  func getBridgePost(
+    request: Com_Octopuscommunity_GetBridgePostRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
+
+  func createBridgePost(
+    request: Com_Octopuscommunity_GetOrCreateBridgePostRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
+
+  /// for public API
+  func getOctoObjectTranslations(
+    request: Com_Octopuscommunity_GetOctoObjectTranslationsRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_GetOctoObjectTranslationsResponse
 
   ///reactions
   func putLike(
@@ -2420,6 +2658,33 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         wrapping: { try await self.getOrCreateBridgePost(request: $0, context: $1) }
       )
 
+    case "GetBridgePost":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetBridgePostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
+        interceptors: self.interceptors?.makeGetBridgePostInterceptors() ?? [],
+        wrapping: { try await self.getBridgePost(request: $0, context: $1) }
+      )
+
+    case "CreateBridgePost":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetOrCreateBridgePostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOrCreateBridgePostResponse>(),
+        interceptors: self.interceptors?.makeCreateBridgePostInterceptors() ?? [],
+        wrapping: { try await self.createBridgePost(request: $0, context: $1) }
+      )
+
+    case "GetOctoObjectTranslations":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetOctoObjectTranslationsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetOctoObjectTranslationsResponse>(),
+        interceptors: self.interceptors?.makeGetOctoObjectTranslationsInterceptors() ?? [],
+        wrapping: { try await self.getOctoObjectTranslations(request: $0, context: $1) }
+      )
+
     case "PutLike":
       return GRPCAsyncServerHandler(
         context: context,
@@ -2552,6 +2817,18 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetOrCreateBridgePostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
 
+  /// - Returns: Interceptors to use when handling 'getBridgePost'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetBridgePostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
+
+  /// - Returns: Interceptors to use when handling 'createBridgePost'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeCreateBridgePostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetOrCreateBridgePostRequest, Com_Octopuscommunity_GetOrCreateBridgePostResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getOctoObjectTranslations'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetOctoObjectTranslationsInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetOctoObjectTranslationsRequest, Com_Octopuscommunity_GetOctoObjectTranslationsResponse>]
+
   /// - Returns: Interceptors to use when handling 'putLike'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makePutLikeInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutLikeResponse>]
@@ -2596,6 +2873,9 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unshadowbanReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.reportContent,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getOrCreateBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.createBridgePost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getOctoObjectTranslations,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putLike,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putReaction,
@@ -2733,6 +3013,24 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
     public static let getOrCreateBridgePost = GRPCMethodDescriptor(
       name: "GetOrCreateBridgePost",
       path: "/com.octopuscommunity.OctoObjectService/GetOrCreateBridgePost",
+      type: GRPCCallType.unary
+    )
+
+    public static let getBridgePost = GRPCMethodDescriptor(
+      name: "GetBridgePost",
+      path: "/com.octopuscommunity.OctoObjectService/GetBridgePost",
+      type: GRPCCallType.unary
+    )
+
+    public static let createBridgePost = GRPCMethodDescriptor(
+      name: "CreateBridgePost",
+      path: "/com.octopuscommunity.OctoObjectService/CreateBridgePost",
+      type: GRPCCallType.unary
+    )
+
+    public static let getOctoObjectTranslations = GRPCMethodDescriptor(
+      name: "GetOctoObjectTranslations",
+      path: "/com.octopuscommunity.OctoObjectService/GetOctoObjectTranslations",
       type: GRPCCallType.unary
     )
 

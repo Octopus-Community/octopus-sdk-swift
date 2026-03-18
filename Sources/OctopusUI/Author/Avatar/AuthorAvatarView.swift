@@ -85,7 +85,7 @@ struct AuthorAvatarView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .mask(Circle())
             case .notConnected, .none:
-                Image(systemName: "person")
+                Image(uiImage: theme.assets.icons.profile.notConnected)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .padding(max(width * 0.24, 4))

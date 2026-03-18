@@ -21,6 +21,8 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
     /// push notif permissions for this app
     @Published public private(set) var canHandlePushNotifications: Bool = false
 
+    public private(set) var latestNotificationDeviceToken: String?
+
     private let notificationsDatabase: NotificationsDatabase
     private let settingsDatabase: NotificationSettingsDatabase
     private let authCallProvider: AuthenticatedCallProvider
@@ -188,6 +190,7 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
     }
 
     public func set(notificationDeviceToken: String) {
+        latestNotificationDeviceToken = notificationDeviceToken
         deviceTokenSetOnce = true
         updatePushNotifPermissionGranted()
         // Each time a new profile is present (even null profile), as soon as there is internet, send the token

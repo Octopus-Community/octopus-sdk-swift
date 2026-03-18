@@ -28,16 +28,18 @@ struct SampleTabView: View {
     @State private var id = UUID()
 
     init() {
-        let savedSelectedTab = Tab(rawValue: UserDefaults.standard.integer(forKey: savedSelectedTabKey)) ?? .modal
+        let userDefaults = UserDefaults.standard
+        let savedSelectedTab = Tab(rawValue: userDefaults.integer(forKey: savedSelectedTabKey)) ?? .modal
         _selectedTab = State(initialValue: savedSelectedTab)
-        _openOctopusAsModal = State(initialValue: savedSelectedTab == .modal ? DefaultValuesProvider.internalDemoMode : false)
+        _openOctopusAsModal = State(initialValue: userDefaults.object(forKey: savedSelectedTabKey) != nil && savedSelectedTab == .modal ?
+                                    DefaultValuesProvider.internalDemoMode : false)
         _ = AppUserManager.instance // only here to force the AppUserManager instance to be started
     }
 
     var body: some View {
         TabView(selection: $selectedTab) {
             // This example shows you that you can display an OctopusHomeScreen as a full screen modal
-            ModalOctopusAuthView(openOctopusAsModal: $openOctopusAsModal)
+            ModalOctopusView(openOctopusAsModal: $openOctopusAsModal)
                 .tabItem {
                     VStack {
                         Image(systemName: "building.2")
@@ -99,6 +101,9 @@ struct SampleTabView: View {
             }
 #endif
         }
+        .onAppear {
+            UserDefaults.standard.set(selectedTab.rawValue, forKey: savedSelectedTabKey)
+        }
         .onValueChanged(of: selectedTab) {
             UserDefaults.standard.set($0.rawValue, forKey: savedSelectedTabKey)
         }
@@ -132,8 +137,4 @@ struct SampleTabView: View {
 private struct ScreenBuilder: Identifiable {
     let id = UUID()
     let builder: () -> any View
-}
-
-#Preview {
-    SampleTabView()
 }

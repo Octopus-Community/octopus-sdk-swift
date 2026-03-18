@@ -170,6 +170,155 @@ class PostsTests: XCTestCase {
         await fulfillment(of: [localExpectation], timeout: 0.5)
     }
 
+    func testBridgePostWhenNotCreated() async throws {
+        // the first request will be a get. It will return a postNotFound error since the bridge post is not created.
+        mockOctoService.injectNextGetOrCreateBridgePostResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [
+                    .with {
+                        $0.details = .postNotFound(.init())
+                        $0.field = .contentClientObject
+                        $0.message = "Post not found"
+                    },
+                    .with {
+                        $0.details = .invalidAuthor(.init())
+                        $0.field = .unknown
+                        $0.message = "Other error"
+                    }
+                ]
+            })
+        })
+
+        // the second request will be a create.
+        mockOctoService.injectNextGetOrCreateBridgePostResponse(.with {
+            $0.result = .success(.with {
+                $0.postBridge = .with {
+                    $0.createdAt = Date().timestampMs
+                    $0.id = "1"
+                    $0.parentID = "Sport"
+                    $0.createdBy = .with {
+                        $0.profileID = "authorId"
+                        $0.nickname = ""
+                    }
+                    $0.content = .with {
+                        $0.post = .with {
+                            $0.text = "new Text"
+                        }
+                    }
+                }
+            })
+        })
+        let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
+            content: ClientPost(clientObjectId: "", topicId: "Sport",
+                                text: "new Text",
+                                catchPhrase: nil, attachment: nil,
+                                viewClientObjectButtonText: nil),
+        tokenProvider: { _ in return nil })
+
+        XCTAssertEqual(post.id, "1")
+    }
+    
+    /// Test the bridge getting/creating the bridge when the bridge is not yet created but when the call to create comes
+    /// right after another user has called it.
+    func testBridgePostWhenNotCreatedWithRaceCondition() async throws {
+        // the first request will be a get. It will return a postNotFound error since the bridge post is not created.
+        mockOctoService.injectNextGetOrCreateBridgePostResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [
+                    .with {
+                        $0.details = .postNotFound(.init())
+                        $0.field = .contentClientObject
+                        $0.message = "Post not found"
+                    },
+                    .with {
+                        $0.details = .invalidAuthor(.init())
+                        $0.field = .unknown
+                        $0.message = "Other error"
+                    }
+                ]
+            })
+        })
+
+        // the second request will be a create. It will return a postAlreadyExist error since another user has already
+        // created the post in the meantime
+        mockOctoService.injectNextGetOrCreateBridgePostResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [
+                    .with {
+                        $0.details = .postAlreadyExists(.init())
+                        $0.field = .contentClientObject
+                        $0.message = "Post not found"
+                    },
+                    .with {
+                        $0.details = .invalidAuthor(.init())
+                        $0.field = .unknown
+                        $0.message = "Other error"
+                    }
+                ]
+            })
+        })
+
+        // the third request will be a get.
+        mockOctoService.injectNextGetOrCreateBridgePostResponse(.with {
+            $0.result = .success(.with {
+                $0.postBridge = .with {
+                    $0.createdAt = Date().timestampMs
+                    $0.id = "1"
+                    $0.parentID = "Sport"
+                    $0.createdBy = .with {
+                        $0.profileID = "authorId"
+                        $0.nickname = ""
+                    }
+                    $0.content = .with {
+                        $0.post = .with {
+                            $0.text = "new Text"
+                        }
+                    }
+                }
+            })
+        })
+        let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
+            content: ClientPost(clientObjectId: "", topicId: "Sport",
+                                text: "new Text",
+                                catchPhrase: nil, attachment: nil,
+                                viewClientObjectButtonText: nil),
+        tokenProvider: { _ in return nil })
+
+        XCTAssertEqual(post.id, "1")
+    }
+
+    /// Test the bridge getting/creating the bridge when the bridge is already created
+    func testBridgePostWhenCreated() async throws {
+        // the request will be a get.
+        mockOctoService.injectNextGetOrCreateBridgePostResponse(.with {
+            $0.result = .success(.with {
+                $0.postBridge = .with {
+                    $0.createdAt = Date().timestampMs
+                    $0.id = "1"
+                    $0.parentID = "Sport"
+                    $0.createdBy = .with {
+                        $0.profileID = "authorId"
+                        $0.nickname = ""
+                    }
+                    $0.content = .with {
+                        $0.post = .with {
+                            $0.text = "new Text"
+                        }
+                    }
+                }
+            })
+        })
+        let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
+            content: ClientPost(clientObjectId: "", topicId: "Sport",
+                                text: "new Text",
+                                catchPhrase: nil, attachment: nil,
+                                viewClientObjectButtonText: nil),
+        tokenProvider: { _ in return nil })
+
+        XCTAssertEqual(post.id, "1")
+    }
+
+
     func testPostFromGetOrCreateBridgeDoesNotEraseAggregates() async throws {
         // precondition: a post with aggregates and user interactions is in db
         try await postsDatabase.upsert(posts: [
@@ -225,11 +374,12 @@ class PostsTests: XCTestCase {
                 }
             })
         })
-        _ = try await postsRepository.getOrCreateClientObjectRelatedPostId(
+        _ = try await postsRepository.getOrCreateClientObjectRelatedPost(
             content: ClientPost(clientObjectId: "", topicId: "Sport",
                                 text: "new Text",
                                 catchPhrase: nil, attachment: nil,
-                                viewClientObjectButtonText: nil, signature: nil))
+                                viewClientObjectButtonText: nil),
+        tokenProvider: { _ in return nil })
 
         postsRepository.getPost(uuid: "1")
             .replaceError(with: nil)

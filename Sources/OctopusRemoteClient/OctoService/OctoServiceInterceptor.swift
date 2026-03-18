@@ -91,6 +91,14 @@ final class OctoServiceInterceptor: Com_Octopuscommunity_OctoObjectServiceClient
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
+    func makeGetBridgePostInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetBridgePostRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeCreateBridgePostInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
     func makePutReactionInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_PutRequest, OctopusGrpcModels.Com_Octopuscommunity_PutReactionResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
@@ -120,6 +128,10 @@ final class OctoServiceInterceptor: Com_Octopuscommunity_OctoObjectServiceClient
     }
 
     func makeUnshadowbanReplyInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UnshadowbanReplyRequest, OctopusGrpcModels.Com_Octopuscommunity_UnshadowbanReplyResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeGetOctoObjectTranslationsInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 }

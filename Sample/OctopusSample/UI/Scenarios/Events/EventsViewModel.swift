@@ -99,11 +99,18 @@ extension EventsViewModel.DisplayableEvent {
             ]
         case let .screenDisplayed(context):
             switch context.screen {
-            case let .postsFeed(context):
-                eventName = "Posts Feed Screen Displayed"
+            case let .mainFeed(context):
+                eventName = "Main Feed Screen Displayed"
                 params = [
-                    "Feed Id: \(context.feedId)",
-                    "Related Topic Id: \(context.relatedTopicId ?? "-")"
+                    "Feed Id: \(context.feedId)"
+                ]
+            case .groups:
+                eventName = "Groups Screen Displayed"
+                params = []
+            case let .groupDetail(context):
+                eventName = "Group Detail Screen Displayed"
+                params = [
+                    "Group Id: \(context.groupId)"
                 ]
             case let .postDetail(context):
                 eventName = "Post Detail Screen Displayed"
@@ -153,6 +160,12 @@ extension EventsViewModel.DisplayableEvent {
             case .deleteAccount:
                 eventName = "Delete Account Screen Displayed"
                 params = []
+            case let .postsFeed(context): // This event is deprecated, it won't be raised anymore
+                eventName = "Posts Feed Screen Displayed"
+                params = [
+                    "Feed Id: \(context.feedId)",
+                    "Related Topic Id: \(context.relatedTopicId ?? "-")"
+                ]
             }
         case let .notificationClicked(context):
             eventName = "Internal Notification Clicked"
@@ -206,6 +219,12 @@ extension EventsViewModel.DisplayableEvent {
                 "Nickname: \(nickname)",
                 "Bio: \(bio)",
                 "picture: \(picture)"
+            ]
+        case let .groupFollowingChanged(context):
+            eventName = "Group following Changed"
+            params = [
+                "Group Id: \(context.groupId)",
+                "Followed: \(context.followed ? "true" : "false")"
             ]
         case let .sessionStarted(context):
             eventName = "Session Started"

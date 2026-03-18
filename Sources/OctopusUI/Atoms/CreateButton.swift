@@ -24,10 +24,7 @@ struct CreateButton: View {
     var body: some View {
         Button(action: actionTapped) {
             HStack {
-                Image(res: .createPost)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 20, height: 20)
+                IconImage(theme.assets.icons.content.post.creation.open)
                     .accessibilityHidden(true)
 
                 Text(kind.text, bundle: .module)

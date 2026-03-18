@@ -94,6 +94,12 @@ public protocol UserService {
 
     func enteringOctopus(authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_EnteringOctopusResponse
+
+    func followTopic(topicId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_FollowUnfollowTopicResponse
+
+    func unfollowTopic(topicId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_FollowUnfollowTopicResponse
 }
 
 class UserServiceClient: ServiceClient, UserService {
@@ -296,6 +302,30 @@ class UserServiceClient: ServiceClient, UserService {
 
         return try await callRemote(authenticationMethod) {
             try await client.enteringOctopus(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func followTopic(topicId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_FollowUnfollowTopicResponse {
+        let request = Com_Octopuscommunity_FollowUnfollowTopicRequest.with {
+            $0.topicID = topicId
+        }
+
+        return try await callRemote(authenticationMethod) {
+            try await client.followTopic(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func unfollowTopic(topicId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_FollowUnfollowTopicResponse {
+        let request = Com_Octopuscommunity_FollowUnfollowTopicRequest.with {
+            $0.topicID = topicId
+        }
+
+        return try await callRemote(authenticationMethod) {
+            try await client.unfollowTopic(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

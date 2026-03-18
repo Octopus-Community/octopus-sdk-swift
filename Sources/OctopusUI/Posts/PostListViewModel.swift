@@ -61,6 +61,16 @@ class PostListViewModel: ObservableObject {
                 refreshCurrentUserProfile()
             }
             .store(in: &storage)
+
+        octopus.core.sdkEventsEmitter.internalEvents
+            .sink { [unowned self] internalEvent in
+                switch internalEvent {
+                case .groupFollowingChanged:
+                    refreshFeed(isManual: false)
+                    scrollToTop = true
+                default: break
+                }
+            }.store(in: &storage)
     }
 
     func set(feed: Feed<Post, Comment>) {
@@ -81,8 +91,10 @@ class PostListViewModel: ObservableObject {
     func refresh() async {
         await withTaskGroup(of: Void.self) { group in
             let profileRepository = octopus.core.profileRepository
+            let rootFeedsRepository = octopus.core.rootFeedsRepository
             group.addTask { [self] in await postFeedViewModel?.refresh() }
             group.addTask { try? await profileRepository.fetchCurrentUserProfile() }
+            group.addTask { try? await rootFeedsRepository.fetchRootFeeds() }
 
             await group.waitForAll()
         }

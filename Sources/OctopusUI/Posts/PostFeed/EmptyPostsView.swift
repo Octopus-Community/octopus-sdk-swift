@@ -11,7 +11,7 @@ struct DefaultEmptyPostsView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(res: .noPosts)
+            Image(uiImage: theme.assets.icons.content.post.emptyFeedInGroups)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 64, height: 64)
@@ -33,7 +33,7 @@ struct CreatePostEmptyPostView: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 40)
-            Image(res: .noCurrentUserPost)
+            Image(uiImage: theme.assets.icons.content.post.emptyFeedInCurrentUserProfile)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .foregroundColor(theme.colors.gray900)
@@ -99,14 +99,17 @@ struct OtherUserEmptyPostView: View {
     var body: some View {
         VStack {
             Spacer().frame(height: 54)
-            Image(res: .noPosts)
+            Image(uiImage: theme.assets.icons.content.post.emptyFeedInOtherUserProfile)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 64, height: 64)
                 .accessibilityHidden(true)
             Text("Post.List.OtherUser.Empty", bundle: .module)
                 .font(theme.fonts.body2)
                 .fontWeight(.medium)
                 .multilineTextAlignment(.center)
         }
-        .foregroundColor(theme.colors.gray500)
+        .foregroundColor(theme.colors.gray700)
         .padding(.horizontal)
     }
 }

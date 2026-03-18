@@ -58,10 +58,11 @@ struct ReactionsPickerView: View {
                                 showReactionPicker.toggle()
                             }
                         }) {
-                            Image(systemName: "plus")
+                            Image(uiImage: theme.assets.icons.content.post.moreReactions)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .font(theme.fonts.body1.weight(.thin))
+                                .padding(-4)
+                                .foregroundColor(theme.colors.gray900)
                         }.buttonStyle(OctopusButtonStyle(.small, style: .outline,
                                                          hasLeadingIcon: true,
                                                          hasTrailingIcon: true,
@@ -133,13 +134,9 @@ private struct ReactionButton: View {
                 $0.accessibilityAddTraits(.isToggle)
             } else { $0 }
         }
-        .modify {
-            if #available(iOS 17.0, *) {
-                $0.sensoryFeedback(trigger: animate) { oldValue, newValue in
-                    guard oldValue != newValue, newValue else { return nil }
-                    return .impact(flexibility: .soft) 
-                }
-            } else { $0 }
+        .hapticFeedback(trigger: animate) { oldValue, newValue in
+            guard oldValue != newValue, newValue else { return false }
+            return true
         }
     }
 }
@@ -179,13 +176,9 @@ struct PopoverReactionsBar: View {
                 .overlay(Capsule().stroke(theme.colors.gray300, lineWidth: 1))
                 .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
         )
-        .modify {
-            if #available(iOS 17.0, *) {
-                $0.sensoryFeedback(trigger: animate) { oldValue, newValue in
-                    guard oldValue != newValue, newValue else { return nil }
-                    return .impact(flexibility: .soft)
-                }
-            } else { $0 }
+        .hapticFeedback(trigger: animate) { oldValue, newValue in
+            guard oldValue != newValue, newValue else { return false }
+            return true
         }
         .accessibilityFocusOnAppear()
     }

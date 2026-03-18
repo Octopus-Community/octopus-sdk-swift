@@ -22,12 +22,19 @@ class SessionManager: @unchecked Sendable {
     private var timer: Timer?
 
     private let firstSessionHasBeenRecordedKey: String
+    private let userDefaults = UserDefaults.standard
 
-    init(kind: SessionKind) {
+    init(kind: SessionKind, forceReset: Bool = false) {
         self.kind = kind
         currentSessionStore = SessionStore(prefix: "\(kind.storePrefix).current")
         previousSessionStore = SessionStore(prefix: "\(kind.storePrefix).previous")
-        firstSessionHasBeenRecordedKey = "\(kind.storePrefix).firstSessionHasBeenRecordedKey"
+        firstSessionHasBeenRecordedKey = "OctopusSDK.tracking.\(kind.storePrefix).firstSessionHasBeenRecordedKey"
+
+        migrateUserDefaultsIfNeeded()
+
+        if forceReset {
+            userDefaults.set(false, forKey: firstSessionHasBeenRecordedKey)
+        }
 
         currentSessionStore.$session.sink { [unowned self] in
             currentSession = Session(from: $0)
@@ -49,7 +56,7 @@ class SessionManager: @unchecked Sendable {
             sessionEnded()
         }
 
-        let isFirstSession = !UserDefaults.standard.bool(forKey: firstSessionHasBeenRecordedKey)
+        let isFirstSession = !userDefaults.bool(forKey: firstSessionHasBeenRecordedKey)
         currentSessionStore.store(session: StorableSession(
             uuid: UUID().uuidString,
             startTimestamp: Date().timeIntervalSince1970,
@@ -89,6 +96,23 @@ class SessionManager: @unchecked Sendable {
         let previousSession = currentSession.complete(useLastHeartbeatAsEndDate: useLastHeartbeatAsEndDate)
         previousSessionStore.store(session: previousSession.storableValue)
         currentSessionStore.store(session: nil)
+    }
+
+    /// This function is here because there was a bug up until the 1.9.3 where the prefix was missing the
+    /// `OctopusSDK.tracking.`
+    ///
+    /// This function transfers the previous data to the new keys, containing the correct prefix.
+    private func migrateUserDefaultsIfNeeded() {
+        let oldFirstSessionHasBeenRecordedKey = firstSessionHasBeenRecordedKey
+            .replacingOccurrences(of: "OctopusSDK.tracking.", with: "")
+
+        guard let firstSessionHasBeenRecording = userDefaults.object(forKey: oldFirstSessionHasBeenRecordedKey) as? Bool
+        else {
+            return
+        }
+
+        userDefaults.set(firstSessionHasBeenRecording, forKey: firstSessionHasBeenRecordedKey)
+        userDefaults.removeObject(forKey: oldFirstSessionHasBeenRecordedKey)
     }
 }
 

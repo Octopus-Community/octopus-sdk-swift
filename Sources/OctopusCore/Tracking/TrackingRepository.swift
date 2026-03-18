@@ -29,7 +29,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     /// Whether the Octopus UI is currently displayed. Used to end the UI session when the app session is ended
     private var octopusUIIsDisplayed = false
 
-    init(injector: Injector) {
+    init(injector: Injector, forceReset: Bool = false) {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         database = injector.getInjected(identifiedBy: Injected.eventsDatabase)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
@@ -37,8 +37,8 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         videosRepository = injector.getInjected(identifiedBy: Injected.videosRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
 
-        octopusUISessionManager = SessionManager(kind: .octopusUI)
-        appSessionManager = SessionManager(kind: .app)
+        octopusUISessionManager = SessionManager(kind: .octopusUI, forceReset: forceReset)
+        appSessionManager = SessionManager(kind: .app, forceReset: forceReset)
 
         // listen to current UI session in order to create `enteringUI` event
         octopusUISessionManager.$currentSession
@@ -212,7 +212,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                     gamificationRepository.register(action: .postCommented)
                 }
             } catch {
-                if #available(iOS 14, *) { Logger.tracking.trace("Error triggering leaving UI event: \(error)") }
+                if #available(iOS 14, *) { Logger.tracking.trace("Error calling entering Octopus: \(error)") }
             }
         }
     }

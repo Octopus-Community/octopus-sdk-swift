@@ -150,10 +150,12 @@ class CreateReplyViewModel: ObservableObject {
             case let .validation(argumentError):
                 for (_, errors) in argumentError.errors {
                     let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
-                    self.alertError = .localizedString(multiErrorLocalizedString)
+                    alertError = .localizedString(multiErrorLocalizedString)
                 }
             case let .serverCall(serverError):
-                self.alertError = serverError.displayableMessage
+                alertError = serverError.displayableMessage
+            case .other:
+                alertError = .localizationKey("Error.Unknown")
             }
             // do not send the message if we cannot update the profile
             return
@@ -233,6 +235,8 @@ class CreateReplyViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 alertError = serverError.displayableMessage
+            case .other:
+                alertError = .localizationKey("Error.Unknown")
             }
             isLoading = false
         }

@@ -29,14 +29,14 @@ struct PostAggregatedInfoView: View {
                 Spacer()
                 if aggregatedInfo.childCount > 0 {
                     Button(action: childrenTapped) {
-                        AggregateView(image: .AggregatedInfo.comment, count: aggregatedInfo.childCount)
+                        AggregateView(image: theme.assets.icons.content.post.commentCount, count: aggregatedInfo.childCount)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabelInBundle("Accessibility.Comment.Count_count:\(aggregatedInfo.childCount)")
                 }
                 if aggregatedInfo.viewCount > 0 {
                     Button(action: { isShowingPopover = true }) {
-                        AggregateView(image: .AggregatedInfo.view, count: aggregatedInfo.viewCount)
+                        AggregateView(image: theme.assets.icons.content.post.viewCount, count: aggregatedInfo.viewCount)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabelInBundle("Accessibility.View.Count_count:\(aggregatedInfo.viewCount)")
@@ -66,37 +66,28 @@ struct PostAggregatedInfoView: View {
 private struct AggregateView: View {
     @Environment(\.octopusTheme) private var theme
 
-    let image: GenImageResource
+    let image: UIImage
     let count: Int
 
     var body: some View {
-        HStack(spacing: 0) {
-            Image(res: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .foregroundColor(theme.colors.gray700)
-                .scaleEffect(0.95)
+        HStack(spacing: 1) {
+            IconImage(image)
+                .scaleEffect(1.1)
                 .accessibilityHidden(true)
-                .modify {
-                    if #unavailable(iOS 16.0) {
-                        // fix a weird bug on iOS 15 where the button is big when there is a tall image
-                        $0.frame(maxWidth: 30)
-                    } else { $0 }
-                }
             if count > 0 {
                 Text(String.formattedCount(count))
-                    .font(theme.fonts.caption1)
-                    .foregroundColor(theme.colors.gray700)
                     .modify {
                         if #available(iOS 16.0, *) {
                             $0.contentTransition(.numericText())
+                                .animation(.default, value: count)
                         } else {
                             $0
                         }
                     }
-                    .animation(.default, value: count)
             }
         }
+        .font(theme.fonts.caption1)
+        .foregroundColor(theme.colors.gray700)
         .fixedSize(horizontal: true, vertical: false)
         .padding(.vertical, 11)
         .frame(minWidth: 44)

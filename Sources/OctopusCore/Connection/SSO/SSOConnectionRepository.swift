@@ -170,7 +170,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         connectAsync()
     }
 
-    func logout() async throws {
+    func logout(preventReconnection: Bool = false) async throws {
         let profileId: String? = if case let .connected(user, _) = connectionState {
             user.profile.id
         } else { nil }

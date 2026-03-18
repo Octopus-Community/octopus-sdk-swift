@@ -16,23 +16,17 @@ struct GamificationLevelBadge: View {
     let level: GamificationLevel?
     let size: Size
 
-    @State private var textHeight: CGFloat = 1
-
     var body: some View {
         if let level, let gamificationBadgeColor = level.badgeColor, let textColor = level.badgeTextColor {
             switch size {
             case .big:
                 HStack(spacing: 0) {
                     Text(verbatim: "\(level.name)")
-                        .font(theme.fonts.caption1)
                         .fontWeight(.medium)
-                        .readHeight($textHeight)
-                    Image(res: .Gamification.badge)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: textHeight)
+                    IconImage(theme.assets.icons.gamification.badge)
                         .accessibilityHidden(true)
                 }
+                .font(theme.fonts.caption1)
                 .foregroundColor(textColor.color)
                 .padding(.vertical, 1)
                 .padding(.leading, 8)
@@ -42,9 +36,8 @@ struct GamificationLevelBadge: View {
                         .fill(gamificationBadgeColor.color)
                 )
             case .small:
-                Image(res: .Gamification.badge)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+                IconImage(theme.assets.icons.gamification.badge)
+                    .font(theme.fonts.body2)
                     .foregroundColor(gamificationBadgeColor.color)
                     .accessibilityLabelCompat(level.name)
             }

@@ -19,7 +19,7 @@ struct ToastView: View {
             Button(action: action) {
                 toast.message.textView
                     .font(theme.fonts.body2)
-                    .foregroundColor(theme.colors.gray900)
+                    .foregroundColor(foregroundColor)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .multilineTextAlignment(.leading)
                     .padding(.vertical, 16)
@@ -30,9 +30,9 @@ struct ToastView: View {
                 dismissManually = true
                 dismiss()
             }) {
-                Image(systemName: "xmark")
+                IconImage(theme.assets.icons.common.close)
                     .font(theme.fonts.body2)
-                    .foregroundColor(theme.colors.gray900)
+                    .foregroundColor(foregroundColor)
                     .accessibilityLabelInBundle("Accessibility.Toast.Close")
                     .padding(.vertical, 16)
                     .padding(.trailing, 16)
@@ -42,10 +42,26 @@ struct ToastView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(theme.colors.primaryLowContrast)
+                .fill(backgroundColor)
                 .shadow(radius: 2, y: 2)
         )
         .padding(.horizontal, 16)
         .transition(.toast(isManual: dismissManually))
+    }
+
+    var backgroundColor: Color {
+        switch toast.category {
+        case .info: theme.colors.primaryLowContrast
+        case .success: theme.colors.successLowContrast
+        case .error: theme.colors.errorLowContrast
+        }
+    }
+
+    var foregroundColor: Color {
+        switch toast.category {
+        case .info: theme.colors.gray900
+        case .success: theme.colors.success
+        case .error: theme.colors.error
+        }
     }
 }

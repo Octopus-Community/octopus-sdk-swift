@@ -18,4 +18,8 @@ class UserCommunityAccessSyncStore {
     func set(hasAccessToCommunity: Bool) {
         userDefaults.set(hasAccessToCommunity, forKey: hasAccessToCommunityKey)
     }
+
+    func clear() {
+        userDefaults.removeObject(forKey: hasAccessToCommunityKey)
+    }
 }

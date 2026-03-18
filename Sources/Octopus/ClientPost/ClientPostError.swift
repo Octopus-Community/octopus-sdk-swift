@@ -6,7 +6,7 @@ import Foundation
 import OctopusCore
 
 /// Errors that can be returned by `getOrCreateClientObjectRelatedPostId(content:)`.
-public enum ClientPostError: Error {
+public enum ClientPostError: Error, CustomDebugStringConvertible {
     /// Content error. Associated value is a list of the detailed errors present in the content
     case validation([ValidationError])
     /// User do not have any internet connection at the time of the call
@@ -17,7 +17,7 @@ public enum ClientPostError: Error {
     case other(Swift.Error?)
     
     /// An error linked to the provided content
-    public struct ValidationError: Sendable {
+    public struct ValidationError: Sendable, CustomDebugStringConvertible {
         /// The kind of error
         let errorKind: ErrorKind
         /// The field that produced the error. Can be nil
@@ -63,6 +63,19 @@ public enum ClientPostError: Error {
             case file
             case clientObject
         }
+
+        public var debugDescription: String {
+            "\"\(errorKind)\": \(message) \(field.map { "(on field \"\($0)\")" } ?? "")"
+        }
+    }
+
+    public var debugDescription: String {
+        switch self {
+        case let .validation(error): "Validation error: \(error.map { "\($0)" }.joined(separator: ", ")) (ClientPostError.validation)"
+        case .noNetwork: "No network (ClientPostError.noNetwork)"
+        case .serverError: "Server error (ClientPostError.serverError)"
+        case let .other(error): "\(String(describing: error)) (ClientPostError.other)"
+        }
     }
 }
 
@@ -86,6 +99,7 @@ extension ClientPostError {
             case .serverError: .serverError
             case let .other(error): .other(error)
             }
+        case let .other(error): .other(error)
         }
     }
 }

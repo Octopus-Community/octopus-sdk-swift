@@ -19,15 +19,19 @@ struct EllipsizableText: Equatable {
 
     init?(text: String?, maxLength: Int = 200, maxLines: Int = 4) {
         guard let text = text?.nilIfEmpty else { return nil }
+        self.init(text: text, maxLength: maxLength, maxLines: maxLines)
+    }
+
+    init(text: String, maxLength: Int = 200, maxLines: Int = 4) {
         self.fullText = text
-        
+
         // Display max `maxLength` chars and `maxLines` new lines.
         let ellipsizedText = text
             .prefix(maxLength)
             .split(separator: "\n", omittingEmptySubsequences: false)
             .prefix(maxLines)
             .joined(separator: "\n")
-        
+
         if ellipsizedText != text {
             _ellipsizedText = ellipsizedText
         } else {

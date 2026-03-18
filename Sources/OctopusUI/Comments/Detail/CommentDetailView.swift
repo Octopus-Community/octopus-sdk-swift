@@ -276,13 +276,13 @@ private struct ContentView: View {
                     } else {
                         VStack {
                             Spacer().frame(height: 54)
-                            Image(res: .contentNotAvailable)
+                            IconImage(theme.assets.icons.content.comment.notAvailable)
                                 .accessibilityHidden(true)
                             Text("Content.Detail.NotAvailable", bundle: .module)
-                                .font(theme.fonts.body2)
                                 .fontWeight(.medium)
                                 .multilineTextAlignment(.center)
                         }
+                        .font(theme.fonts.body2)
                         .foregroundColor(theme.colors.gray500)
                     }
                 }
@@ -354,7 +354,7 @@ private struct CommentDetailContentView: View {
                                             if comment.canBeDeleted {
                                                 Button(action: { displayWillDeleteAlert = true }) {
                                                     Label(title: { Text("Comment.Delete.Button", bundle: .module) },
-                                                          icon: { Image(systemName: "trash") })
+                                                          icon: { IconImage(theme.assets.icons.content.delete) })
                                                 }
                                                 .buttonStyle(.plain)
 
@@ -362,13 +362,13 @@ private struct CommentDetailContentView: View {
                                             if comment.canBeModerated {
                                                 Button(action: { displayContentModeration(comment.uuid) }) {
                                                     Label(title: { Text("Moderation.Content.Button", bundle: .module) },
-                                                          icon: { Image(systemName: "flag") })
+                                                          icon: { IconImage(theme.assets.icons.content.report) })
                                                 }
                                                 .buttonStyle(.plain)
                                             }
                                         }, label: {
                                             HStack {
-                                                Image(res: .more)
+                                                Image(uiImage: theme.assets.icons.common.moreActions)
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fit)
                                                     .frame(width: 24, height: 24)
@@ -382,7 +382,7 @@ private struct CommentDetailContentView: View {
                                     } else {
                                         Button(action: { openActions = true }) {
                                             HStack {
-                                                Image(res: .more)
+                                                Image(uiImage: theme.assets.icons.common.moreActions)
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fit)
                                                     .frame(width: 24, height: 24)

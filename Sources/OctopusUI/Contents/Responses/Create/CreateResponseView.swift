@@ -104,7 +104,7 @@ private struct ContentView: View {
                     removeFocus()
                     openPhotosPicker = true
                 }) {
-                    Image(res: .addMedia)
+                    Image(uiImage: responseKind == .comment ? theme.assets.icons.content.comment.creation.addPicture : theme.assets.icons.content.reply.creation.addPicture)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 24, height: 24)
@@ -137,10 +137,8 @@ private struct ContentView: View {
                                     picture = nil
                                     selectedItems = []
                                 }) {
-                                    Image(systemName: "xmark")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .font(theme.fonts.body1.bold())
+                                    IconImage(responseKind == .comment ? theme.assets.icons.content.comment.creation.deletePicture : theme.assets.icons.content.reply.creation.deletePicture)
+                                        .font(theme.fonts.body1)
                                         .padding(8)
                                         .foregroundColor(theme.colors.gray500)
                                         .background(
@@ -148,7 +146,7 @@ private struct ContentView: View {
                                                 .foregroundColor(theme.colors.gray200)
 
                                         )
-                                        .frame(width: 26, height: 26)
+                                        .frame(minWidth: 26, minHeight: 26)
                                         .padding([.leading, .bottom], 14)
                                         .padding([.trailing, .top], 4)
 
@@ -164,12 +162,13 @@ private struct ContentView: View {
                 Button(action: {
                     removeFocus()
                     send()
+                    HapticFeedback.play()
                 }) {
                     HStack(spacing: 8) {
                         if isLoading {
                             Compat.ProgressView(tint: theme.colors.onPrimary)
                         } else {
-                            Image(res: .send)
+                            Image(uiImage: responseKind == .comment ? theme.assets.icons.content.comment.creation.create : theme.assets.icons.content.reply.creation.create)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)

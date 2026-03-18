@@ -68,7 +68,6 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
             }
             .switchToLatest()
             .filter { $0 != nil }
-            .first()
             .sink { [unowned self] _ in
                 Task { [weak self] in
                     try await self?.getCommunityAccess()

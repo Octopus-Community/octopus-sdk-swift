@@ -68,21 +68,35 @@ class ProfileSummaryViewModel: ObservableObject {
             }.store(in: &storage)
 
         Task {
-            await refreshProfile()
+            await refreshProfile(manual: false)
         }
     }
 
     func refresh() async {
-        await refreshProfile()
-        await postFeedViewModel?.refresh()
+        // if the refresh profile failed, do not refresh the feed (that will avoid having two error alerts)
+        if await refreshProfile(manual: true) {
+            await postFeedViewModel?.refresh()
+        }
     }
 
-    private func refreshProfile() async {
+    /// Refresh the profile
+    /// - Parameter manual: whether the refresh is a manual one
+    /// - Returns: true if the refresh was successful, false otherwise
+    @discardableResult
+    private func refreshProfile(manual: Bool) async -> Bool {
         do {
             try await octopus.core.profileRepository.fetchProfile(profileId: profileId)
         } catch {
-            self.error = error.displayableMessage
+            if manual {
+                self.error = error.displayableMessage
+            } else if case .serverError(.notAuthenticated) = error {
+                self.error = error.displayableMessage
+            } else if case .noNetwork = error {
+                octopus.core.toastsRepository.display(errorToast: .noNetwork)
+            }
+            return false
         }
+        return true
     }
 
     func blockUser() {

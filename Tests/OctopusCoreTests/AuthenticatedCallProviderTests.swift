@@ -165,12 +165,12 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
 
     func checkMagicLinkConfirmed() async throws(MagicLinkConfirmationError) -> Bool { return false }
 
-    func logout() async throws {
+    func logout(preventReconnection: Bool) async throws {
         userDataStorage.store(userData: nil)
     }
 
     func onAuthenticatedCallFailed() async throws {
-        try await logout()
+        try await logout(preventReconnection: false)
     }
 
     func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) { }

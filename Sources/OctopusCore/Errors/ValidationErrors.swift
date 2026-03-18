@@ -7,23 +7,38 @@ import Foundation
 /// A generic list of form errors.
 /// Field is indicating which field is impacted by a given error
 /// ErrorDetail is a generic type indicating the detail of the error.
-public struct ValidationErrors<Field: Sendable & Hashable, ErrorDetail: Sendable>: Error, Sendable {
+public struct ValidationErrors<Field: Sendable & Hashable, ErrorDetail: Sendable>: Error, Sendable, CustomDebugStringConvertible {
     /// The way to display this kind of error
-    public enum DisplayKind: Sendable, Hashable {
+    public enum DisplayKind: Sendable, Hashable, CustomDebugStringConvertible {
         /// The error should be displayed as an alert (i.e. not linked to a particular field)
         case alert
         /// The error should be displayed linked to the given field
         case linkedToField(Field)
+
+        public var debugDescription: String {
+            switch self {
+            case .alert: "alert"
+            case let .linkedToField(field): "on field \"\(field)\""
+            }
+        }
     }
 
     /// An error on a form
-    public struct Error: Sendable {
+    public struct Error: Sendable, CustomDebugStringConvertible {
         /// The message to display to the user. This message is already localized.
         public let localizedMessage: String
         /// Detail of the error. This should be used only if a particular behavior is produced by this kind of error
         public let detail: ErrorDetail
+
+        public var debugDescription: String {
+            "\"\(detail)\": \(localizedMessage)"
+        }
     }
 
     /// Dictionary of errors indexed by the way to display them
     public let errors: [DisplayKind: [Error]]
+
+    public var debugDescription: String {
+        "\(errors)"
+    }
 }

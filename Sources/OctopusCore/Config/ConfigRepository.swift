@@ -50,7 +50,7 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
 
     private var storage: Set<AnyCancellable> = []
 
-    init(injector: Injector) {
+    init(injector: Injector, forceReset: Bool = false) {
         communityConfigDatabase = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
         userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
@@ -58,6 +58,10 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
         appStateMonitor = injector.getInjected(identifiedBy: Injected.appStateMonitor)
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
+
+        if forceReset {
+            userCommunityAccessSyncStore.clear()
+        }
 
         // because the userConfig.canAccessCommunity can be read by the client,
         // try to synchronously set the correct value in order to have the correct value right after the SDK init.

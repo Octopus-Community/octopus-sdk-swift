@@ -40,7 +40,7 @@ class SettingsListViewModel: ObservableObject {
         Task {
             logoutInProgress = true
             do {
-                try await octopus.core.connectionRepository.logout()
+                try await octopus.core.connectionRepository.logout(preventReconnection: false)
                 logoutDone = true
                 logoutInProgress = false
             } catch {

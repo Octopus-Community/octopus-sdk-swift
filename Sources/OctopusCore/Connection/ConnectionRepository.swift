@@ -46,7 +46,7 @@ public protocol ConnectionRepository: Sendable {
     func cancelMagicLink()
     func checkMagicLinkConfirmed() async throws(MagicLinkConfirmationError) -> Bool
     func onAuthenticatedCallFailed() async throws
-    func logout() async throws
+    func logout(preventReconnection: Bool) async throws
     func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError)
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws

@@ -30,6 +30,14 @@ class EventsDatabase: InjectableObject {
             .eraseToAnyPublisher()
     }
 
+    func getAllEvents() async throws -> [Event] {
+        return try await context.performAsync { [context] in
+            try context
+                .fetch(EventEntity.fetchAll())
+                .compactMap { Event(from: $0) }
+        }
+    }
+
     func upsert(events: [Event]) async throws {
         try await context.performAsync { [context] in
             for event in events {

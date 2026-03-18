@@ -36,10 +36,10 @@ struct ContentSizedSheet<Content: View, ScrollingContent: View>: View {
                     HStack {
                         Spacer()
                         Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                            Image(systemName: "xmark")
-                                .font(theme.fonts.title2.weight(.semibold))
-                                .padding(12)
+                            IconImage(theme.assets.icons.common.close)
+                                .font(theme.fonts.title2)
                                 .foregroundColor(theme.colors.gray900)
+                                .padding(12)
                         }
                         .frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())     

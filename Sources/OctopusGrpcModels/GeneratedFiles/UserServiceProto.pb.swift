@@ -2074,6 +2074,175 @@ public struct Com_Octopuscommunity_EnteringOctopusResponse: Sendable {
   fileprivate var _shouldDisplayGamificationAnswerToast: Bool? = nil
 }
 
+public struct Com_Octopuscommunity_FollowUnfollowTopicRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var topicID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_FollowUnfollowTopicResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var result: Com_Octopuscommunity_FollowUnfollowTopicResponse.OneOf_Result? = nil
+
+  public var success: Com_Octopuscommunity_FollowUnfollowTopicResponse.Success {
+    get {
+      if case .success(let v)? = result {return v}
+      return Com_Octopuscommunity_FollowUnfollowTopicResponse.Success()
+    }
+    set {result = .success(newValue)}
+  }
+
+  public var fail: Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail {
+    get {
+      if case .fail(let v)? = result {return v}
+      return Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail()
+    }
+    set {result = .fail(newValue)}
+  }
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum OneOf_Result: Equatable, Sendable {
+    case success(Com_Octopuscommunity_FollowUnfollowTopicResponse.Success)
+    case fail(Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail)
+
+  }
+
+  public struct Success: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct Fail: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var errors: [Com_Octopuscommunity_FollowUnfollowTopicResponse.Error] = []
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct Error: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var message: String = String()
+
+    public var field: Com_Octopuscommunity_FollowUnfollowTopicResponse.Error.Field {
+      get {return _field ?? .unknown}
+      set {_field = newValue}
+    }
+    /// Returns true if `field` has been explicitly set.
+    public var hasField: Bool {return self._field != nil}
+    /// Clears the value of `field`. Subsequent reads from it will return its default value.
+    public mutating func clearField() {self._field = nil}
+
+    public var details: Com_Octopuscommunity_FollowUnfollowTopicResponse.Error.OneOf_Details? = nil
+
+    public var missingParent: Com_Octopuscommunity_ErrorDetails.MissingParent {
+      get {
+        if case .missingParent(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.MissingParent()
+      }
+      set {details = .missingParent(newValue)}
+    }
+
+    public var unFollowableTopic: Com_Octopuscommunity_ErrorDetails.UnFollowableTopic {
+      get {
+        if case .unFollowableTopic(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.UnFollowableTopic()
+      }
+      set {details = .unFollowableTopic(newValue)}
+    }
+
+    public var topicAlreadyFollowed: Com_Octopuscommunity_ErrorDetails.TopicAlreadyFollowed {
+      get {
+        if case .topicAlreadyFollowed(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.TopicAlreadyFollowed()
+      }
+      set {details = .topicAlreadyFollowed(newValue)}
+    }
+
+    public var topicAlreadyUnfollowed: Com_Octopuscommunity_ErrorDetails.TopicAlreadyUnfollowed {
+      get {
+        if case .topicAlreadyUnfollowed(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.TopicAlreadyUnfollowed()
+      }
+      set {details = .topicAlreadyUnfollowed(newValue)}
+    }
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public enum OneOf_Details: Equatable, Sendable {
+      case missingParent(Com_Octopuscommunity_ErrorDetails.MissingParent)
+      case unFollowableTopic(Com_Octopuscommunity_ErrorDetails.UnFollowableTopic)
+      case topicAlreadyFollowed(Com_Octopuscommunity_ErrorDetails.TopicAlreadyFollowed)
+      case topicAlreadyUnfollowed(Com_Octopuscommunity_ErrorDetails.TopicAlreadyUnfollowed)
+
+    }
+
+    public enum Field: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+      case unknown // = 0
+
+      ///MissingParent, UnFollowableTopic
+      case contentParent // = 1
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .unknown
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .unknown
+        case 1: self = .contentParent
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .unknown: return 0
+        case .contentParent: return 1
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [Com_Octopuscommunity_FollowUnfollowTopicResponse.Error.Field] = [
+        .unknown,
+        .contentParent,
+      ]
+
+    }
+
+    public init() {}
+
+    fileprivate var _field: Com_Octopuscommunity_FollowUnfollowTopicResponse.Error.Field? = nil
+  }
+
+  public init() {}
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "com.octopuscommunity"
@@ -5283,4 +5452,282 @@ extension Com_Octopuscommunity_EnteringOctopusResponse: SwiftProtobuf.Message, S
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension Com_Octopuscommunity_FollowUnfollowTopicRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".FollowUnfollowTopicRequest"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "topicId"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.topicID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.topicID.isEmpty {
+      try visitor.visitSingularStringField(value: self.topicID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_FollowUnfollowTopicRequest, rhs: Com_Octopuscommunity_FollowUnfollowTopicRequest) -> Bool {
+    if lhs.topicID != rhs.topicID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_FollowUnfollowTopicResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".FollowUnfollowTopicResponse"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "success"),
+    2: .same(proto: "fail"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: Com_Octopuscommunity_FollowUnfollowTopicResponse.Success?
+        var hadOneofValue = false
+        if let current = self.result {
+          hadOneofValue = true
+          if case .success(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.result = .success(v)
+        }
+      }()
+      case 2: try {
+        var v: Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail?
+        var hadOneofValue = false
+        if let current = self.result {
+          hadOneofValue = true
+          if case .fail(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.result = .fail(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.result {
+    case .success?: try {
+      guard case .success(let v)? = self.result else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .fail?: try {
+      guard case .fail(let v)? = self.result else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_FollowUnfollowTopicResponse, rhs: Com_Octopuscommunity_FollowUnfollowTopicResponse) -> Bool {
+    if lhs.result != rhs.result {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_FollowUnfollowTopicResponse.protoMessageName + ".Success"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_FollowUnfollowTopicResponse.Success, rhs: Com_Octopuscommunity_FollowUnfollowTopicResponse.Success) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_FollowUnfollowTopicResponse.protoMessageName + ".Fail"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "errors"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.errors) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.errors.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.errors, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail, rhs: Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail) -> Bool {
+    if lhs.errors != rhs.errors {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_FollowUnfollowTopicResponse.protoMessageName + ".Error"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "message"),
+    2: .same(proto: "field"),
+    101: .same(proto: "missingParent"),
+    102: .same(proto: "unFollowableTopic"),
+    103: .same(proto: "topicAlreadyFollowed"),
+    104: .same(proto: "topicAlreadyUnfollowed"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self._field) }()
+      case 101: try {
+        var v: Com_Octopuscommunity_ErrorDetails.MissingParent?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .missingParent(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .missingParent(v)
+        }
+      }()
+      case 102: try {
+        var v: Com_Octopuscommunity_ErrorDetails.UnFollowableTopic?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .unFollowableTopic(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .unFollowableTopic(v)
+        }
+      }()
+      case 103: try {
+        var v: Com_Octopuscommunity_ErrorDetails.TopicAlreadyFollowed?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .topicAlreadyFollowed(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .topicAlreadyFollowed(v)
+        }
+      }()
+      case 104: try {
+        var v: Com_Octopuscommunity_ErrorDetails.TopicAlreadyUnfollowed?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .topicAlreadyUnfollowed(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .topicAlreadyUnfollowed(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 1)
+    }
+    try { if let v = self._field {
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
+    } }()
+    switch self.details {
+    case .missingParent?: try {
+      guard case .missingParent(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 101)
+    }()
+    case .unFollowableTopic?: try {
+      guard case .unFollowableTopic(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
+    }()
+    case .topicAlreadyFollowed?: try {
+      guard case .topicAlreadyFollowed(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 103)
+    }()
+    case .topicAlreadyUnfollowed?: try {
+      guard case .topicAlreadyUnfollowed(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 104)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_FollowUnfollowTopicResponse.Error, rhs: Com_Octopuscommunity_FollowUnfollowTopicResponse.Error) -> Bool {
+    if lhs.message != rhs.message {return false}
+    if lhs._field != rhs._field {return false}
+    if lhs.details != rhs.details {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "UNKNOWN"),
+    1: .same(proto: "CONTENT_PARENT"),
+  ]
 }

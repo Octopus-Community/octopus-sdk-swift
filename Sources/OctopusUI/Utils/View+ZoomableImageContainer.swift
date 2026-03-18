@@ -4,14 +4,17 @@
 
 import SwiftUI
 
-struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTrailingView: View>: ViewModifier {
+struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, TrailingBarItem: View, PreTrailingView: View>: ViewModifier {
     @Environment(\.octopusTheme) private var theme
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let defaultLeadingBarItem: LeadingBarItem
     let defaultTrailingBarItem: TrailingBarItem
-    let defaultPreTrailingBarItem: PreTrailingView?
-    let defaultNavigationBarTitle: Text
+    let defaultPreTrailingBarItem: PreTrailingView
+    let defaultTrailingSharedBackgroundVisibility: Compat.Visibility
+    let defaultCenteredBarItem: CenteredBarItem
+    let defaultCenteredBarItemVisibility: Compat.Visibility
+    let navBarTitle: Text
     let defaultNavigationBarBackButtonHidden: Bool
     let defaultNavigationBarPrimaryColor: Bool
 
@@ -66,13 +69,12 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTr
             leading: leadingBarItem,
             preTrailing: preTrailingBarItem,
             trailing: trailingBarItem,
+            centered: centeredBarItem,
             leadingSharedBackgroundVisibility: .hidden,
             preTrailingSharedBackgroundVisibility: .automatic,
-            trailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : .automatic)
-
-        .navigationBarTitle(
-            usableZoomableImageInfo == nil ? defaultNavigationBarTitle : Text(verbatim: ""),
-            displayMode: .inline)
+            trailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultTrailingSharedBackgroundVisibility,
+            centeredVisibility: usableZoomableImageInfo != nil ? .hidden : defaultCenteredBarItemVisibility)
+        .navigationBarTitle(navBarTitle)
         .navigationBarBackButtonHidden(defaultNavigationBarBackButtonHidden || usableZoomableImageInfo != nil)
         .modify {
 #if compiler(>=6.2)
@@ -109,7 +111,7 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTr
 
     @ViewBuilder
     private var preTrailingBarItem: some View {
-        if usableZoomableImageInfo == nil, let defaultPreTrailingBarItem {
+        if usableZoomableImageInfo == nil {
             defaultPreTrailingBarItem
         } else {
             EmptyView()
@@ -124,8 +126,8 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTr
                     zoomableImageInfo = nil
                 }
             }) {
-                Image(systemName: "xmark")
-                    .font(theme.fonts.navBarItem.weight(.semibold))
+                IconImage(theme.assets.icons.common.close)
+                    .font(theme.fonts.navBarItem)
                     .modify {
 #if compiler(>=6.2)
                         if #available(iOS 26.0, *) {
@@ -137,42 +139,36 @@ struct ZoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTr
                         $0.padding(.leading)
 #endif
                     }
-                    .foregroundColor(theme.colors.primary)
+                    .foregroundColor(theme.colors.gray900)
                     .colorScheme(.dark)
+                    .accessibilityLabelInBundle("Common.Close")
             }
         } else {
             defaultTrailingBarItem
         }
     }
+
+    @ViewBuilder
+    private var centeredBarItem: some View {
+        if usableZoomableImageInfo != nil {
+            EmptyView()
+        } else {
+            defaultCenteredBarItem
+        }
+    }
 }
 
 extension View {
-    func zoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View>(
-        zoomableImageInfo: Binding<ZoomableImageInfo?>,
-        defaultLeadingBarItem: LeadingBarItem,
-        defaultTrailingBarItem: TrailingBarItem,
-        defaultNavigationBarTitle: Text = Text(verbatim: ""),
-        defaultNavigationBarBackButtonHidden: Bool = false,
-        defaultNavigationBarPrimaryColor: Bool = false) -> some View {
-        self.modifier(
-            ZoomableImageContainer(
-                zoomableImageInfo: zoomableImageInfo,
-                defaultLeadingBarItem: defaultLeadingBarItem,
-                defaultTrailingBarItem: defaultTrailingBarItem,
-                defaultPreTrailingBarItem: nil as EmptyView?,
-                defaultNavigationBarTitle: defaultNavigationBarTitle,
-                defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
-                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor
-            )
-        )
-    }
-
+    /// Create a zoomable image container
+    /// This function has a textual center item (called title)
     func zoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTrailingBarItem: View>(
         zoomableImageInfo: Binding<ZoomableImageInfo?>,
         defaultLeadingBarItem: LeadingBarItem,
-        defaultPreTrailingBarItem: PreTrailingBarItem,
+        defaultPreTrailingBarItem: PreTrailingBarItem = EmptyView(),
         defaultTrailingBarItem: TrailingBarItem,
+        defaultTrailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         defaultNavigationBarTitle: Text = Text(verbatim: ""),
+        defaultNavigationBarTitleVisibility: Compat.Visibility = .automatic,
         defaultNavigationBarBackButtonHidden: Bool = false,
         defaultNavigationBarPrimaryColor: Bool = false) -> some View {
         self.modifier(
@@ -181,7 +177,39 @@ extension View {
                 defaultLeadingBarItem: defaultLeadingBarItem,
                 defaultTrailingBarItem: defaultTrailingBarItem,
                 defaultPreTrailingBarItem: defaultPreTrailingBarItem,
-                defaultNavigationBarTitle: defaultNavigationBarTitle,
+                defaultTrailingSharedBackgroundVisibility: defaultTrailingSharedBackgroundVisibility,
+                defaultCenteredBarItem: defaultNavigationBarTitle,
+                defaultCenteredBarItemVisibility: defaultNavigationBarTitleVisibility,
+                navBarTitle: defaultNavigationBarTitle,
+                defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
+                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor
+            )
+        )
+    }
+
+    /// Create a zoomable image container
+    /// This function has a center item as a view and takes a navBarTitle to build the back stack names
+    func zoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, TrailingBarItem: View, PreTrailingBarItem: View>(
+        zoomableImageInfo: Binding<ZoomableImageInfo?>,
+        defaultLeadingBarItem: LeadingBarItem,
+        defaultPreTrailingBarItem: PreTrailingBarItem = EmptyView(),
+        defaultTrailingBarItem: TrailingBarItem,
+        defaultTrailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
+        defaultCenteredBarItem: CenteredBarItem = EmptyView(),
+        defaultCenteredBarItemVisibility: Compat.Visibility = .automatic,
+        navBarTitle: Text = Text(verbatim: ""),
+        defaultNavigationBarBackButtonHidden: Bool = false,
+        defaultNavigationBarPrimaryColor: Bool = false) -> some View {
+        self.modifier(
+            ZoomableImageContainer(
+                zoomableImageInfo: zoomableImageInfo,
+                defaultLeadingBarItem: defaultLeadingBarItem,
+                defaultTrailingBarItem: defaultTrailingBarItem,
+                defaultPreTrailingBarItem: defaultPreTrailingBarItem,
+                defaultTrailingSharedBackgroundVisibility: defaultTrailingSharedBackgroundVisibility,
+                defaultCenteredBarItem: defaultCenteredBarItem,
+                defaultCenteredBarItemVisibility: defaultCenteredBarItemVisibility,
+                navBarTitle: navBarTitle,
                 defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
                 defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor
             )

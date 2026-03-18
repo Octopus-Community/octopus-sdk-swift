@@ -80,6 +80,15 @@ class PostDetailViewModel: ObservableObject {
     private var shouldFetchLatestComments = CurrentValueSubject<Bool, Never>(false)
     private var liveMeasures: [String: CurrentValueSubject<LiveMeasures, Never>] = [:]
 
+    var postAuthorName: DisplayableString? {
+        if let post {
+            return post.author.name
+        } else if let internalPost {
+            return Author(profile: internalPost.author, gamificationLevel: nil).name
+        }
+        return nil
+    }
+
     var thisUserProfileId: String? {
         octopus.core.profileRepository.profile?.id
     }
@@ -133,6 +142,8 @@ class PostDetailViewModel: ObservableObject {
         self.translationStore = translationStore
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
         relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
+
+        self.internalPost = try? octopus.core.postsRepository.getPost(uuid: postUuid)
 
         Publishers.CombineLatest4(
             octopus.core.postsRepository.getPost(uuid: postUuid).removeDuplicates().replaceError(with: nil),
@@ -557,7 +568,13 @@ class PostDetailViewModel: ObservableObject {
 
     private func fetchPost(incrementViewCount: Bool = false) {
         Task {
-            try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
+            do {
+                try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
+            } catch {
+                if let error = error as? ServerCallError, case .noNetwork = error {
+                    octopus.core.toastsRepository.display(errorToast: .noNetwork)
+                }
+            }
         }
     }
 
@@ -721,6 +738,8 @@ class PostDetailViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }
@@ -773,6 +792,8 @@ class PostDetailViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }
@@ -806,6 +827,8 @@ class PostDetailViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }

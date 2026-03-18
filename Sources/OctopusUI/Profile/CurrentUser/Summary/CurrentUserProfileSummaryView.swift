@@ -74,7 +74,7 @@ struct CurrentUserProfileSummaryView: View {
                         displayContentModeration: {
                             navigator.push(.reportContent(contentId: $0))
                         }) {
-                            CreatePostEmptyPostView(createPost: { navigator.push(.createPost(withPoll: $0)) })
+                            CreatePostEmptyPostView(createPost: { navigator.push(.createPost(withPoll: $0, defaultTopic: nil)) })
                         }
                 } else {
                     EmptyView()
@@ -84,7 +84,8 @@ struct CurrentUserProfileSummaryView: View {
             })
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
-                                defaultTrailingBarItem: trailingBarItem)
+                                defaultTrailingBarItem: trailingBarItem,
+                                defaultNavigationBarTitle: Text("Profile.Title", bundle: .module))
         .toastContainer(octopus: viewModel.octopus)
         .sheet(isPresented: $showGamificationRules) {
             if let gamificationConfig = viewModel.gamificationConfig {
@@ -195,9 +196,9 @@ struct CurrentUserProfileSummaryView: View {
         Button(action: { navigator.push(.settingsList) }) {
             if #available(iOS 26.0, *) {
                 Label(title: { Text("Accessibility.Common.More", bundle: .module) },
-                      icon: { Image(systemName: "ellipsis") })
+                      icon: { Image(uiImage: theme.assets.icons.common.moreActions) })
             } else {
-                Image(systemName: "ellipsis")
+                Image(uiImage: theme.assets.icons.common.moreActions)
                     .font(theme.fonts.navBarItem)
                     .padding(.vertical)
                     .padding(.leading)
@@ -319,7 +320,9 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                                     AuthorAvatarView(avatar: avatar)
                                         .frame(width: 71, height: 71)
                                         .overlay(
-                                            Image(systemName: "plus")
+                                            Image(uiImage: theme.assets.icons.profile.addPicture)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
                                                 .foregroundColor(theme.colors.onPrimary)
                                                 .padding(4)
                                                 .background(theme.colors.primary)
@@ -439,8 +442,7 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                                 }
                                 .foregroundColor(theme.colors.gray900)
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
-                                                           externalVerticalPadding: 5))
+                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 5))
                         } else {
                             AdaptiveAccessibleStack(
                                 hStackSpacing: 8,
@@ -448,12 +450,11 @@ private struct ProfileContentView<PostsView: View, NotificationsView: View>: Vie
                                 vStackSpacing: 4) {
                                     Button(action: openEditionWithBioFocused) {
                                         HStack(spacing: 4) {
-                                            Image(systemName: "plus")
-                                                .font(theme.fonts.body2.weight(.light))
+                                            IconImage(theme.assets.icons.profile.addBio)
                                             Text("Profile.Detail.EmptyBio.Button", bundle: .module)
-                                                .font(theme.fonts.body2)
                                                 .fontWeight(.medium)
                                         }
+                                        .font(theme.fonts.body2)
                                         .foregroundColor(theme.colors.gray900)
                                     }
                                     .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
@@ -533,9 +534,8 @@ private struct GamificationScoreToTargetView: View {
                 Text(verbatim: "\(gamificationScore) \(gamificationConfig.pointsName)")
             }
 
-            Image(systemName: "info.circle")
-                .font(theme.fonts.caption1)
-                .scaleEffect(0.9)
+            IconImage(theme.assets.icons.gamification.info)
+                .scaleEffect(1.1)
                 .padding(.horizontal, 2)
         }
         .font(theme.fonts.caption1.weight(.semibold))

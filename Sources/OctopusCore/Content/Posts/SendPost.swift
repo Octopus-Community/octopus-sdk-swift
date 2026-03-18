@@ -23,6 +23,7 @@ public enum SendPost {
         case badFileFormat
         case uploadIssue
         case badPollAnswerNumber
+        case publicationRateLimitExceeded(_ waitInSec: TimeInterval)
     }
 
     public typealias Error = AuthenticatedInputActionError<ValidationErrors<Field, ErrorDetail>>
@@ -52,6 +53,7 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
              case .badFileFormat:                   .badFileFormat
              case .uploadIssue:                     .uploadIssue
              case .badPollAnswerNumber:             .badPollAnswerNumber
+             case let .publicationRateLimitExceeded(context): .publicationRateLimitExceeded(TimeInterval(context.waitInSec))
              case .missingClientObjectID:           .unknown // not supported for the moment
              case .invalidAuthor:                   .unknown // not supported for the moment
              case .missingCtaText:                  .unknown // not supported for the moment

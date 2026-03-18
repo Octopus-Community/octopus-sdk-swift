@@ -40,6 +40,12 @@ class MockUserService: UserService {
     /// Fifo of the responses to `enteringOctopus`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var enteringOctopusResponses = [Com_Octopuscommunity_EnteringOctopusResponse]()
+    /// Fifo of the responses to `followTopic`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var followTopicResponses = [Com_Octopuscommunity_FollowUnfollowTopicResponse]()
+    /// Fifo of the responses to `unfollowTopic`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var unfollowTopicResponses = [Com_Octopuscommunity_FollowUnfollowTopicResponse]()
 
     private(set) var errorMessage: String?
 
@@ -165,6 +171,26 @@ class MockUserService: UserService {
         }
         return response
     }
+
+    func followTopic(topicId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_FollowUnfollowTopicResponse {
+        guard let response = followTopicResponses.popLast() else {
+            let message = "Dev error, injectNextFollowTopicResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
+        }
+        return response
+    }
+
+    func unfollowTopic(topicId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_FollowUnfollowTopicResponse {
+        guard let response = unfollowTopicResponses.popLast() else {
+            let message = "Dev error, injectNextUnfollowTopicResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
+        }
+        return response
+    }
 }
 
 extension MockUserService {
@@ -202,5 +228,13 @@ extension MockUserService {
 
     func injectNextEnteringOctopusResponse(_ response: Com_Octopuscommunity_EnteringOctopusResponse) {
         enteringOctopusResponses.insert(response, at: 0)
+    }
+
+    func injectNextFollowTopicResponse(_ response: Com_Octopuscommunity_FollowUnfollowTopicResponse) {
+        followTopicResponses.insert(response, at: 0)
+    }
+
+    func injectNextunfollowTopicResponse(_ response: Com_Octopuscommunity_FollowUnfollowTopicResponse) {
+        unfollowTopicResponses.insert(response, at: 0)
     }
 }

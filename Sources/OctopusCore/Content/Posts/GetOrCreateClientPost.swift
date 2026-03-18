@@ -58,7 +58,9 @@ extension ValidationErrors where Field == GetOrCreateClientPost.Field, ErrorDeta
              case .expiredClientToken:       .expiredClientToken
              case .invalidTopicID:           .invalidTopicId
              case .invalidAuthor:            .invalidAuthor
-             case .none:                            .unknown
+             case .postAlreadyExists:       .unknown // internal error that should be catched before
+             case .postNotFound:            .unknown // internal error that should be catched before
+             case .none:                    .unknown
              }
              let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail)
 
@@ -70,4 +72,15 @@ extension ValidationErrors where Field == GetOrCreateClientPost.Field, ErrorDeta
          errors = dictionary
      }
  }
+
+extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Fail {
+    func hasError(_ searchedError: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error.OneOf_Details) -> Bool {
+        for error in errors {
+            if error.details == searchedError {
+                return true
+            }
+        }
+        return false
+    }
+}
 

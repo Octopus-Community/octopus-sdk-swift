@@ -20,6 +20,9 @@ class ServiceClient {
     var hasAccessToCommunity: Bool?
     var localeIdentifier: String
 
+    /// Maximum number of retries for transient gRPC `.unavailable` errors (e.g. "Transport became inactive").
+    private static let maxUnavailableRetries = 2
+
     /// OSVersion container that can be accessed by a non isolated call
     private let sendableOSVersion = SendableOSVersion()
     // OS Version. Set on the main thread because UIDevice.current.systemVersion is main actor
@@ -40,17 +43,27 @@ class ServiceClient {
     }
 
     func callRemote<T>(_ authenticationMethod: AuthenticationMethod, _ block: () async throws -> T) async throws(RemoteClientError) -> T {
-        do {
-            return try await block()
-        } catch {
-            if case let .authenticated(_, authFailed) = authenticationMethod,
-               let grpcStatus = error as? GRPCStatus, grpcStatus.code == .unauthenticated,
-               // do not call authFailed in case of user banned
-               !(grpcStatus.message?.contains("Your account has been blocked") ?? false) {
-                authFailed()
+        var lastError: Error?
+        for attempt in 0...Self.maxUnavailableRetries {
+            do {
+                return try await block()
+            } catch {
+                lastError = error
+                if let grpcStatus = error as? GRPCStatus, grpcStatus.code == .unavailable,
+                   attempt < Self.maxUnavailableRetries {
+                    continue
+                }
+                break
             }
-            throw RemoteClientError(error: error)
         }
+        let error = lastError!
+        if case let .authenticated(_, authFailed) = authenticationMethod,
+           let grpcStatus = error as? GRPCStatus, grpcStatus.code == .unauthenticated,
+           // do not call authFailed in case of user banned
+           !(grpcStatus.message?.contains("Your account has been blocked") ?? false) {
+            authFailed()
+        }
+        throw RemoteClientError(error: error)
     }
 
     func getCallOptions(authenticationMethod: AuthenticationMethod) -> CallOptions {
