@@ -16,9 +16,8 @@ class APITests {
         let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
         _ = OctopusHomeScreen(octopus: octopusSdk)
         _ = OctopusHomeScreen(octopus: octopusSdk, bottomSafeAreaInset: 5)
-        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .logo)
-        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .text(.init(text: "")))
-        _ = OctopusHomeScreen(octopus: octopusSdk, navBarPrimaryColor: true)
+        _ = OctopusHomeScreen(octopus: octopusSdk, mainFeedNavBarTitle: nil)
+        _ = OctopusHomeScreen(octopus: octopusSdk, mainFeedColoredNavBar: true)
         _ = OctopusHomeScreen(octopus: octopusSdk, notificationResponse: .constant(nil))
         _ = OctopusHomeScreen(octopus: octopusSdk, postId: "POST_ID")
     }
@@ -40,10 +39,30 @@ class APITests {
                 caption2: Font.custom("Courier New", size: 10),
                 navBarItem: Font.custom("Courier New", size: 17)
             ),
-            assets: .init(logo: UIImage()))
+            assets: .init(
+                logo: UIImage(),
+                icons: .init()
+            )
+        )
 
         // check that it can be passed as environment
         _ = OctopusHomeScreen(octopus: octopusSdk)
             .environment(\.octopusTheme, theme)
+    }
+
+    @Test func testMainFeedTitle() async throws {
+        _ = OctopusMainFeedTitle(content: .logo, placement: .center)
+        _ = OctopusMainFeedTitle(content: .text(.init(text: "")), placement: .leading)
+    }
+
+}
+
+/// Deprecated APIs (tests are still here to ensure old APIs can still be called)
+extension APITests {
+    @Test func testOldHomeScreen() async throws {
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .logo)
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .text(.init(text: "")))
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarPrimaryColor: true)
     }
 }

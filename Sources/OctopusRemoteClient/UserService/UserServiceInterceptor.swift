@@ -98,4 +98,12 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
     func makeEnteringOctopusInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusRequest, OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
+
+    func makeFollowTopicInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicRequest, OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeUnfollowTopicInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicRequest, OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
 }

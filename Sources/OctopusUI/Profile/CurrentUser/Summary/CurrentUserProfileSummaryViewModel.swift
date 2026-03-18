@@ -52,7 +52,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
         hasInitialNotSeenNotifications = (octopus.core.profileRepository.profile?.notificationBadgeCount ?? 0) > 0
 
         Task {
-            await fetchProfile()
+            await fetchProfile(manual: false)
         }
 
         octopus.core.configRepository.communityConfigPublisher
@@ -109,40 +109,48 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             .sink { [unowned self] internalEvent in
                 switch internalEvent {
                 case .contentCreated, .contentDeleted, .contentReactionChanged:
-                    fetchProfile()
-                case .profileUpdated: break
+                    fetchProfile(manual: false)
+                default: break
                 }
             }.store(in: &storage)
     }
 
     func refresh() async {
         await withTaskGroup(of: Void.self) { group in
-            group.addTask { [self] in await postFeedViewModel?.refresh() }
+            group.addTask { [self] in
+                if await fetchProfile(manual: true) {
+                    await postFeedViewModel?.refresh()
+                }
+            }
             group.addTask { [self] in await refreshNotifCenter() }
-            group.addTask { [self] in await fetchProfile() }
 
             await group.waitForAll()
         }
     }
 
-    private func fetchProfile() {
+    private func fetchProfile(manual: Bool) {
         Task {
-            await fetchProfile()
+            await fetchProfile(manual: manual)
         }
     }
 
-    private func fetchProfile(onlyCatchNotAuthenticatedError: Bool = false) async {
+    @discardableResult
+    private func fetchProfile(manual: Bool) async -> Bool {
         isFetchingProfile = true
+        defer { isFetchingProfile = false }
         do {
             try await octopus.core.profileRepository.fetchCurrentUserProfile()
         } catch {
-            if !onlyCatchNotAuthenticatedError {
+            if manual {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
+            } else if case .noNetwork = error {
+                octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
+            return false
         }
-        isFetchingProfile = false
+        return true
     }
 
     private func refreshNotifCenter() async {

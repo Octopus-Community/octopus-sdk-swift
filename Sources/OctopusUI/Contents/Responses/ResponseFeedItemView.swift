@@ -67,20 +67,20 @@ struct ResponseFeedItemView: View {
                                         if response.canBeDeleted {
                                             Button(action: { displayDeleteAlert = true }) {
                                                 Label(title: { Text(response.kind.deleteButtonText, bundle: .module) },
-                                                      icon: { Image(systemName: "trash") })
+                                                      icon: { Image(uiImage: theme.assets.icons.content.delete) })
                                             }
                                             .buttonStyle(.plain)
                                         }
                                         if response.canBeModerated {
                                             Button(action: { displayContentModeration(response.uuid) }) {
                                                 Label(title: { Text("Moderation.Content.Button", bundle: .module) },
-                                                      icon: { Image(systemName: "flag") })
+                                                      icon: { Image(uiImage: theme.assets.icons.content.report) })
                                             }
                                             .buttonStyle(.plain)
                                         }
                                     }, label: {
                                         HStack {
-                                            Image(res: .more)
+                                            Image(uiImage: theme.assets.icons.common.moreActions)
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
                                                 .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
@@ -93,7 +93,7 @@ struct ResponseFeedItemView: View {
                                     .buttonStyle(.plain)
                                 } else {
                                     Button(action: { openActions = true }) {
-                                        Image(res: .more)
+                                        Image(uiImage: theme.assets.icons.common.moreActions)
                                             .resizable()
                                             .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
                                             .foregroundColor(theme.colors.gray500)
@@ -204,7 +204,7 @@ struct ResponseFeedItemView: View {
                         displayResponseDetail(response.uuid, false)
                     }) {
                         HStack {
-                            Image(systemName: "arrow.right")
+                            IconImage(theme.assets.icons.content.comment.seeReply)
                                 .accessibilityHidden(true)
                             Text("Reply.See_count:\(aggregatedInfo.childCount)", bundle: .module)
                             Spacer()
@@ -351,8 +351,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             canBeDeleted: false,
             canBeModerated: true,
@@ -394,8 +394,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             canBeDeleted: false,
             canBeModerated: true,
@@ -434,8 +434,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             canBeDeleted: false,
             canBeModerated: true,
@@ -477,8 +477,8 @@ import Combine
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             canBeDeleted: false,
             canBeModerated: true,

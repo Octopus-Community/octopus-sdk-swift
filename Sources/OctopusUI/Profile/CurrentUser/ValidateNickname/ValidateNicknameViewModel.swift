@@ -55,6 +55,8 @@ class ValidateNicknameViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
             isLoading = false
         }

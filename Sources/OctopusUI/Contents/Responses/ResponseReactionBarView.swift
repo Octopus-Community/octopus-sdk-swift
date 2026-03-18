@@ -7,6 +7,7 @@ import SwiftUI
 import OctopusCore
 
 struct ResponseReactionBarView: View {
+    @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var languageManager: LanguageManager
 
     let userReaction: UserReaction?
@@ -28,7 +29,7 @@ struct ResponseReactionBarView: View {
 
                 if canReply {
                     Button(action: openCreateReply) {
-                        CreateChildInteractionView(image: .AggregatedInfo.comment,
+                        CreateChildInteractionView(image: theme.assets.icons.content.reply.creation.open,
                                                    text: "Content.AggregatedInfo.Answer",
                                                    kind: .reply)
                         .padding(.vertical, 14)
@@ -45,7 +46,7 @@ struct ResponseReactionBarView: View {
 
                 if canReply {
                     Button(action: openCreateReply) {
-                        CreateChildInteractionView(image: .AggregatedInfo.comment,
+                        CreateChildInteractionView(image: theme.assets.icons.content.reply.creation.open,
                                                    text: "Content.AggregatedInfo.Answer",
                                                    kind: .reply)
                         .padding(.vertical, 14)
@@ -62,7 +63,7 @@ struct ResponseReactionBarView: View {
 
     var reactionInteractionView: some View {
         ReactionInteractionView(
-            image: userReaction != nil ? .emoji(userReaction!.kind) : .resource(.AggregatedInfo.like),
+            image: userReaction != nil ? .emoji(userReaction!.kind) : .resource(canReply ? theme.assets.icons.content.comment.likeNotSelected : theme.assets.icons.content.reply.likeNotSelected),
             text: "Content.AggregatedInfo.Like")
         .accessibilityElement(children: .ignore)
         .accessibilityLabelInBundle("Accessibility.Reaction.Button_reaction:\((userReaction?.kind ?? ReactionKind.heart).accessibilityValue(locale: languageManager.overridenLocale))")

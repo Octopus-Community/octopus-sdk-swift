@@ -8,8 +8,9 @@ import os
 extension SdkEvent {
     /// A screen
     public enum ScreenDisplayedContext: Sendable {
-        /// The posts feed (i.e. list of posts)
-        case postsFeed(PostsFeedContext)
+        case mainFeed(MainFeedContext)
+        case groups
+        case groupDetail(GroupDetailContext)
         case postDetail(PostDetailContext)
         case commentDetail(CommentDetailContext)
         case createPost
@@ -27,7 +28,7 @@ extension SdkEvent {
     }
 }
 
-extension SdkEvent.ScreenDisplayedContext/*.Screen*/ {
+extension SdkEvent.ScreenDisplayedContext {
     /// Context of the otherUserProfile Screen
     public struct OtherUserProfileContext: Sendable {
         /// The id of the profile that is displayed
@@ -39,17 +40,13 @@ extension SdkEvent.ScreenDisplayedContext/*.Screen*/ {
 
     }
 
-    /// Context of the postsFeed Screen
-    public struct PostsFeedContext: Sendable {
+    /// Context of the mainFeed Screen
+    public struct MainFeedContext: Sendable {
         /// The id of the feed that is displayed
         public let feedId: String
-        /// The id to the topic that is related to this feed. Nil if the feed is not representing a topic or is
-        /// multi-topic (for example, the feed "For You").
-        public let relatedTopicId: String?
 
-        public init(feedId: String, relatedTopicId: String?) {
+        public init(feedId: String) {
             self.feedId = feedId
-            self.relatedTopicId = relatedTopicId
         }
     }
 
@@ -70,6 +67,16 @@ extension SdkEvent.ScreenDisplayedContext/*.Screen*/ {
 
         public init(commentId: String) {
             self.commentId = commentId
+        }
+    }
+
+    /// Context of the event .groupDetail
+    public struct GroupDetailContext: Sendable {
+        /// The id of the group.
+        public let groupId: String
+
+        public init(groupId: String) {
+            self.groupId = groupId
         }
     }
 }

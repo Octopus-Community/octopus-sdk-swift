@@ -94,7 +94,7 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
                                 if #available(iOS 14, *) { Logger.profile.debug("NotFound received from server, logging out the user") }
                                 let connectionRepository = injector?.getInjected(identifiedBy: Injected.connectionRepository)
                                 Task {
-                                    try await connectionRepository?.logout()
+                                    try await connectionRepository?.logout(preventReconnection: false)
                                 }
                             }
                         }

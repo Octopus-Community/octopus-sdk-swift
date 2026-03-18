@@ -368,7 +368,9 @@ private struct PictureView: View {
             }) {
                 AuthorAvatarView(avatar: authorAvatar)
                     .overlay(
-                        Image(res: .editPicture)
+                        Image(uiImage: theme.assets.icons.profile.editPicture)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
                             .foregroundColor(theme.colors.onPrimary)
                             .padding(8)
                             .background(theme.colors.primary)

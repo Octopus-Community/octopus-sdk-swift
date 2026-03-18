@@ -79,11 +79,12 @@ class CreatePostViewModel: ObservableObject {
 
     private var isWaitingToSendPost = false
 
-    init(octopus: OctopusSDK, withPoll: Bool) {
+    init(octopus: OctopusSDK, withPoll: Bool, defaultTopic: OctopusCore.Topic?) {
         self.octopus = octopus
         validator = octopus.core.validators.post
         pollValidator = octopus.core.validators.poll
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
+        selectedTopic = defaultTopic.map { .init(topicId: $0.uuid, name: $0.name) }
 
         let externalLinksRepository = octopus.core.externalLinksRepository
         communityGuidelinesUrl = externalLinksRepository.communityGuidelines
@@ -140,7 +141,7 @@ class CreatePostViewModel: ObservableObject {
             $attachment,
             $selectedTopic)
             .sink { [unowned self] text, picture, selectedTopic in
-                hasChanges = !text.isEmpty || attachment != nil || selectedTopic != nil
+                hasChanges = !text.isEmpty || attachment != nil || selectedTopic?.topicId != defaultTopic?.uuid
             }.store(in: &storage)
 
         $text
@@ -216,10 +217,12 @@ class CreatePostViewModel: ObservableObject {
             case let .validation(argumentError):
                 for (_, errors) in argumentError.errors {
                     let multiErrorLocalizedString = errors.map(\.localizedMessage).joined(separator: "\n- ")
-                    self.alertError = .localizedString(multiErrorLocalizedString)
+                    alertError = .localizedString(multiErrorLocalizedString)
                 }
             case let .serverCall(serverError):
-                self.alertError = serverError.displayableMessage
+                alertError = serverError.displayableMessage
+            case .other:
+                alertError = .localizationKey("Error.Unknown")
             }
             // do not send the message if we cannot update the profile
             return
@@ -252,6 +255,8 @@ class CreatePostViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 alertError = serverError.displayableMessage
+            case .other:
+                alertError = .localizationKey("Error.Unknown")
             }
         }
     }

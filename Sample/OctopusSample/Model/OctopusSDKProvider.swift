@@ -27,6 +27,13 @@ class OctopusSDKProvider {
         initializeSDK()
     }
 
+    func switchCommunityFromConfig() async throws {
+        let initializationData = sdkInitializationDataFromConfig()
+        printSdkCreation(connectionMode: initializationData.connectionMode)
+        try await octopus.switchCommunity(apiKey: initializationData.apiKey,
+                                          connectionMode: initializationData.connectionMode)
+    }
+
     private func octopusInstanceDidChange() {
         storage = []
 
@@ -100,14 +107,20 @@ class OctopusSDKProvider {
     }
 
     /// Initialize the Octopus SDK in Octopus auth (i.e. authentification will be done with a MagicLink)
-    func initializeSdkWithOctopusAuth() {
+    private func initializeSdkWithOctopusAuth() {
         octopus = try! OctopusSDK(
             apiKey: APIKeys.apiKey,
             connectionMode: .octopus(deepLink: nil) // EDIT THE DEEPLINK IF YOU WANT TO
         )
     }
 
-    func initializeSDKForInternalUsage() {
+    private func initializeSDKForInternalUsage() {
+        let initializationData = sdkInitializationDataFromConfig()
+        printSdkCreation(connectionMode: initializationData.connectionMode)
+        octopus = try! OctopusSDK(apiKey: initializationData.apiKey, connectionMode: initializationData.connectionMode)
+    }
+
+    private func sdkInitializationDataFromConfig() -> (apiKey: String, connectionMode: ConnectionMode) {
         guard let sdkConfig = SDKConfigManager.instance.sdkConfig else {
             fatalError("SDK config should be set before initializing the SDK")
         }
@@ -146,9 +159,7 @@ class OctopusSDKProvider {
                 APIKeys.ssoSomeManagedFields
             }
         }
-
-        printSdkCreation(connectionMode: connectionMode)
-        octopus = try! OctopusSDK(apiKey: apiKey, connectionMode: connectionMode)
+        return (apiKey: apiKey, connectionMode: connectionMode)
     }
 
     private func printSdkCreation(connectionMode: ConnectionMode) {

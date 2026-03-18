@@ -82,12 +82,13 @@ private struct TitleView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Image(res: .Gamification.rulesHeader)
+            Image(uiImage: theme.assets.icons.gamification.rulesHeader)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(height: 40)
                 .accessibilityHidden(true)
         }
+        .foregroundColor(theme.colors.gray900)
     }
 }
 

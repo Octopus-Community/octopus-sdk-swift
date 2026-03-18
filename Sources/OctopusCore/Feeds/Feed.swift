@@ -14,7 +14,7 @@ public protocol FeedItem: Equatable, Sendable {
 }
 
 @MainActor
-public class Feed<Item: FeedItem, ChildItem: FeedItem> {
+public class Feed<Item: FeedItem, ChildItem: FeedItem>: @MainActor Hashable {
     let feedManager: FeedManager<Item, ChildItem>
     public let id: String
     private var currentPageCursor: String?
@@ -22,6 +22,10 @@ public class Feed<Item: FeedItem, ChildItem: FeedItem> {
     private var hasFetchedDistantOnce = false
     private var isFetching = false
     private var feedItemsCancellable: AnyCancellable?
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 
     @Published public private(set) var hasMoreData: Bool = true
     @Published public private(set) var items: [Item]?

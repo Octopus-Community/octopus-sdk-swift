@@ -30,6 +30,8 @@ struct ToastContainer<ContentView: View>: View {
                             switch toast.toast {
                             case .gamification:
                                 showGamificationRules = true
+                            case .userAction: break
+                            case .error: break
                             }
                         }, dismiss: {
                             withAnimation(.easeInOut) {

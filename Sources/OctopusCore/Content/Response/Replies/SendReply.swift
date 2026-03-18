@@ -21,6 +21,7 @@ public enum SendReply {
         case badFileFormat
         case uploadIssue
         case emptyPublication
+        case publicationRateLimitExceeded(_ waitInSec: TimeInterval)
     }
 
     public typealias Error = AuthenticatedInputActionError<ValidationErrors<Field, ErrorDetail>>
@@ -45,6 +46,7 @@ extension ValidationErrors where Field == SendReply.Field, ErrorDetail == SendRe
             case .badFileFormat:                   .badFileFormat
             case .uploadIssue:                     .uploadIssue
             case .emptyPublication:                .emptyPublication
+            case let .publicationRateLimitExceeded(context): .publicationRateLimitExceeded(TimeInterval(context.waitInSec))
             case .none:                            .unknown
             }
             let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail)

@@ -267,6 +267,8 @@ class EditProfileViewModel: ObservableObject {
                     }
                 case let .serverCall(serverError):
                     alertError = serverError.displayableMessage
+                case .other:
+                    alertError = .localizationKey("Error.Unknown")
                 }
             }
             isLoading = false

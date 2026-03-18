@@ -7,38 +7,15 @@ import SwiftUI
 
 extension View {
     @ViewBuilder
-    func toolbar<LeadingView: View, TrailingView: View>(
-        leading: LeadingView, trailing: TrailingView,
-        leadingSharedBackgroundVisibility: Compat.Visibility = .automatic,
-        trailingSharedBackgroundVisibility: Compat.Visibility = .automatic
-    ) -> some View {
-#if compiler(>=6.2)
-        if #available(iOS 26.0, *) {
-            self.toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    leading
-                }
-                .sharedBackgroundVisibility(leadingSharedBackgroundVisibility.usableValue)
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    trailing
-                }
-                .sharedBackgroundVisibility(trailingSharedBackgroundVisibility.usableValue)
-            }
-        } else {
-            self.navigationBarItems(leading: leading, trailing: trailing)
-        }
-#else
-        self.navigationBarItems(leading: leading, trailing: trailing)
-#endif
-    }
-
-    @ViewBuilder
-    func toolbar<LeadingView: View, TrailingView: View, PreTrailingView: View>(
-        leading: LeadingView, preTrailing: PreTrailingView?, trailing: TrailingView,
+    func toolbar<LeadingView: View, CenteredView: View, TrailingView: View, PreTrailingView: View>(
+        leading: LeadingView,
+        preTrailing: PreTrailingView = EmptyView(),
+        trailing: TrailingView,
+        centered: CenteredView = EmptyView(),
         leadingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         preTrailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
-        trailingSharedBackgroundVisibility: Compat.Visibility = .automatic
+        trailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
+        centeredVisibility: Compat.Visibility = .automatic
     ) -> some View {
 #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
@@ -48,27 +25,74 @@ extension View {
                 }
                 .sharedBackgroundVisibility(leadingSharedBackgroundVisibility.usableValue)
 
-                if let preTrailing {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        preTrailing
+                ToolbarItem(placement: .principal) {
+                    if centeredVisibility != .hidden {
+                        centered
+                    } else {
+                        Color.clear
                     }
-                    .sharedBackgroundVisibility(preTrailingSharedBackgroundVisibility.usableValue)
-
-                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    preTrailing
+                }
+                .sharedBackgroundVisibility(preTrailingSharedBackgroundVisibility.usableValue)
+
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
                 ToolbarItem(placement: .topBarTrailing) {
                     trailing
                 }
                 .sharedBackgroundVisibility(trailingSharedBackgroundVisibility.usableValue)
             }
-        } else if let preTrailing {
-            self.navigationBarItems(leading: leading, trailing: HStack { preTrailing; trailing })
+            .navigationBarTitleDisplayMode(.inline)
+        } else if #available(iOS 14.0, *) {
+            self.toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    leading
+                }
+
+                ToolbarItem(placement: .principal) {
+                    if centeredVisibility != .hidden {
+                        centered
+                    } else {
+                        Color.clear
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack {
+                        preTrailing
+                        trailing
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         } else {
             self.navigationBarItems(leading: leading, trailing: trailing)
         }
 #else
-        if let preTrailing {
-            self.navigationBarItems(leading: leading, trailing: HStack { preTrailing; trailing })
+        if #available(iOS 14.0, *) {
+            self.toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    leading
+                }
+
+                ToolbarItem(placement: .principal) {
+                    if centeredVisibility != .hidden {
+                        centered
+                    } else {
+                        Color.clear
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack {
+                        preTrailing
+                        trailing
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
         } else {
             self.navigationBarItems(leading: leading, trailing: trailing)
         }

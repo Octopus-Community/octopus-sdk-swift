@@ -12,8 +12,6 @@ struct ReportExplanationView: View {
     @EnvironmentObject private var trackingApi: TrackingApi
     @Compat.StateObject private var viewModel: LinksProviderViewModel
 
-    @Compat.ScaledMetric(relativeTo: .title1) var iconSize: CGFloat = 20 // title1 to vary from 18 to 40
-
     var explanationString: String {
         String.localizedStringWithFormat(
             Bundle.module.localizedString(forKey: "Settings.Report.Explanation_url:%@", value: nil, table: nil),
@@ -32,16 +30,12 @@ struct ReportExplanationView: View {
             Spacer().frame(height: 20)
             ScrollView {
                 HStack(alignment: .top) {
-                    Image(res: .Settings.info)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: iconSize, height: iconSize)
+                    IconImage(theme.assets.icons.settings.info)
                         .foregroundColor(theme.colors.gray900)
                         .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Settings.Report.MainText", bundle: .module)
-                            .font(theme.fonts.body2)
                             .fontWeight(.medium)
                             .foregroundColor(theme.colors.gray900)
 
@@ -50,6 +44,7 @@ struct ReportExplanationView: View {
                             .foregroundColor(theme.colors.gray500)
                             .lineSpacing(8)
                     }
+                    .font(theme.fonts.body2)
                     Spacer()
                 }
                 .padding(.horizontal, 20)

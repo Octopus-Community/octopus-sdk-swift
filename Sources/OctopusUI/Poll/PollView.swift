@@ -38,6 +38,7 @@ struct PollView: View {
                             if !hasVoted {
                                 simulateVote = nil
                             }
+                            HapticFeedback.play()
                         }) {
                             PollOptionView(
                                 pollOption: pollOption,
@@ -135,7 +136,7 @@ struct PollOptionView: View {
                     .padding(.vertical, 11)
                 Spacer()
                 if case let .displayResult(_, isUserChoice) = state, isUserChoice {
-                    Image(systemName: "checkmark.circle")
+                    Image(uiImage: theme.assets.icons.content.poll.selectedOption)
                         .resizable()
                         .frame(width: 24, height: 24)
                         .foregroundColor(theme.colors.primaryHighContrast)

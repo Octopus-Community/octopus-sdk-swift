@@ -14,6 +14,7 @@ struct PostDetailView: View {
     @EnvironmentObject var trackingApi: TrackingApi
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
+    @EnvironmentObject private var languageManager: LanguageManager
 
     @Compat.StateObject private var viewModel: PostDetailViewModel
 
@@ -121,8 +122,9 @@ struct PostDetailView: View {
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
+                                defaultPreTrailingBarItem: additionalTrailingBarItem,
                                 defaultTrailingBarItem: trailingBarItem,
-                                defaultNavigationBarTitle: Text(viewModel.post?.topic ?? ""),
+                                defaultNavigationBarTitle: title,
                                 defaultNavigationBarBackButtonHidden: commentHasChanges)
         .compatAlert(
             "Common.Error",
@@ -236,8 +238,7 @@ struct PostDetailView: View {
         if canClose {
             // Do not display the back button
             Color.white.opacity(0.0001)
-        } else
-        if commentHasChanges {
+        } else if commentHasChanges {
             BackButton(action: { showChangesWillBeLostAlert = true })
         } else {
             EmptyView()
@@ -258,7 +259,62 @@ struct PostDetailView: View {
                     .font(theme.fonts.navBarItem)
             }
         } else {
+            moreActionBarItem
+        }
+    }
+
+    @ViewBuilder
+    private var additionalTrailingBarItem: some View {
+        if canClose {
+            moreActionBarItem
+        } else {
             EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var moreActionBarItem: some View {
+        if #available(iOS 14.0, *), let post = viewModel.post, post.canBeDeleted || post.canBeModerated {
+            Menu(content: {
+                if post.canBeDeleted {
+                    Button(action: { displayWillDeleteAlert = true }) {
+                        Label(title: { Text("Post.Delete.Button", bundle: .module) },
+                              icon: { Image(uiImage: theme.assets.icons.content.delete) })
+                    }
+                }
+                if post.canBeModerated {
+                    Button(action: {
+                        guard viewModel.ensureConnected(action: .moderation) else { return }
+                        navigator.push(.reportContent(contentId: post.uuid))
+                    }) {
+                        Label(title: { Text("Moderation.Content.Button", bundle: .module) },
+                              icon: { Image(uiImage: theme.assets.icons.content.report) })
+                    }
+                }
+            }, label: {
+                if #available(iOS 26.0, *) {
+                    Label(title: { Text("Accessibility.Common.More", bundle: .module) },
+                          icon: { Image(uiImage: theme.assets.icons.common.moreActions) })
+                } else {
+                    Image(uiImage: theme.assets.icons.common.moreActions)
+                        .font(theme.fonts.navBarItem)
+                        .padding(.vertical)
+                        .padding(.leading)
+                        .frame(minWidth: 44, minHeight: 44)
+                }
+            })
+            .buttonStyle(.plain)
+        } else {
+            EmptyView()
+        }
+    }
+
+    private var title: Text {
+        if let authorName = viewModel.postAuthorName {
+            Text("Post.Title_author:\(authorName.localizedString(locale: languageManager.overridenLocale))",
+                 bundle: .module)
+        } else {
+            Text(verbatim: "")
         }
     }
 }
@@ -336,7 +392,8 @@ private struct ContentView: View {
                     } else {
                         VStack {
                             Spacer().frame(height: 54)
-                            Image(res: .contentNotAvailable)
+                            Image(uiImage: theme.assets.icons.content.post.notAvailable)
+                                .accessibilityHidden(true)
                             Text("Content.Detail.NotAvailable", bundle: .module)
                                 .font(theme.fonts.body2)
                                 .fontWeight(.medium)
@@ -400,50 +457,52 @@ private struct PostDetailContentView: View {
                                                     topPadding: topPadding, bottomPadding: 4,
                                                     displayProfile: displayProfile)
                             Text(post.topic)
-                                .octopusBadgeStyle(.small, status: .off)
+                                .font(theme.fonts.caption1)
+                                .fontWeight(.medium)
+                                .foregroundColor(theme.colors.primary)
                         }
                         Spacer()
 
-                        if post.canBeDeleted || post.canBeModerated {
-                            if #available(iOS 14.0, *) {
-                                Menu(content: {
-                                    if post.canBeDeleted {
-                                        Button(action: { displayWillDeleteAlert = true }) {
-                                            Label(title: { Text("Post.Delete.Button", bundle: .module) },
-                                                  icon: { Image(systemName: "trash") })
-                                        }
-                                    }
-                                    if post.canBeModerated {
-                                        Button(action: { displayContentModeration(post.uuid) }) {
-                                            Label(title: { Text("Moderation.Content.Button", bundle: .module) },
-                                                  icon: { Image(systemName: "flag") })
-                                        }
-                                    }
-                                }, label: {
-                                    HStack(alignment: .top) {
-                                        Image(res: .more)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                                            .foregroundColor(theme.colors.gray500)
-                                            .accessibilityLabelInBundle("Accessibility.Common.More")
-                                    }.frame(width: max(moreIconSize, 44), height: max(moreIconSize, 44))
-                                })
-                                .buttonStyle(.plain)
-                                .padding(.top, topPadding)
-                            } else {
-                                Button(action: { openActions = true }) {
-                                    Image(res: .more)
-                                        .resizable()
-                                        .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
-                                        .foregroundColor(theme.colors.gray500)
-                                        .accessibilityLabelInBundle("Accessibility.Common.More")
-                                }
-                                .buttonStyle(.plain)
-                                .padding(.top, topPadding)
-                            }
-                        }
+//                        if post.canBeDeleted || post.canBeModerated {
+//                            if #available(iOS 14.0, *) {
+//                                Menu(content: {
+//                                    if post.canBeDeleted {
+//                                        Button(action: { displayWillDeleteAlert = true }) {
+//                                            Label(title: { Text("Post.Delete.Button", bundle: .module) },
+//                                                  icon: { Image(uiImage: theme.assets.icons.content.delete) })
+//                                        }
+//                                    }
+//                                    if post.canBeModerated {
+//                                        Button(action: { displayContentModeration(post.uuid) }) {
+//                                            Label(title: { Text("Moderation.Content.Button", bundle: .module) },
+//                                                  icon: { Image(uiImage: theme.assets.icons.content.report) })
+//                                        }
+//                                    }
+//                                }, label: {
+//                                    HStack(alignment: .top) {
+//                                        Image(uiImage: theme.assets.icons.common.moreActions)
+//                                            .resizable()
+//                                            .aspectRatio(contentMode: .fit)
+//                                            .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
+//                                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+//                                            .foregroundColor(theme.colors.gray500)
+//                                            .accessibilityLabelInBundle("Accessibility.Common.More")
+//                                    }.frame(width: max(moreIconSize, 44), height: max(moreIconSize, 44))
+//                                })
+//                                .buttonStyle(.plain)
+//                                .padding(.top, topPadding)
+//                            } else {
+//                                Button(action: { openActions = true }) {
+//                                    Image(uiImage: theme.assets.icons.common.moreActions)
+//                                        .resizable()
+//                                        .frame(width: max(moreIconSize, 24), height: max(moreIconSize, 24))
+//                                        .foregroundColor(theme.colors.gray500)
+//                                        .accessibilityLabelInBundle("Accessibility.Common.More")
+//                                }
+//                                .buttonStyle(.plain)
+//                                .padding(.top, topPadding)
+//                            }
+//                        }
                     }
 
                     Spacer().frame(height: 8)
@@ -589,7 +648,7 @@ private struct PostDetailContentView: View {
 
                         if !UIAccessibility.isVoiceOverRunning {
                             Button(action: openCreateComment) {
-                                CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                CreateChildInteractionView(image: theme.assets.icons.content.comment.creation.open,
                                                            text: "Content.AggregatedInfo.Comment",
                                                            kind: .comment)
                             }
@@ -606,7 +665,7 @@ private struct PostDetailContentView: View {
                             HStack(spacing: 0) {
                                 Spacer()
                                 Button(action: openCreateComment) {
-                                    CreateChildInteractionView(image: .AggregatedInfo.comment,
+                                    CreateChildInteractionView(image: theme.assets.icons.content.comment.creation.open,
                                                                text: "Content.AggregatedInfo.Comment",
                                                                kind: .comment)
                                 }
@@ -621,7 +680,7 @@ private struct PostDetailContentView: View {
                     HStack(spacing: 0) {
                         Spacer()
                         Button(action: openCreateComment) {
-                            CreateChildInteractionView(image: .AggregatedInfo.comment,
+                            CreateChildInteractionView(image: theme.assets.icons.content.comment.creation.open,
                                                        text: "Content.AggregatedInfo.Comment",
                                                        kind: .comment)
                         }
@@ -738,7 +797,11 @@ private struct CommentsView: View {
             Button(action: openCreateComment) {
                 VStack {
                     Spacer().frame(height: 54)
-                    Image(res: .contentNotAvailable)
+                    Image(uiImage: theme.assets.icons.content.comment.emptyFeed)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 32)
+                        .accessibilityHidden(true)
                     Text("Post.Detail.NoComments", bundle: .module)
                         .font(theme.fonts.body2)
                         .fontWeight(.medium)
@@ -767,8 +830,8 @@ private struct CommentsView: View {
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
             aggregatedInfo: .init(reactions: [
@@ -823,8 +886,8 @@ private struct CommentsView: View {
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
             aggregatedInfo: .init(reactions: [
@@ -888,8 +951,8 @@ private struct CommentsView: View {
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
             aggregatedInfo: .init(reactions: [
@@ -950,8 +1013,8 @@ private struct CommentsView: View {
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
             aggregatedInfo: .init(reactions: [
@@ -1006,8 +1069,8 @@ private struct CommentsView: View {
                     gamificationLevel: 1),
                 gamificationLevel: GamificationLevel(
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
-                    badgeColor: DynamicColor(hexLight: "#FF0000", hexDark: "#FFFF00"),
-                    badgeTextColor: DynamicColor(hexLight: "#FFFFFF", hexDark: "#000000"))),
+                    badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
+                    badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
             aggregatedInfo: .init(reactions: [

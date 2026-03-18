@@ -10,4 +10,6 @@ extension Logger {
 
     /// Logs that are related the user connection
     static let connection = Logger(subsystem: subsystem, category: "Connection")
+    /// Logs that are related the community configuration
+    static let config = Logger(subsystem: subsystem, category: "Configuration")
 }

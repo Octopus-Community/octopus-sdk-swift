@@ -11,6 +11,7 @@ public struct CommunityConfig: Equatable, Sendable {
     public let forceLoginOnStrongActions: Bool
     public let displayAccountAge: Bool
     public let gamificationConfig: GamificationConfig?
+    public let displayConfig: DisplayConfig?
 }
 
 extension CommunityConfig {
@@ -18,6 +19,7 @@ extension CommunityConfig {
         self.forceLoginOnStrongActions = entity.forceLoginOnStrongActions
         self.displayAccountAge = entity.displayAccountAge
         self.gamificationConfig = entity.gamificationConfig.map { GamificationConfig(from: $0) }
+        self.displayConfig = entity.displayConfig.map { DisplayConfig(from: $0) }
     }
 
     init(from config: Com_Octopuscommunity_ApiKeyConfig) {
@@ -28,5 +30,6 @@ extension CommunityConfig {
         } else {
             gamificationConfig = nil
         }
+        displayConfig = DisplayConfig(from: config.displayConfig)
     }
 }

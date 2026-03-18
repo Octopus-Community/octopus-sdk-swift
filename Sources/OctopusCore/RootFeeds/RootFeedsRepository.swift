@@ -49,12 +49,14 @@ public class RootFeedsRepository: InjectableObject, @unchecked Sendable {
     private let authCallProvider: AuthenticatedCallProvider
     private let remoteClient: OctopusRemoteClient
     private let postFeedsStore: PostFeedsStore
+    private let networkMonitor: NetworkMonitor
 
     init(injector: Injector) {
         rootFeedsDatabase = injector.getInjected(identifiedBy: Injected.rootFeedsDatabase)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
+        networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
     }
 
     public func getRootFeeds() -> AnyPublisher<[RootFeed], Error> {
@@ -70,6 +72,7 @@ public class RootFeedsRepository: InjectableObject, @unchecked Sendable {
     }
 
     public func fetchRootFeeds() async throws(ServerCallError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             let response = try await remoteClient.feedService.getRootFeedsInfo(
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())

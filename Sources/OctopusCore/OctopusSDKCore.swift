@@ -3,6 +3,7 @@ import OctopusRemoteClient
 import OctopusGrpcModels
 import Combine
 import OctopusDependencyInjection
+import os
 
 /// Octopus Community main model object.
 /// This object holds a reference on all the repositories.
@@ -35,14 +36,15 @@ public class OctopusSDKCore: ObservableObject {
     /// Constructor
     /// - Parameter apiKey: the API key that identifies your project
     public init(apiKey: String, connectionMode: ConnectionMode, sdkConfig: OctopusSDKConfiguration,
+                cleanAfterCommunitySwitch: Bool = false,
                 injector: Injector) throws {
         self.connectionMode = connectionMode
         self.sdkConfig = sdkConfig
         self.injector = injector
         let installIdProvider = InstallIdProvider()
-        let modelCoreDataStack = try ModelCoreDataStack()
-        let trackingCoreDataStack = try TrackingCoreDataStack()
-        let configCoreDataStack = try ConfigCoreDataStack()
+        let modelCoreDataStack = try ModelCoreDataStack(forceReset: cleanAfterCommunitySwitch)
+        let trackingCoreDataStack = try TrackingCoreDataStack(forceReset: cleanAfterCommunitySwitch)
+        let configCoreDataStack = try ConfigCoreDataStack(forceReset: cleanAfterCommunitySwitch)
         injector.register { LanguageRepository(injector: $0) }
         injector.register { _ in SecuredStorageDefault(apiKey: apiKey, isNewInstall: installIdProvider.isNewInstall) }
         injector.register { UserDataStorage(injector: $0) }
@@ -73,7 +75,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { SdkEventsEmitter(injector: $0) }
 
         // Repository
-        injector.register { ConfigRepositoryDefault(injector: $0) }
+        injector.register { ConfigRepositoryDefault(injector: $0, forceReset: cleanAfterCommunitySwitch) }
         injector.register { RootFeedsRepository(injector: $0) }
         injector.register { PostsRepository(injector: $0) }
         injector.register { CommentsRepository(injector: $0) }
@@ -126,7 +128,7 @@ public class OctopusSDKCore: ObservableObject {
         // Tracking
         injector.register { _ in trackingCoreDataStack }
         injector.register { EventsDatabase(injector: $0) }
-        injector.register { TrackingRepository(injector: $0) }
+        injector.register { TrackingRepository(injector: $0, forceReset: cleanAfterCommunitySwitch) }
         injector.register { AppSessionMonitor(injector: $0) }
         injector.register { TrackingEventsSendingMonitor(injector: $0) }
 
@@ -175,6 +177,64 @@ public class OctopusSDKCore: ObservableObject {
         toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
         videosRepository = injector.getInjected(identifiedBy: Injected.videosRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
+    }
+
+    public func cleanupBeforeCommunitySwitch() async throws {
+        // close sessions
+        injector.getInjected(identifiedBy: Injected.appSessionMonitor).stop()
+
+        // send remaining events
+        do {
+            try await injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).sendAllEvents()
+        } catch {
+            if #available(iOS 14, *) { Logger.other.debug("Sending all pending events failed: \(error)") }
+        }
+
+        // disconnecting user
+        do {
+            try await connectionRepository.logout(preventReconnection: true)
+        } catch {
+            if #available(iOS 14, *) { Logger.other.debug("Disconnecting user failed: \(error)") }
+        }
+
+        // Cleaning user related data
+        if #available(iOS 14, *) { Logger.other.debug("Cleaning user data") }
+        do {
+            try await injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).forceClean()
+        } catch {
+            if #available(iOS 14, *) { Logger.other.debug("Cleaning user data failed: \(error)") }
+        }
+
+        // Cleaning cached files
+        if #available(iOS 14, *) { Logger.other.debug("Cleaning cached files") }
+        do {
+            try OctopusFileStorageProvider.clearCachedFolder()
+        } catch {
+            if #available(iOS 14, *) { Logger.other.debug("Deleting cached files failed: \(error)") }
+        }
+
+        // Cleaning db
+        if #available(iOS 14, *) { Logger.other.debug("Cleaning db files") }
+        do {
+            let modelCoreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
+            try modelCoreDataStack.teardown()
+        } catch {
+            if #available(iOS 14, *) { Logger.other.debug("Cleaning model db files failed: \(error)") }
+        }
+
+        do {
+            let configCoreDataStack = injector.getInjected(identifiedBy: Injected.configCoreDataStack)
+            try configCoreDataStack.teardown()
+        } catch {
+            if #available(iOS 14, *) { Logger.other.debug("Cleaning config db files failed: \(error)") }
+        }
+
+        do {
+            let trackingCoreDataStack = injector.getInjected(identifiedBy: Injected.trackingCoreDataStack)
+            try trackingCoreDataStack.teardown()
+        } catch {
+            if #available(iOS 14, *) { Logger.other.debug("Cleaning tracking db files failed: \(error)") }
+        }
     }
 
     deinit {

@@ -47,7 +47,9 @@ struct PostFeedView<EmptyPostView: View>: View {
     var body: some View {
         ZStack {
             ContentView(
-                posts: viewModel.posts, hasMoreData: viewModel.hasMoreData,
+                posts: viewModel.posts,
+                displayGroup: viewModel.displayGroup,
+                hasMoreData: viewModel.hasMoreData,
                 zoomableImageInfo: $zoomableImageInfo,
                 loadPreviousItems: viewModel.loadPreviousItems,
                 displayPostDetail: displayPostDetail,
@@ -111,6 +113,7 @@ struct PostFeedView<EmptyPostView: View>: View {
 
 private struct ContentView<EmptyPostView: View>: View {
     let posts: [DisplayablePost]?
+    let displayGroup: Bool
     let hasMoreData: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
@@ -129,7 +132,9 @@ private struct ContentView<EmptyPostView: View>: View {
     var body: some View {
         Group {
             if let posts {
-                PostsView(posts: posts, hasMoreData: hasMoreData,
+                PostsView(posts: posts,
+                          displayGroup: displayGroup,
+                          hasMoreData: hasMoreData,
                           zoomableImageInfo: $zoomableImageInfo,
                           loadPreviousItems: loadPreviousItems,
                           displayPostDetail: displayPostDetail,
@@ -155,6 +160,7 @@ private struct ContentView<EmptyPostView: View>: View {
 
 private struct PostsView<EmptyPostView: View>: View {
     let posts: [DisplayablePost]
+    let displayGroup: Bool
     let hasMoreData: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousItems: () -> Void
@@ -176,7 +182,9 @@ private struct PostsView<EmptyPostView: View>: View {
         if !posts.isEmpty {
             Compat.LazyVStack(spacing: 0) {
                 ForEach(posts, id: \.uuid) { post in
-                    PostSummaryView(post: post, width: width,
+                    PostSummaryView(post: post,
+                                    width: width,
+                                    displayGroup: displayGroup,
                                     zoomableImageInfo: $zoomableImageInfo,
                                     displayPostDetail: displayPostDetail,
                                     displayCommentDetail: displayCommentDetail,

@@ -115,18 +115,15 @@ class APITests {
         _ = ClientUser.Profile(nickname: "", bio: "", picture: nil)
     }
 
-    @Test func testGetOrCreateClientObjectRelatedPostId() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
-        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
-                                    signature: nil)
-        let _: String = try await octopus.getOrCreateClientObjectRelatedPostId(content: clientPost)
-    }
-
     @Test func testFetchOrCreateClientObjectRelatedPost() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
-        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
-                                    signature: nil)
-        let post = try await octopus.fetchOrCreateClientObjectRelatedPost(content: clientPost)
+        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil)
+        let post: OctopusPost = try await octopus.fetchOrCreateClientObjectRelatedPost(
+            content: clientPost,
+            tokenProvider: { strToSign in
+                try? await Task.sleep(nanoseconds: 0)
+                return strToSign.hashValue.description
+            })
         let _: String = post.id
         let _: Int = post.commentCount
         let _: Int = post.viewCount
@@ -168,19 +165,20 @@ class APITests {
         try await octopus.fetchTopics()
     }
 
-    @Test func testClientPostInit() async throws {
-        _ = ClientPost(clientObjectId: "", text: "", attachment: .distantImage(URL(string: "")!),
-                       viewClientObjectButtonText: nil, signature: nil)
-        _ = ClientPost(clientObjectId: "", topicId: "", text: "", catchPhrase: "", attachment: .localImage(Data()),
-                       viewClientObjectButtonText: nil, signature: nil)
-    }
-
     @Test func testSetOnNavigateToUrlCallback() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
         octopus.set(onNavigateToURLCallback: { url in
             _ = url.host
             return .handledByApp
         })
+    }
+
+    @Test func testSwitchCommunity() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        try await octopus.switchCommunity(apiKey: "")
+        try await octopus.switchCommunity(apiKey: "", connectionMode: .octopus(deepLink: nil))
+        try await octopus.switchCommunity(apiKey: "", connectionMode: .octopus(deepLink: nil), configuration: .init())
+
     }
 
     @Test func testEvents() async throws {
@@ -258,6 +256,12 @@ class APITests {
                 switch context.screen {
                 case let .postsFeed(context):
                     let _: String = context.feedId
+                    let _: String? = context.relatedTopicId
+                case let .mainFeed(context):
+                    let _: String = context.feedId
+                case .groups: break
+                case let .groupDetail(context):
+                    let _: String = context.groupId
                 case let .postDetail(context):
                     let _: String = context.postId
                 case let .commentDetail(context):
@@ -314,11 +318,60 @@ class APITests {
                 case let .updated(value):
                     let _: Bool = value.hasPicture
                 }
+            case let .groupFollowingChanged(context):
+                let _: String = context.groupId
+                let _: Bool = context.followed
             case let .sessionStarted(context):
                 let _: String = context.sessionId
             case let .sessionStopped(context):
                 let _: String = context.sessionId
             }
         }
+    }
+}
+
+/// Deprecated APIs (tests are still here to ensure old APIs can still be called)
+extension APITests {
+    @Test func testGetOrCreateClientObjectRelatedPostId() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
+                                    signature: nil)
+        let _: String = try await octopus.getOrCreateClientObjectRelatedPostId(content: clientPost)
+    }
+
+    @Test func testFetchOrCreateClientObjectRelatedPostOldSignature() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
+                                    signature: nil)
+        let post = try await octopus.fetchOrCreateClientObjectRelatedPost(content: clientPost)
+        let _: String = post.id
+        let _: Int = post.commentCount
+        let _: Int = post.viewCount
+        if let reactionCount = post.reactions.first {
+            let _: Int = reactionCount.count
+            let reaction = reactionCount.reaction
+            let _: String = reaction.unicode
+        }
+        let _: OctopusReactionKind? = post.userReaction
+
+        _ = octopus.getClientObjectRelatedPostPublisher(clientObjectId: "").sink { post in
+            guard let post else { return }
+            let _: String = post.id
+            let _: Int = post.commentCount
+            let _: Int = post.viewCount
+            if let reactionCount = post.reactions.first {
+                let _: Int = reactionCount.count
+                let reaction = reactionCount.reaction
+                let _: String = reaction.unicode
+            }
+            let _: OctopusReactionKind? = post.userReaction
+        }
+    }
+
+    @Test func testClientPostInit() async throws {
+        _ = ClientPost(clientObjectId: "", text: "", attachment: .distantImage(URL(string: "")!),
+                       viewClientObjectButtonText: nil, signature: nil)
+        _ = ClientPost(clientObjectId: "", topicId: "", text: "", catchPhrase: "", attachment: .localImage(Data()),
+                       viewClientObjectButtonText: nil, signature: nil)
     }
 }

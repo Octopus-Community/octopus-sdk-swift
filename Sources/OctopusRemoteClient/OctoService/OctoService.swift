@@ -71,6 +71,14 @@ public protocol OctoService {
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_ReportContentResponse
 
+    func getBridgePost(clientObjectId: String,
+                       authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
+
+    func createBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
+                          authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
+
     func getOrCreateBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
                                authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetOrCreateBridgePostResponse
@@ -273,6 +281,35 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.reportContent(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func getBridgePost(clientObjectId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        let request = Com_Octopuscommunity_GetBridgePostRequest.with {
+            $0.clientObjectID = clientObjectId
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.getBridgePost(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func createBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
+                          authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        let request = Com_Octopuscommunity_GetOrCreateBridgePostRequest.with {
+            $0.postBridge = post
+            if let topicId {
+                $0.topicID = topicId
+            }
+            if let clientToken {
+                $0.clientToken = clientToken
+            }
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.createBridgePost(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

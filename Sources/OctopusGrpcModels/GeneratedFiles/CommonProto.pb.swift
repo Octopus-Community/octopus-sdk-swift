@@ -261,6 +261,77 @@ public struct Com_Octopuscommunity_ErrorDetails: Sendable {
     public init() {}
   }
 
+  public struct PostAlreadyExists: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct PostNotFound: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct PublicationRateLimitExceeded: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var waitInSec: Int64 = 0
+
+    /// Name of the rule that triggered the error
+    public var ruleLabel: String = String()
+
+    /// Max number of publication in window
+    public var maxCount: Int32 = 0
+
+    /// Duration of the window in sec
+    public var windowSec: Int64 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct UnFollowableTopic: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct TopicAlreadyFollowed: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public struct TopicAlreadyUnfollowed: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -732,6 +803,151 @@ extension Com_Octopuscommunity_ErrorDetails.InvalidCtaTarget: SwiftProtobuf.Mess
   }
 
   public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.InvalidCtaTarget, rhs: Com_Octopuscommunity_ErrorDetails.InvalidCtaTarget) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.PostAlreadyExists: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".PostAlreadyExists"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.PostAlreadyExists, rhs: Com_Octopuscommunity_ErrorDetails.PostAlreadyExists) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.PostNotFound: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".PostNotFound"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.PostNotFound, rhs: Com_Octopuscommunity_ErrorDetails.PostNotFound) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.PublicationRateLimitExceeded: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".PublicationRateLimitExceeded"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "waitInSec"),
+    2: .same(proto: "ruleLabel"),
+    3: .same(proto: "maxCount"),
+    4: .same(proto: "windowSec"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt64Field(value: &self.waitInSec) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.ruleLabel) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.maxCount) }()
+      case 4: try { try decoder.decodeSingularInt64Field(value: &self.windowSec) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.waitInSec != 0 {
+      try visitor.visitSingularInt64Field(value: self.waitInSec, fieldNumber: 1)
+    }
+    if !self.ruleLabel.isEmpty {
+      try visitor.visitSingularStringField(value: self.ruleLabel, fieldNumber: 2)
+    }
+    if self.maxCount != 0 {
+      try visitor.visitSingularInt32Field(value: self.maxCount, fieldNumber: 3)
+    }
+    if self.windowSec != 0 {
+      try visitor.visitSingularInt64Field(value: self.windowSec, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.PublicationRateLimitExceeded, rhs: Com_Octopuscommunity_ErrorDetails.PublicationRateLimitExceeded) -> Bool {
+    if lhs.waitInSec != rhs.waitInSec {return false}
+    if lhs.ruleLabel != rhs.ruleLabel {return false}
+    if lhs.maxCount != rhs.maxCount {return false}
+    if lhs.windowSec != rhs.windowSec {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.UnFollowableTopic: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".UnFollowableTopic"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.UnFollowableTopic, rhs: Com_Octopuscommunity_ErrorDetails.UnFollowableTopic) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.TopicAlreadyFollowed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".TopicAlreadyFollowed"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.TopicAlreadyFollowed, rhs: Com_Octopuscommunity_ErrorDetails.TopicAlreadyFollowed) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ErrorDetails.TopicAlreadyUnfollowed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".TopicAlreadyUnfollowed"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ErrorDetails.TopicAlreadyUnfollowed, rhs: Com_Octopuscommunity_ErrorDetails.TopicAlreadyUnfollowed) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

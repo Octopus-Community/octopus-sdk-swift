@@ -19,8 +19,9 @@ struct CreatePostView: View {
     @State private var displayableError: DisplayableString?
     @State private var showChangesWillBeLostAlert = false
 
-    init(octopus: OctopusSDK, withPoll: Bool) {
-        _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(octopus: octopus, withPoll: withPoll))
+    init(octopus: OctopusSDK, withPoll: Bool, defaultTopic: OctopusCore.Topic?) {
+        _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(
+            octopus: octopus, withPoll: withPoll, defaultTopic: defaultTopic))
     }
 
     var body: some View {
@@ -41,11 +42,16 @@ struct CreatePostView: View {
         .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
         .navigationBarBackButtonHidden(viewModel.hasChanges)
         .toolbar(leading: cancelButton, trailing: postButton,
-                             trailingSharedBackgroundVisibility: .hidden)
-        .sheet(isPresented: $showTopicPicker) {
-            TopicPicker(topics: viewModel.topics, selectedTopic: $viewModel.selectedTopic)
-                .sizedSheet()
+                 trailingSharedBackgroundVisibility: .hidden)
+        .fullScreenCover(isPresented: $showTopicPicker) {
+            GroupListScreen(octopus: viewModel.octopus, context: .groupSelection(
+                selectedGroupId: viewModel.selectedTopic?.topicId,
+                updateSelectedGroupId: { newTopicId in
+                    viewModel.selectedTopic = viewModel.topics.first(where: { $0.topicId == newTopicId })
+                    showTopicPicker = false
+                }))
         }
+
         .compatAlert(
             "Common.Error",
             isPresented: $displayError,
@@ -110,6 +116,7 @@ struct CreatePostView: View {
                     showTopicPicker = true
                 } else {
                     viewModel.send()
+                    HapticFeedback.play()
                 }
             }) {
                 Text("Post.Create.Button", bundle: .module)
@@ -222,7 +229,7 @@ private struct WritingPostForm: View {
                                     } else {
                                         Text("Post.Create.Topic.Selection.Button", bundle: .module)
                                     }
-                                    Image(systemName: "chevron.down")
+                                    IconImage(theme.assets.icons.content.post.creation.topicSelection)
                                 }
                             }
                             .buttonStyle(OctopusButtonStyle(.mid, style: .secondary, hasTrailingIcon: true,
@@ -263,10 +270,8 @@ private struct WritingPostForm: View {
                                     Button(action: {
                                         selectedItems = []
                                     }) {
-                                        Image(systemName: "xmark")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .font(theme.fonts.body1.bold())
+                                        IconImage(theme.assets.icons.content.post.creation.deletePicture)
+                                            .font(theme.fonts.body1)
                                             .padding(10)
                                             .foregroundColor(theme.colors.gray500)
                                             .background(
@@ -274,10 +279,9 @@ private struct WritingPostForm: View {
                                                     .foregroundColor(theme.colors.gray200)
 
                                             )
-                                            .frame(width: 32, height: 32)
+                                            .frame(minWidth: 32, minHeight: 32)
                                             .padding([.leading, .bottom], 14)
                                             .padding([.trailing, .top], 4)
-
                                     }
                                     .buttonStyle(.plain)
                                     .accessibilityLabelInBundle("Accessibility.Image.Delete")
@@ -354,10 +358,7 @@ private struct WritingPostForm: View {
                             if !(attachment?.hasPoll ?? false) {
                                 Button(action: { openPhotosPicker = true }) {
                                     HStack(spacing: 4) {
-                                        Image(res: .addMedia)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
+                                        IconImage(theme.assets.icons.content.post.creation.addPicture)
                                         Text("Content.Create.AddPicture", bundle: .module)
                                     }
                                 }
@@ -371,15 +372,12 @@ private struct WritingPostForm: View {
                                     }
                                 }) {
                                     HStack(spacing: 4) {
-                                        Image(res: .poll)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 24, height: 24)
+                                        IconImage(theme.assets.icons.content.post.creation.addPoll)
                                         Text("Content.Create.AddPoll", bundle: .module)
                                     }
                                 }
                                 .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
-                                                               externalVerticalPadding: 16))
+                                                                externalVerticalPadding: 16))
                             }
                             Spacer()
                         }

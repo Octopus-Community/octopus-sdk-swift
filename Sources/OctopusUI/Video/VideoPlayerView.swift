@@ -176,7 +176,7 @@ private struct VideoControlsBottomBar: View {
     var body: some View {
         HStack(spacing: 0) {
             Button(action: togglePlayPause) {
-                Image(res: togglePlayPauseIcon)
+                Image(uiImage: togglePlayPauseIcon)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: iconSize, height: iconSize)
@@ -212,7 +212,7 @@ private struct VideoControlsBottomBar: View {
                 .padding([.vertical, .leading], padding)
 
             Button(action: toggleSound) {
-                Image(res: isMuted ? .Video.muted : .Video.notMuted)
+                Image(uiImage: isMuted ? theme.assets.icons.content.video.muted : theme.assets.icons.content.video.notMuted)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: iconSize, height: iconSize)
@@ -229,13 +229,13 @@ private struct VideoControlsBottomBar: View {
         }
     }
 
-    var togglePlayPauseIcon: GenImageResource {
+    var togglePlayPauseIcon: UIImage {
         if isEnded || hasError {
-            .Video.replay
+            theme.assets.icons.content.video.replay
         } else if isPlaying {
-            .Video.pause
+            theme.assets.icons.content.video.pause
         } else {
-            .Video.play
+            theme.assets.icons.content.video.play
         }
     }
 

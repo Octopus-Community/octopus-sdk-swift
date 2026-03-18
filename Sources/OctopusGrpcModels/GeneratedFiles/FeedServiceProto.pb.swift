@@ -108,11 +108,21 @@ public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: Sendable {
   /// Clears the value of `pageSize`. Subsequent reads from it will return its default value.
   public mutating func clearPageSize() {self._pageSize = nil}
 
+  public var fetchAggregates: Bool {
+    get {return _fetchAggregates ?? false}
+    set {_fetchAggregates = newValue}
+  }
+  /// Returns true if `fetchAggregates` has been explicitly set.
+  public var hasFetchAggregates: Bool {return self._fetchAggregates != nil}
+  /// Clears the value of `fetchAggregates`. Subsequent reads from it will return its default value.
+  public mutating func clearFetchAggregates() {self._fetchAggregates = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _pageSize: Int32? = nil
+  fileprivate var _fetchAggregates: Bool? = nil
 }
 
 public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: Sendable {
@@ -132,11 +142,37 @@ public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: Sendable {
   /// Clears the value of `nextPageCursor`. Subsequent reads from it will return its default value.
   public mutating func clearNextPageCursor() {self._nextPageCursor = nil}
 
+  ///Same order than feed
+  public var aggregates: [Com_Octopuscommunity_FeedAggregate] = []
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _nextPageCursor: String? = nil
+}
+
+public struct Com_Octopuscommunity_FeedAggregate: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var itemID: String = String()
+
+  public var aggregate: Com_Octopuscommunity_Aggregate {
+    get {return _aggregate ?? Com_Octopuscommunity_Aggregate()}
+    set {_aggregate = newValue}
+  }
+  /// Returns true if `aggregate` has been explicitly set.
+  public var hasAggregate: Bool {return self._aggregate != nil}
+  /// Clears the value of `aggregate`. Subsequent reads from it will return its default value.
+  public mutating func clearAggregate() {self._aggregate = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _aggregate: Com_Octopuscommunity_Aggregate? = nil
 }
 
 public struct Com_Octopuscommunity_InitializeFeedRequest: Sendable {
@@ -387,6 +423,7 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.M
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "pageCursor"),
     2: .same(proto: "pageSize"),
+    3: .same(proto: "fetchAggregates"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -397,6 +434,7 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.M
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.pageCursor) }()
       case 2: try { try decoder.decodeSingularInt32Field(value: &self._pageSize) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self._fetchAggregates) }()
       default: break
       }
     }
@@ -413,12 +451,16 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.M
     try { if let v = self._pageSize {
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._fetchAggregates {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest, rhs: Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest) -> Bool {
     if lhs.pageCursor != rhs.pageCursor {return false}
     if lhs._pageSize != rhs._pageSize {return false}
+    if lhs._fetchAggregates != rhs._fetchAggregates {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -429,6 +471,7 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "feed"),
     2: .same(proto: "nextPageCursor"),
+    3: .same(proto: "aggregates"),
   ]
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -439,6 +482,7 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.feed) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._nextPageCursor) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.aggregates) }()
       default: break
       }
     }
@@ -455,12 +499,58 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.
     try { if let v = self._nextPageCursor {
       try visitor.visitSingularStringField(value: v, fieldNumber: 2)
     } }()
+    if !self.aggregates.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.aggregates, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse, rhs: Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse) -> Bool {
     if lhs.feed != rhs.feed {return false}
     if lhs._nextPageCursor != rhs._nextPageCursor {return false}
+    if lhs.aggregates != rhs.aggregates {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_FeedAggregate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".FeedAggregate"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "itemId"),
+    2: .same(proto: "aggregate"),
+  ]
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.itemID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._aggregate) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.itemID.isEmpty {
+      try visitor.visitSingularStringField(value: self.itemID, fieldNumber: 1)
+    }
+    try { if let v = self._aggregate {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_FeedAggregate, rhs: Com_Octopuscommunity_FeedAggregate) -> Bool {
+    if lhs.itemID != rhs.itemID {return false}
+    if lhs._aggregate != rhs._aggregate {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

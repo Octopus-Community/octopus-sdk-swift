@@ -53,6 +53,11 @@ public enum SdkEvent: Sendable {
     /// Sent when the profile is modified by the user
     case profileModified(ProfileModifiedContext)
 
+    // MARK: Groups
+
+    /// Sent when the user follows or unfollows a group
+    case groupFollowingChanged(GroupFollowingChangedContext)
+
     // MARK: Session
 
     /// Sent when an Octopus UI session is started

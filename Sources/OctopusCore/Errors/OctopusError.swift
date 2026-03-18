@@ -5,9 +5,18 @@
 import Foundation
 import OctopusRemoteClient
 
-public enum AuthenticatedInputActionError<ValidationError: Sendable>: Error {
+public enum AuthenticatedInputActionError<ValidationError: Sendable>: Error, CustomDebugStringConvertible {
     case validation(ValidationError)
     case serverCall(AuthenticatedActionError)
+    case other(Error?)
+
+    public var debugDescription: String {
+        switch self {
+        case let .validation(error): "Validation error: \(error) (AuthenticatedInputActionError.validation)"
+        case let .serverCall(error): "Server error: \(error) (AuthenticatedInputActionError.serverCall)"
+        case let .other(error): "Other error: \(String(describing: error)) (AuthenticatedInputActionError.other)"
+        }
+    }
 }
 
 public enum AuthenticatedActionError: Error {
@@ -31,6 +40,7 @@ enum InternalError: Error {
     case timeout
     case explainedError(String)
     case userIdNotMatching
+    case objectNotFound
 }
 
 /// Errors that can be returned by the server. Most of the time, they are technicall errors, either developer based

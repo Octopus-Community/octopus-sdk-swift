@@ -119,6 +119,16 @@ public protocol Com_Octopuscommunity_UserServiceClientProtocol: GRPCClient {
     _ request: Com_Octopuscommunity_EnteringOctopusRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_EnteringOctopusRequest, Com_Octopuscommunity_EnteringOctopusResponse>
+
+  func followTopic(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>
+
+  func unfollowTopic(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>
 }
 
 extension Com_Octopuscommunity_UserServiceClientProtocol {
@@ -485,6 +495,42 @@ extension Com_Octopuscommunity_UserServiceClientProtocol {
       interceptors: self.interceptors?.makeEnteringOctopusInterceptors() ?? []
     )
   }
+
+  /// Unary call to FollowTopic
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to FollowTopic.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func followTopic(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.followTopic.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeFollowTopicInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UnfollowTopic
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnfollowTopic.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unfollowTopic(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.unfollowTopic.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnfollowTopicInterceptors() ?? []
+    )
+  }
 }
 
 @available(*, deprecated)
@@ -648,6 +694,16 @@ public protocol Com_Octopuscommunity_UserServiceAsyncClientProtocol: GRPCClient 
     _ request: Com_Octopuscommunity_EnteringOctopusRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_EnteringOctopusRequest, Com_Octopuscommunity_EnteringOctopusResponse>
+
+  func makeFollowTopicCall(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>
+
+  func makeUnfollowTopicCall(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -899,6 +955,30 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeEnteringOctopusInterceptors() ?? []
     )
   }
+
+  public func makeFollowTopicCall(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.followTopic.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeFollowTopicInterceptors() ?? []
+    )
+  }
+
+  public func makeUnfollowTopicCall(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.unfollowTopic.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnfollowTopicInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1142,6 +1222,30 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeEnteringOctopusInterceptors() ?? []
     )
   }
+
+  public func followTopic(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_FollowUnfollowTopicResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.followTopic.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeFollowTopicInterceptors() ?? []
+    )
+  }
+
+  public func unfollowTopic(
+    _ request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_FollowUnfollowTopicResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.unfollowTopic.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnfollowTopicInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1222,6 +1326,12 @@ public protocol Com_Octopuscommunity_UserServiceClientInterceptorFactoryProtocol
 
   /// - Returns: Interceptors to use when invoking 'enteringOctopus'.
   func makeEnteringOctopusInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_EnteringOctopusRequest, Com_Octopuscommunity_EnteringOctopusResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'followTopic'.
+  func makeFollowTopicInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unfollowTopic'.
+  func makeUnfollowTopicInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>]
 }
 
 public enum Com_Octopuscommunity_UserServiceClientMetadata {
@@ -1249,6 +1359,8 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.byPassAbTesting,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileTag,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.enteringOctopus,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.followTopic,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.unfollowTopic,
     ]
   )
 
@@ -1372,6 +1484,18 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       path: "/com.octopuscommunity.UserService/EnteringOctopus",
       type: GRPCCallType.unary
     )
+
+    public static let followTopic = GRPCMethodDescriptor(
+      name: "FollowTopic",
+      path: "/com.octopuscommunity.UserService/FollowTopic",
+      type: GRPCCallType.unary
+    )
+
+    public static let unfollowTopic = GRPCMethodDescriptor(
+      name: "UnfollowTopic",
+      path: "/com.octopuscommunity.UserService/UnfollowTopic",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -1423,6 +1547,10 @@ public protocol Com_Octopuscommunity_UserServiceProvider: CallHandlerProvider {
   func setProfileTag(request: Com_Octopuscommunity_SetProfileTagRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_SetProfileTagResponse>
 
   func enteringOctopus(request: Com_Octopuscommunity_EnteringOctopusRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_EnteringOctopusResponse>
+
+  func followTopic(request: Com_Octopuscommunity_FollowUnfollowTopicRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_FollowUnfollowTopicResponse>
+
+  func unfollowTopic(request: Com_Octopuscommunity_FollowUnfollowTopicRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_FollowUnfollowTopicResponse>
 }
 
 extension Com_Octopuscommunity_UserServiceProvider {
@@ -1617,6 +1745,24 @@ extension Com_Octopuscommunity_UserServiceProvider {
         userFunction: self.enteringOctopus(request:context:)
       )
 
+    case "FollowTopic":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_FollowUnfollowTopicRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_FollowUnfollowTopicResponse>(),
+        interceptors: self.interceptors?.makeFollowTopicInterceptors() ?? [],
+        userFunction: self.followTopic(request:context:)
+      )
+
+    case "UnfollowTopic":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_FollowUnfollowTopicRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_FollowUnfollowTopicResponse>(),
+        interceptors: self.interceptors?.makeUnfollowTopicInterceptors() ?? [],
+        userFunction: self.unfollowTopic(request:context:)
+      )
+
     default:
       return nil
     }
@@ -1733,6 +1879,16 @@ public protocol Com_Octopuscommunity_UserServiceAsyncProvider: CallHandlerProvid
     request: Com_Octopuscommunity_EnteringOctopusRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_EnteringOctopusResponse
+
+  func followTopic(
+    request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_FollowUnfollowTopicResponse
+
+  func unfollowTopic(
+    request: Com_Octopuscommunity_FollowUnfollowTopicRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_FollowUnfollowTopicResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1934,6 +2090,24 @@ extension Com_Octopuscommunity_UserServiceAsyncProvider {
         wrapping: { try await self.enteringOctopus(request: $0, context: $1) }
       )
 
+    case "FollowTopic":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_FollowUnfollowTopicRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_FollowUnfollowTopicResponse>(),
+        interceptors: self.interceptors?.makeFollowTopicInterceptors() ?? [],
+        wrapping: { try await self.followTopic(request: $0, context: $1) }
+      )
+
+    case "UnfollowTopic":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_FollowUnfollowTopicRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_FollowUnfollowTopicResponse>(),
+        interceptors: self.interceptors?.makeUnfollowTopicInterceptors() ?? [],
+        wrapping: { try await self.unfollowTopic(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -2021,6 +2195,14 @@ public protocol Com_Octopuscommunity_UserServiceServerInterceptorFactoryProtocol
   /// - Returns: Interceptors to use when handling 'enteringOctopus'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeEnteringOctopusInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_EnteringOctopusRequest, Com_Octopuscommunity_EnteringOctopusResponse>]
+
+  /// - Returns: Interceptors to use when handling 'followTopic'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeFollowTopicInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unfollowTopic'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnfollowTopicInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_FollowUnfollowTopicRequest, Com_Octopuscommunity_FollowUnfollowTopicResponse>]
 }
 
 public enum Com_Octopuscommunity_UserServiceServerMetadata {
@@ -2048,6 +2230,8 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.byPassAbTesting,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.setProfileTag,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.enteringOctopus,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.followTopic,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.unfollowTopic,
     ]
   )
 
@@ -2169,6 +2353,18 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
     public static let enteringOctopus = GRPCMethodDescriptor(
       name: "EnteringOctopus",
       path: "/com.octopuscommunity.UserService/EnteringOctopus",
+      type: GRPCCallType.unary
+    )
+
+    public static let followTopic = GRPCMethodDescriptor(
+      name: "FollowTopic",
+      path: "/com.octopuscommunity.UserService/FollowTopic",
+      type: GRPCCallType.unary
+    )
+
+    public static let unfollowTopic = GRPCMethodDescriptor(
+      name: "UnfollowTopic",
+      path: "/com.octopuscommunity.UserService/UnfollowTopic",
       type: GRPCCallType.unary
     )
   }

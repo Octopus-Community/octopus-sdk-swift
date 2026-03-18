@@ -82,15 +82,15 @@ private struct ContentView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     if octopusOwnedProfile {
-                        SettingItemView(imageResource: .Settings.account, titleKey: "Settings.Profile",
+                        SettingItemView(image: theme.assets.icons.settings.account, titleKey: "Settings.Profile",
                                         color: theme.colors.gray900, action: openProfile)
                     }
-                    SettingItemView(imageResource: .Settings.info, titleKey: "Settings.About",
+                    SettingItemView(image: theme.assets.icons.settings.info, titleKey: "Settings.About",
                                     color: theme.colors.gray900, action: openAbout)
-                    SettingItemView(imageResource: .Settings.help, titleKey: "Settings.ReportContent",
+                    SettingItemView(image: theme.assets.icons.settings.help, titleKey: "Settings.ReportContent",
                                     color: theme.colors.gray900, action: openReportContent)
                     if octopusOwnedProfile {
-                        SettingItemView(imageResource: .Settings.logout, titleKey: "Settings.LogOut.Button",
+                        SettingItemView(image: theme.assets.icons.settings.logout, titleKey: "Settings.LogOut.Button",
                                         color: theme.colors.error, isLoading: logoutInProgress, action: logout)
                     }
                 }
@@ -103,17 +103,15 @@ private struct ContentView: View {
 private struct SettingItemView: View {
     @Environment(\.octopusTheme) private var theme
 
-    let imageResource: GenImageResource
+    let image: UIImage
     let titleKey: LocalizedStringKey
     let color: Color
     let isLoading: Bool
     let action: () -> Void
 
-    @Compat.ScaledMetric(relativeTo: .title1) var iconSize: CGFloat = 20 // title1 to vary from 18 to 40
-
-    init(imageResource: GenImageResource, titleKey: LocalizedStringKey, color: Color, isLoading: Bool = false,
+    init(image: UIImage, titleKey: LocalizedStringKey, color: Color, isLoading: Bool = false,
          action: @escaping () -> Void) {
-        self.imageResource = imageResource
+        self.image = image
         self.titleKey = titleKey
         self.color = color
         self.isLoading = isLoading
@@ -123,15 +121,11 @@ private struct SettingItemView: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(res: imageResource)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: iconSize, height: iconSize)
+                IconImage(image)
                     .foregroundColor(color)
                     .accessibilityHidden(true)
 
                 Text(titleKey, bundle: .module)
-                    .font(theme.fonts.body2)
                     .fontWeight(.medium)
                     .foregroundColor(color)
 
@@ -141,6 +135,7 @@ private struct SettingItemView: View {
 
                 Spacer()
             }
+            .font(theme.fonts.body2)
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
             .contentShape(Rectangle())

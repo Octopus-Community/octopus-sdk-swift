@@ -16,30 +16,6 @@ import UserNotifications
 ///
 /// This SwiftUI view contains a NavigationView, hence it should be not embedded in another Navigation object.
 public struct OctopusHomeScreen: View {
-    
-    /// The kind of navigation bar leading item
-    public enum NavBarLeadingItemKind {
-        /// A text title
-        public struct TextTitle {
-            /// The text to display. To have better UI results, please keep it as little as possible as it will be
-            /// displayed on one line (no more than 18 chars)
-            public let text: String
-            
-            /// Constructor
-            /// - Parameter text: The text to display.
-            ///                   To have better UI results, please keep it as little as possible as it will be
-            ///                   displayed on one line (no more than 18 chars)
-            public init(text: String) {
-                self.text = text
-            }
-        }
-        /// The nav bar leading item will be the `logo` you provided in the Theme
-        case logo
-        /// The nav bar leading item will be the text you provide.
-        /// To have better UI results, please keep the text as little as possible as it will be
-        /// displayed on one line (no more than 18 chars)
-        case text(TextTitle)
-    }
 
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
@@ -48,14 +24,15 @@ public struct OctopusHomeScreen: View {
 
     private let octopus: OctopusSDK
     private let bottomSafeAreaInset: CGFloat
-    private let navBarLeadingItem: NavBarLeadingItemKind
-    private let navBarPrimaryColor: Bool
+    private let mainFeedNavBarTitle: OctopusMainFeedTitle?
+    private let mainFeedColoredNavBar: Bool
     private let postId: String?
 
     @Compat.StateObject private var viewModel: OctopusHomeScreenViewModel
     @Compat.StateObject private var translationStore: ContentTranslationPreferenceStore
     @Compat.StateObject private var trackingApi: TrackingApi
     @Compat.StateObject private var gamificationRulesViewManager: GamificationRulesViewManager
+    @Compat.StateObject private var displayConfigManager: DisplayConfigManager
     @Compat.StateObject private var videoManager: VideoManager
     @Compat.StateObject private var urlOpener: URLOpener
     @Compat.StateObject private var languageManager: LanguageManager
@@ -64,18 +41,23 @@ public struct OctopusHomeScreen: View {
     /// - Parameters:
     ///    - octopus: The Octopus SDK
     ///    - bottomSafeAreaInset: the bottom safe area inset. Default is 0. Only used on iOS 15+.
-    ///    - navBarLeadingItem: the kind of info to display on the nav bar leading item of the main screen.
-    ///                         It is either `.logo` to display the logo you passed in the Theme, or `.text` to display
-    ///                         a text you can provide (less than 18chars is recommanded). Default is `.logo`.
-    ///    - navBarPrimaryColor: whether the primary color you set in the theme should be used on the nav bar of the
-    ///                          main screen. If false, default nav bar color will be used. Default is false.
+    ///    - mainFeedNavBarTitle: the title displayed in the navigation on the main feed screen (the feed that is
+    ///                           displayed when you open the Octopus UI without specifying a postId).
+    ///                           The content is either `.logo` to display the logo you passed in the Theme,
+    ///                           or `.text` to display a text you can provide (less than 18chars is recommanded).
+    ///                           You can also specify if the content should be placed on the left or centered.
+    ///                           Default is nil, meaning that nothing will be displayed.
+    ///    - mainFeedColoredNavBar: whether the primary color you set in the theme should be used on the nav bar of the
+    ///                             main feed screen (the feed that is displayed when you open the Octopus UI without
+    ///                             specifying a postId).
+    ///                             If false, default nav bar color will be used. Default is false.
     ///    - postId: the id of the post to be directly displayed. If nil, post feed with the feed selector will be
     ///              displayed. Default is nil.
     ///    - notificationResponse: a binding on the notification response if an Octopus Push Notification has been
     ///                            tapped. Default is nil. The binding is set back to nil after the notification has
     ///                            been used inside Octopus (i.e. the screen relative to the notification has been
     ///                            displayed).
-    ///  
+    ///
     /// You can pass an OctopusTheme as an environment to customize the colors, fonts and images used in this
     /// view:
     /// ```swift
@@ -84,8 +66,8 @@ public struct OctopusHomeScreen: View {
     /// ```
     public init(octopus: OctopusSDK,
                 bottomSafeAreaInset: CGFloat = 0,
-                navBarLeadingItem: NavBarLeadingItemKind = .logo,
-                navBarPrimaryColor: Bool = false,
+                mainFeedNavBarTitle: OctopusMainFeedTitle? = nil,
+                mainFeedColoredNavBar: Bool = false,
                 postId: String? = nil,
                 notificationResponse: Binding<UNNotificationResponse?> = .constant(nil)) {
         _viewModel = Compat.StateObject(wrappedValue: OctopusHomeScreenViewModel(octopus: octopus))
@@ -93,16 +75,17 @@ public struct OctopusHomeScreen: View {
             repository: octopus.core.contentTranslationPreferenceRepository))
         _trackingApi = Compat.StateObject(wrappedValue: TrackingApi(octopus: octopus))
         _gamificationRulesViewManager = Compat.StateObject(wrappedValue: GamificationRulesViewManager(octopus: octopus))
+        _displayConfigManager = Compat.StateObject(wrappedValue: DisplayConfigManager(octopus: octopus))
         _videoManager = Compat.StateObject(wrappedValue: VideoManager(octopus: octopus))
         _urlOpener = Compat.StateObject(wrappedValue: URLOpener(octopus: octopus))
         _languageManager = Compat.StateObject(wrappedValue: LanguageManager(octopus: octopus))
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
-        self.navBarLeadingItem = navBarLeadingItem
-        if #available(iOS 16.0, *), navBarPrimaryColor {
-            self.navBarPrimaryColor = true
+        self.mainFeedNavBarTitle = mainFeedNavBarTitle
+        if #available(iOS 16.0, *), mainFeedColoredNavBar {
+            self.mainFeedColoredNavBar = true
         } else {
-            self.navBarPrimaryColor = false
+            self.mainFeedColoredNavBar = false
         }
         self.postId = postId
         self._notificationResponse = notificationResponse
@@ -127,10 +110,11 @@ public struct OctopusHomeScreen: View {
                                     hasFeaturedComment: false,
                                     canClose: presentationMode.wrappedValue.isPresented)
                             } else {
-                                RootFeedsView(octopus: octopus,
-                                              mainFlowPath: viewModel.mainFlowPath,
-                                              navBarLeadingItem: navBarLeadingItem,
-                                              navBarPrimaryColor: navBarPrimaryColor)
+                                MainRootFeedView(
+                                    octopus: octopus,
+                                    mainFlowPath: viewModel.mainFlowPath,
+                                    navBarTitle: mainFeedNavBarTitle,
+                                    coloredNavBar: mainFeedColoredNavBar)
                             }
                         }
                     }
@@ -172,16 +156,6 @@ public struct OctopusHomeScreen: View {
         .onValueChanged(of: notificationResponse) {
             displayScreenAfterNotificationTapped(notificationResponse: $0)
         }
-        // set the environment, this will set the default environment if no other has been set, and avoid re-creating
-        // the default env each time it is accessed
-        .environment(\.octopusTheme, theme)
-        .environmentObject(translationStore)
-        .environmentObject(trackingApi)
-        .environmentObject(gamificationRulesViewManager)
-        .environmentObject(videoManager)
-        .environmentObject(urlOpener)
-        .environmentObject(languageManager)
-        .overrideLanguageIfNeeded(languageManager: languageManager)
         .sheet(isPresented: $gamificationRulesViewManager.shouldDisplayGamificationRules) {
             if let gamificationConfig = gamificationRulesViewManager.gamificationConfig {
                 GamificationRulesScreen(gamificationConfig: gamificationConfig,
@@ -191,6 +165,17 @@ public struct OctopusHomeScreen: View {
                 EmptyView()
             }
         }
+        // set the environment, this will set the default environment if no other has been set, and avoid re-creating
+        // the default env each time it is accessed
+        .environment(\.octopusTheme, theme)
+        .environmentObject(translationStore)
+        .environmentObject(trackingApi)
+        .environmentObject(gamificationRulesViewManager)
+        .environmentObject(displayConfigManager)
+        .environmentObject(videoManager)
+        .environmentObject(urlOpener)
+        .environmentObject(languageManager)
+        .overrideLanguageIfNeeded(languageManager: languageManager)
     }
 
     @ViewBuilder
@@ -226,5 +211,82 @@ private extension View {
             return false
         }
         return window.rootViewController?.presentedViewController != nil
+    }
+}
+
+extension OctopusHomeScreen {
+    /// The kind of navigation bar leading item
+    public enum NavBarLeadingItemKind {
+        /// A text title
+        public struct TextTitle {
+            /// The text to display. To have better UI results, please keep it as little as possible as it will be
+            /// displayed on one line (no more than 18 chars)
+            public let text: String
+
+            /// Constructor
+            /// - Parameter text: The text to display.
+            ///                   To have better UI results, please keep it as little as possible as it will be
+            ///                   displayed on one line (no more than 18 chars)
+            public init(text: String) {
+                self.text = text
+            }
+        }
+        /// The nav bar leading item will be the `logo` you provided in the Theme
+        case logo
+        /// The nav bar leading item will be the text you provide.
+        /// To have better UI results, please keep the text as little as possible as it will be
+        /// displayed on one line (no more than 18 chars)
+        case text(TextTitle)
+    }
+
+    /// Constructor of the `OctopusHomeScreen`.
+    /// - Parameters:
+    ///    - octopus: The Octopus SDK
+    ///    - bottomSafeAreaInset: the bottom safe area inset. Default is 0. Only used on iOS 15+.
+    ///    - navBarLeadingItem: the kind of info to display on the nav bar leading item of the main screen.
+    ///                         It is either `.logo` to display the logo you passed in the Theme, or `.text` to display
+    ///                         a text you can provide (less than 18chars is recommanded). Default is `.logo`.
+    ///    - navBarPrimaryColor: whether the primary color you set in the theme should be used on the nav bar of the
+    ///                          main screen. If false, default nav bar color will be used. Default is false.
+    ///    - postId: the id of the post to be directly displayed. If nil, post feed with the feed selector will be
+    ///              displayed. Default is nil.
+    ///    - notificationResponse: a binding on the notification response if an Octopus Push Notification has been
+    ///                            tapped. Default is nil. The binding is set back to nil after the notification has
+    ///                            been used inside Octopus (i.e. the screen relative to the notification has been
+    ///                            displayed).
+    ///
+    /// You can pass an OctopusTheme as an environment to customize the colors, fonts and images used in this
+    /// view:
+    /// ```swift
+    /// OctopusHomeScreen(octopus: octopus)
+    ///     .environment(\.octopusTheme, appTheme)
+    /// ```
+    @available(*, deprecated, renamed: "init(octopus:bottomSafeAreaInset:mainFeedNavBarTitle:mainFeedColoredNavBar:postId:notificationResponse:)")
+    @_disfavoredOverload
+    public init(octopus: OctopusSDK,
+                bottomSafeAreaInset: CGFloat = 0,
+                navBarLeadingItem: NavBarLeadingItemKind = .logo,
+                navBarPrimaryColor: Bool = false,
+                postId: String? = nil,
+                notificationResponse: Binding<UNNotificationResponse?> = .constant(nil)) {
+        self.init(
+            octopus: octopus,
+            bottomSafeAreaInset: bottomSafeAreaInset,
+            mainFeedNavBarTitle: navBarLeadingItem.toOctopusMainFeedTitle,
+            mainFeedColoredNavBar: navBarPrimaryColor,
+            postId: postId,
+            notificationResponse: notificationResponse
+
+        )
+    }
+}
+
+extension OctopusHomeScreen.NavBarLeadingItemKind {
+    var toOctopusMainFeedTitle: OctopusMainFeedTitle {
+        switch self {
+        case .logo: .init(content: .logo, placement: .leading)
+        case let .text(text): .init(content: .text(.init(text: text.text)), placement: .leading)
+
+        }
     }
 }

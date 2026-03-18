@@ -476,7 +476,13 @@ class CommentDetailViewModel: ObservableObject {
 
     private func fetchComment(incrementViewCount: Bool = false) {
         Task {
-            try await fetchComment(uuid: commentUuid, incrementViewCount: incrementViewCount)
+            do {
+                try await fetchComment(uuid: commentUuid, incrementViewCount: incrementViewCount)
+            } catch {
+                if let error = error as? ServerCallError, case .noNetwork = error {
+                    octopus.core.toastsRepository.display(errorToast: .noNetwork)
+                }
+            }
         }
     }
 
@@ -613,6 +619,8 @@ class CommentDetailViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }
@@ -638,6 +646,8 @@ class CommentDetailViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }

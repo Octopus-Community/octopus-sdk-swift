@@ -39,8 +39,12 @@ struct MainFlowNavigationStack<RootView: View>: View {
                         case let .publicProfile(profileId):
                             ProfileSummaryView(
                                 octopus: octopus, translationStore: translationStore, profileId: profileId)
-                        case let .createPost(withPoll):
-                            CreatePostView(octopus: octopus, withPoll: withPoll)
+                        case let .createPost(withPoll, defaultTopic):
+                            CreatePostView(octopus: octopus, withPoll: withPoll, defaultTopic: defaultTopic)
+                        case let .groupList(context):
+                            GroupListView(octopus: octopus, context: context)
+                        case let .groupDetail(topic):
+                            GroupDetailView(octopus: octopus, topic: topic, mainFlowPath: mainFlowPath, translationStore: translationStore)
                         case let .postDetail(postId, comment, commentToScrollTo, scrollToMostRecentComment, origin, hasFeaturedComment):
                             PostDetailView(
                                 octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,

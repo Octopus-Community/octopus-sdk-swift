@@ -55,6 +55,11 @@ public enum OctopusEvent: Sendable {
     /// Sent when the profile is modified by the user
     case profileModified(any ProfileModifiedContext)
 
+    // MARK: Groups
+
+    /// Sent when the user follows or unfollows a group
+    case groupFollowingChanged(GroupFollowingChangedContext)
+
 
     // MARK: Session
 
@@ -85,6 +90,7 @@ extension OctopusEvent {
         case let .replyButtonClicked(context): .replyButtonClicked(context)
         case let .seeRepliesButtonClicked(context): .seeRepliesButtonClicked(context)
         case let .profileModified(context): .profileModified(context)
+        case let .groupFollowingChanged(context): .groupFollowingChanged(context)
         case let .sessionStarted(context): .sessionStarted(context)
         case let .sessionStopped(context): .sessionStopped(context)
         }

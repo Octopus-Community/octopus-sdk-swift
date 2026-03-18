@@ -4,9 +4,10 @@
 
 import Foundation
 import OctopusGrpcModels
+import CryptoKit
 
 /// An Octopus Post that is linked to a client object (article, product...).
-public struct ClientPost: Sendable {
+public struct ClientPost: Sendable, Encodable {
     public enum Attachment: Sendable {
         case localImage(Data)
         case distantImage(URL)
@@ -38,7 +39,7 @@ public struct ClientPost: Sendable {
                 catchPhrase: String?,
                 attachment: Attachment?,
                 viewClientObjectButtonText: String?,
-                signature: String?) {
+                signature: String? = nil) {
         self.clientObjectId = clientObjectId
         self.topicId = topicId
         self.text = text
@@ -46,6 +47,47 @@ public struct ClientPost: Sendable {
         self.attachment = attachment
         self.viewClientObjectButtonText = viewClientObjectButtonText
         self.signature = signature
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case clientObjectId
+        case topicId
+        case text
+        case catchPhrase
+        case image
+        case ctaText
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(clientObjectId, forKey: .clientObjectId)
+        try container.encodeIfPresent(topicId, forKey: .topicId)
+        try container.encode(text, forKey: .text)
+        try container.encodeIfPresent(catchPhrase, forKey: .catchPhrase)
+        if let attachment = attachment {
+            switch attachment {
+            case .distantImage(let url):
+                try container.encode(url.absoluteString, forKey: .image)
+            case .localImage(let data):
+                let base64 = data.base64EncodedString()
+                    .replacingOccurrences(of: "+", with: "-")
+                    .replacingOccurrences(of: "/", with: "_")
+                    .replacingOccurrences(of: "=", with: "")
+                try container.encode(base64, forKey: .image)
+            }
+        }
+        try container.encodeIfPresent(viewClientObjectButtonText, forKey: .ctaText)
+    }
+
+    func getHashForSignature() throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        let json = try encoder.encode(self)
+        let hash = SHA256
+            .hash(data: json)
+            .map { String(format: "%02x", $0) }
+            .joined()
+        return hash
     }
 }
 
@@ -87,3 +129,4 @@ extension ClientPost {
         }
     }
 }
+

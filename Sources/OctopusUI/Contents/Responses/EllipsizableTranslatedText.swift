@@ -29,13 +29,13 @@ struct EllipsizableTranslatedText: Equatable {
         let displayableText = text.originalText
             .prefix(maxLength)
             .split(separator: "\n", omittingEmptySubsequences: false)
-            .prefix(4)
+            .prefix(maxLines)
             .joined(separator: "\n")
 
         let displayableTranslatedText = text.translatedText.map {
-            String($0.prefix(200))
+            String($0.prefix(maxLength))
                 .split(separator: "\n", omittingEmptySubsequences: false)
-                .prefix(4)
+                .prefix(maxLines)
                 .joined(separator: "\n")
         }
 

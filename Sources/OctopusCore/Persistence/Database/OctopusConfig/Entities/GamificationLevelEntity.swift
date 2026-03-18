@@ -21,9 +21,9 @@ class GamificationLevelEntity: NSManagedObject, Identifiable {
         self.level = level.level
         name = level.name
         nextLevelAtOptional = level.nextLevelAt.map { NSNumber(value: $0) }
-        badgeLightColorHex = level.badgeColor?.hexLight
-        badgeDarkColorHex = level.badgeColor?.hexDark
-        badgeTextLightColorHex = level.badgeTextColor?.hexLight
-        badgeTextDarkColorHex = level.badgeTextColor?.hexDark
+        badgeLightColorHex = level.badgeColor?.lightValue
+        badgeDarkColorHex = level.badgeColor?.darkValue
+        badgeTextLightColorHex = level.badgeTextColor?.lightValue
+        badgeTextDarkColorHex = level.badgeTextColor?.darkValue
     }
 }

@@ -20,7 +20,7 @@ struct ScenariosView: View {
                 ForceOctopusABTestsCell(showFullScreen: showFullScreen)
                 CustomEventsCell()
                 BridgeToClientObjectCell(showFullScreen: showFullScreen)
-                ChangeApiKeyCell(showFullScreen: showFullScreen)
+                SwitchCommunityCell(showFullScreen: showFullScreen)
                 EventsCell()
                 LanguageCell()
             }

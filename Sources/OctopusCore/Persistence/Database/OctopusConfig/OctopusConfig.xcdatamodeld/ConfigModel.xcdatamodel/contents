@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24411" systemVersion="24G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="25C56" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="CommunityConfig" representedClassName="CommunityConfigEntity" syncable="YES">
         <attribute name="displayAccountAge" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="forceLoginOnStrongActions" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DisplayConfig" inverseName="belongsTo" inverseEntity="DisplayConfig"/>
         <relationship name="gamificationConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="GamificationConfig" inverseName="belongsTo" inverseEntity="GamificationConfig"/>
+    </entity>
+    <entity name="DisplayConfig" representedClassName="DisplayConfigEntity" syncable="YES">
+        <attribute name="poweredByDarkUrl" optional="YES" attributeType="URI"/>
+        <attribute name="poweredByIsHidden" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="poweredByLightUrl" optional="YES" attributeType="URI"/>
+        <relationship name="belongsTo" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CommunityConfig" inverseName="displayConfig" inverseEntity="CommunityConfig"/>
     </entity>
     <entity name="GamificationConfig" representedClassName="GamificationConfigEntity" syncable="YES">
         <attribute name="abbrevPointPlural" attributeType="String"/>

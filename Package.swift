@@ -81,6 +81,10 @@ let package = Package(
             name: "OctopusCoreTests",
             dependencies: [
                 "OctopusCore",
+            ],
+            resources: [
+                .copy("Resources/ClientPostTests/clientPostImg1.png"),
+                .copy("Resources/ClientPostTests/clientPostImg2.jpeg")
             ]
         ),
         .testTarget(

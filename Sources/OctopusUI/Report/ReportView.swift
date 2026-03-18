@@ -155,7 +155,6 @@ private struct ReasonCell: View {
     @Binding var selectedReasons: [ReportReason]
 
     @State private var isOn: Bool = false
-    @Compat.ScaledMetric(relativeTo: .title1) var iconSize: CGFloat = 20 // title1 to vary from 18 to 40
 
     var body: some View {
         Button(action: {
@@ -166,17 +165,15 @@ private struct ReasonCell: View {
             }
         }) {
             HStack {
-                Image(res: selectedReasons.contains(reason) ? .CheckBox.on : .CheckBox.off)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: iconSize, height: iconSize)
+                IconImage(selectedReasons.contains(reason) ? theme.assets.icons.common.checkbox.on : theme.assets.icons.common.checkbox.off)
                 reason.displayableString.textView
-                    .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)
                 Spacer()
             }
+            .font(theme.fonts.body2)
             .foregroundColor(theme.colors.gray900)
             .padding(.vertical, 10)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityValueInBundle(selectedReasons.contains(reason) ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")

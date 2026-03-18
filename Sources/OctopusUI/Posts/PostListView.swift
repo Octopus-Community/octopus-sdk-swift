@@ -81,7 +81,7 @@ struct PostListView: View {
                             }
                         },
                         actionTapped: {
-                            navigator.push(.createPost(withPoll: false))
+                            navigator.push(.createPost(withPoll: false, defaultTopic: nil))
                         })
                     .accessibilitySortPriority(1)
                 })
@@ -94,7 +94,7 @@ struct PostListView: View {
                                          }
                                      },
                                      actionTapped: {
-                                         navigator.push(.createPost(withPoll: false))
+                                         navigator.push(.createPost(withPoll: false, defaultTopic: nil))
                                      }),
                     alignment: .bottomTrailing)
             }
@@ -103,8 +103,7 @@ struct PostListView: View {
             guard let selectedRootFeed = $0 else { return }
             viewModel.set(feed: selectedRootFeed.feed)
             if lastScreenFeedIdSent != selectedRootFeed.feedId {
-                trackingApi.emit(event: .screenDisplayed(.postsFeed(.init(
-                    feedId: selectedRootFeed.feedId, relatedTopicId: selectedRootFeed.relatedTopicId))))
+                trackingApi.emit(event: .screenDisplayed(.mainFeed(.init(feedId: selectedRootFeed.feedId))))
                 lastScreenFeedIdSent = selectedRootFeed.feedId
             }
 
@@ -113,8 +112,7 @@ struct PostListView: View {
             guard let selectedRootFeed = selectedRootFeed else { return }
             viewModel.set(feed: selectedRootFeed.feed)
             if lastScreenFeedIdSent != selectedRootFeed.feedId {
-                trackingApi.emit(event: .screenDisplayed(.postsFeed(.init(
-                    feedId: selectedRootFeed.feedId, relatedTopicId: selectedRootFeed.relatedTopicId))))
+                trackingApi.emit(event: .screenDisplayed(.mainFeed(.init(feedId: selectedRootFeed.feedId))))
                 lastScreenFeedIdSent = selectedRootFeed.feedId
             }
         }

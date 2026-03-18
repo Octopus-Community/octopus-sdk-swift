@@ -17,10 +17,12 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
     static let injectedIdentifier = Injected.postsDatabase
     
     private let context: NSManagedObjectContext
+    private let viewContext: NSManagedObjectContext
 
     override init(injector: Injector) {
         let coreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
         context = coreDataStack.saveContext
+        viewContext = coreDataStack.viewContext
         super.init(injector: injector)
     }
 
@@ -51,6 +53,13 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
             }
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
+    }
+
+    @MainActor
+    func getPostOnMainThread(id: String) throws -> StorablePost? {
+        try viewContext.fetch(PostEntity.fetchById(id: id))
+            .first
+            .map { StorablePost(from: $0) }
     }
 
     func clientObjectRelatedPostPublisher(objectId: String) -> AnyPublisher<StorablePost?, Error> {

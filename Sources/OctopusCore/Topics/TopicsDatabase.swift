@@ -21,49 +21,47 @@ class TopicsDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
     
-    func topicsPublisher() -> AnyPublisher<[Topic], Error> {
+    func topicsPublisher() -> AnyPublisher<[StorableTopic], Error> {
         return context
             .publisher(request: TopicEntity.fetchAllAndSorted()) {
-                $0.map { Topic(from: $0) }
+                $0.map { StorableTopic(from: $0) }
             }
             .receive(on: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
-    
-    func upsert(topics: [Topic]) async throws {
+
+    func replaceAll(topics: [StorableTopic]) async throws {
         try await context.performAsync { [context] in
-            let context = context
 
-            let existingTopicsCount = try context.count(for: TopicEntity.fetchAll())
+            // first delete all existing topics and existing sections
+            let deleteSectionRequest = NSBatchDeleteRequest(fetchRequest: SectionEntity.fetchAllForDelete())
+            try context.execute(deleteSectionRequest)
 
-            let request: NSFetchRequest<TopicEntity> = TopicEntity.fetchAll()
-            request.predicate = NSPredicate(format: "%K IN %@", #keyPath(TopicEntity.uuid),
-                                            topics.map { $0.uuid })
-            let existingTopics = try context.fetch(request)
+            let deleteTopicRequest = NSBatchDeleteRequest(fetchRequest: TopicEntity.fetchAllForDelete())
+            try context.execute(deleteTopicRequest)
 
             for (index, topic) in topics.enumerated() {
-                let topicEntity: TopicEntity
-                if let existingTopic = existingTopics.first(where: { $0.uuid == topic.uuid }) {
-                    topicEntity = existingTopic
-                } else {
-                    topicEntity = TopicEntity(context: context)
-                }
-                topicEntity.uuid = topic.uuid
-                topicEntity.name = topic.name
-                topicEntity.desc = topic.description
-                topicEntity.parentId = topic.parentId
-                topicEntity.position = existingTopicsCount + index
+                let topicEntity = TopicEntity(context: context)
+                try topicEntity.fill(with: topic, position: index, context: context)
             }
 
             try context.save()
         }
     }
 
-    func deleteAll() async throws {
+    func changeIsFollowing(topicId: String, isFollowing: Bool) async throws {
         try await context.performAsync { [context] in
-            let context = context
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: TopicEntity.fetchAllForDelete())
-            try context.execute(deleteRequest)
+            guard let existingTopic = try context.fetch(TopicEntity.fetchById(id: topicId)).first else {
+                throw InternalError.objectNotFound
+            }
+            
+            if isFollowing {
+                existingTopic.followStatusValue = StorableFollowStatus.followed.rawValue
+            } else {
+                existingTopic.followStatusValue = StorableFollowStatus.notFollowed.rawValue
+            }
+            
+            try context.save()
         }
     }
 }

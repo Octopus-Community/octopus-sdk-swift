@@ -5,6 +5,7 @@
 import Foundation
 import UIKit
 import os
+import OctopusCore
 
 final class ImageCache: @unchecked Sendable {
     static let profile = ImageCache(subfolder: "profile",
@@ -19,15 +20,16 @@ final class ImageCache: @unchecked Sendable {
                                       ramCapacity: 50 * 1024 * 1024,     // 50Mb
                                       diskCapacity: 100 * 1024 * 1024)   // 100Mb
 
+    static let interface = ImageCache(subfolder: "interface",
+                                      ramCapacity: 50 * 1024 * 1024,     // 50Mb
+                                      diskCapacity: 100 * 1024 * 1024)   // 100Mb
+
     private let imageFolder: URL
     private let fileManager: FileManager = FileManager.default
     private let ramCache: NSCache<NSString, UIImage> = NSCache()
 
     init(subfolder: String, ramCapacity: Int, diskCapacity: UInt64) {
-        let rootFolder = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first ??
-            fileManager.temporaryDirectory
-        imageFolder = rootFolder
-            .appendingPathComponent("OctopusSDK")
+        imageFolder = OctopusFileStorageProvider.cachedFolder
             .appendingPathComponent("Images")
             .appendingPathComponent(subfolder)
         ramCache.totalCostLimit = ramCapacity

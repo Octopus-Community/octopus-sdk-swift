@@ -37,6 +37,7 @@ class PostFeedViewModel: ObservableObject {
 
     let octopus: OctopusSDK
     let feed: Feed<Post, Comment>
+    let displayGroup: Bool
     private let translationStore: ContentTranslationPreferenceStore
     private var storage = [AnyCancellable]()
 
@@ -51,10 +52,12 @@ class PostFeedViewModel: ObservableObject {
     private var relativeDateFormatterProvider: RelativeDateTimeFormatterProvider
 
     init(octopus: OctopusSDK, postFeed: Feed<Post, Comment>, displayModeratedPosts: Bool = false,
+         displayGroup: Bool = true,
          translationStore: ContentTranslationPreferenceStore,
          ensureConnected: @escaping (UserAction) -> Bool) {
         self.octopus = octopus
         self.feed = postFeed
+        self.displayGroup = displayGroup
         self.translationStore = translationStore
         self.ensureConnected = ensureConnected
         relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
@@ -198,7 +201,7 @@ class PostFeedViewModel: ObservableObject {
         await withTaskGroup(of: Void.self) { group in
             let topicsRepository = octopus.core.topicsRepository
             let postsRepository = octopus.core.postsRepository
-            group.addTask { try? await topicsRepository.fetchTopics() }
+            group.addTask { _ = try? await topicsRepository.fetchTopics() }
             group.addTask { [self] in await refreshFeed(isManual: true) }
             group.addTask { [self] in
                 try? await postsRepository.fetchAdditionalData(ids: Array(visiblePostIds.map { ($0.id, $0.hasVideo) }),
@@ -301,6 +304,8 @@ class PostFeedViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }
@@ -334,6 +339,8 @@ class PostFeedViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }
@@ -367,6 +374,8 @@ class PostFeedViewModel: ObservableObject {
                 }
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
+            case .other:
+                self.error = .localizationKey("Error.Unknown")
             }
         }
     }
@@ -417,6 +426,8 @@ class PostFeedViewModel: ObservableObject {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
+            } else if case .noNetwork = error {
+                octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
         }
     }

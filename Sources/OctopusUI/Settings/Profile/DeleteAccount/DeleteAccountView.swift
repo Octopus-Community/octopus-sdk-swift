@@ -35,19 +35,16 @@ struct DeleteAccountView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .top, spacing: 12) {
-                            Image(res: .Settings.warning)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 20, height: 20)
+                            IconImage(theme.assets.icons.settings.deleteAccountWarning)
                                 .foregroundColor(theme.colors.error)
 
                             Text("Settings.Profile.DeleteAccount.MainText", bundle: .module)
-                                .font(theme.fonts.body2)
                                 .fontWeight(.medium)
                                 .foregroundColor(theme.colors.error)
                                 .multilineTextAlignment(.leading)
                             Spacer()
                         }
+                        .font(theme.fonts.body2)
 
                         Spacer().frame(height: 20)
 
@@ -165,13 +162,13 @@ private struct ReasonCell: View {
             selectedReason = reason
         }) {
             HStack {
-                Image(res: selectedReason == reason ? .RadioButton.on : .RadioButton.off)
+                IconImage(selectedReason == reason ? theme.assets.icons.common.radio.on : theme.assets.icons.common.radio.off)
                 Text(reason.localizedKey, bundle: .module)
-                    .font(theme.fonts.body2)
                     .multilineTextAlignment(.leading)
                 Spacer()
             }
             .foregroundColor(theme.colors.gray900)
+            .font(theme.fonts.body2)
         }
         .buttonStyle(.plain)
     }

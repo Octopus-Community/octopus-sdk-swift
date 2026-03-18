@@ -16,6 +16,8 @@ extension Logger {
     static let content = Logger(subsystem: subsystem, category: "Contents")
     /// Logs that are related to comments
     static let comments = Logger(subsystem: subsystem, category: "Comments")
+    // Logs that are related to groups
+    static let groups = Logger(subsystem: subsystem, category: "Groups")
     /// Logs that are related to posts
     static let posts = Logger(subsystem: subsystem, category: "Posts")
     /// Logs that are related to the profile

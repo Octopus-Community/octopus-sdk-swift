@@ -26,20 +26,16 @@ struct SettingProfileView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack(alignment: .top, spacing: 12) {
-                        Image(res: .Settings.info)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 20, height: 20)
+                        IconImage(theme.assets.icons.settings.info)
                             .foregroundColor(theme.colors.gray900)
+                            .accessibilityHidden(true)
 
                         VStack(alignment: .leading, spacing: 20) {
                             Text("Settings.Profile.Email", bundle: .module)
-                                .font(theme.fonts.body2)
                                 .fontWeight(.medium)
                                 .foregroundColor(theme.colors.gray900)
 
                             Text(viewModel.email ?? "")
-                                .font(theme.fonts.body2)
                                 .fontWeight(.medium)
                                 .foregroundColor(theme.colors.gray500)
                                 .onTapGesture {
@@ -49,22 +45,21 @@ struct SettingProfileView: View {
                         }
                         Spacer()
                     }
+                    .font(theme.fonts.body2)
 
                     Button(action: { navigator.push(.deleteAccount) }) {
                         HStack(alignment: .top, spacing: 12) {
-                            Image(res: .Settings.logout)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 20, height: 20)
+                            IconImage(theme.assets.icons.settings.logout)
                                 .foregroundColor(theme.colors.error)
+                                .accessibilityHidden(true)
 
                             Text("Settings.Profile.DeleteAccount.OpenScreen", bundle: .module)
-                                .font(theme.fonts.body2)
                                 .fontWeight(.medium)
                                 .foregroundColor(theme.colors.error)
 
                             Spacer()
                         }
+                        .font(theme.fonts.body2)
                     }.buttonStyle(.plain)
                 }
                 .buttonStyle(.plain)

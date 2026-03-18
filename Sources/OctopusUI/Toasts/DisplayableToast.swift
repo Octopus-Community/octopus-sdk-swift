@@ -7,13 +7,25 @@ import OctopusCore
 import SwiftUI
 
 struct DisplayableToast: Identifiable, Equatable {
+    enum Category {
+        case info
+        case success
+        case error
+    }
+
     let toast: Toast
     let id = UUID()
     let message: DisplayableString
+    let category: Category
     var isManual = false
 
     init(toast: Toast) {
         self.toast = toast
+        category = switch toast {
+        case .gamification: .info
+        case .userAction: .success
+        case .error: .error
+        }
         message = .localizationKey(toast.localizedKey)
     }
 }
@@ -22,12 +34,16 @@ extension Toast {
     var localizedKey: LocalizedStringKey {
         switch self {
         case let .gamification(gamificationToast): gamificationToast.localizedKey
+        case let .userAction(userAction): userAction.localizedKey
+        case let .error(error): error.localizedKey
         }
     }
 
     func localizedString(locale: Locale?) -> String {
         switch self {
         case let .gamification(gamificationToast): gamificationToast.localizedString(locale: locale)
+        case let .userAction(userAction): userAction.localizedString(locale: locale)
+        case let .error(error): error.localizedString(locale: locale)
         }
     }
 }
@@ -59,3 +75,32 @@ extension GamificationToast {
         }
     }
 }
+
+extension UserActionToast {
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .postCreated: "Post.Toast.Create"
+        }
+    }
+
+    func localizedString(locale: Locale?) -> String {
+        switch self {
+        case .postCreated: L10n("Post.Toast.Create", locale: locale)
+        }
+    }
+}
+
+extension ErrorToast {
+    var localizedKey: LocalizedStringKey {
+        switch self {
+        case .noNetwork: "Error.NoNetwork"
+        }
+    }
+
+    func localizedString(locale: Locale?) -> String {
+        switch self {
+        case .noNetwork: L10n("Error.NoNetwork", locale: locale)
+        }
+    }
+}
+

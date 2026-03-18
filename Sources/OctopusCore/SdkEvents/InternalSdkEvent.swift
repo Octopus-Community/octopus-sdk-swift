@@ -10,4 +10,5 @@ public enum InternalSdkEvent: Sendable {
     case contentDeleted(content: (any OctopusContent)?)
     case contentReactionChanged(content: any OctopusContent, reaction: ReactionKind?)
     case profileUpdated
+    case groupFollowingChanged
 }

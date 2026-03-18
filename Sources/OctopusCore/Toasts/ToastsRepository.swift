@@ -80,4 +80,30 @@ public class ToastsRepository: InjectableObject, @unchecked Sendable {
             }
         }
     }
+
+    /// Displays a toast relative to a user action.
+    /// The toast won't be displayed if the same action is already displayed
+    /// - Parameter userAction: the toast to display.
+    public func display(userAction: UserActionToast) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let toast = Toast.userAction(userAction)
+            if !toasts.contains(where: { $0 == toast }) {
+                toasts.append(toast)
+            }
+        }
+    }
+
+     /// Displays a toast relative to an error.
+     /// The toast won't be displayed if the same error is already displayed
+     /// - Parameter errorToast: the toast to display.
+     public func display(errorToast: ErrorToast) {
+         DispatchQueue.main.async { [weak self] in
+             guard let self else { return }
+             let toast = Toast.error(errorToast)
+             if !toasts.contains(where: { $0 == toast }) {
+                 toasts.append(toast)
+             }
+         }
+     }
 }

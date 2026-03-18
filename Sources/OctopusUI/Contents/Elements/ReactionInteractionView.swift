@@ -10,7 +10,7 @@ struct ReactionInteractionView: View {
     @Environment(\.octopusTheme) private var theme
 
     enum ImageKind: Equatable {
-        case resource(GenImageResource)
+        case resource(UIImage)
         case emoji(ReactionKind)
     }
 
@@ -36,8 +36,8 @@ struct ReactionInteractionView: View {
                 .overlay(
                     Group {
                         switch image {
-                        case let .resource(resource):
-                            Image(res: resource)
+                        case let .resource(image):
+                            Image(uiImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                                 .foregroundColor(theme.colors.gray700)
@@ -67,13 +67,9 @@ struct ReactionInteractionView: View {
                 animate = false
             }
         }
-        .modify {
-            if #available(iOS 17.0, *) {
-                $0.sensoryFeedback(trigger: animate) { oldValue, newValue in
-                    guard oldValue != newValue, newValue else { return nil }
-                    return .impact(flexibility: .soft)
-                }
-            } else { $0 }
+        .hapticFeedback(trigger: animate) { oldValue, newValue in
+            guard oldValue != newValue, newValue else { return false }
+            return true
         }
     }
 }

@@ -164,7 +164,7 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
         }
     }
 
-    public func logout() async throws {
+    public func logout(preventReconnection: Bool = false) async throws {
         let profileId: String? = if case let .connected(user, _) = connectionState {
             user.profile.id
         } else { nil }
@@ -172,7 +172,9 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
         if let profileId {
             try await profileRepository.deleteCurrentUserProfile(profileId: profileId)
         }
-        await connect()
+        if !preventReconnection {
+            await connect()
+        }
     }
 
     public func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) {
