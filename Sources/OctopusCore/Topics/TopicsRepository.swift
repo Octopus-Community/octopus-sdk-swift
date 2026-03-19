@@ -39,7 +39,7 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
             .removeDuplicates()
             .sink { [weak self] in
                 guard let self else { return }
-                topics = $0.map { Topic(from: $0, postFeedsStore: postFeedsStore) }
+                topics = $0.map { Topic(from: $0, postFeedsStore: self.postFeedsStore) }
             }.store(in: &storage)
     }
 

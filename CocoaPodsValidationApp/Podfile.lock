@@ -20,24 +20,24 @@ PODS:
     - SwiftProtobuf (< 2.0.0, >= 1.19.0)
   - KeychainAccess (4.2.2)
   - Logging (1.4.0)
-  - OctopusCommunity (1.9.1):
-    - OctopusCommunityCore (= 1.9.1)
-    - OctopusCommunityDependencyInjection (= 1.9.1)
-  - OctopusCommunityCore (1.9.1):
+  - OctopusCommunity (1.10.1):
+    - OctopusCommunityCore (= 1.10.1)
+    - OctopusCommunityDependencyInjection (= 1.10.1)
+  - OctopusCommunityCore (1.10.1):
     - KeychainAccess
-    - OctopusCommunityDependencyInjection (= 1.9.1)
-    - OctopusCommunityGrpcModels (= 1.9.1)
-    - OctopusCommunityRemoteClient (= 1.9.1)
-  - OctopusCommunityDependencyInjection (1.9.1)
-  - OctopusCommunityGrpcModels (1.9.1):
+    - OctopusCommunityDependencyInjection (= 1.10.1)
+    - OctopusCommunityGrpcModels (= 1.10.1)
+    - OctopusCommunityRemoteClient (= 1.10.1)
+  - OctopusCommunityDependencyInjection (1.10.1)
+  - OctopusCommunityGrpcModels (1.10.1):
     - gRPC-Swift
-    - OctopusCommunityDependencyInjection (= 1.9.1)
+    - OctopusCommunityDependencyInjection (= 1.10.1)
     - SwiftProtobuf
-  - OctopusCommunityRemoteClient (1.9.1):
-    - OctopusCommunityGrpcModels (= 1.9.1)
-  - OctopusCommunityUI (1.9.1):
-    - OctopusCommunity (= 1.9.1)
-    - OctopusCommunityCore (= 1.9.1)
+  - OctopusCommunityRemoteClient (1.10.1):
+    - OctopusCommunityGrpcModels (= 1.10.1)
+  - OctopusCommunityUI (1.10.1):
+    - OctopusCommunity (= 1.10.1)
+    - OctopusCommunityCore (= 1.10.1)
   - SwiftNIO (2.40.0):
     - _NIODataStructures (= 2.40.0)
     - CNIOAtomics (= 2.40.0)
@@ -168,15 +168,16 @@ PODS:
     - SwiftNIOFoundationCompat (< 3, >= 2.32.0)
     - SwiftNIOPosix (< 3, >= 2.32.0)
     - SwiftNIOTLS (< 3, >= 2.32.0)
-  - SwiftProtobuf (1.35.0)
+  - SwiftProtobuf (1.36.1)
 
 DEPENDENCIES:
-  - OctopusCommunity
-  - OctopusCommunityCore
-  - OctopusCommunityDependencyInjection
-  - OctopusCommunityGrpcModels
-  - OctopusCommunityRemoteClient
-  - OctopusCommunityUI
+  - gRPC-Swift (from `gRPC-Swift.podspec.json`)
+  - OctopusCommunity (from `..`)
+  - OctopusCommunityCore (from `..`)
+  - OctopusCommunityDependencyInjection (from `..`)
+  - OctopusCommunityGrpcModels (from `..`)
+  - OctopusCommunityRemoteClient (from `..`)
+  - OctopusCommunityUI (from `..`)
 
 SPEC REPOS:
   trunk:
@@ -189,15 +190,8 @@ SPEC REPOS:
     - CNIOHTTPParser
     - CNIOLinux
     - CNIOWindows
-    - gRPC-Swift
     - KeychainAccess
     - Logging
-    - OctopusCommunity
-    - OctopusCommunityCore
-    - OctopusCommunityDependencyInjection
-    - OctopusCommunityGrpcModels
-    - OctopusCommunityRemoteClient
-    - OctopusCommunityUI
     - SwiftNIO
     - SwiftNIOConcurrencyHelpers
     - SwiftNIOCore
@@ -213,6 +207,22 @@ SPEC REPOS:
     - SwiftNIOTransportServices
     - SwiftProtobuf
 
+EXTERNAL SOURCES:
+  gRPC-Swift:
+    :podspec: gRPC-Swift.podspec.json
+  OctopusCommunity:
+    :path: ".."
+  OctopusCommunityCore:
+    :path: ".."
+  OctopusCommunityDependencyInjection:
+    :path: ".."
+  OctopusCommunityGrpcModels:
+    :path: ".."
+  OctopusCommunityRemoteClient:
+    :path: ".."
+  OctopusCommunityUI:
+    :path: ".."
+
 SPEC CHECKSUMS:
   _NIODataStructures: 3d45d8e70a1d17a15b1dc59d102c63dbc0525ffd
   CGRPCZlib: 298dd3237ba4bd7b3eed109e7080ff3324b7d9c9
@@ -223,15 +233,15 @@ SPEC CHECKSUMS:
   CNIOHTTPParser: 8ce395236fa1d09ac3b4f4bcfba79b849b2ac684
   CNIOLinux: 62e3505f50de558c393dc2f273dde71dcce518da
   CNIOWindows: 3047f2d8165848a3936a0a755fee27c6b5ee479b
-  gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
+  gRPC-Swift: 6ce9bb67cb7f8aedd1e888a25f5886fce2a1255f
   KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
-  OctopusCommunity: c49b5e60c9b731c8f1727d5765ca6627b898baab
-  OctopusCommunityCore: 99102dee9566ef48c8fc2888c86a231d38007429
-  OctopusCommunityDependencyInjection: 1a45bc381926e5dc8b12550af90cf5f6eee2d282
-  OctopusCommunityGrpcModels: a19826782061e18455ea2dca520608d38d66d83b
-  OctopusCommunityRemoteClient: 453738019c8099d452024d9b88f015adf7461220
-  OctopusCommunityUI: aa399212d2227173646383bf6c0b9ed5cc9507f9
+  OctopusCommunity: 7ad423868db2de11944b4b8fb16cbfbac41372e7
+  OctopusCommunityCore: 57bdb919383567fd19728442ea8be1e64f3bcd51
+  OctopusCommunityDependencyInjection: 5a4db4492d9df42a6aa558f891fd69744735c08d
+  OctopusCommunityGrpcModels: 5edf7c92276beb0f6476e823a08ae57835aad014
+  OctopusCommunityRemoteClient: 1dc7fa02607cb15e921db207cbee7b961b8c1159
+  OctopusCommunityUI: ba9619e06c12c7fa1d451d9e01951fd7a3f4984d
   SwiftNIO: 829958aab300642625091f82fc2f49cb7cf4ef24
   SwiftNIOConcurrencyHelpers: 697370136789b1074e4535eaae75cbd7f900370e
   SwiftNIOCore: 473fdfe746534d7aa25766916459eeaf6f92ef49
@@ -245,8 +255,8 @@ SPEC CHECKSUMS:
   SwiftNIOSSL: d153c5a6fc5b2301b0519b4c4d037a9414212da6
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
-  SwiftProtobuf: 24536165ff31bd2bd1aa8ad9307a128dc0a06dd0
+  SwiftProtobuf: 9e106a71456f4d3f6a3b0c8fd87ef0be085efc38
 
-PODFILE CHECKSUM: e531d030fc39524c85733c218e19ead31626a856
+PODFILE CHECKSUM: 6fff50392508668d4cc8ad11e3b51a2461a93d80
 
 COCOAPODS: 1.16.2

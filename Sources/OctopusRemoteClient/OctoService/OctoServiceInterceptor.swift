@@ -91,11 +91,11 @@ final class OctoServiceInterceptor: Com_Octopuscommunity_OctoObjectServiceClient
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeGetBridgePostInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetBridgePostRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostResponse>] {
+    func makeGetBridgePostInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetBridgePostRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeCreateBridgePostInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostResponse>] {
+    func makeCreateBridgePostInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOrCreateBridgePostResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
@@ -131,7 +131,7 @@ final class OctoServiceInterceptor: Com_Octopuscommunity_OctoObjectServiceClient
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
-    func makeGetOctoObjectTranslationsInterceptors() -> [GRPC.ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsResponse>] {
+    func makeGetOctoObjectTranslationsInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 }

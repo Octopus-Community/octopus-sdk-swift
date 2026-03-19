@@ -3,31 +3,32 @@ platform :ios, '14.0'
 target 'CocoaPodsValidationApp' do
   use_frameworks! :linkage => :static
 
-  pod 'OctopusCommunityUI'
-  pod 'OctopusCommunity'
-  pod 'OctopusCommunityCore'
-  pod 'OctopusCommunityRemoteClient'
-  pod 'OctopusCommunityGrpcModels'
-  pod 'OctopusCommunityDependencyInjection'
+# Uncomment this to use the public version
+#  pod 'OctopusCommunityUI'
+#  pod 'OctopusCommunity'
+#  pod 'OctopusCommunityCore'
+#  pod 'OctopusCommunityRemoteClient'
+#  pod 'OctopusCommunityGrpcModels'
+#  pod 'OctopusCommunityDependencyInjection'
 
   # If you have another dependency that uses Grpc-Core (such as FirebaseFirestore), you'll have to copy the
   # gRPC-Swift.podspec.json file to your project and add this line in your Podfile
-  # pod 'gRPC-Swift', :podspec => 'gRPC-Swift.podspec.json'
+  pod 'gRPC-Swift', :podspec => 'gRPC-Swift.podspec.json'
 
 
 # Replace with that if you want to test with the local version
-#  pod 'OctopusCommunityUI', :path => '..'
-#  pod 'OctopusCommunity', :path => '..'
-#  pod 'OctopusCommunityCore', :path => '..'
-#  pod 'OctopusCommunityRemoteClient', :path => '..'
-#  pod 'OctopusCommunityGrpcModels', :path => '..'
-#  pod 'OctopusCommunityDependencyInjection', :path => '..'
+  pod 'OctopusCommunityUI', :path => '..'
+  pod 'OctopusCommunity', :path => '..'
+  pod 'OctopusCommunityCore', :path => '..'
+  pod 'OctopusCommunityRemoteClient', :path => '..'
+  pod 'OctopusCommunityGrpcModels', :path => '..'
+  pod 'OctopusCommunityDependencyInjection', :path => '..'
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-#      # Force all pods to use iOS 14.0 minimum
+      # Force all pods to use iOS 14.0 minimum
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
 
       # Write `ENABLE_USER_SCRIPT_SANDBOXING = NO` in the xcconfig file
