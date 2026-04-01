@@ -272,7 +272,8 @@ struct ZoomableImageView: View {
     private func startDeceleration() {
         isDecelerating = true
 
-        var currentVelocity = dragVelocity
+        // Safe: currentVelocity is only read and mutated on the main queue (via DispatchQueue.main.async)
+        nonisolated(unsafe) var currentVelocity = dragVelocity
         let decelerationFactor: CGFloat = 0.95
 
         stopDeceleration()
