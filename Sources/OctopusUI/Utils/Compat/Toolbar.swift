@@ -18,7 +18,8 @@ extension View {
         centeredVisibility: Compat.Visibility = .automatic
     ) -> some View {
 #if compiler(>=6.2)
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, *),
+            !(Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false) {
             self.toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     leading
