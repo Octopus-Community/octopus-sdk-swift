@@ -37,9 +37,4 @@ extension CommentEntity: FetchableContentEntity {
         return request
     }
 
-    @nonobjc public class func fetchAllExcept(ids: [String]) -> NSFetchRequest<CommentEntity> {
-        let request = fetchAll()
-        request.predicate = NSPredicate(format: "NOT (%K IN %@)", #keyPath(CommentEntity.uuid), ids)
-        return request
-    }
 }

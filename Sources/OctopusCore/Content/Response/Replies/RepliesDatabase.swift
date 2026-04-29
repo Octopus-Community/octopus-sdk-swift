@@ -25,8 +25,11 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
 
     func repliesPublisher(ids: [String]) -> AnyPublisher<[StorableReply], Error> {
         return context
-            .publisher(request: ReplyEntity.fetchAllByIds(ids: ids),
-                       relatedTypes: [MinimalProfileEntity.self]) {
+            .chunkedPublisher(
+                ids: ids,
+                requestBuilder: { ReplyEntity.fetchAllByIds(ids: $0) },
+                relatedTypes: [MinimalProfileEntity.self]
+            ) {
                 $0.map { StorableReply(from: $0) }
                     .sorted { reply1, reply2 in
                         guard let index1 = ids.firstIndex(of: reply1.uuid),
@@ -42,8 +45,10 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
 
     func getReplies(ids: [String]) async throws -> [StorableReply] {
         let fetchedReplies = try await context.performAsync { [context] in
-            try context.fetch(ReplyEntity.fetchAllByIds(ids: ids))
-                .map { StorableReply(from: $0) }
+            try context.chunkedFetch(ids: ids) { chunk in
+                ReplyEntity.fetchAllByIds(ids: chunk)
+            }
+            .map { StorableReply(from: $0) }
         }
 
         // return them in the same order as Ids
@@ -59,10 +64,9 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
     func upsert(replies: [StorableReply]) async throws {
         try await context.performAsync { [context] in
             let context = context
-            let request: NSFetchRequest<ReplyEntity> = ReplyEntity.fetchAll()
-            request.predicate = NSPredicate(format: "%K IN %@", #keyPath(ReplyEntity.uuid),
-                                            replies.map { $0.uuid })
-            let existingReplies = try context.fetch(request)
+            let existingReplies = try context.chunkedFetch(ids: replies.map { $0.uuid }) { chunk in
+                ReplyEntity.fetchAllByIds(ids: chunk)
+            }
 
             for reply in replies {
                 let replyEntity: ReplyEntity
@@ -73,7 +77,7 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject {
                 }
                 try replyEntity.fill(with: reply, context: context)
             }
-            
+
             try context.save()
         }
     }

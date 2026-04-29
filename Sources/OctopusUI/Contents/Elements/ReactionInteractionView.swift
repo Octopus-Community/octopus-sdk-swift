@@ -9,59 +9,48 @@ import OctopusCore
 struct ReactionInteractionView: View {
     @Environment(\.octopusTheme) private var theme
 
-    enum ImageKind: Equatable {
-        case resource(UIImage)
-        case emoji(ReactionKind)
-    }
-
-    let image: ImageKind
-    let text: LocalizedStringKey
+    let defaultImage: UIImage
+    let reaction: ReactionKind?
 
     @State private var animate = false
 
+    @Compat.ScaledMetric(relativeTo: .caption1) private var reactionImageSize: CGFloat = 24
+
     private var normalFont: Font { theme.fonts.caption1 }
 
-    init(image: ImageKind, text: LocalizedStringKey) {
-        self.image = image
-        self.text = text
+    private var isReacted: Bool { reaction != nil }
+
+    private var textColor: Color {
+        isReacted ? theme.colors.gray900 : theme.colors.gray700
     }
 
     var body: some View {
-        HStack(spacing: 5) {
-            // make sure the image has the same height as the text. To do that, use a squared font size based
-            // transparent image and put our image on overlay of this transparent image
-            Image(systemName: "square")
-                .font(normalFont)
-                .foregroundColor(Color.clear)
-                .overlay(
-                    Group {
-                        switch image {
-                        case let .resource(image):
-                            Image(uiImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .foregroundColor(theme.colors.gray700)
-                                .padding(-2) // make it slightly bigger
-                                .scaleEffect(animate ? 1.4 : 1.0)
-                                .opacity(animate ? 0.9 : 1.0)
-                                .animation(.spring(response: 0.2, dampingFraction: 0.3), value: animate)
-                        case let .emoji(kind):
-                            Text(kind.unicode)
-                                .minimumScaleFactor(0.5)
-                                .foregroundColor(theme.colors.gray700)
-                                .scaleEffect(animate ? 1.4 : 1.0)
-                                .opacity(animate ? 0.9 : 1.0)
-                                .animation(.spring(response: 0.2, dampingFraction: 0.3), value: animate)
-                        }
-                    }
-                )
+        HStack(spacing: 4) {
+            Group {
+                if let reaction {
+                    Image(uiImage: theme.assets.icons.content.reaction[reaction])
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                } else {
+                    Image(uiImage: defaultImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .foregroundColor(textColor)
+                }
+            }
+            .frame(width: reactionImageSize, height: reactionImageSize)
+            .scaleEffect(animate ? 1.4 : 1.0)
+            .opacity(animate ? 0.9 : 1.0)
+            .animation(
+                .spring(response: 0.2, dampingFraction: 0.3),
+                value: animate)
 
-            Text(text, bundle: .module)
+            Text((reaction ?? .heart).labelKey, bundle: .module)
                 .font(normalFont)
                 .fontWeight(.medium)
-            .foregroundColor(theme.colors.gray700)
+                .foregroundColor(textColor)
         }
-        .onValueChanged(of: image) { newValue in
+        .onValueChanged(of: reaction) { _ in
             animate = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 animate = false

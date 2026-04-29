@@ -1,3 +1,7 @@
+//
+//  Copyright © 2025 Octopus Community. All rights reserved.
+//
+
 import Foundation
 import OctopusRemoteClient
 import OctopusGrpcModels

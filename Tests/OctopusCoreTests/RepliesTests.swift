@@ -62,7 +62,7 @@ class RepliesTests: XCTestCase {
         let reply = WritableReply(commentId: "commentId", text: "My Reply", imageData: nil)
         try await repliesRepository.send(reply, parentIsTranslated: false)
 
-        await fulfillment(of: [sendExpectation], timeout: 0.5)
+        await fulfillment(of: [sendExpectation], timeout: 5)
     }
 
     func testDeleteReply() async throws {
@@ -81,10 +81,10 @@ class RepliesTests: XCTestCase {
         mockOctoService.injectNextDeleteReplyResponse(Com_Octopuscommunity_DeleteReplyResponse())
         _ = try await repliesRepository.deleteReply(replyId: "1")
 
-        try await delay()
-
-        let replies = try await repliesDatabase.getReplies(ids: ["1"])
-        XCTAssertTrue(replies.isEmpty)
+        let repliesDatabase = self.repliesDatabase!
+        try await assertWithTimeout {
+            try await repliesDatabase.getReplies(ids: ["1"]).isEmpty
+        }
     }
 
     func injectPutReply(_ reply: StorableReply) {

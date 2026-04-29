@@ -1,3 +1,7 @@
+//
+//  Copyright © 2025 Octopus Community. All rights reserved.
+//
+
 import Foundation
 import Combine
 import UserNotifications
@@ -8,15 +12,19 @@ import os
 /// Octopus Community main model object.
 /// This object holds a reference on all the repositories.
 public final class OctopusSDK: ObservableObject {
-    
+
     /// Number of notifications from the notification center (i.e. internal notifications) that have not been seen yet.
     /// Always 0 if the user is not connected to Octopus Community.
     @Published public private(set) var notSeenNotificationsCount: Int = 0
 
-    /// List of topics. You can use that list to match a given topic name with a topic id.
-    /// You can update the list with the latest backend values by calling `fetchTopics()`.
-    /// Even if you do not call `fetchTopics()`, the update might be done internally by the SDK at any time.
-    @Published public private(set) var topics: [Topic] = []
+    /// List of groups. You can use that list to match a given group name with a group id.
+    /// You can update the list with the latest backend values by calling `fetchGroups()`.
+    /// Even if you do not call `fetchGroups()`, the update might be done internally by the SDK at any time.
+    @Published public private(set) var groups: [OctopusGroup] = []
+
+    /// List of topics.
+    @available(*, deprecated, renamed: "groups")
+    public var topics: [OctopusGroup] { groups }
 
     /// Published value that indicates whether the current user has access to the community features.
     ///
@@ -100,7 +108,7 @@ public final class OctopusSDK: ObservableObject {
 
         core.topicsRepository.$topics
             .sink { [unowned self] in
-                topics = $0.map { Topic(from: $0) }
+                groups = $0.map { OctopusGroup(from: $0) }
             }
             .store(in: &storage)
 
@@ -122,7 +130,8 @@ extension OctopusSDK {
     /// asked to create one (pre-filled with the information you provide in `user`) when it will attempt to do an
     /// action that requires a profile (create a post, like, comment, report...).
     ///
-    /// Call this function as soon as your user is connected inside your app.
+    /// Call this function as soon as your user is connected inside your app and each time its profile changes in your
+    /// app.
     ///
     /// - Note: This function should only be called when connectionMode is `.sso`.
     /// - Parameters:
@@ -130,14 +139,32 @@ extension OctopusSDK {
     ///   - tokenProvider: a block called when the user token is needed to authenticate the user on the Octopus SDK
     ///                    side. When receiving this callback, you should get a token for this user asynchronously and
     ///                    pass this token to the sub closure.
+    /// - Throws: A ``OctopusConnectUserError`` if the connection fails.
     ///
     ///  Example:
     ///  ```
-    ///  connectUser(currentUser, tokenProvider: { in
+    ///  try await connectUser(currentUser, tokenProvider: {
     ///      let userToken = try await server.getUserTokenForOctopusSDK(clientId: currentUser.id)
     ///      return userToken
     ///  })
     ///  ```
+    public func connectUser(
+        _ user: ClientUser,
+        tokenProvider: @Sendable @escaping () async throws -> String
+    ) async throws(OctopusConnectUserError) {
+        do {
+            try await core.connectionRepository.connectUser(user.coreValue, tokenProvider: tokenProvider)
+        } catch {
+            throw OctopusConnectUserError(from: error)
+        }
+    }
+
+    /// Connect a user to the Octopus SDK.
+    ///
+    /// This is the fire-and-forget version of ``connectUser(_:tokenProvider:)``. Errors are logged but not
+    /// propagated to the caller.
+    ///
+    /// - Note: This function should only be called when connectionMode is `.sso`.
     public func connectUser(_ user: ClientUser, tokenProvider: @Sendable @escaping () async throws -> String) {
         let connectionRepository = core.connectionRepository
         Task {
@@ -152,6 +179,17 @@ extension OctopusSDK {
     /// Disconnect the current user.
     ///
     /// Call this function when your user is disconnected.
+    ///
+    /// - Note: This function should only be called when connectionMode is `.sso`.
+    /// - Throws: An error if the disconnection fails.
+    public func disconnectUser() async throws {
+        try await core.connectionRepository.disconnectUser()
+    }
+
+    /// Disconnect the current user.
+    ///
+    /// This is the fire-and-forget version of ``disconnectUser()``. Errors are logged but not
+    /// propagated to the caller.
     ///
     /// - Note: This function should only be called when connectionMode is `.sso`.
     public func disconnectUser() {
@@ -188,12 +226,26 @@ extension OctopusSDK {
     }
 
     /// Gets whether this notification has been triggered by an Octopus Community content.
-    /// If this function returns true, it means that your app should display the Octopus UI and pass the
-    /// NotificationResponse to the Octopus SDK UI.
+    ///
+    /// Pass the `userInfo` dictionary of the push notification (i.e. the
+    /// `request.content.userInfo` of a `UNNotification`, or the raw payload map received
+    /// from cross-platform push plugins like Firebase Messaging).
+    /// If this function returns `true`, you should display the Octopus UI and forward the
+    /// same `userInfo` to `OctopusHomeScreen`'s `notificationUserInfo:` binding.
+    ///
+    /// - Parameter userInfo: the push notification's `userInfo` dictionary
+    /// - Returns: `true` if the notification is an Octopus Community one
+    public static func isAnOctopusNotification(userInfo: [AnyHashable: Any]) -> Bool {
+        NotificationsRepository.isAnOctopusNotification(userInfo: userInfo)
+    }
+
+    /// Gets whether this notification has been triggered by an Octopus Community content.
     /// - Parameter notification: the notification to test
     /// - Returns: true if the notification is an Octopus Community one
+    @available(*, deprecated, renamed: "isAnOctopusNotification(userInfo:)",
+               message: "Use isAnOctopusNotification(userInfo:) so the same API works for non-native wrappers (Flutter, React Native, Unity).")
     public static func isAnOctopusNotification(notification: UNNotification) -> Bool {
-        NotificationsRepository.isAnOctopusNotification(notification: notification)
+        isAnOctopusNotification(userInfo: notification.request.content.userInfo)
     }
 }
 
@@ -270,7 +322,7 @@ extension OctopusSDK {
 }
 
 // MARK: - Analytics
-extension OctopusSDK {    
+extension OctopusSDK {
     /// Add a custom event.
     ///
     /// This event can be integrated to the analytics reports we can deliver to you.
@@ -354,10 +406,45 @@ extension OctopusSDK {
                                            clientObjectRelatedPostId: clientObjectRelatedPostId)
     }
 
-    /// Fetches the topics from the backend values
-    /// - Note: Even if you do not call `fetchTopics()`, the update might be done internally by the SDK at any time.
-    public func fetchTopics() async throws {
+    /// Fetches the groups from the backend values
+    /// - Note: Even if you do not call `fetchGroups()`, the update might be done internally by the SDK at any time.
+    public func fetchGroups() async throws {
         try await core.topicsRepository.fetchTopics()
+    }
+
+    /// Fetches the topics from the backend values
+    @available(*, deprecated, renamed: "fetchGroups()")
+    public func fetchTopics() async throws {
+        try await fetchGroups()
+    }
+
+    /// Syncs a batch of follow/unfollow actions for the connected user, with per-action timestamps.
+    ///
+    /// The backend applies each action only if its ``OctopusSyncFollowGroup/Action/actionDate`` is
+    /// more recent than the stored state for that (user, group) pair. Stale actions are silently
+    /// returned as ``OctopusSyncFollowGroup/Status/skipped``.
+    ///
+    /// Passing an empty `actions` list is a no-op: returns an empty array without making a
+    /// network call.
+    ///
+    /// On success, the SDK refreshes its local groups cache before returning, so the published
+    /// ``groups`` array reflects the new state when the call returns.
+    ///
+    /// - Parameter actions: the actions to sync.
+    /// - Returns: one ``OctopusSyncFollowGroup/Result`` per action in the batch. Each result
+    ///   carries its own `groupId` — callers should match results to inputs by `groupId`
+    ///   rather than relying on order.
+    /// - Throws: ``OctopusSyncFollowGroup/Error`` for RPC-level failures (not per-action).
+    public func syncFollowGroups(
+        actions: [OctopusSyncFollowGroup.Action]
+    ) async throws(OctopusSyncFollowGroup.Error) -> [OctopusSyncFollowGroup.Result] {
+        do {
+            let coreResults = try await core.topicsRepository.syncFollowTopics(
+                actions: actions.map { $0.coreValue })
+            return coreResults.map { OctopusSyncFollowGroup.Result(from: $0) }
+        } catch {
+            throw OctopusSyncFollowGroup.Error(from: error)
+        }
     }
 
     /// Gets the Octopus post id related to the given object id.

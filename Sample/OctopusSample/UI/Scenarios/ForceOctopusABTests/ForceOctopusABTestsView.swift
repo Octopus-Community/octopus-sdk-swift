@@ -16,32 +16,43 @@ struct ForceOctopusABTestsView: View {
     @State private var canAccessCommunity = false
 
     var body: some View {
-        VStack {
-            Text("The following switch will permanently override the internal cohort attribution for the current user.")
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Toggle(isOn: $viewModel.hasCommunityAccess) {
-                Text("Can access the community")
+        VStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The following switch will permanently override the internal cohort attribution for the current user.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Toggle(isOn: $viewModel.hasCommunityAccess) {
+                    Text("Can access the community")
+                }
+                Button(action: { viewModel.overrideCommunityAccess(enabled: viewModel.hasCommunityAccess) }) {
+                    HStack {
+                        Image(systemName: "checkmark.shield")
+                        Text("Override cohort attribution")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor))
+                }
             }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
 
-            Button(action: { viewModel.overrideCommunityAccess(enabled: viewModel.hasCommunityAccess) }) {
-                Text("Override cohort attribution")
-                    .padding()
-            }.background(
-                RoundedRectangle(cornerRadius: 12).stroke(Color.accentColor)
-            )
-
-            Spacer().frame(height: 100)
+            Spacer()
 
             Button(action: {
-                // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                 showFullScreen {
                     OctopusUIView(octopus: viewModel.octopus)
                 }
             }) {
-                Text("Open Octopus Home Screen")
+                HStack {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    Text("Open Octopus Home Screen")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                .foregroundColor(.white)
             }
-            Spacer()
         }
         .padding()
         .modify {
@@ -67,5 +78,3 @@ struct ForceOctopusABTestsView: View {
         }
     }
 }
-
-

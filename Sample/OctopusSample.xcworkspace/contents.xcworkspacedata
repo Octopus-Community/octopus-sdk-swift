@@ -5,6 +5,9 @@
       location = "group:OctopusSample.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:..">
+   </FileRef>
+   <FileRef
       location = "group:OctopusSample.xctestplan">
    </FileRef>
 </Workspace>

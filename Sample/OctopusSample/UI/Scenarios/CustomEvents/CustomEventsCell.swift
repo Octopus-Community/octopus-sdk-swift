@@ -11,13 +11,17 @@ import OctopusUI
 struct CustomEventsCell: View {
     var body: some View {
         NavigationLink(destination: CustomEventsView()) {
-            VStack(alignment: .leading) {
-                Text("Custom events")
-                Text("Integrate some of your custom events to the analytics we provide to you.")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "bolt")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Custom events")
+                    Text("Integrate some of your custom events to the analytics we provide to you.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

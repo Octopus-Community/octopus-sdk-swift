@@ -72,11 +72,22 @@ extension SdkEvent.ScreenDisplayedContext {
 
     /// Context of the event .groupDetail
     public struct GroupDetailContext: Sendable {
+        /// The source from which the group detail screen was opened
+        public enum Source: Sendable {
+            /// Opened from the client app via clientApp mode
+            case clientApp
+            /// Opened from within the SDK community
+            case community
+        }
+
         /// The id of the group.
         public let groupId: String
+        /// The source from which this screen was opened
+        public let coreSource: Source
 
-        public init(groupId: String) {
+        public init(groupId: String, source: Source = .community) {
             self.groupId = groupId
+            self.coreSource = source
         }
     }
 }

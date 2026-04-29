@@ -38,7 +38,6 @@ public protocol NotificationService {
 class NotificationServiceClient: ServiceClient, NotificationService {
     private let client: Com_Octopuscommunity_NotificationServiceAsyncClient
 
-
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {

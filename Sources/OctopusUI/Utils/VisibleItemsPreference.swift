@@ -41,7 +41,7 @@ struct ItemVisibility<Item: Equatable> {
 }
 
 struct VisibleItemsPreference<Item: Equatable>: PreferenceKey {
-    static var defaultValue: [BoundedPayload<Item>] { get { [] } }
+    static var defaultValue: [BoundedPayload<Item>] { [] }
     static func reduce(value: inout Value, nextValue: () -> Value) {
         value.append(contentsOf: nextValue())
     }

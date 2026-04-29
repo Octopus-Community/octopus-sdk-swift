@@ -10,7 +10,7 @@ import Octopus
 
 /// This class is a singleton that provides functions to handle notifications:
 /// - a publisher of the notification device token
-/// - a function to open Octopus UI in case of Octopus notification opened
+/// - a publisher of the push userInfo when an Octopus notification is tapped
 /// - a function to ask for notification permission
 /// It is here because, due to the multiple way of initializing the SDK, it is not created in the AppDelegate as you
 /// should do it. If you create the SDK in your AppDelegate, you can directly call the function
@@ -21,7 +21,7 @@ class NotificationManager {
 
     @Published private(set) var notificationDeviceToken: String?
     @Published private(set) var authorizationStatus: UNAuthorizationStatus?
-    @Published private(set) var handleOctopusNotification: UNNotificationResponse?
+    @Published private(set) var handleOctopusNotificationUserInfo: [AnyHashable: Any]?
 
     /// The notification center
     private let notifCenter = UNUserNotificationCenter.current()
@@ -65,8 +65,9 @@ class NotificationManager {
     }
 
     func handle(notificationResponse: UNNotificationResponse) {
-        if OctopusSDK.isAnOctopusNotification(notification: notificationResponse.notification) {
-            handleOctopusNotification = notificationResponse
+        let userInfo = notificationResponse.notification.request.content.userInfo
+        if OctopusSDK.isAnOctopusNotification(userInfo: userInfo) {
+            handleOctopusNotificationUserInfo = userInfo
         } else {
             // This is a notification for your app, do what you want
         }

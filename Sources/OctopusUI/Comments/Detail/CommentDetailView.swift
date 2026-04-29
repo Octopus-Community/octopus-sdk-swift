@@ -10,14 +10,11 @@ import OctopusCore
 
 struct CommentDetailView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     @Compat.StateObject private var viewModel: CommentDetailViewModel
-
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
 
     @State private var showChangesWillBeLostAlert = false
 
@@ -70,6 +67,7 @@ struct CommentDetailView: View {
                     },
                     deleteComment: viewModel.deleteComment,
                     deleteReply: viewModel.deleteReply,
+                    blockAuthor: viewModel.blockAuthor(profileId:),
                     reactionTapped: viewModel.setReaction(_:),
                     replyReactionTapped: viewModel.setReplyReaction(_:replyId:),
                     displayContentModeration: {
@@ -92,18 +90,7 @@ struct CommentDetailView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if viewModel.commentDeletion == .inProgress || viewModel.isDeletingReply {
-                Compat.ProgressView()
-                    .padding(20)
-                    .background(
-                        RoundedRectangle(cornerSize: CGSize(width: 4, height: 4))
-                            .modify {
-                                if #available(iOS 15.0, *) {
-                                    $0.fill(.thickMaterial)
-                                } else {
-                                    $0.fill(theme.colors.gray200)
-                                }
-                            }
-                    )
+                LoadingOverlay()
             }
         }
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
@@ -112,51 +99,25 @@ struct CommentDetailView: View {
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarTitle: Text("Comment.Detail.Title", bundle: .module),
                                 defaultNavigationBarBackButtonHidden: replyHasChanges)
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in },
-            message: { error in
-                error.textView
-            })
-        .onReceive(viewModel.$error) { error in
-            guard let error else { return }
-            displayableError = error
-            displayError = true
-        }
+        .errorAlert(viewModel.$error)
         .onReceive(viewModel.$commentDeletion) { commentDeletion in
             if commentDeletion == .done {
                 displayPostDeletedAlert = true
             }
         }
-        .onAppear() {
+        .onAppear {
             viewModel.onAppear()
         }
         .emitScreenDisplayed(.commentDetail(.init(commentId: viewModel.commentUuid)), trackingApi: trackingApi)
-        .onDisappear() {
+        .onDisappear {
             viewModel.onDisappear()
         }
-        .modify {
-            if #available(iOS 15.0, *) {
-                $0.alert(
-                    Text("Common.CancelModifications", bundle: .module),
-                    isPresented: $showChangesWillBeLostAlert) {
-                        Button(role: .cancel, action: {}) { Text("Common.No", bundle: .module) }
-                        Button(role: .destructive, action: { navigator.pop() })  { Text("Common.Yes", bundle: .module) }
-                    }
-            } else {
-                $0.alert(isPresented: $showChangesWillBeLostAlert) {
-                    Alert(title: Text("Common.CancelModifications", bundle: .module),
-                          primaryButton: .default(Text("Common.No", bundle: .module)),
-                          secondaryButton: .destructive(
-                            Text("Common.Yes", bundle: .module),
-                            action: { navigator.pop() }
-                          )
-                    )
-                }
-            }
-        }
+        .destructiveConfirmationAlert(
+            "Common.CancelModifications",
+            isPresented: $showChangesWillBeLostAlert,
+            cancelLabel: "Common.No",
+            destructiveLabel: "Common.Yes",
+            action: { navigator.pop() })
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
@@ -238,6 +199,7 @@ private struct ContentView: View {
     let openCreateReply: () -> Void
     let deleteComment: () -> Void
     let deleteReply: (String) -> Void
+    let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?) -> Void
     let replyReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (String) -> Void
@@ -255,21 +217,22 @@ private struct ContentView: View {
                                                  displayProfile: displayProfile,
                                                  openCreateReply: openCreateReply,
                                                  deleteComment: deleteComment,
+                                                 blockAuthor: blockAuthor,
                                                  reactionTapped: reactionTapped,
                                                  displayContentModeration: displayContentModeration,
                                                  displayParentPost: displayParentPost)
 
                         if let replies {
-                            RepliesView(replies: replies,
+                            CommentDetailRepliesView(replies: replies,
                                         hasMoreData: hasMoreReplies,
                                         hideLoader: hideLoadMoreRepliesLoader,
                                         zoomableImageInfo: $zoomableImageInfo,
                                         loadPreviousReplies: loadPreviousReplies,
                                         displayProfile: displayProfile,
                                         deleteReply: deleteReply,
+                                        blockAuthor: blockAuthor,
                                         reactionTapped: replyReactionTapped,
                                         displayContentModeration: displayContentModeration)
-                            .padding(.horizontal, 16)
                         } else {
                             Compat.ProgressView()
                         }
@@ -288,288 +251,5 @@ private struct ContentView: View {
                 }
             }
             .clipped()
-    }
-}
-
-private struct CommentDetailContentView: View {
-    @Environment(\.octopusTheme) private var theme
-    @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
-
-    let comment: CommentDetailViewModel.CommentDetail
-    let displayGoToParentButton: Bool
-    @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let displayProfile: (String) -> Void
-    let openCreateReply: () -> Void
-    let deleteComment: () -> Void
-    let reactionTapped: (ReactionKind?) -> Void
-    let displayContentModeration: (String) -> Void
-    let displayParentPost: (String, String) -> Void
-
-    @State private var displayWillDeleteAlert = false
-    @State private var openActions = false
-    @State private var showReactionPicker = false
-
-    private let minAspectRatio: CGFloat = 4 / 5
-
-    var displayTranslation: Bool { translationStore.displayTranslation(for: comment.uuid) }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            if displayGoToParentButton {
-                Button(action: { displayParentPost(comment.parentId, comment.uuid) }) {
-                    Text("Comment.SeeParent", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .foregroundColor(theme.colors.gray900)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal)
-                        .background(
-                            Capsule()
-                                .stroke(theme.colors.gray300, lineWidth: 1)
-                        )
-                        .padding(.top, 8)
-                        .padding(.bottom, 16)
-                }
-                .buttonStyle(.plain)
-            }
-            HStack(alignment: .top) {
-                OpenProfileButton(author: comment.author, displayProfile: displayProfile) {
-                    AuthorAvatarView(avatar: comment.author.avatar)
-                        .frame(width: 32, height: 32)
-                        .padding(.leading, 12)
-                        .padding(.bottom, 6)
-                        .padding(.top, 8)
-                }
-                VStack(spacing: 0) {
-                    VStack(spacing: 0) {
-                        VStack(alignment: .leading, spacing: 0) {
-                            HStack(spacing: 4) {
-                                AuthorAndDateHeaderView(author: comment.author, relativeDate: comment.relativeDate,
-                                                        topPadding: 16, bottomPadding: 4,
-                                                        displayProfile: displayProfile)
-                                Spacer()
-                                if comment.canBeDeleted || comment.canBeModerated {
-                                    if #available(iOS 14.0, *) {
-                                        Menu(content: {
-                                            if comment.canBeDeleted {
-                                                Button(action: { displayWillDeleteAlert = true }) {
-                                                    Label(title: { Text("Comment.Delete.Button", bundle: .module) },
-                                                          icon: { IconImage(theme.assets.icons.content.delete) })
-                                                }
-                                                .buttonStyle(.plain)
-
-                                            }
-                                            if comment.canBeModerated {
-                                                Button(action: { displayContentModeration(comment.uuid) }) {
-                                                    Label(title: { Text("Moderation.Content.Button", bundle: .module) },
-                                                          icon: { IconImage(theme.assets.icons.content.report) })
-                                                }
-                                                .buttonStyle(.plain)
-                                            }
-                                        }, label: {
-                                            HStack {
-                                                Image(uiImage: theme.assets.icons.common.moreActions)
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .frame(width: 24, height: 24)
-                                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                                                    .foregroundColor(theme.colors.gray500)
-                                                    .accessibilityLabelInBundle("Accessibility.Common.More")
-                                                    .padding(.top, 8)
-                                            }.frame(width: 44, height: 44)
-                                        })
-                                        .buttonStyle(.plain)
-                                    } else {
-                                        Button(action: { openActions = true }) {
-                                            HStack {
-                                                Image(uiImage: theme.assets.icons.common.moreActions)
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .frame(width: 24, height: 24)
-                                                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                                                    .foregroundColor(theme.colors.gray500)
-                                                    .accessibilityLabelInBundle("Accessibility.Common.More")
-                                                    .padding(.top, 8)
-                                            }.frame(width: 44, height: 44)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                            }
-                            if let translatableText = comment.text,
-                               let text = translatableText.getText(translated: displayTranslation).nilIfEmpty {
-
-                                RichText(text)
-                                    .font(theme.fonts.body2)
-                                    .lineSpacing(4)
-                                    .foregroundColor(theme.colors.gray900)
-
-                                if translatableText.hasTranslation {
-                                    ToggleTextTranslationButton(
-                                        contentId: comment.uuid, originalLanguage: translatableText.originalLanguage,
-                                        contentKind: .comment)
-                                } else {
-                                    Spacer().frame(height: 8)
-                                }
-
-                            } else {
-                                Spacer().frame(height: 4)
-                            }
-                        }.padding(.horizontal, 8)
-                        if let image = comment.image {
-                            AsyncCachedImage(
-                                url: image.url, cache: .content,
-                                croppingRatio: minAspectRatio,
-                                placeholder: {
-                                    theme.colors.gray200
-                                        .aspectRatio(
-                                            max(image.size.width/image.size.height, minAspectRatio),
-                                            contentMode: .fit)
-                                        .clipped()
-                                },
-                                content: { cachedImage in
-                                    Image(uiImage: cachedImage.ratioImage)
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .modify {
-                                            if zoomableImageInfo?.url != image.url {
-                                                $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
-                                            } else {
-                                                $0
-                                            }
-                                        }
-                                        .onTapGesture {
-                                            withAnimation {
-                                                zoomableImageInfo = .init(
-                                                    url: image.url,
-                                                    image: Image(uiImage: cachedImage.fullSizeImage))
-                                            }
-                                        }
-                                })
-                            .fixedSize(horizontal: false, vertical: true)
-                            .cornerRadius(12)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        RoundedRectangle(cornerSize: CGSize(width: 12, height: 12))
-                            .foregroundColor(theme.colors.primaryLowContrast)
-                            .padding(.top, 8)
-                    )
-
-                    let userInteractions = comment.userInteractions
-                    let aggregatedInfo = comment.aggregatedInfo
-                    ResponseReactionBarView(
-                        userReaction: userInteractions.reaction,
-                        canReply: true,
-                        reactions: aggregatedInfo.reactions,
-                        reactionTapped: reactionTapped,
-                        openCreateReply: openCreateReply
-                    )
-                }
-            }
-            .id("commentDetail-\(comment.uuid)")
-        }
-        .padding(.leading, 4)
-        .padding(.trailing, 16)
-        .frame(maxWidth: .infinity)
-        .actionSheet(isPresented: $openActions) {
-            ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: actionSheetContent)
-        }
-        .modify {
-            if #available(iOS 15.0, *) {
-                $0.alert(
-                    Text("Comment.Delete.Confirmation.Title", bundle: .module),
-                    isPresented: $displayWillDeleteAlert) {
-                        Button(role: .cancel, action: {}, label: { Text("Common.Cancel", bundle: .module) })
-                        Button(role: .destructive, action: { deleteComment() },
-                               label: { Text("Common.Delete", bundle: .module) })
-                    }
-            } else {
-                $0.alert(isPresented: $displayWillDeleteAlert) {
-                    Alert(title: Text("Comment.Delete.Confirmation.Title",
-                                      bundle: .module),
-                          primaryButton: .default(Text("Common.Cancel", bundle: .module)),
-                          secondaryButton: .destructive(
-                            Text("Common.Delete", bundle: .module),
-                            action: { deleteComment() }
-                          )
-                    )
-                }
-            }
-        }
-    }
-
-    var actionSheetContent: [ActionSheet.Button] {
-        var buttons: [ActionSheet.Button] = []
-        if comment.canBeDeleted {
-            buttons.append(ActionSheet.Button.destructive(Text("Post.Delete.Button", bundle: .module)) {
-                displayWillDeleteAlert = true
-            })
-        }
-        if comment.canBeModerated {
-            buttons.append(ActionSheet.Button.destructive(Text("Moderation.Content.Button", bundle: .module)) {
-                displayContentModeration(comment.uuid)
-            })
-        }
-
-        buttons.append(.cancel())
-        return buttons
-    }
-}
-
-private struct RepliesView: View {
-    @Environment(\.octopusTheme) private var theme
-
-    let replies: [DisplayableFeedResponse]
-    let hasMoreData: Bool
-    let hideLoader: Bool
-    @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let loadPreviousReplies: () -> Void
-    let displayProfile: (String) -> Void
-    let deleteReply: (String) -> Void
-    let reactionTapped: (ReactionKind?, String) -> Void
-    let displayContentModeration: (String) -> Void
-
-    var body: some View {
-        ForEach(replies, id: \.uuid) { reply in
-            HStack(alignment: .top, spacing: 0) {
-                Spacer().frame(width: 32)
-                ResponseFeedItemView(
-                    response: reply,
-                    zoomableImageInfo: $zoomableImageInfo,
-                    displayResponseDetail: { _, _ in },
-                    displayParentDetail: { _ in },
-                    displayProfile: displayProfile,
-                    deleteResponse: deleteReply,
-                    reactionTapped: reactionTapped,
-                    displayContentModeration: displayContentModeration)
-                .onAppear {
-                    reply.displayEvents.onAppear()
-                }
-                .onDisappear() {
-                    reply.displayEvents.onDisappear()
-                }
-            }
-            .modify {
-                if #available(iOS 17.0, *) {
-                    $0.geometryGroup()
-                } else {
-                    $0
-                }
-            }
-        }
-        if hasMoreData && !hideLoader {
-            HStack(alignment: .top, spacing: 0) {
-                Spacer().frame(width: 40)
-                Compat.ProgressView()
-                    .frame(width: 100)
-                    .frame(maxWidth: .infinity)
-                    .onAppear {
-                        if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
-                        loadPreviousReplies()
-                    }
-            }
-        }
     }
 }

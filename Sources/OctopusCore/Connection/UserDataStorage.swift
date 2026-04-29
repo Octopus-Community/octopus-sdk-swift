@@ -75,7 +75,7 @@ final class UserDataStorage: InjectableObject, @unchecked Sendable {
             magicLinkData = MagicLinkData(magicLinkId: magicLinkId, email: email)
         }
     }
-    
+
     func store(userData: UserData?) {
         do {
             try securedStorage.set(userData?.id, key: UserKeys.id)

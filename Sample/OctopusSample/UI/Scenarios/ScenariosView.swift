@@ -13,18 +13,34 @@ struct ScenariosView: View {
     var body: some View {
         NavigationView {
             List {
-                SheetCell(showInSheet: showInSheet)
-                CustomThemeCell(showFullScreen: showFullScreen)
-                NotSeenNotificationsCell(showFullScreen: showFullScreen)
-                TrackABTestsCell(showFullScreen: showFullScreen)
-                ForceOctopusABTestsCell(showFullScreen: showFullScreen)
-                CustomEventsCell()
-                BridgeToClientObjectCell(showFullScreen: showFullScreen)
-                SwitchCommunityCell(showFullScreen: showFullScreen)
-                EventsCell()
-                LanguageCell()
+                Section(header: Text("Presentation")) {
+                    SheetCell(showInSheet: showInSheet)
+                    CustomThemeCell(showFullScreen: showFullScreen)
+                    InitialScreenCell()
+                }
+                Section(header: Text("Notifications")) {
+                    NotSeenNotificationsCell(showFullScreen: showFullScreen)
+                }
+                Section(header: Text("Groups")) {
+                    SyncFollowGroupsCell()
+                }
+                Section(header: Text("A/B Testing")) {
+                    TrackABTestsCell(showFullScreen: showFullScreen)
+                    ForceOctopusABTestsCell(showFullScreen: showFullScreen)
+                }
+                Section(header: Text("Bridge")) {
+                    BridgeToClientObjectCell(showFullScreen: showFullScreen)
+                }
+                Section(header: Text("Analytics")) {
+                    CustomEventsCell()
+                    EventsCell()
+                }
+                Section(header: Text("Configuration")) {
+                    SwitchCommunityCell(showFullScreen: showFullScreen)
+                    LanguageCell()
+                }
             }
-            .listStyle(.plain)
+            .listStyle(.grouped)
             .navigationBarTitle(Text("Scenarios"), displayMode: .inline)
         }
     }

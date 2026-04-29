@@ -42,7 +42,7 @@ struct ContentSizedSheet<Content: View, ScrollingContent: View>: View {
                                 .padding(12)
                         }
                         .frame(minWidth: 44, minHeight: 44)
-                        .contentShape(Rectangle())     
+                        .contentShape(Rectangle())
                         .buttonStyle(.plain)
                         .accessibilityLabelInBundle("Common.Close")
                     }

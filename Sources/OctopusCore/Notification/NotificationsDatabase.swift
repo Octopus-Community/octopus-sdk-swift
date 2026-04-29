@@ -71,15 +71,15 @@ class NotificationsDatabase: InjectableObject {
 
     func markAsRead(ids: [String]) async throws {
         try await context.performAsync { [context] in
-            let request = NotificationEntity.fetchAllByIds(ids: ids)
-            let notifications = try context.fetch(request)
+            let notifications = try context.chunkedFetch(ids: ids) { chunk in
+                NotificationEntity.fetchAllByIds(ids: chunk)
+            }
 
             for notification in notifications {
                 notification.isRead = true
             }
-            
+
             try context.save()
         }
     }
 }
-

@@ -15,7 +15,7 @@ public class LanguageRepository: InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.languageRepository
 
     @Published private(set) var localeIdentifier: String = ""
-    @Published public private(set) var overridenLocale: Locale? = nil
+    @Published public private(set) var overridenLocale: Locale?
     @UserDefault(key: "OctopusSDK.Language.overridenLocale") private var overridenLocaleIdentifier: String?
 
     private var storage = [AnyCancellable]()

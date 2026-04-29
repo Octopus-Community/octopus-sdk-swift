@@ -52,11 +52,11 @@ public struct Com_Octopuscommunity_FeedInfo: Sendable {
   public var label: String = String()
 
   public var relatedTopicID: String {
-    get {return _relatedTopicID ?? String()}
+    get {_relatedTopicID ?? String()}
     set {_relatedTopicID = newValue}
   }
   /// Returns true if `relatedTopicID` has been explicitly set.
-  public var hasRelatedTopicID: Bool {return self._relatedTopicID != nil}
+  public var hasRelatedTopicID: Bool {self._relatedTopicID != nil}
   /// Clears the value of `relatedTopicID`. Subsequent reads from it will return its default value.
   public mutating func clearRelatedTopicID() {self._relatedTopicID = nil}
 
@@ -76,11 +76,11 @@ public struct Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: Sendable
 
   ///Server can decide to return less than this value
   public var pageSize: Int32 {
-    get {return _pageSize ?? 0}
+    get {_pageSize ?? 0}
     set {_pageSize = newValue}
   }
   /// Returns true if `pageSize` has been explicitly set.
-  public var hasPageSize: Bool {return self._pageSize != nil}
+  public var hasPageSize: Bool {self._pageSize != nil}
   /// Clears the value of `pageSize`. Subsequent reads from it will return its default value.
   public mutating func clearPageSize() {self._pageSize = nil}
 
@@ -100,20 +100,20 @@ public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: Sendable {
 
   ///Server can decide to return less than this value
   public var pageSize: Int32 {
-    get {return _pageSize ?? 0}
+    get {_pageSize ?? 0}
     set {_pageSize = newValue}
   }
   /// Returns true if `pageSize` has been explicitly set.
-  public var hasPageSize: Bool {return self._pageSize != nil}
+  public var hasPageSize: Bool {self._pageSize != nil}
   /// Clears the value of `pageSize`. Subsequent reads from it will return its default value.
   public mutating func clearPageSize() {self._pageSize = nil}
 
   public var fetchAggregates: Bool {
-    get {return _fetchAggregates ?? false}
+    get {_fetchAggregates ?? false}
     set {_fetchAggregates = newValue}
   }
   /// Returns true if `fetchAggregates` has been explicitly set.
-  public var hasFetchAggregates: Bool {return self._fetchAggregates != nil}
+  public var hasFetchAggregates: Bool {self._fetchAggregates != nil}
   /// Clears the value of `fetchAggregates`. Subsequent reads from it will return its default value.
   public mutating func clearFetchAggregates() {self._fetchAggregates = nil}
 
@@ -134,11 +134,11 @@ public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: Sendable {
 
   ///To pass to pageCursor in the next request. `null` if there is no more pages/items
   public var nextPageCursor: String {
-    get {return _nextPageCursor ?? String()}
+    get {_nextPageCursor ?? String()}
     set {_nextPageCursor = newValue}
   }
   /// Returns true if `nextPageCursor` has been explicitly set.
-  public var hasNextPageCursor: Bool {return self._nextPageCursor != nil}
+  public var hasNextPageCursor: Bool {self._nextPageCursor != nil}
   /// Clears the value of `nextPageCursor`. Subsequent reads from it will return its default value.
   public mutating func clearNextPageCursor() {self._nextPageCursor = nil}
 
@@ -160,11 +160,11 @@ public struct Com_Octopuscommunity_FeedAggregate: Sendable {
   public var itemID: String = String()
 
   public var aggregate: Com_Octopuscommunity_Aggregate {
-    get {return _aggregate ?? Com_Octopuscommunity_Aggregate()}
+    get {_aggregate ?? Com_Octopuscommunity_Aggregate()}
     set {_aggregate = newValue}
   }
   /// Returns true if `aggregate` has been explicitly set.
-  public var hasAggregate: Bool {return self._aggregate != nil}
+  public var hasAggregate: Bool {self._aggregate != nil}
   /// Clears the value of `aggregate`. Subsequent reads from it will return its default value.
   public mutating func clearAggregate() {self._aggregate = nil}
 
@@ -184,11 +184,11 @@ public struct Com_Octopuscommunity_InitializeFeedRequest: Sendable {
 
   ///Server can decide to return less than this value
   public var pageSize: Int32 {
-    get {return _pageSize ?? 0}
+    get {_pageSize ?? 0}
     set {_pageSize = newValue}
   }
   /// Returns true if `pageSize` has been explicitly set.
-  public var hasPageSize: Bool {return self._pageSize != nil}
+  public var hasPageSize: Bool {self._pageSize != nil}
   /// Clears the value of `pageSize`. Subsequent reads from it will return its default value.
   public mutating func clearPageSize() {self._pageSize = nil}
 
@@ -208,11 +208,11 @@ public struct Com_Octopuscommunity_GetFeedPageRequest: Sendable {
 
   ///Server can decide to return less than this value
   public var pageSize: Int32 {
-    get {return _pageSize ?? 0}
+    get {_pageSize ?? 0}
     set {_pageSize = newValue}
   }
   /// Returns true if `pageSize` has been explicitly set.
-  public var hasPageSize: Bool {return self._pageSize != nil}
+  public var hasPageSize: Bool {self._pageSize != nil}
   /// Clears the value of `pageSize`. Subsequent reads from it will return its default value.
   public mutating func clearPageSize() {self._pageSize = nil}
 
@@ -232,11 +232,11 @@ public struct Com_Octopuscommunity_GetFeedPageResponse: Sendable {
 
   ///To pass to pageCursor in the next request. `null` if there is no more pages/items
   public var nextPageCursor: String {
-    get {return _nextPageCursor ?? String()}
+    get {_nextPageCursor ?? String()}
     set {_nextPageCursor = newValue}
   }
   /// Returns true if `nextPageCursor` has been explicitly set.
-  public var hasNextPageCursor: Bool {return self._nextPageCursor != nil}
+  public var hasNextPageCursor: Bool {self._nextPageCursor != nil}
   /// Clears the value of `nextPageCursor`. Subsequent reads from it will return its default value.
   public mutating func clearNextPageCursor() {self._nextPageCursor = nil}
 
@@ -258,11 +258,11 @@ public struct Com_Octopuscommunity_FeedItemInfo: Sendable {
 
   ///TODO string octoObjecCreatedBy
   public var highlightedChildID: String {
-    get {return _highlightedChildID ?? String()}
+    get {_highlightedChildID ?? String()}
     set {_highlightedChildID = newValue}
   }
   /// Returns true if `highlightedChildID` has been explicitly set.
-  public var hasHighlightedChildID: Bool {return self._highlightedChildID != nil}
+  public var hasHighlightedChildID: Bool {self._highlightedChildID != nil}
   /// Clears the value of `highlightedChildID`. Subsequent reads from it will return its default value.
   public mutating func clearHighlightedChildID() {self._highlightedChildID = nil}
 
@@ -298,9 +298,7 @@ extension Com_Octopuscommunity_GetRootFeedsInfoRequest: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_GetRootFeedsInfoResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRootFeedsInfoResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "feedsInfo"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedsInfo\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -330,11 +328,7 @@ extension Com_Octopuscommunity_GetRootFeedsInfoResponse: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_FeedInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeedInfo"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "id"),
-    2: .same(proto: "label"),
-    3: .same(proto: "relatedTopicId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}label\0\u{1}relatedTopicId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -378,10 +372,7 @@ extension Com_Octopuscommunity_FeedInfo: SwiftProtobuf.Message, SwiftProtobuf._M
 
 extension Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InitializeFeedWithOctoObjectRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "feedId"),
-    2: .same(proto: "pageSize"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedId\0\u{1}pageSize\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -420,11 +411,7 @@ extension Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: SwiftProtobu
 
 extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedWithOctoObjectPageRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "pageCursor"),
-    2: .same(proto: "pageSize"),
-    3: .same(proto: "fetchAggregates"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pageCursor\0\u{1}pageSize\0\u{1}fetchAggregates\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -468,11 +455,7 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.M
 
 extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedWithOctoObjectPageResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "feed"),
-    2: .same(proto: "nextPageCursor"),
-    3: .same(proto: "aggregates"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feed\0\u{1}nextPageCursor\0\u{1}aggregates\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -516,10 +499,7 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.
 
 extension Com_Octopuscommunity_FeedAggregate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeedAggregate"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "itemId"),
-    2: .same(proto: "aggregate"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}itemId\0\u{1}aggregate\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -558,10 +538,7 @@ extension Com_Octopuscommunity_FeedAggregate: SwiftProtobuf.Message, SwiftProtob
 
 extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InitializeFeedRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "feedId"),
-    2: .same(proto: "pageSize"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedId\0\u{1}pageSize\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -600,10 +577,7 @@ extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_GetFeedPageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedPageRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "pageCursor"),
-    2: .same(proto: "pageSize"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pageCursor\0\u{1}pageSize\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -642,10 +616,7 @@ extension Com_Octopuscommunity_GetFeedPageRequest: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedPageResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "items"),
-    2: .same(proto: "nextPageCursor"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}items\0\u{1}nextPageCursor\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -684,11 +655,7 @@ extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Message, Swift
 
 extension Com_Octopuscommunity_FeedItemInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeedItemInfo"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "octoObjectUpdatedAt"),
-    3: .same(proto: "highlightedChildId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}octoObjectUpdatedAt\0\u{1}highlightedChildId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

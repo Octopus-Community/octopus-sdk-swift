@@ -26,7 +26,6 @@ class MagicLinkViewModel: ObservableObject {
         }
     }
 
-
 //    @Published var profileCreationRequired = false
     @Published private(set) var isLoggedIn = false
     @Published private(set) var emailEntryError: MagicLinkEmailEntryError?

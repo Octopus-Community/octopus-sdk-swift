@@ -9,7 +9,7 @@ import OctopusCore
 
 struct ReportView: View {
     @Environment(\.presentationMode) private var presentationMode
-    @EnvironmentObject private var trackingApi: TrackingApi
+    @Environment(\.trackingApi) private var trackingApi
 
     enum Context {
         case content(contentId: String)
@@ -24,9 +24,6 @@ struct ReportView: View {
     }
 
     @Compat.StateObject private var viewModel: ReportViewModel
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
-
     init(octopus: OctopusSDK, context: Context) {
         _viewModel = Compat.StateObject(wrappedValue: ReportViewModel(octopus: octopus, context: context))
     }
@@ -42,20 +39,7 @@ struct ReportView: View {
             displayMode: .inline)
         .emitScreenDisplayed(viewModel.context.isContent ? .reportContent : .reportProfile,
                              trackingApi: trackingApi)
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in
-
-            }, message: { error in
-                error.textView
-            })
-        .onReceive(viewModel.$error) { displayableError in
-            guard let displayableError else { return }
-            self.displayableError = displayableError
-            displayError = true
-        }
+        .errorAlert(viewModel.$error)
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
@@ -131,18 +115,7 @@ private struct ContentView: View {
                 .disabled(selectedReasons.isEmpty || moderationInProgress)
             }
             if moderationInProgress {
-                Compat.ProgressView()
-                    .padding(20)
-                    .background(
-                        RoundedRectangle(cornerSize: CGSize(width: 4, height: 4))
-                            .modify {
-                                if #available(iOS 15.0, *) {
-                                    $0.fill(.thickMaterial)
-                                } else {
-                                    $0.fill(theme.colors.gray200)
-                                }
-                            }
-                    )
+                LoadingOverlay()
             }
         }
     }

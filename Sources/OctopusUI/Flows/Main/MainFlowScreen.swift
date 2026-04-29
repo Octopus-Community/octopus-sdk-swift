@@ -10,7 +10,7 @@ enum MainFlowScreen: NBScreen {
     case publicProfile(profileId: String)
     case createPost(withPoll: Bool, defaultTopic: Topic?)
     case groupList(context: GroupListContext)
-    case groupDetail(topic: Topic)
+    case groupDetail(groupId: String)
     case postDetail(postId: String, comment: Bool, commentToScrollTo: String?, scrollToMostRecentComment: Bool, origin: PostDetailNavigationOrigin, hasFeaturedComment: Bool)
     case commentDetail(commentId: String, displayGoToParentButton: Bool, reply: Bool, replyToScrollTo: String?)
     case reportContent(contentId: String)

@@ -167,11 +167,11 @@ public struct Com_Octopuscommunity_GenerateLinkRequest: Sendable {
 
   /// Optional deeplink to include in the magic link.
   public var deeplink: String {
-    get {return _deeplink ?? String()}
+    get {_deeplink ?? String()}
     set {_deeplink = newValue}
   }
   /// Returns true if `deeplink` has been explicitly set.
-  public var hasDeeplink: Bool {return self._deeplink != nil}
+  public var hasDeeplink: Bool {self._deeplink != nil}
   /// Clears the value of `deeplink`. Subsequent reads from it will return its default value.
   public mutating func clearDeeplink() {self._deeplink = nil}
 
@@ -297,21 +297,21 @@ public struct Com_Octopuscommunity_ConfirmLinkResponse: Sendable {
 
   /// The deeplink to redirect the user to, if any.
   public var deeplink: String {
-    get {return _deeplink ?? String()}
+    get {_deeplink ?? String()}
     set {_deeplink = newValue}
   }
   /// Returns true if `deeplink` has been explicitly set.
-  public var hasDeeplink: Bool {return self._deeplink != nil}
+  public var hasDeeplink: Bool {self._deeplink != nil}
   /// Clears the value of `deeplink`. Subsequent reads from it will return its default value.
   public mutating func clearDeeplink() {self._deeplink = nil}
 
   /// The user's nickname, if available.
   public var userNickname: String {
-    get {return _userNickname ?? String()}
+    get {_userNickname ?? String()}
     set {_userNickname = newValue}
   }
   /// Returns true if `userNickname` has been explicitly set.
-  public var hasUserNickname: Bool {return self._userNickname != nil}
+  public var hasUserNickname: Bool {self._userNickname != nil}
   /// Clears the value of `userNickname`. Subsequent reads from it will return its default value.
   public mutating func clearUserNickname() {self._userNickname = nil}
 
@@ -399,11 +399,11 @@ public struct Com_Octopuscommunity_AuthenticationSuccess: Sendable {
 
   /// The profile of the user
   public var profile: Com_Octopuscommunity_PrivateProfile {
-    get {return _profile ?? Com_Octopuscommunity_PrivateProfile()}
+    get {_profile ?? Com_Octopuscommunity_PrivateProfile()}
     set {_profile = newValue}
   }
   /// Returns true if `profile` has been explicitly set.
-  public var hasProfile: Bool {return self._profile != nil}
+  public var hasProfile: Bool {self._profile != nil}
   /// Clears the value of `profile`. Subsequent reads from it will return its default value.
   public mutating func clearProfile() {self._profile = nil}
 
@@ -436,35 +436,16 @@ public struct Com_Octopuscommunity_ErrorDetail: Sendable {
 fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_ConfirmLinkStatus: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNSPECIFIED_LINK_STATUS"),
-    1: .same(proto: "EXPIRED_STRONG"),
-    2: .same(proto: "EXPIRED_WEAK"),
-    3: .same(proto: "ALREADY_USED"),
-    4: .same(proto: "AUTHENTICATED"),
-    5: .same(proto: "UNAUTHORIZED"),
-    6: .same(proto: "INVALID_TOKEN"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSPECIFIED_LINK_STATUS\0\u{1}EXPIRED_STRONG\0\u{1}EXPIRED_WEAK\0\u{1}ALREADY_USED\0\u{1}AUTHENTICATED\0\u{1}UNAUTHORIZED\0\u{1}INVALID_TOKEN\0")
 }
 
 extension Com_Octopuscommunity_ErrorCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN_ERROR"),
-    1: .same(proto: "NOT_AUTHENTICATED_YET"),
-    2: .same(proto: "LINK_NOT_FOUND"),
-    3: .same(proto: "USER_NOT_FOUND"),
-    4: .same(proto: "INVALID_LINK"),
-    5: .same(proto: "EXPIRED_LINK"),
-    6: .same(proto: "USER_BANNED"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0\u{1}NOT_AUTHENTICATED_YET\0\u{1}LINK_NOT_FOUND\0\u{1}USER_NOT_FOUND\0\u{1}INVALID_LINK\0\u{1}EXPIRED_LINK\0\u{1}USER_BANNED\0")
 }
 
 extension Com_Octopuscommunity_GenerateLinkRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GenerateLinkRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "email"),
-    2: .same(proto: "deeplink"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}email\0\u{1}deeplink\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -503,10 +484,7 @@ extension Com_Octopuscommunity_GenerateLinkRequest: SwiftProtobuf.Message, Swift
 
 extension Com_Octopuscommunity_GenerateLinkResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GenerateLinkResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "magicLinkId"),
-    2: .same(proto: "error"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}magicLinkId\0\u{1}error\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -567,18 +545,12 @@ extension Com_Octopuscommunity_GenerateLinkResponse: SwiftProtobuf.Message, Swif
 }
 
 extension Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN_ERROR"),
-    1: .same(proto: "USER_BANNED"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0\u{1}USER_BANNED\0")
 }
 
 extension Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GenerateLinkResponse.protoMessageName + ".GenerateLinkErrorDetail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errorCode"),
-    2: .same(proto: "message"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errorCode\0\u{1}message\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -632,12 +604,7 @@ extension Com_Octopuscommunity_ConfirmLinkRequest: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_ConfirmLinkResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ConfirmLinkResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "deeplink"),
-    2: .standard(proto: "user_nickname"),
-    3: .same(proto: "status"),
-    4: .same(proto: "banReasons"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}deeplink\0\u{3}user_nickname\0\u{1}status\0\u{1}banReasons\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -686,10 +653,7 @@ extension Com_Octopuscommunity_ConfirmLinkResponse: SwiftProtobuf.Message, Swift
 
 extension Com_Octopuscommunity_IsAuthenticatedRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".IsAuthenticatedRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "magicLinkId"),
-    2: .same(proto: "email"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}magicLinkId\0\u{1}email\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -724,10 +688,7 @@ extension Com_Octopuscommunity_IsAuthenticatedRequest: SwiftProtobuf.Message, Sw
 
 extension Com_Octopuscommunity_IsAuthenticatedResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".IsAuthenticatedResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "error"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}error\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -794,11 +755,7 @@ extension Com_Octopuscommunity_IsAuthenticatedResponse: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_AuthenticationSuccess: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AuthenticationSuccess"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "jwt"),
-    2: .same(proto: "userId"),
-    3: .same(proto: "profile"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}jwt\0\u{1}userId\0\u{1}profile\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -842,10 +799,7 @@ extension Com_Octopuscommunity_AuthenticationSuccess: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_ErrorDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ErrorDetail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "error_code"),
-    2: .same(proto: "message"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}error_code\0\u{1}message\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

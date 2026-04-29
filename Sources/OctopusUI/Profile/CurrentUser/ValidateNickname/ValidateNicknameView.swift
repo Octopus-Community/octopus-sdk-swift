@@ -26,7 +26,7 @@ struct ValidateNicknameScreen: View {
 
 struct ValidateNicknameView: View {
     @EnvironmentObject var navigator: Navigator<ValidateNicknameFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
 
     @Compat.StateObject private var viewModel: ValidateNicknameViewModel
     @Binding var isPresented: Bool
@@ -75,7 +75,7 @@ struct ValidateNicknameView: View {
 
 private struct ContentView: View {
     @Environment(\.octopusTheme) private var theme
-    
+
     let nickname: String
     let isLoading: Bool
     let editProfile: () -> Void
@@ -91,7 +91,7 @@ private struct ContentView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(theme.colors.gray900)
                         .multilineTextAlignment(.center)
-                    
+
                     Spacer().frame(height: 24)
 
                     Image(res: .congrats)
@@ -107,18 +107,18 @@ private struct ContentView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(theme.colors.gray900)
                         .multilineTextAlignment(.center)
-                    
+
                     Spacer().frame(height: 8)
-                    
+
                     Text(nickname)
                         .font(theme.fonts.title1)
                         .fontWeight(.bold)
                         .minimumScaleFactor(0.2)
                         .foregroundColor(theme.colors.gray900)
                         .lineLimit(1)
-                    
+
                     Spacer().frame(height: 16)
-                    
+
                     Text("ValidateNickname.Modification", bundle: .module)
                         .font(theme.fonts.body2)
                         .fontWeight(.medium)

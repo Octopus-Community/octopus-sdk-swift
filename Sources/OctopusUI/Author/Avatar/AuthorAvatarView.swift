@@ -41,6 +41,31 @@ struct Author: Equatable {
     }
 }
 
+extension Author {
+    init(profileId: String?,
+         avatar: Avatar,
+         name: DisplayableString,
+         tags: ProfileTags,
+         gamificationLevel: GamificationLevel?) {
+        self.profileId = profileId
+        self.avatar = avatar
+        self.name = name
+        self.tags = tags
+        self.gamificationLevel = gamificationLevel
+    }
+}
+
+extension Author {
+    /// Whether the viewing user is allowed to block this author client-side.
+    /// Returns `false` for deleted authors (no profileId), admin authors, and the current user themself.
+    /// Matches the UI-side gate introduced in OCT-1298 (`DisplayableProfile.canBeBlocked`).
+    func canBeBlocked(currentUserId: String?) -> Bool {
+        guard let profileId else { return false }
+        if tags.contains(.admin) { return false }
+        return profileId != currentUserId
+    }
+}
+
 struct AuthorAvatarView: View {
     @Environment(\.octopusTheme) private var theme
 

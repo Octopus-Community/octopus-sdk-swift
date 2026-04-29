@@ -93,7 +93,7 @@ struct CustomSegmentedControl: View {
 }
 
 private extension HorizontalAlignment {
-    private enum CenteredAlignment : AlignmentID {
+    private enum CenteredAlignment: AlignmentID {
         static func defaultValue(in d: ViewDimensions) -> CGFloat {
             return d[HorizontalAlignment.center]
         }

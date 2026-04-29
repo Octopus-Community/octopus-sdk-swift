@@ -19,12 +19,14 @@ class ContentsDatabase<Content: FetchableContentEntity>: OctoObjectsDatabase {
     func getMissingContents(infos: [FeedItemInfo]) async throws -> [String] {
         let dict = Dictionary(uniqueKeysWithValues: infos.map { ($0.itemId, $0.updateDate) })
         let existingIds = try await context.performAsync { [context] in
-            try context.fetch(Content.fetchAllByIds(ids: Array(dict.keys)))
-                .filter { content in
-                    let date = dict[content.uuid]!
-                    return date.timeIntervalSince1970 <= content.updateTimestamp
-                }
-                .map { $0.uuid }
+            try context.chunkedFetch(ids: Array(dict.keys)) { chunk in
+                Content.fetchAllByIds(ids: chunk)
+            }
+            .filter { content in
+                let date = dict[content.uuid]!
+                return date.timeIntervalSince1970 <= content.updateTimestamp
+            }
+            .map { $0.uuid }
         }
         return Array(Set(Array(dict.keys)).subtracting(existingIds))
     }
@@ -38,12 +40,28 @@ class ContentsDatabase<Content: FetchableContentEntity>: OctoObjectsDatabase {
         }
     }
 
-    func deleteAll(except ids: [String]) async throws {
+    func deleteAll(except idsToKeep: [String]) async throws {
         try await context.performAsync { [context] in
-            let deleteRequest: NSFetchRequest<NSFetchRequestResult> = Content.fetchAllExcept(ids: ids) as! NSFetchRequest<NSFetchRequestResult>
-            deleteRequest.includesPropertyValues = false
-            let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: deleteRequest)
-            try context.execute(batchDeleteRequest)
+            // Lightweight fetch to get only UUIDs of entities eligible for deletion
+            let entityName = Content.fetchAll().entityName!
+            let dictionaryRequest = NSFetchRequest<NSDictionary>(entityName: entityName)
+            dictionaryRequest.resultType = .dictionaryResultType
+            dictionaryRequest.propertiesToFetch = ["uuid"]
+            dictionaryRequest.predicate = Content.additionalDeletionPredicate
+
+            let results = try context.fetch(dictionaryRequest)
+            let allDeletableIds = results.compactMap { $0["uuid"] as? String }
+
+            // Compute IDs to delete by subtracting the keep-set
+            let keepSet = Set(idsToKeep)
+            let idsToDelete = allDeletableIds.filter { !keepSet.contains($0) }
+
+            // Batch delete in chunks to stay within SQLite's variable limit
+            try context.chunkedBatchDelete(ids: idsToDelete) { chunk in
+                let request = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+                request.predicate = NSPredicate(format: "%K IN %@", "uuid", chunk)
+                return request
+            }
         }
     }
 }

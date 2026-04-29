@@ -18,7 +18,7 @@ struct CachedImage {
 private final class Loader: ObservableObject, @unchecked Sendable {
     static let verbose: Bool = false
 
-    @Published var image: CachedImage? = nil
+    @Published var image: CachedImage?
     private let url: URL
     private let session: URLSession
     private let cache: ImageCache
@@ -61,7 +61,7 @@ private final class Loader: ObservableObject, @unchecked Sendable {
             if Self.verbose { Logger.images.trace("Downloading \(self.url.imageIdentifier) at: \(self.url) at \(Date())") }
         }
         session.dataTaskPublisher(for: url)
-            .map { result -> URLSession.DataTaskPublisher.Output? in result}
+            .map { result -> URLSession.DataTaskPublisher.Output? in result }
             .replaceError(with: nil)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] result in

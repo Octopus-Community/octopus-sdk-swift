@@ -49,15 +49,10 @@ struct ToastContainer<ContentView: View>: View {
                 viewModel.viewDisappeared()
             }
         }
-        .sheet(isPresented: $showGamificationRules) {
-            if let gamificationConfig = viewModel.gamificationConfig {
-                GamificationRulesScreen(gamificationConfig: gamificationConfig,
-                                        gamificationRulesViewManager: gamificationRulesViewManager
-                ).sizedSheet()
-            } else {
-                EmptyView()
-            }
-        }
+        .gamificationRulesSheet(
+            isPresented: $showGamificationRules,
+            gamificationConfig: viewModel.gamificationConfig,
+            gamificationRulesViewManager: gamificationRulesViewManager)
     }
 }
 

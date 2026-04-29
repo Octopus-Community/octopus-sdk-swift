@@ -15,26 +15,36 @@ struct TrackABTestsView: View {
     @StateObjectCompat private var viewModel = TrackABTestsViewModel()
 
     var body: some View {
-        VStack {
-            Text("The following switch simulates an A/B test.\nWhen off, the community is hidden to the user.")
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Toggle(isOn: $viewModel.canAccessCommunity) {
-                Text("Can access the community")
+        VStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("The following switch simulates an A/B test.\nWhen off, the community is hidden to the user.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Toggle(isOn: $viewModel.canAccessCommunity) {
+                    Text("Can access the community")
+                }
             }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
 
-            Spacer().frame(height: 100)
+            Spacer()
 
             Button(action: {
-                // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                 showFullScreen {
                     OctopusUIView(octopus: viewModel.octopus)
                 }
             }) {
-                Text("Open Octopus Home Screen")
+                HStack {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    Text("Open Octopus Home Screen")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                .foregroundColor(.white)
             }
             .disabled(!viewModel.canAccessCommunity)
-            Spacer()
+            .opacity(viewModel.canAccessCommunity ? 1 : 0.4)
         }
         .padding()
         .onAppear {
@@ -45,5 +55,3 @@ struct TrackABTestsView: View {
         }
     }
 }
-
-

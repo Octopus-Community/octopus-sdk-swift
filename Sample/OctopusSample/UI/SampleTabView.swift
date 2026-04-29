@@ -89,13 +89,13 @@ struct SampleTabView: View {
             // only apply UITabbar color appearance on iOS < 26
 #if compiler(>=6.2)
             if #available(iOS 26.0, *) { $0 } else {
-                $0.onAppear() {
+                $0.onAppear {
                     UITabBar.appearance().barTintColor = UIColor.systemGroupedBackground
                     UITabBar.appearance().backgroundColor = UIColor.systemGroupedBackground
                 }
             }
 #else
-            $0.onAppear() {
+            $0.onAppear {
                 UITabBar.appearance().barTintColor = UIColor.systemGroupedBackground
                 UITabBar.appearance().backgroundColor = UIColor.systemGroupedBackground
             }
@@ -113,7 +113,7 @@ struct SampleTabView: View {
         .sheet(item: $sheetScreenItem) {
             AnyView($0.builder())
         }
-        .onReceive(NotificationManager.instance.$handleOctopusNotification) {
+        .onReceive(NotificationManager.instance.$handleOctopusNotificationUserInfo) {
             guard $0 != nil else { return }
             // when a notification is received, we display the Octopus UI
             selectedTab = .modal
@@ -122,6 +122,7 @@ struct SampleTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: .apiKeyChanged)) { _ in
             id = UUID()
         }
+        .connectionErrorAlert()
     }
 
     var shouldDisplayAccountTab: Bool {
@@ -131,7 +132,6 @@ struct SampleTabView: View {
         }
     }
 }
-
 
 // Wrapper to store any view with an ID
 private struct ScreenBuilder: Identifiable {

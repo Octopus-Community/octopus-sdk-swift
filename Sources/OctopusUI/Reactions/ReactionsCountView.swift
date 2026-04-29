@@ -28,11 +28,16 @@ struct ReactionsCountView: View {
 
     let reactions: [ReactionCount]
 
+    @Compat.ScaledMetric(relativeTo: .caption1) private var reactionImageSize: CGFloat = 20
+
     var body: some View {
         FreeGridLayout(alignment: .leading) {
-            ForEach(reactions.filter { $0.count > 0 }, id: \.self) { reaction in
-                HStack(spacing: 0) {
-                    Text(reaction.reactionKind.unicode)
+            ForEach(reactions.filter { !$0.isEmpty }, id: \.self) { reaction in
+                HStack(spacing: 2) {
+                    Image(uiImage: theme.assets.icons.content.reaction[reaction.reactionKind])
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: reactionImageSize, height: reactionImageSize)
                     Text(String.formattedCount(reaction.count))
                 }
                 .font(theme.fonts.caption1.weight(.medium))

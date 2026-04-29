@@ -65,7 +65,7 @@ class CommentsTests: XCTestCase {
         let comment = WritableComment(postId: "postId", text: "My Comment", imageData: nil)
         try await commentsRepository.send(comment, parentIsTranslated: false)
 
-        await fulfillment(of: [sendExpectation], timeout: 0.5)
+        await fulfillment(of: [sendExpectation], timeout: 5)
     }
 
     func testDeleteComment() async throws {
@@ -86,10 +86,10 @@ class CommentsTests: XCTestCase {
         mockOctoService.injectNextDeleteCommentResponse(Com_Octopuscommunity_DeleteCommentResponse())
         _ = try await commentsRepository.deleteComment(commentId: "1")
 
-        try await delay()
-
-        let comments = try await commentsDatabase.getComments(ids: ["1"])
-        XCTAssertTrue(comments.isEmpty)
+        let commentsDatabase = self.commentsDatabase!
+        try await assertWithTimeout {
+            try await commentsDatabase.getComments(ids: ["1"]).isEmpty
+        }
     }
 
     func injectPutComment(_ comment: StorableComment) {

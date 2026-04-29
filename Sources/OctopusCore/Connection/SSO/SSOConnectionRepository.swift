@@ -8,6 +8,11 @@ import os
 import OctopusRemoteClient
 import OctopusDependencyInjection
 import OctopusGrpcModels
+#if canImport(GRPC)
+import GRPC
+#else
+import GRPCSwift
+#endif
 
 class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.connectionRepository
@@ -15,7 +20,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     public var connectionStatePublisher: AnyPublisher<ConnectionState, Never> {
         $connectionState.receive(on: DispatchQueue.main).eraseToAnyPublisher()
     }
-    @Published private(set) public var connectionState: ConnectionState = .notConnected(nil)
+    @Published public private(set) var connectionState: ConnectionState = .notConnected(nil)
 
     public var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> { Just(nil).eraseToAnyPublisher() }
     public let magicLinkRequest: MagicLinkRequest? = nil
@@ -145,6 +150,15 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         }
         self.clientUserTokenProvider = tokenProvider
 
+        // Check if client profile changed before the upsert (for the else branch)
+        let existingClientProfile = try? await clientUserProfileDatabase.getProfile(clientUserId: user.userId)
+
+        // Subscribe before the upsert that triggers the Combine-based profile sync
+        let syncResultHolder = SyncResultHolder()
+        let syncCancellable = profileRepository.profileSyncResultPublisher
+            .first()
+            .sink { [syncResultHolder] in syncResultHolder.result = $0 }
+
         try await clientUserProfileDatabase.upsert(profile: user.profile, clientUserId: user.userId)
         // if state is not connected to the same user, ask for a token
         let tokenNeeded: Bool
@@ -158,7 +172,38 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             userDataStorage.store(clientUserData: .init(id: user.userId))
         }
         if tokenNeeded {
-            connectAsync()
+            syncCancellable.cancel()
+            // since guest connection might be currently happening, wait for it to end
+            do {
+                try await TaskUtils.wait(for: !isConnecting, timeout: 3)
+            } catch {
+                throw ConnectionError.unknown(error)
+            }
+            try await connect()
+        } else {
+            // Check if client profile actually changed — if not, no sync will happen
+            if existingClientProfile == user.profile {
+                syncCancellable.cancel()
+                return
+            }
+
+            // Check conditions that would prevent the Combine pipeline from firing
+            guard networkMonitor.connectionAvailable else {
+                syncCancellable.cancel()
+                throw ConnectionError.profileUpdateError(.serverCall(.noNetwork))
+            }
+            guard configRepository.userConfig?.canAccessCommunity ?? false else {
+                syncCancellable.cancel()
+                throw ConnectionError.communityAccessDenied
+            }
+
+            // Wait for the Combine-based sync to complete (timeout = no sync needed, merger found no diff)
+            try? await TaskUtils.wait(for: syncResultHolder.result != nil, timeout: 5)
+            syncCancellable.cancel()
+
+            if case let .failure(error) = syncResultHolder.result {
+                throw ConnectionError.profileUpdateError(error)
+            }
         }
     }
 
@@ -308,7 +353,21 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         } catch {
             if let exchangeTokenError = error as? ExchangeTokenError {
                 throw exchangeTokenError
+            } else if let error = error as? UpdateProfile.Error {
+                if case let .serverCall(authenticatedActionError) = error,
+                   case let .serverError(serverError) = authenticatedActionError,
+                   case let .unknown(underlyingError) = serverError,
+                   let grpcError = underlyingError as? GRPCStatus,
+                   grpcError.code == .permissionDenied {
+                    throw .communityAccessDenied
+                }
+                throw .profileUpdateError(error)
             } else if let error = error as? RemoteClientError {
+                if case let .unknown(underlyingError) = error,
+                   let grpcError = underlyingError as? GRPCStatus,
+                   let message = grpcError.message, message.contains("Invalid JWT token") {
+                    throw .jwtError
+                }
                 throw .server(ServerError(remoteClientError: error))
             } else {
                 throw .unknown(error)
@@ -352,4 +411,8 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     public func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) {
         preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
     }
+}
+
+private class SyncResultHolder: @unchecked Sendable {
+    var result: Result<Void, UpdateProfile.Error>?
 }

@@ -6,7 +6,7 @@ import Foundation
 import SwiftUI
 
 struct HVStack<Content: View>: View {
-    var spacing: CGFloat? = nil
+    var spacing: CGFloat?
     let isHorizontal: Bool
     @ViewBuilder let content: Content
 

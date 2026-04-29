@@ -26,11 +26,11 @@ public struct Com_Octopuscommunity_GetConfigResponse: Sendable {
   // methods supported on all messages.
 
   public var apiKeyConfig: Com_Octopuscommunity_ApiKeyConfig {
-    get {return _apiKeyConfig ?? Com_Octopuscommunity_ApiKeyConfig()}
+    get {_apiKeyConfig ?? Com_Octopuscommunity_ApiKeyConfig()}
     set {_apiKeyConfig = newValue}
   }
   /// Returns true if `apiKeyConfig` has been explicitly set.
-  public var hasApiKeyConfig: Bool {return self._apiKeyConfig != nil}
+  public var hasApiKeyConfig: Bool {self._apiKeyConfig != nil}
   /// Clears the value of `apiKeyConfig`. Subsequent reads from it will return its default value.
   public mutating func clearApiKeyConfig() {self._apiKeyConfig = nil}
 
@@ -48,35 +48,35 @@ public struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable {
 
   ///Guest user must be logged to do strong interaction (post/comment/reply)
   public var clientLoginMandatory: Bool {
-    get {return _storage._clientLoginMandatory}
+    get {_storage._clientLoginMandatory}
     set {_uniqueStorage()._clientLoginMandatory = newValue}
   }
 
   public var gamificationConfig: Com_Octopuscommunity_GamificationConfig {
-    get {return _storage._gamificationConfig ?? Com_Octopuscommunity_GamificationConfig()}
+    get {_storage._gamificationConfig ?? Com_Octopuscommunity_GamificationConfig()}
     set {_uniqueStorage()._gamificationConfig = newValue}
   }
   /// Returns true if `gamificationConfig` has been explicitly set.
-  public var hasGamificationConfig: Bool {return _storage._gamificationConfig != nil}
+  public var hasGamificationConfig: Bool {_storage._gamificationConfig != nil}
   /// Clears the value of `gamificationConfig`. Subsequent reads from it will return its default value.
   public mutating func clearGamificationConfig() {_uniqueStorage()._gamificationConfig = nil}
 
   public var displayAccountAge: Bool {
-    get {return _storage._displayAccountAge}
+    get {_storage._displayAccountAge}
     set {_uniqueStorage()._displayAccountAge = newValue}
   }
 
   public var languages: [String] {
-    get {return _storage._languages}
+    get {_storage._languages}
     set {_uniqueStorage()._languages = newValue}
   }
 
   public var displayConfig: Com_Octopuscommunity_DisplayConfig {
-    get {return _storage._displayConfig ?? Com_Octopuscommunity_DisplayConfig()}
+    get {_storage._displayConfig ?? Com_Octopuscommunity_DisplayConfig()}
     set {_uniqueStorage()._displayConfig = newValue}
   }
   /// Returns true if `displayConfig` has been explicitly set.
-  public var hasDisplayConfig: Bool {return _storage._displayConfig != nil}
+  public var hasDisplayConfig: Bool {_storage._displayConfig != nil}
   /// Clears the value of `displayConfig`. Subsequent reads from it will return its default value.
   public mutating func clearDisplayConfig() {_uniqueStorage()._displayConfig = nil}
 
@@ -99,74 +99,74 @@ public struct Com_Octopuscommunity_GamificationConfig: Sendable {
   public var shortenPointPlural: String = String()
 
   public var reactPts: Int32 {
-    get {return _reactPts ?? 0}
+    get {_reactPts ?? 0}
     set {_reactPts = newValue}
   }
   /// Returns true if `reactPts` has been explicitly set.
-  public var hasReactPts: Bool {return self._reactPts != nil}
+  public var hasReactPts: Bool {self._reactPts != nil}
   /// Clears the value of `reactPts`. Subsequent reads from it will return its default value.
   public mutating func clearReactPts() {self._reactPts = nil}
 
   public var votePts: Int32 {
-    get {return _votePts ?? 0}
+    get {_votePts ?? 0}
     set {_votePts = newValue}
   }
   /// Returns true if `votePts` has been explicitly set.
-  public var hasVotePts: Bool {return self._votePts != nil}
+  public var hasVotePts: Bool {self._votePts != nil}
   /// Clears the value of `votePts`. Subsequent reads from it will return its default value.
   public mutating func clearVotePts() {self._votePts = nil}
 
   public var commentPts: Int32 {
-    get {return _commentPts ?? 0}
+    get {_commentPts ?? 0}
     set {_commentPts = newValue}
   }
   /// Returns true if `commentPts` has been explicitly set.
-  public var hasCommentPts: Bool {return self._commentPts != nil}
+  public var hasCommentPts: Bool {self._commentPts != nil}
   /// Clears the value of `commentPts`. Subsequent reads from it will return its default value.
   public mutating func clearCommentPts() {self._commentPts = nil}
 
   public var replyPts: Int32 {
-    get {return _replyPts ?? 0}
+    get {_replyPts ?? 0}
     set {_replyPts = newValue}
   }
   /// Returns true if `replyPts` has been explicitly set.
-  public var hasReplyPts: Bool {return self._replyPts != nil}
+  public var hasReplyPts: Bool {self._replyPts != nil}
   /// Clears the value of `replyPts`. Subsequent reads from it will return its default value.
   public mutating func clearReplyPts() {self._replyPts = nil}
 
   public var postPts: Int32 {
-    get {return _postPts ?? 0}
+    get {_postPts ?? 0}
     set {_postPts = newValue}
   }
   /// Returns true if `postPts` has been explicitly set.
-  public var hasPostPts: Bool {return self._postPts != nil}
+  public var hasPostPts: Bool {self._postPts != nil}
   /// Clears the value of `postPts`. Subsequent reads from it will return its default value.
   public mutating func clearPostPts() {self._postPts = nil}
 
   public var commentOnYourPostPts: Int32 {
-    get {return _commentOnYourPostPts ?? 0}
+    get {_commentOnYourPostPts ?? 0}
     set {_commentOnYourPostPts = newValue}
   }
   /// Returns true if `commentOnYourPostPts` has been explicitly set.
-  public var hasCommentOnYourPostPts: Bool {return self._commentOnYourPostPts != nil}
+  public var hasCommentOnYourPostPts: Bool {self._commentOnYourPostPts != nil}
   /// Clears the value of `commentOnYourPostPts`. Subsequent reads from it will return its default value.
   public mutating func clearCommentOnYourPostPts() {self._commentOnYourPostPts = nil}
 
   public var loginPts: Int32 {
-    get {return _loginPts ?? 0}
+    get {_loginPts ?? 0}
     set {_loginPts = newValue}
   }
   /// Returns true if `loginPts` has been explicitly set.
-  public var hasLoginPts: Bool {return self._loginPts != nil}
+  public var hasLoginPts: Bool {self._loginPts != nil}
   /// Clears the value of `loginPts`. Subsequent reads from it will return its default value.
   public mutating func clearLoginPts() {self._loginPts = nil}
 
   public var completeProfilePts: Int32 {
-    get {return _completeProfilePts ?? 0}
+    get {_completeProfilePts ?? 0}
     set {_completeProfilePts = newValue}
   }
   /// Returns true if `completeProfilePts` has been explicitly set.
-  public var hasCompleteProfilePts: Bool {return self._completeProfilePts != nil}
+  public var hasCompleteProfilePts: Bool {self._completeProfilePts != nil}
   /// Clears the value of `completeProfilePts`. Subsequent reads from it will return its default value.
   public mutating func clearCompleteProfilePts() {self._completeProfilePts = nil}
 
@@ -196,51 +196,51 @@ public struct Com_Octopuscommunity_GamificationLevel: Sendable {
   public var name: String = String()
 
   public var nextLevelAt: Int32 {
-    get {return _nextLevelAt ?? 0}
+    get {_nextLevelAt ?? 0}
     set {_nextLevelAt = newValue}
   }
   /// Returns true if `nextLevelAt` has been explicitly set.
-  public var hasNextLevelAt: Bool {return self._nextLevelAt != nil}
+  public var hasNextLevelAt: Bool {self._nextLevelAt != nil}
   /// Clears the value of `nextLevelAt`. Subsequent reads from it will return its default value.
   public mutating func clearNextLevelAt() {self._nextLevelAt = nil}
 
   /// No value = no badge
   public var badgeLightColorHex: String {
-    get {return _badgeLightColorHex ?? String()}
+    get {_badgeLightColorHex ?? String()}
     set {_badgeLightColorHex = newValue}
   }
   /// Returns true if `badgeLightColorHex` has been explicitly set.
-  public var hasBadgeLightColorHex: Bool {return self._badgeLightColorHex != nil}
+  public var hasBadgeLightColorHex: Bool {self._badgeLightColorHex != nil}
   /// Clears the value of `badgeLightColorHex`. Subsequent reads from it will return its default value.
   public mutating func clearBadgeLightColorHex() {self._badgeLightColorHex = nil}
 
   /// No value = no badge
   public var badgeDarkColorHex: String {
-    get {return _badgeDarkColorHex ?? String()}
+    get {_badgeDarkColorHex ?? String()}
     set {_badgeDarkColorHex = newValue}
   }
   /// Returns true if `badgeDarkColorHex` has been explicitly set.
-  public var hasBadgeDarkColorHex: Bool {return self._badgeDarkColorHex != nil}
+  public var hasBadgeDarkColorHex: Bool {self._badgeDarkColorHex != nil}
   /// Clears the value of `badgeDarkColorHex`. Subsequent reads from it will return its default value.
   public mutating func clearBadgeDarkColorHex() {self._badgeDarkColorHex = nil}
 
   /// No value = no badge
   public var badgeTextLightColorHex: String {
-    get {return _badgeTextLightColorHex ?? String()}
+    get {_badgeTextLightColorHex ?? String()}
     set {_badgeTextLightColorHex = newValue}
   }
   /// Returns true if `badgeTextLightColorHex` has been explicitly set.
-  public var hasBadgeTextLightColorHex: Bool {return self._badgeTextLightColorHex != nil}
+  public var hasBadgeTextLightColorHex: Bool {self._badgeTextLightColorHex != nil}
   /// Clears the value of `badgeTextLightColorHex`. Subsequent reads from it will return its default value.
   public mutating func clearBadgeTextLightColorHex() {self._badgeTextLightColorHex = nil}
 
   /// No value = no badge
   public var badgeTextDarkColorHex: String {
-    get {return _badgeTextDarkColorHex ?? String()}
+    get {_badgeTextDarkColorHex ?? String()}
     set {_badgeTextDarkColorHex = newValue}
   }
   /// Returns true if `badgeTextDarkColorHex` has been explicitly set.
-  public var hasBadgeTextDarkColorHex: Bool {return self._badgeTextDarkColorHex != nil}
+  public var hasBadgeTextDarkColorHex: Bool {self._badgeTextDarkColorHex != nil}
   /// Clears the value of `badgeTextDarkColorHex`. Subsequent reads from it will return its default value.
   public mutating func clearBadgeTextDarkColorHex() {self._badgeTextDarkColorHex = nil}
 
@@ -261,11 +261,11 @@ public struct Com_Octopuscommunity_DisplayConfig: Sendable {
   // methods supported on all messages.
 
   public var poweredByOctopus: Com_Octopuscommunity_PoweredByOctopus {
-    get {return _poweredByOctopus ?? Com_Octopuscommunity_PoweredByOctopus()}
+    get {_poweredByOctopus ?? Com_Octopuscommunity_PoweredByOctopus()}
     set {_poweredByOctopus = newValue}
   }
   /// Returns true if `poweredByOctopus` has been explicitly set.
-  public var hasPoweredByOctopus: Bool {return self._poweredByOctopus != nil}
+  public var hasPoweredByOctopus: Bool {self._poweredByOctopus != nil}
   /// Clears the value of `poweredByOctopus`. Subsequent reads from it will return its default value.
   public mutating func clearPoweredByOctopus() {self._poweredByOctopus = nil}
 
@@ -359,9 +359,7 @@ fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetConfigResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "apiKeyConfig"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}apiKeyConfig\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -395,13 +393,7 @@ extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ApiKeyConfig"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "clientLoginMandatory"),
-    2: .same(proto: "gamificationConfig"),
-    3: .same(proto: "displayAccountAge"),
-    4: .same(proto: "languages"),
-    5: .same(proto: "displayConfig"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0")
 
   fileprivate class _StorageClass {
     var _clientLoginMandatory: Bool = false
@@ -410,15 +402,11 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
     var _languages: [String] = []
     var _displayConfig: Com_Octopuscommunity_DisplayConfig? = nil
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -503,20 +491,7 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
 
 extension Com_Octopuscommunity_GamificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GamificationConfig"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "pointsName"),
-    2: .same(proto: "shortenPointSingular"),
-    3: .same(proto: "shortenPointPlural"),
-    4: .same(proto: "reactPts"),
-    5: .same(proto: "votePts"),
-    6: .same(proto: "commentPts"),
-    7: .same(proto: "replyPts"),
-    8: .same(proto: "postPts"),
-    9: .same(proto: "commentOnYourPostPts"),
-    10: .same(proto: "loginPts"),
-    11: .same(proto: "completeProfilePts"),
-    100: .same(proto: "gamificationLevels"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pointsName\0\u{1}shortenPointSingular\0\u{1}shortenPointPlural\0\u{1}reactPts\0\u{1}votePts\0\u{1}commentPts\0\u{1}replyPts\0\u{1}postPts\0\u{1}commentOnYourPostPts\0\u{1}loginPts\0\u{1}completeProfilePts\0\u{2}Y\u{1}gamificationLevels\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -605,15 +580,7 @@ extension Com_Octopuscommunity_GamificationConfig: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_GamificationLevel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GamificationLevel"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "level"),
-    2: .same(proto: "name"),
-    3: .same(proto: "nextLevelAt"),
-    4: .same(proto: "badgeLightColorHex"),
-    5: .same(proto: "badgeDarkColorHex"),
-    6: .same(proto: "badgeTextLightColorHex"),
-    7: .same(proto: "badgeTextDarkColorHex"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}level\0\u{1}name\0\u{1}nextLevelAt\0\u{1}badgeLightColorHex\0\u{1}badgeDarkColorHex\0\u{1}badgeTextLightColorHex\0\u{1}badgeTextDarkColorHex\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -677,9 +644,7 @@ extension Com_Octopuscommunity_GamificationLevel: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DisplayConfig"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "poweredByOctopus"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}poweredByOctopus\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -713,11 +678,7 @@ extension Com_Octopuscommunity_DisplayConfig: SwiftProtobuf.Message, SwiftProtob
 
 extension Com_Octopuscommunity_PoweredByOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PoweredByOctopus"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "default"),
-    2: .same(proto: "custom"),
-    3: .same(proto: "hidden"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}default\0\u{1}custom\0\u{1}hidden\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -820,10 +781,7 @@ extension Com_Octopuscommunity_PoweredByOctopus.Default: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_PoweredByOctopus.Custom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PoweredByOctopus.protoMessageName + ".Custom"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "lightLogoUrl"),
-    2: .same(proto: "darkLogoUrl"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}lightLogoUrl\0\u{1}darkLogoUrl\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

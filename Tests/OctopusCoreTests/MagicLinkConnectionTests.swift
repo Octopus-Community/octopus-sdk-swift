@@ -1,17 +1,17 @@
-////
-////  Copyright © 2024 Octopus Community. All rights reserved.
-////
 //
-//import Foundation
-//import XCTest
-//import Combine
-//import OctopusDependencyInjection
-//import OctopusRemoteClient
-//import OctopusGrpcModels
-//import SwiftProtobuf
-//@testable import OctopusCore
+//  Copyright © 2024 Octopus Community. All rights reserved.
 //
-//class MagicLinkConnectionTests: XCTestCase {
+//
+// import Foundation
+// import XCTest
+// import Combine
+// import OctopusDependencyInjection
+// import OctopusRemoteClient
+// import OctopusGrpcModels
+// import SwiftProtobuf
+// @testable import OctopusCore
+//
+// class MagicLinkConnectionTests: XCTestCase {
 //    /// Object that is tested
 //    private var connectionRepository: ConnectionRepository!
 //
@@ -313,4 +313,4 @@
 //
 //        await fulfillment(of: [userIsLoggedOutExpectation], timeout: 0.5)
 //    }
-//}
+// }

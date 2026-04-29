@@ -18,18 +18,18 @@ class RecipeViewModel: ObservableObject {
     private var storage = [AnyCancellable]()
 
     private let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
-    private var topicCancellable: AnyCancellable?
-    private var topics: [Topic] = []
+    private var groupsCancellable: AnyCancellable?
+    private var groups: [OctopusGroup] = []
 
     init(recipe: Recipe) {
-        // Listen to SDK topics changes
-        topicCancellable = octopus.$topics.sink { [unowned self] in
-            self.topics = $0
+        // Listen to SDK groups changes
+        groupsCancellable = octopus.$groups.sink { [unowned self] in
+            self.groups = $0
         }
 
-        // Ask to update the topics
+        // Ask to update the groups
         Task {
-            try? await octopus.fetchTopics()
+            try? await octopus.fetchGroups()
             await getBridgePost(recipe: recipe)
         }
 
@@ -68,16 +68,16 @@ class RecipeViewModel: ObservableObject {
         case .none: nil
         }
 
-        // Example of how to use the topics API: match the topic name to get the topic id
-        let topicId: String? = if let topicName = recipe.topicName {
-            topics.first(where: { $0.name == topicName })?.id
+        // Example of how to use the groups API: match the group name to get the group id
+        let groupId: String? = if let topicName = recipe.topicName {
+            groups.first(where: { $0.name == topicName })?.id
         } else { nil }
 
         do {
             post = try await octopus.fetchOrCreateClientObjectRelatedPost(
                 content: ClientPost(
                     clientObjectId: recipe.id,
-                    topicId: topicId,
+                    groupId: groupId,
                     text: recipe.title,
                     catchPhrase: recipe.octopusCatchPhrase,
                     attachment: attachment,

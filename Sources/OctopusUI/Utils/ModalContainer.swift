@@ -8,7 +8,7 @@ import UIKit
 
 class ModalHostingController<Content: View>: UIHostingController<Content>, UIAdaptivePresentationControllerDelegate {
     var canDismissSheet = true
-    var onDismissalAttempt: (() -> ())?
+    var onDismissalAttempt: (() -> Void)?
 
     override func willMove(toParent parent: UIViewController?) {
         super.willMove(toParent: parent)
@@ -31,7 +31,7 @@ class ModalHostingController<Content: View>: UIHostingController<Content>, UIAda
 struct ModalView<T: View>: UIViewControllerRepresentable {
     let view: T
     let canDismissSheet: Bool
-    let onDismissalAttempt: (() -> ())?
+    let onDismissalAttempt: (() -> Void)?
 
     func makeUIViewController(context: Context) -> ModalHostingController<T> {
         let controller = ModalHostingController(rootView: view)
@@ -54,7 +54,7 @@ struct ModalView<T: View>: UIViewControllerRepresentable {
 }
 
 extension View {
-    func interactiveDismiss(canDismissSheet: Bool, onDismissalAttempt: (() -> ())? = nil) -> some View {
+    func interactiveDismiss(canDismissSheet: Bool, onDismissalAttempt: (() -> Void)? = nil) -> some View {
         ModalView(
             view: self,
             canDismissSheet: canDismissSheet,

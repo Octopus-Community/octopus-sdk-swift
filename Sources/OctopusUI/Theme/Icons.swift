@@ -61,8 +61,14 @@ extension OctopusTheme.Assets {
                 public let viewCount: UIImage
                 /// Displayed to open the reaction picker
                 public let moreReactions: UIImage
+                /// Displayed when the current user has not reacted on this post
+                /// Default value is `defaultLikeNotSelected` set in the Content init.
+                public fileprivate(set) var likeNotSelected: UIImage
+                /// Displayed on the moderated tag of a moderated post
+                public let moderated: UIImage
 
                 fileprivate let notAvailableIsDefault: Bool
+                fileprivate let likeNotSelectedIsDefault: Bool
             }
 
             /// Group of icons used for Comments
@@ -153,6 +159,24 @@ extension OctopusTheme.Assets {
                 public let selectedOption: UIImage
             }
 
+            /// Group of images used for reactions (heart, joy, surprise, clap, cry, rage).
+            /// Unlike other SDK icons, reaction images are rendered with their original colors
+            /// (not tinted as templates).
+            public struct Reaction: Sendable {
+                /// Image for the heart reaction
+                public let heart: UIImage
+                /// Image for the joy reaction
+                public let joy: UIImage
+                /// Image for the mouth-open (surprise) reaction
+                public let mouthOpen: UIImage
+                /// Image for the clap reaction
+                public let clap: UIImage
+                /// Image for the cry reaction
+                public let cry: UIImage
+                /// Image for the rage reaction
+                public let rage: UIImage
+            }
+
             /// Group of icons used for posts
             public fileprivate(set) var post: Post
             /// Group of icons used for comments
@@ -163,6 +187,8 @@ extension OctopusTheme.Assets {
             public let video: Video
             /// Group of icons used for polls
             public let poll: Poll
+            /// Group of images used for reactions
+            public let reaction: Reaction
             /// Displayed to delete a content
             public let delete: UIImage
             /// Displayed to report a content
@@ -178,7 +204,7 @@ extension OctopusTheme.Assets {
             public let on: UIImage
             /// Displayed when the component is off
             public let off: UIImage
-            
+
             /// Set the On and Off icons of a component that has two states
             /// - Parameters:
             ///   - on: the image displayed when the component is on
@@ -311,11 +337,11 @@ extension OctopusTheme.Assets.Icons.Content.Post.Creation {
         self.open = open?.prepareForSdkUsage() ?? .Gen.createPost
         self.topicSelection = topicSelection?.prepareForSdkUsage() ?? .Gen.down
         self.addPicture = addPicture?.prepareForSdkUsage() ?? .Gen.addMedia
-        self.deletePicture = deletePicture?.prepareForSdkUsage() ?? .Gen.close
+        self.deletePicture = deletePicture?.prepareForSdkUsage() ?? .Gen.closeLight
         self.addPoll = addPoll?.prepareForSdkUsage() ?? .Gen.poll
         self.addPollOption = addPollOption?.prepareForSdkUsage() ?? .Gen.add
         self.deletePoll = deletePoll?.prepareForSdkUsage() ?? .Gen.trash
-        self.deletePollOption = deletePollOption?.prepareForSdkUsage() ?? .Gen.close
+        self.deletePollOption = deletePollOption?.prepareForSdkUsage() ?? .Gen.closeLight
 
         self.addPictureIsDefault = addPicture == nil
         self.deletePictureIsDefault = deletePicture == nil
@@ -335,6 +361,9 @@ extension OctopusTheme.Assets.Icons.Content.Post {
     ///   - commentCount: Displayed to indicate the number of comments on a post
     ///   - viewCount: Displayed to indicate the number of views
     ///   - moreReactions: Displayed to open the reaction picker
+    ///   - likeNotSelected: Displayed when the current user has not reacted on this post
+    ///                      Default value is `defaultLikeNotSelected` set in the Content init.
+    ///   - moderated: Displayed on the moderated tag of a moderated post
     public init(
         creation: Creation = .init(),
         emptyFeedInGroups: UIImage? = nil,
@@ -343,7 +372,9 @@ extension OctopusTheme.Assets.Icons.Content.Post {
         notAvailable: UIImage? = nil,
         commentCount: UIImage? = nil,
         viewCount: UIImage? = nil,
-        moreReactions: UIImage? = nil
+        moreReactions: UIImage? = nil,
+        likeNotSelected: UIImage? = nil,
+        moderated: UIImage? = nil
     ) {
         self.creation = creation
         self.emptyFeedInGroups = emptyFeedInGroups?.prepareForSdkUsage() ?? .Gen.noPosts
@@ -353,8 +384,11 @@ extension OctopusTheme.Assets.Icons.Content.Post {
         self.commentCount = commentCount?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.comment
         self.viewCount = viewCount?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.view
         self.moreReactions = moreReactions?.prepareForSdkUsage() ?? .Gen.add
+        self.likeNotSelected = likeNotSelected?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.like
+        self.moderated = moderated?.prepareForSdkUsage() ?? .Gen.moderation
 
         self.notAvailableIsDefault = notAvailable == nil
+        self.likeNotSelectedIsDefault = likeNotSelected == nil
     }
 }
 
@@ -376,7 +410,7 @@ extension OctopusTheme.Assets.Icons.Content.Comment.Creation {
         self.open = open?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.comment
         self.create = create?.prepareForSdkUsage() ?? .Gen.send
         self.addPicture = addPicture?.prepareForSdkUsage() ?? .Gen.addMedia
-        self.deletePicture = deletePicture?.prepareForSdkUsage() ?? .Gen.close
+        self.deletePicture = deletePicture?.prepareForSdkUsage() ?? .Gen.closeLight
 
         self.openIsDefault = open == nil
         self.createIsDefault = create == nil
@@ -431,7 +465,7 @@ extension OctopusTheme.Assets.Icons.Content.Reply.Creation {
         self.open = open?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.comment
         self.create = create?.prepareForSdkUsage() ?? .Gen.send
         self.addPicture = addPicture?.prepareForSdkUsage() ?? .Gen.addMedia
-        self.deletePicture = deletePicture?.prepareForSdkUsage() ?? .Gen.close
+        self.deletePicture = deletePicture?.prepareForSdkUsage() ?? .Gen.closeLight
 
         self.openIsDefault = open == nil
         self.createIsDefault = create == nil
@@ -491,6 +525,36 @@ extension OctopusTheme.Assets.Icons.Content.Poll {
     }
 }
 
+extension OctopusTheme.Assets.Icons.Content.Reaction {
+    /// Constructor of Reaction images.
+    ///
+    /// Reaction images are rendered with their original colors (not tinted).
+    /// If you do not override an image, the default emoji-style asset from the SDK is used.
+    ///
+    /// - Parameters:
+    ///   - heart: Image for the heart reaction
+    ///   - joy: Image for the joy reaction
+    ///   - mouthOpen: Image for the mouth-open (surprise) reaction
+    ///   - clap: Image for the clap reaction
+    ///   - cry: Image for the cry reaction
+    ///   - rage: Image for the rage reaction
+    public init(
+        heart: UIImage? = nil,
+        joy: UIImage? = nil,
+        mouthOpen: UIImage? = nil,
+        clap: UIImage? = nil,
+        cry: UIImage? = nil,
+        rage: UIImage? = nil
+    ) {
+        self.heart = heart ?? .Gen.Reaction.heart
+        self.joy = joy ?? .Gen.Reaction.joy
+        self.mouthOpen = mouthOpen ?? .Gen.Reaction.mouthOpen
+        self.clap = clap ?? .Gen.Reaction.clap
+        self.cry = cry ?? .Gen.Reaction.cry
+        self.rage = rage ?? .Gen.Reaction.rage
+    }
+}
+
 extension OctopusTheme.Assets.Icons.Content {
     /// Group of icons used for content (Posts, Comments, Replies...)
     /// - Parameters:
@@ -499,13 +563,14 @@ extension OctopusTheme.Assets.Icons.Content {
     ///   - reply: Group of icons used for replies
     ///   - video: Group of icons used for video
     ///   - poll: Group of icons used for polls
+    ///   - reaction: Group of images used for reactions
     ///   - delete: Displayed to delete a content
     ///   - report: Displayed to report a content
     ///             Default value is `defaultReport` set in the Icon init.
     ///   - defaultNotAvailable: If set, it will be applied to all notAvailable icons (`Post.notAvailable` and
     ///                          `Comment.notAvailable`) that are not overridden.
-    ///   - defaultLikeNotSelected: If set, it will be applied to all likeNotSelected icons (`Comment.likeNotSelected`
-    ///                             and `Reply.likeNotSelected`) that are not overridden.
+    ///   - defaultLikeNotSelected: If set, it will be applied to all likeNotSelected icons (`Post.likeNotSelected`,
+    ///                             `Comment.likeNotSelected` and `Reply.likeNotSelected`) that are not overridden.
     ///   - defaultAddPicture: If set, it will be applied to all addPicture icons (`Post.Creation.addPicture`,
     ///                        `Comment.Creation.addPicture` and `Reply.Creation.addPicture`) that are not overridden.
     ///   - defaultDeletePicture: If set, it will be applied to all deletePicture icons (`Post.Creation.deletePicture`,
@@ -521,6 +586,7 @@ extension OctopusTheme.Assets.Icons.Content {
         reply: Reply = .init(),
         video: Video = .init(),
         poll: Poll = .init(),
+        reaction: Reaction = .init(),
         delete: UIImage? = nil,
         report: UIImage? = nil,
         defaultNotAvailable: UIImage? = nil,
@@ -535,6 +601,7 @@ extension OctopusTheme.Assets.Icons.Content {
         self.reply = reply
         self.video = video
         self.poll = poll
+        self.reaction = reaction
         self.delete = delete?.prepareForSdkUsage() ?? .Gen.trash
         self.report = report?.prepareForSdkUsage() ?? .Gen.flag
 
@@ -549,6 +616,9 @@ extension OctopusTheme.Assets.Icons.Content {
             }
         }
         if let defaultLikeNotSelected {
+            if post.likeNotSelectedIsDefault {
+                self.post.likeNotSelected = defaultLikeNotSelected
+            }
             if comment.likeNotSelectedIsDefault {
                 self.comment.likeNotSelected = defaultLikeNotSelected
             }

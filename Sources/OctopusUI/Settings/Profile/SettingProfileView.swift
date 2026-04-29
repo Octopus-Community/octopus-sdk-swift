@@ -8,7 +8,7 @@ import Octopus
 
 struct SettingProfileView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Compat.StateObject private var viewModel: SettingProfileViewModel
     @Environment(\.octopusTheme) private var theme
 

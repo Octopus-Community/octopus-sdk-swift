@@ -7,7 +7,7 @@ import SwiftUI
 
 struct RichText: View {
     @Environment(\.octopusTheme) private var theme
-    @EnvironmentObject private var urlOpener: URLOpener
+    @Environment(\.urlOpener) private var urlOpener
 
     let text: String
 
@@ -33,7 +33,7 @@ struct RichText: View {
 }
 
 private struct MarkdownText: View {
-    @EnvironmentObject private var urlOpener: URLOpener
+    @Environment(\.urlOpener) private var urlOpener
 
     let input: String
 
@@ -176,7 +176,7 @@ private struct MarkdownText: View {
         ]
 
         while !remaining.isEmpty {
-            var earliestMatch: (pattern: Pattern, match: NSTextCheckingResult, range: Range<String.Index>)? = nil
+            var earliestMatch: (pattern: Pattern, match: NSTextCheckingResult, range: Range<String.Index>)?
 
             for pattern in patterns {
                 if let match = pattern.regex.firstMatch(in: remaining, range: NSRange(location: 0, length: remaining.utf16.count)),

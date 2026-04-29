@@ -15,7 +15,7 @@ public enum ClientPostError: Error, CustomDebugStringConvertible {
     case serverError
     /// Other error
     case other(Swift.Error?)
-    
+
     /// An error linked to the provided content
     public struct ValidationError: Sendable, CustomDebugStringConvertible {
         /// The kind of error
@@ -51,8 +51,11 @@ public enum ClientPostError: Error, CustomDebugStringConvertible {
             case bridgePostUnavailable
             /// The signature is expired
             case expiredClientToken
+            /// The group id is invalid
+            case invalidGroupId
             /// The topic id is invalid
-            case invalidTopicId
+            @available(*, deprecated, renamed: "invalidGroupId")
+            static var invalidTopicId: Self { .invalidGroupId }
             /// The author (the account designed to post the bridges) is invalid.
             case invalidAuthor
         }
@@ -135,7 +138,7 @@ private extension ClientPostError.ValidationError.ErrorKind {
         case .invalidClientToken: .invalidClientToken
         case .bridgePostUnavailable: .bridgePostUnavailable
         case .expiredClientToken: .expiredClientToken
-        case .invalidTopicId: .invalidTopicId
+        case .invalidTopicId: .invalidGroupId
         case .invalidAuthor: .invalidAuthor
         }
     }

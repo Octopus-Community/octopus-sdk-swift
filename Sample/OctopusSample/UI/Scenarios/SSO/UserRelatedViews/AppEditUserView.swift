@@ -40,25 +40,50 @@ struct AppEditUserView: View {
     @State private var pictureKind = PictureKind.empty
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Nickname:")
-            TextField("Nickname", text: $nickname)
-            Spacer().frame(height: 20)
-            Text("Bio:")
-            TextField("Bio", text: $bio)
-            Spacer().frame(height: 20)
-            Text("Picture")
-            Picker("", selection: $pictureKind) {
-                Text("None").tag(PictureKind.empty)
-                Text("Avatar 1").tag(PictureKind.avatar1)
-                Text("Avatar 2").tag(PictureKind.avatar2)
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Image(systemName: "person")
+                        .foregroundColor(.secondary)
+                    Text("Nickname")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                TextField("Nickname", text: $nickname)
+                    .textFieldStyle(.roundedBorder)
             }
-            .pickerStyle(.segmented)
-            if let picture, let image = UIImage(data: picture) {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 90, height: 90)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Image(systemName: "text.quote")
+                        .foregroundColor(.secondary)
+                    Text("Bio")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                TextField("Bio", text: $bio)
+                    .textFieldStyle(.roundedBorder)
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Image(systemName: "photo")
+                        .foregroundColor(.secondary)
+                    Text("Picture")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Picker("", selection: $pictureKind) {
+                    Text("None").tag(PictureKind.empty)
+                    Text("Avatar 1").tag(PictureKind.avatar1)
+                    Text("Avatar 2").tag(PictureKind.avatar2)
+                }
+                .pickerStyle(.segmented)
+                if let picture, let image = UIImage(data: picture) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 90, height: 90)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
             Spacer()
         }

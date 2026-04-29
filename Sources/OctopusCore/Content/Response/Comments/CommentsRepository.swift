@@ -34,10 +34,10 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     private let replyFeedsStore: ReplyFeedsStore
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Comment
+    // swiftlint:disable:next weak_delegate
     private let userInteractionsDelegate: UserInteractionsDelegate
     private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
-
 
     init(injector: Injector) {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)

@@ -14,12 +14,14 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
     let overlayContent: () -> OverlayContent
 
     @State private var buttonFrame: CGRect = .zero
+    @State private var windowWidth: CGFloat = .zero
     @State private var emojiBarWidth: CGFloat = .zero
 
     private let rectSize = CGSize(width: 3000, height: 3000)
 
     func body(content: Content) -> some View {
         content
+            .readScreenWidth($windowWidth)
             .modify {
                 if isPresented {
                     $0.background(
@@ -47,10 +49,10 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                             .frame(width: rectSize.width, height: rectSize.height) // Very large frame
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                    isPresented = false
+                                isPresented = false
                             }
                             .simultaneousGesture(DragGesture().onChanged { _ in
-                                    isPresented = false
+                                isPresented = false
                             })
                             .accessibilityHidden(true)
                             .overlay(
@@ -59,7 +61,7 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                                     overlayContent()
                                         .readWidth($emojiBarWidth)
                                         .position(
-                                            x: emojiBarXPosition, //buttonFrame.midX,
+                                            x: emojiBarXPosition,
                                             y: rectSize.height / 2 - (buttonFrame.height + verticalPadding)
                                         )
                                         .transition(.scale.combined(with: .opacity))
@@ -73,14 +75,12 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
             )
     }
 
-
     var emojiBarXPosition: CGFloat {
-        let baseX = rectSize.width / 2
-
-        if buttonFrame.minX + buttonFrame.width / 2 - emojiBarWidth / 2 < horizontalPadding {
-            return baseX - (buttonFrame.minX + buttonFrame.width / 2 - emojiBarWidth / 2 - horizontalPadding)
-        }
-        return baseX
+        guard windowWidth > 0 else { return rectSize.width / 2 }
+        // Center the bar on the window
+        let windowCenterX = windowWidth / 2
+        let buttonCenterX = buttonFrame.midX
+        return rectSize.width / 2 + (windowCenterX - buttonCenterX)
     }
 }
 

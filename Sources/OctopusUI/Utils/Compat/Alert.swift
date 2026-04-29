@@ -6,10 +6,10 @@ import Foundation
 import SwiftUI
 
 extension View {
-    @ViewBuilder 
+    @ViewBuilder
     nonisolated func compatAlert<A, M, T>(
         _ title: LocalizedStringKey, isPresented: Binding<Bool>, presenting data: T?,
-        @ViewBuilder actions: (T) -> A, @ViewBuilder message: (T) -> M) -> some View where A : View, M : View {
+        @ViewBuilder actions: (T) -> A, @ViewBuilder message: (T) -> M) -> some View where A: View, M: View {
             if #available(iOS 15.0, *) {
                 self.alert(
                     Text(title, bundle: .module),

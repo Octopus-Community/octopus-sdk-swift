@@ -12,4 +12,3 @@ extension SdkEvent {
         public let coreReasons: [ReportReason]
     }
 }
-

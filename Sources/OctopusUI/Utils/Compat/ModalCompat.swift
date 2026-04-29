@@ -10,7 +10,7 @@ extension View {
     nonisolated func fullScreenCover<Content>(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)? = nil,
-        @ViewBuilder content: @escaping () -> Content) -> some View where Content : View {
+        @ViewBuilder content: @escaping () -> Content) -> some View where Content: View {
             if #available(iOS 14.0, *) {
                 return fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
             } else {

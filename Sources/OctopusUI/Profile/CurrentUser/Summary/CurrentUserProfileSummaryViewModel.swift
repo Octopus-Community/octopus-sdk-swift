@@ -80,7 +80,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             $error,
             $isFetchingProfile,
             mainFlowPath.$isLocked
-        ).sink { [unowned self] profile, currentError, isFetchingProfile, isLocked in
+        ).sink { [unowned self] profile, _, _, _ in
             guard let profile else { return }
             self.profile = DisplayableCurrentUserProfile(from: profile)
 

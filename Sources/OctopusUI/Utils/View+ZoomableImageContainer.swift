@@ -9,9 +9,11 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let defaultLeadingBarItem: LeadingBarItem
+    let defaultLeadingSharedBackgroundVisibility: Compat.Visibility
     let defaultTrailingBarItem: TrailingBarItem
     let defaultPreTrailingBarItem: PreTrailingView
     let defaultTrailingSharedBackgroundVisibility: Compat.Visibility
+    let defaultPreTrailingSharedBackgroundVisibility: Compat.Visibility
     let defaultCenteredBarItem: CenteredBarItem
     let defaultCenteredBarItemVisibility: Compat.Visibility
     let navBarTitle: Text
@@ -70,8 +72,8 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
             preTrailing: preTrailingBarItem,
             trailing: trailingBarItem,
             centered: centeredBarItem,
-            leadingSharedBackgroundVisibility: .hidden,
-            preTrailingSharedBackgroundVisibility: .automatic,
+            leadingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultLeadingSharedBackgroundVisibility,
+            preTrailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultPreTrailingSharedBackgroundVisibility,
             trailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultTrailingSharedBackgroundVisibility,
             centeredVisibility: usableZoomableImageInfo != nil ? .hidden : defaultCenteredBarItemVisibility)
         .navigationBarTitle(navBarTitle)
@@ -163,8 +165,10 @@ extension View {
     /// This function has a textual center item (called title)
     func zoomableImageContainer<LeadingBarItem: View, TrailingBarItem: View, PreTrailingBarItem: View>(
         zoomableImageInfo: Binding<ZoomableImageInfo?>,
-        defaultLeadingBarItem: LeadingBarItem,
+        defaultLeadingBarItem: LeadingBarItem = EmptyView(),
+        defaultLeadingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         defaultPreTrailingBarItem: PreTrailingBarItem = EmptyView(),
+        defaultPreTrailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         defaultTrailingBarItem: TrailingBarItem,
         defaultTrailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         defaultNavigationBarTitle: Text = Text(verbatim: ""),
@@ -175,10 +179,21 @@ extension View {
             ZoomableImageContainer(
                 zoomableImageInfo: zoomableImageInfo,
                 defaultLeadingBarItem: defaultLeadingBarItem,
+                defaultLeadingSharedBackgroundVisibility: defaultLeadingSharedBackgroundVisibility,
                 defaultTrailingBarItem: defaultTrailingBarItem,
                 defaultPreTrailingBarItem: defaultPreTrailingBarItem,
                 defaultTrailingSharedBackgroundVisibility: defaultTrailingSharedBackgroundVisibility,
-                defaultCenteredBarItem: defaultNavigationBarTitle,
+                defaultPreTrailingSharedBackgroundVisibility: defaultPreTrailingSharedBackgroundVisibility,
+                // A `Text` rendered inside `ToolbarItem(placement: .principal)`
+                // does not inherit the system navigation title styling the way
+                // `.navigationBarTitle(_:displayMode: .inline)` does, so we
+                // explicitly apply the inline nav title font. The helper reads
+                // the font from `UINavigationBar.appearance()` so any host-app
+                // customization is honored, and falls back to the system
+                // default (`.headline`) otherwise — keeping this path visually
+                // consistent with screens that render their title through
+                // `.navigationBarTitle`.
+                defaultCenteredBarItem: defaultNavigationBarTitle.inlineNavigationBarTitleFont(),
                 defaultCenteredBarItemVisibility: defaultNavigationBarTitleVisibility,
                 navBarTitle: defaultNavigationBarTitle,
                 defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
@@ -191,8 +206,10 @@ extension View {
     /// This function has a center item as a view and takes a navBarTitle to build the back stack names
     func zoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, TrailingBarItem: View, PreTrailingBarItem: View>(
         zoomableImageInfo: Binding<ZoomableImageInfo?>,
-        defaultLeadingBarItem: LeadingBarItem,
+        defaultLeadingBarItem: LeadingBarItem = EmptyView(),
+        defaultLeadingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         defaultPreTrailingBarItem: PreTrailingBarItem = EmptyView(),
+        defaultPreTrailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         defaultTrailingBarItem: TrailingBarItem,
         defaultTrailingSharedBackgroundVisibility: Compat.Visibility = .automatic,
         defaultCenteredBarItem: CenteredBarItem = EmptyView(),
@@ -204,9 +221,11 @@ extension View {
             ZoomableImageContainer(
                 zoomableImageInfo: zoomableImageInfo,
                 defaultLeadingBarItem: defaultLeadingBarItem,
+                defaultLeadingSharedBackgroundVisibility: defaultLeadingSharedBackgroundVisibility,
                 defaultTrailingBarItem: defaultTrailingBarItem,
                 defaultPreTrailingBarItem: defaultPreTrailingBarItem,
                 defaultTrailingSharedBackgroundVisibility: defaultTrailingSharedBackgroundVisibility,
+                defaultPreTrailingSharedBackgroundVisibility: defaultPreTrailingSharedBackgroundVisibility,
                 defaultCenteredBarItem: defaultCenteredBarItem,
                 defaultCenteredBarItemVisibility: defaultCenteredBarItemVisibility,
                 navBarTitle: navBarTitle,

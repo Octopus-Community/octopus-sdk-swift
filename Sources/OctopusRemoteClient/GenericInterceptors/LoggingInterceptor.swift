@@ -79,7 +79,7 @@ class LoggingInterceptor<Request, Response>: ClientInterceptor<Request, Response
                 if verbose {
                     var log = "Received response from \(context.path) (request \(uuid))"
                     if let metadata = responseMetadata { log += "\n  📇 Metadata: \(metadata)" }
-                    if let message = responseMessage   { log += "\n  Type: \(type(of: message))\n  Content: \(message)" }
+                    if let message = responseMessage { log += "\n  Type: \(type(of: message))\n  Content: \(message)" }
                     log += "\n  Status: \(status)"
                     if let requestDate {
                         log += "\n  Took \(Date().timeIntervalSince(requestDate))"

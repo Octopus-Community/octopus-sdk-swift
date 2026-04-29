@@ -65,6 +65,10 @@ class EventEntity: NSManagedObject, Identifiable {
             let specializedEntity = CtaPostButtonHitEntity(context: context)
             specializedEntity.octoObjectId = objectId
             entity = specializedEntity
+        case let .clientSetABTest(hasAccessToCommunity):
+            let specializedEntity = ClientSetABTestEventEntity(context: context)
+            specializedEntity.hasAccessToCommunity = hasAccessToCommunity
+            entity = specializedEntity
         case let .custom(customEvent):
             let specializedEntity = CustomEventEntity(context: context)
             specializedEntity.name = customEvent.name

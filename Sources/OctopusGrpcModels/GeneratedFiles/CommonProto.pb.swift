@@ -417,9 +417,7 @@ extension Com_Octopuscommunity_ErrorDetails.MaxCharLimitReached: SwiftProtobuf.M
 
 extension Com_Octopuscommunity_ErrorDetails.BannedWordUsed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".BannedWordUsed"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "words"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}words\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -848,12 +846,7 @@ extension Com_Octopuscommunity_ErrorDetails.PostNotFound: SwiftProtobuf.Message,
 
 extension Com_Octopuscommunity_ErrorDetails.PublicationRateLimitExceeded: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ErrorDetails.protoMessageName + ".PublicationRateLimitExceeded"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "waitInSec"),
-    2: .same(proto: "ruleLabel"),
-    3: .same(proto: "maxCount"),
-    4: .same(proto: "windowSec"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}waitInSec\0\u{1}ruleLabel\0\u{1}maxCount\0\u{1}windowSec\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

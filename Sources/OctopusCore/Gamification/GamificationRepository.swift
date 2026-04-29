@@ -16,7 +16,7 @@ class GamificationRepository: InjectableObject, @unchecked Sendable {
     private let toastsRepository: ToastsRepository
     private let sdkEventsEmitter: SdkEventsEmitter
 
-    private var gamificationConfig: GamificationConfig? = nil
+    private var gamificationConfig: GamificationConfig?
     private var storage = [AnyCancellable]()
 
     private var gamificationToastAlreadyDisplayed = Set<GamificationAction>()

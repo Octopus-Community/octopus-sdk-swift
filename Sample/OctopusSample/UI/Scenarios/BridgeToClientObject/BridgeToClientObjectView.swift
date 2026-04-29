@@ -14,22 +14,57 @@ struct BridgeToClientObjectView: View {
     @StateObjectCompat private var viewModel = BridgeToClientObjectViewModel()
 
     var body: some View {
-        VStack(spacing: 0) {
-            Button(action: { viewModel.recipePushed = stableRecipe }) {
-                Text("Canele Recipe")
-            }
+        VStack(spacing: 16) {
+            VStack(spacing: 12) {
+                Text("Select a recipe to open")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer().frame(height: 40)
+                Button(action: { viewModel.recipePushed = stableRecipe }) {
+                    HStack {
+                        Image(systemName: "doc.text")
+                        Text("Canele Recipe")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor))
+                }
 
-            Button(action: { viewModel.recipePushed = newRecipe }) {
-                Text("Random identifier (new each time the sample is launched)")
+                Button(action: { viewModel.recipePushed = newRecipe }) {
+                    HStack {
+                        Image(systemName: "shuffle")
+                        Text("Random identifier")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor))
+                }
             }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+
             Spacer()
 
             Button(action: {
                 viewModel.displayOctopusAsFullScreenModal = true
             }) {
-                Text("Open Octopus Home Screen")
+                HStack {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    Text("Open Octopus Home Screen")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                .foregroundColor(.white)
             }
         }
         .padding()
@@ -56,7 +91,9 @@ struct BridgeToClientObjectView: View {
                 }
         }
         .sheet(isPresented: $viewModel.displayOctopusAsSheet) {
-            OctopusUIView(octopus: viewModel.octopus, postId: viewModel.octopusPostId)
+            OctopusUIView(
+                octopus: viewModel.octopus,
+                initialScreen: viewModel.octopusPostId.map { .post(.init(postId: $0)) } ?? .mainFeed)
                 .fullScreenCover(item: $viewModel.recipePresented) { recipe in
                     RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
                 }
@@ -163,7 +200,7 @@ private struct RecipeView: View {
                                 Text("\(post.viewCount) views")
                                     .font(.caption)
                                 Spacer()
-                                ForEach(post.reactions.indices, id:\.self) { index in
+                                ForEach(post.reactions.indices, id: \.self) { index in
                                     let reactionCount = post.reactions[index]
                                     Text("\(reactionCount.count)\(reactionCount.reaction.unicode)")
                                         .font(.caption)

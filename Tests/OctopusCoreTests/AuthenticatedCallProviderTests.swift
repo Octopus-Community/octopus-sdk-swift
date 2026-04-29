@@ -46,12 +46,9 @@ class AuthenticatedCallProviderTests: XCTestCase {
         case let .authenticated(_, authFailure):
             // check that if authFailure block is called, user is logged out
             authFailure()
-            try await delay()
-            switch connectionRepository.connectionState {
-            case .notConnected:
-                break // expected result
-            default:
-                XCTFail("notConnected state expected")
+            try await assertWithTimeout {
+                if case .notConnected = self.connectionRepository.connectionState { return true }
+                return false
             }
         case .notAuthenticated:
             XCTFail("authenticatedMethod should not return .notAuthenticated")
@@ -81,12 +78,9 @@ class AuthenticatedCallProviderTests: XCTestCase {
         case let .authenticated(_, authFailure):
             // check that if authFailure block is called, user is logged out
             authFailure()
-            try await delay()
-            switch connectionRepository.connectionState {
-            case .notConnected:
-                break // expected result
-            default:
-                XCTFail("notConnected state expected")
+            try await assertWithTimeout {
+                if case .notConnected = self.connectionRepository.connectionState { return true }
+                return false
             }
         case .notAuthenticated:
             XCTFail("authenticatedMethod should not return .notAuthenticated")
@@ -106,7 +100,6 @@ class AuthenticatedCallProviderTests: XCTestCase {
         }
     }
 }
-
 
 private final class MockConnectionRepository: ConnectionRepository, InjectableObject, @unchecked Sendable {
     static let injectedIdentifier = Injected.connectionRepository

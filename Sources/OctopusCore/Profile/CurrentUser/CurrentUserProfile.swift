@@ -46,7 +46,7 @@ extension CurrentUserProfile {
         bio = storableProfile.bio?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
         pictureUrl = storableProfile.pictureUrl
         tags = storableProfile.tags
-        
+
         totalMessages = storableProfile.totalMessages
         accountCreationDate = storableProfile.accountCreationDate
         gamificationLevel = gamificationLevels.first { $0.level == storableProfile.gamificationLevel }

@@ -27,7 +27,7 @@ import Combine
             subject.eraseToAnyPublisher()
         }
     }
-    
+
     @State private var state = Wrapper()
 
     @ObservedObject private var observedObject = Wrapper()

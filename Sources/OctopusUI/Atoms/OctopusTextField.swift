@@ -30,7 +30,7 @@ struct OctopusTextField: View {
 
     var body: some View {
         Group {
-            if #available(iOS 16.0, *), (lineLimitValue != 1 || lineLimitRange != nil) {
+            if #available(iOS 16.0, *), lineLimitValue != 1 || lineLimitRange != nil {
                 TextField(String(""), text: $text, axis: .vertical)
                     .onSubmit { onCommit?() }
             } else {

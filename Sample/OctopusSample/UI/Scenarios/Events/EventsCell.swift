@@ -11,13 +11,17 @@ import OctopusUI
 struct EventsCell: View {
     var body: some View {
         NavigationLink(destination: EventsView()) {
-            VStack(alignment: .leading) {
-                Text("Events")
-                Text("Octopus SDK publishes events to inform you about what the user is doing inside the community. You can use these events to feed your own analytics tool.")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "list.bullet")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Events")
+                    Text("Octopus SDK publishes events to inform you about what the user is doing inside the community. You can use these events to feed your own analytics tool.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

@@ -8,7 +8,7 @@ extension SdkEvent {
     public struct PostCreatedContext: Sendable {
         public let postId: String
         public let coreContent: Content
-        public let topicId: String
+        public let groupId: String
         public let textLength: Int
 
         init(from post: Post) {
@@ -24,7 +24,7 @@ extension SdkEvent {
             }
             postId = post.uuid
             coreContent = postContent
-            topicId = post.parentId
+            groupId = post.parentId
             textLength = post.text.originalText.count
         }
     }

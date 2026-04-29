@@ -82,8 +82,7 @@ private struct PostsVisibilityScrollView: ViewModifier {
                 .map { $0.item.videoId }
             if let autoPlayContentId {
                 videoManager.set(autoPlayVideoId: autoPlayContentId)
-            }
-            else if let currentlyPlayingVideo = videoManager.playingVideoId.value {
+            } else if let currentlyPlayingVideo = videoManager.playingVideoId.value {
                 if !visibleItems.contains(where: { $0.item.videoId == currentlyPlayingVideo }) {
                     videoManager.set(autoPlayVideoId: nil)
                 }
@@ -100,4 +99,3 @@ extension View {
         self.modifier(PostsVisibilityScrollView())
     }
 }
-

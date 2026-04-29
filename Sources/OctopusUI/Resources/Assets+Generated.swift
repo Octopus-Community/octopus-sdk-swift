@@ -135,6 +135,7 @@ extension GenImageResource {
     static let check = GenImageResource(name: "check", bundle: resourceBundle)
     static let circledCheck = GenImageResource(name: "circledCheck", bundle: resourceBundle)
     static let close = GenImageResource(name: "close", bundle: resourceBundle)
+    static let closeLight = GenImageResource(name: "closeLight", bundle: resourceBundle)
     static let congrats = GenImageResource(name: "congrats", bundle: resourceBundle)
     static let contentNotAvailable = GenImageResource(name: "contentNotAvailable", bundle: resourceBundle)
     static let createPost = GenImageResource(name: "createPost", bundle: resourceBundle)
@@ -142,6 +143,7 @@ extension GenImageResource {
     static let editPicture = GenImageResource(name: "editPicture", bundle: resourceBundle)
     static let flag = GenImageResource(name: "flag", bundle: resourceBundle)
     static let info = GenImageResource(name: "info", bundle: resourceBundle)
+    static let moderation = GenImageResource(name: "moderation", bundle: resourceBundle)
     static let more = GenImageResource(name: "more", bundle: resourceBundle)
     static let noCurrentUserPost = GenImageResource(name: "noCurrentUserPost", bundle: resourceBundle)
     static let noPosts = GenImageResource(name: "noPosts", bundle: resourceBundle)
@@ -168,6 +170,14 @@ extension GenImageResource {
     enum RadioButton {
         static let off = GenImageResource(name: "RadioButton/off", bundle: resourceBundle)
         static let on = GenImageResource(name: "RadioButton/on", bundle: resourceBundle)
+    }
+    enum Reaction {
+        static let clap = GenImageResource(name: "Reaction/clap", bundle: resourceBundle)
+        static let cry = GenImageResource(name: "Reaction/cry", bundle: resourceBundle)
+        static let heart = GenImageResource(name: "Reaction/heart", bundle: resourceBundle)
+        static let joy = GenImageResource(name: "Reaction/joy", bundle: resourceBundle)
+        static let mouthOpen = GenImageResource(name: "Reaction/mouthOpen", bundle: resourceBundle)
+        static let rage = GenImageResource(name: "Reaction/rage", bundle: resourceBundle)
     }
     enum Settings {
         static let account = GenImageResource(name: "Settings/account", bundle: resourceBundle)
@@ -257,6 +267,7 @@ extension UIKit.UIImage {
         static var check: UIKit.UIImage { .init(res: .check) }
         static var circledCheck: UIKit.UIImage { .init(res: .circledCheck) }
         static var close: UIKit.UIImage { .init(res: .close) }
+        static var closeLight: UIKit.UIImage { .init(res: .closeLight) }
         static var congrats: UIKit.UIImage { .init(res: .congrats) }
         static var contentNotAvailable: UIKit.UIImage { .init(res: .contentNotAvailable) }
         static var createPost: UIKit.UIImage { .init(res: .createPost) }
@@ -264,6 +275,7 @@ extension UIKit.UIImage {
         static var editPicture: UIKit.UIImage { .init(res: .editPicture) }
         static var flag: UIKit.UIImage { .init(res: .flag) }
         static var info: UIKit.UIImage { .init(res: .info) }
+        static var moderation: UIKit.UIImage { .init(res: .moderation) }
         static var more: UIKit.UIImage { .init(res: .more) }
         static var noCurrentUserPost: UIKit.UIImage { .init(res: .noCurrentUserPost) }
         static var noPosts: UIKit.UIImage { .init(res: .noPosts) }
@@ -290,6 +302,14 @@ extension UIKit.UIImage {
         enum RadioButton {
             static var off: UIKit.UIImage { .init(res: .RadioButton.off) }
             static var on: UIKit.UIImage { .init(res: .RadioButton.on) }
+        }
+        enum Reaction {
+            static var clap: UIKit.UIImage { .init(res: .Reaction.clap) }
+            static var cry: UIKit.UIImage { .init(res: .Reaction.cry) }
+            static var heart: UIKit.UIImage { .init(res: .Reaction.heart) }
+            static var joy: UIKit.UIImage { .init(res: .Reaction.joy) }
+            static var mouthOpen: UIKit.UIImage { .init(res: .Reaction.mouthOpen) }
+            static var rage: UIKit.UIImage { .init(res: .Reaction.rage) }
         }
         enum Settings {
             static var account: UIKit.UIImage { .init(res: .Settings.account) }

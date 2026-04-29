@@ -114,7 +114,7 @@ class CreatePostViewModel: ObservableObject {
             octopus.core.profileRepository.profilePublisher,
             $alertError,
             $isLoading.removeDuplicates()
-        ).sink { [unowned self] profile, currentError, isLoading in
+        ).sink { [unowned self] profile, _, _ in
             guard let profile else { return }
             userHasAcceptedCgu = profile.hasAcceptedCgu
             if !profile.isGuest || profile.hasConfirmedNickname {
@@ -140,7 +140,7 @@ class CreatePostViewModel: ObservableObject {
             $text,
             $attachment,
             $selectedTopic)
-            .sink { [unowned self] text, picture, selectedTopic in
+            .sink { [unowned self] text, _, selectedTopic in
                 hasChanges = !text.isEmpty || attachment != nil || selectedTopic?.topicId != defaultTopic?.uuid
             }.store(in: &storage)
 

@@ -34,6 +34,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
     private let validator: Validators.Reply
     private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
+    // swiftlint:disable:next weak_delegate
     private let userInteractionsDelegate: UserInteractionsDelegate
 
     init(injector: Injector) {

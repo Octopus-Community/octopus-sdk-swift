@@ -24,43 +24,79 @@ struct SDKConfigView: View {
     @StateObjectCompat private var viewModel = SDKConfigViewModel()
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Authentication mode:")
-            Picker("", selection: $viewModel.authMode) {
-                Text("Octopus").tag(SDKConfigViewModel.AuthMode.octopus)
-                Text("SSO").tag(SDKConfigViewModel.AuthMode.sso)
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: "network")
+                        .foregroundColor(.accentColor)
+                    Text("Authentication mode")
+                        .font(.subheadline).bold()
+                }
+                Picker("", selection: $viewModel.authMode) {
+                    Text("Octopus").tag(SDKConfigViewModel.AuthMode.octopus)
+                    Text("SSO").tag(SDKConfigViewModel.AuthMode.sso)
+                }
+                .pickerStyle(.segmented)
             }
-            .pickerStyle(.segmented)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+
             if viewModel.authMode == .sso {
-                Spacer().frame(height: 20)
-                Text("Associated Fields:")
-                Toggle(isOn: $viewModel.nicknameIsAssociated) {
-                    Text("Nickname")
-                }
-                Toggle(isOn: $viewModel.bioIsAssociated) {
-                    Text("Bio")
-                }
-                Toggle(isOn: $viewModel.pictureIsAssociated) {
-                    Text("Picture")
-                }
-                Spacer().frame(height: 60)
-                if !viewModel.nicknameIsAssociated {
-                    Toggle(isOn: $viewModel.forceLoginOnStringAction) {
-                        Text("Force login on strong actions")
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "person.text.rectangle")
+                            .foregroundColor(.accentColor)
+                        Text("Associated Fields")
+                            .font(.subheadline).bold()
+                    }
+                    Toggle(isOn: $viewModel.nicknameIsAssociated) {
+                        Text("Nickname")
+                    }
+                    Toggle(isOn: $viewModel.bioIsAssociated) {
+                        Text("Bio")
+                    }
+                    Toggle(isOn: $viewModel.pictureIsAssociated) {
+                        Text("Picture")
                     }
                 }
+                .padding()
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+
+                if !viewModel.nicknameIsAssociated {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "lock.shield")
+                                .foregroundColor(.accentColor)
+                            Text("Security")
+                                .font(.subheadline).bold()
+                        }
+                        Toggle(isOn: $viewModel.forceLoginOnStringAction) {
+                            Text("Force login on strong actions")
+                        }
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                }
             }
+
             if viewModel.canSave {
                 Spacer()
                 Button(action: {
                     viewModel.save()
                     afterSaveAction()
                 }) {
-                    Text("Save")
-                        .frame(maxWidth: .infinity)
+                    HStack {
+                        Image(systemName: "checkmark")
+                        Text("Save")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                    .foregroundColor(.white)
                 }
             } else {
                 Text("No existing community to match this configuration")
+                    .font(.subheadline)
                     .foregroundColor(Color.red)
                 Spacer()
             }

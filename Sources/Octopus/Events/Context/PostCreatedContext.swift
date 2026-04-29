@@ -12,7 +12,11 @@ extension OctopusEvent {
         var postId: String { get }
         /// Content of the post. This is an OptionSet containing the content info.
         var content: PostContent { get }
+        /// The id of the group to which the post has been linked
+        var groupId: String { get }
+
         /// The id of the topic to which the post has been linked
+        @available(*, deprecated, renamed: "groupId")
         var topicId: String { get }
         /// The length of the text of this post
         var textLength: Int { get }
@@ -37,6 +41,10 @@ extension OctopusEvent {
         /// This post has a poll
         public static let poll = PostContent(rawValue: 1 << 2)
     }
+}
+
+extension OctopusEvent.PostCreatedContext {
+    public var topicId: String { groupId }
 }
 
 extension SdkEvent.PostCreatedContext: OctopusEvent.PostCreatedContext {

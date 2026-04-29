@@ -225,11 +225,15 @@ private extension Event {
                         $0.objectID = objectId
                         $0.videoID = videoId
                         $0.watchTimeSec = Int32(safeCast: watchTime.rounded()) ?? 0
-                        $0.videoDurationSec = Int32(safeCast: duration.rounded()) ?? 0 
+                        $0.videoDurationSec = Int32(safeCast: duration.rounded()) ?? 0
                     })
             case let .ctaPostButtonHit(objectId):
                     .clickOnCta(.with {
                         $0.objectID = objectId
+                    })
+            case let .clientSetABTest(hasAccessToCommunity):
+                    .clientSetAbtestInfo(.with {
+                        $0.hasAccessToCommunity_p = hasAccessToCommunity
                     })
             case let .custom(customEvent):
                     .customEvent(.with {

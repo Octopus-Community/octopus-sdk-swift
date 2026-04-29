@@ -82,21 +82,21 @@ public struct Com_Octopuscommunity_SubscribeResponse: Sendable {
 
   ///Could be a oneof
   public var welcome: Com_Octopuscommunity_SubscribeWelcome {
-    get {return _welcome ?? Com_Octopuscommunity_SubscribeWelcome()}
+    get {_welcome ?? Com_Octopuscommunity_SubscribeWelcome()}
     set {_welcome = newValue}
   }
   /// Returns true if `welcome` has been explicitly set.
-  public var hasWelcome: Bool {return self._welcome != nil}
+  public var hasWelcome: Bool {self._welcome != nil}
   /// Clears the value of `welcome`. Subsequent reads from it will return its default value.
   public mutating func clearWelcome() {self._welcome = nil}
 
   ///optional  SubscribeTyping typing = 3;
   public var newMsg: Com_Octopuscommunity_SubscribeNewMsg {
-    get {return _newMsg ?? Com_Octopuscommunity_SubscribeNewMsg()}
+    get {_newMsg ?? Com_Octopuscommunity_SubscribeNewMsg()}
     set {_newMsg = newValue}
   }
   /// Returns true if `newMsg` has been explicitly set.
-  public var hasNewMsg: Bool {return self._newMsg != nil}
+  public var hasNewMsg: Bool {self._newMsg != nil}
   /// Clears the value of `newMsg`. Subsequent reads from it will return its default value.
   public mutating func clearNewMsg() {self._newMsg = nil}
 
@@ -114,11 +114,11 @@ public struct Com_Octopuscommunity_SubscribeNewMsg: Sendable {
   // methods supported on all messages.
 
   public var octoObject: Com_Octopuscommunity_OctoObject {
-    get {return _octoObject ?? Com_Octopuscommunity_OctoObject()}
+    get {_octoObject ?? Com_Octopuscommunity_OctoObject()}
     set {_octoObject = newValue}
   }
   /// Returns true if `octoObject` has been explicitly set.
-  public var hasOctoObject: Bool {return self._octoObject != nil}
+  public var hasOctoObject: Bool {self._octoObject != nil}
   /// Clears the value of `octoObject`. Subsequent reads from it will return its default value.
   public mutating func clearOctoObject() {self._octoObject = nil}
 
@@ -146,18 +146,12 @@ public struct Com_Octopuscommunity_SubscribeWelcome: Sendable {
 fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_Origin: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNSPECIFIED_ORIGIN"),
-    1: .same(proto: "KINESIS"),
-    2: .same(proto: "REDIS"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSPECIFIED_ORIGIN\0\u{1}KINESIS\0\u{1}REDIS\0")
 }
 
 extension Com_Octopuscommunity_SubscribeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SubscribeRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parentId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parentId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -187,10 +181,7 @@ extension Com_Octopuscommunity_SubscribeRequest: SwiftProtobuf.Message, SwiftPro
 
 extension Com_Octopuscommunity_SubscribeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SubscribeResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "welcome"),
-    2: .same(proto: "newMsg"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}welcome\0\u{1}newMsg\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -229,10 +220,7 @@ extension Com_Octopuscommunity_SubscribeResponse: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_SubscribeNewMsg: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SubscribeNewMsg"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObject"),
-    2: .same(proto: "origin"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObject\0\u{1}origin\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

@@ -2,7 +2,6 @@
 //  Copyright © 2025 Octopus Community. All rights reserved.
 //
 
-
 import Foundation
 import Combine
 import UserNotifications
@@ -21,7 +20,7 @@ public class ToastsRepository: InjectableObject, @unchecked Sendable {
 
     @Published public private(set) var toasts: [Toast] = []
 
-    private var gamificationConfig: GamificationConfig? = nil
+    private var gamificationConfig: GamificationConfig?
     private var storage = [AnyCancellable]()
 
     private var gamificationToastAlreadyDisplayed = Set<GamificationAction>()
@@ -42,7 +41,7 @@ public class ToastsRepository: InjectableObject, @unchecked Sendable {
                 resetDisplayedToasts()
             }.store(in: &storage)
     }
-    
+
     /// Resets the list of displayed toasts in order to display them again if they occur
     public func resetDisplayedToasts() {
         gamificationToastAlreadyDisplayed.removeAll()

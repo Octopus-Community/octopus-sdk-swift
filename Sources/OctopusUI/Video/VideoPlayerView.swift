@@ -49,7 +49,7 @@ struct VideoPlayerView: View {
                     } else { $0 }
                 }
 
-            if (!viewModel.isReadyToPlay || viewModel.currentTime == 0), let thumbnailUrl = videoMedia.thumbnailUrl {
+            if !viewModel.isReadyToPlay || viewModel.currentTime == 0, let thumbnailUrl = videoMedia.thumbnailUrl {
                 AsyncCachedImage(
                     url: thumbnailUrl, cache: .thumbnail,
                     placeholder: {

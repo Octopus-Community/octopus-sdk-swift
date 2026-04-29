@@ -28,4 +28,3 @@ class EllipsizableTextTests {
         #expect(EllipsizableText(text: text, maxLength: 11, maxLines: 6)?.ellipsizedText == "12345\n6\n\n\n7")
     }
 }
-

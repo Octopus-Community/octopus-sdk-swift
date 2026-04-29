@@ -9,14 +9,11 @@ import OctopusCore
 
 struct ProfileSummaryView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
     @Compat.StateObject private var viewModel: ProfileSummaryViewModel
-
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
 
     @State private var displayBlockUserAlert = false
 
@@ -64,65 +61,24 @@ struct ProfileSummaryView: View {
             }
         }
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
-                                defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarTitle: Text("Profile.Title", bundle: .module))
         .toastContainer(octopus: viewModel.octopus)
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in },
-            message: { error in
-                error.textView
-            })
+        .errorAlert(viewModel.$error)
         .emitScreenDisplayed(.otherUserProfile(.init(profileId: viewModel.profileId)), trackingApi: trackingApi)
-        .onReceive(viewModel.$error) { error in
-            guard let error else { return }
-            displayableError = error
-            displayError = true
-        }
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
             presentationMode.wrappedValue.dismiss()
         }
         .actionSheet(isPresented: $openActions) {
-            ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: [
-                ActionSheet.Button.destructive(Text("Moderation.Profile.Button", bundle: .module)) {
-                    guard viewModel.ensureConnected(action: .moderation) else { return }
-                    navigator.push(.reportProfile(profileId: viewModel.profileId))
-                },
-                ActionSheet.Button.destructive(Text("Block.Profile.Button", bundle: .module)) {
-                    guard viewModel.ensureConnected(action: .blockUser) else { return }
-                    displayBlockUserAlert = true
-                },
-                .cancel()
-            ])
+            ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: actionSheetButtons)
         }
-        .modify {
-            if #available(iOS 15.0, *) {
-                $0.alert(
-                    Text("Block.Profile.Alert.Title", bundle: .module),
-                    isPresented: $displayBlockUserAlert, actions: {
-                        Button(role: .cancel, action: {}, label: { Text("Common.Cancel", bundle: .module) })
-                        Button(role: .destructive, action: viewModel.blockUser,
-                               label: { Text("Common.Continue", bundle: .module) })
-                    }, message: {
-                        Text("Block.Profile.Alert.Message", bundle: .module)
-                    })
-            } else {
-                $0.alert(isPresented: $displayBlockUserAlert) {
-                    Alert(title: Text("Block.Profile.Alert.Title", bundle: .module),
-                          message: Text("Block.Profile.Alert.Message", bundle: .module),
-                          primaryButton: .default(Text("Common.Cancel", bundle: .module)),
-                          secondaryButton: .destructive(
-                            Text("Common.Continue", bundle: .module),
-                            action: viewModel.blockUser
-                          )
-                    )
-                }
-            }
-        }
+        .destructiveConfirmationAlert(
+            "Block.Profile.Alert.Title",
+            isPresented: $displayBlockUserAlert,
+            destructiveLabel: "Common.Continue",
+            action: viewModel.blockUser,
+            message: "Block.Profile.Alert.Message")
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
@@ -144,28 +100,41 @@ struct ProfileSummaryView: View {
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
     }
 
-    @ViewBuilder
-    private var leadingBarItem: some View {
-        EmptyView()
+    private var actionSheetButtons: [ActionSheet.Button] {
+        var buttons: [ActionSheet.Button] = []
+        buttons.append(.destructive(Text("Moderation.Profile.Button", bundle: .module)) {
+            guard viewModel.ensureConnected(action: .moderation) else { return }
+            navigator.push(.reportProfile(profileId: viewModel.profileId))
+        })
+        if viewModel.profile?.canBeBlocked == true {
+            buttons.append(.destructive(Text("Block.Profile.Button", bundle: .module)) {
+                guard viewModel.ensureConnected(action: .blockUser) else { return }
+                displayBlockUserAlert = true
+            })
+        }
+        buttons.append(.cancel())
+        return buttons
     }
 
     @ViewBuilder
     private var trailingBarItem: some View {
         if #available(iOS 14.0, *) {
             Menu(content: {
-                Button(action: {
+                DestructiveMenuButton(action: {
                     guard viewModel.ensureConnected(action: .moderation) else { return }
                     navigator.push(.reportProfile(profileId: viewModel.profileId))
                 }) {
                     Label(title: { Text("Moderation.Profile.Button", bundle: .module) },
                           icon: { Image(uiImage: theme.assets.icons.profile.report) })
                 }
-                Button(action: {
-                    guard viewModel.ensureConnected(action: .blockUser) else { return }
-                    displayBlockUserAlert = true
-                }) {
-                    Label(title: { Text("Block.Profile.Button", bundle: .module) },
-                          icon: { Image(uiImage: theme.assets.icons.profile.blockUser) })
+                if viewModel.profile?.canBeBlocked == true {
+                    DestructiveMenuButton(action: {
+                        guard viewModel.ensureConnected(action: .blockUser) else { return }
+                        displayBlockUserAlert = true
+                    }) {
+                        Label(title: { Text("Block.Profile.Button", bundle: .module) },
+                              icon: { Image(uiImage: theme.assets.icons.profile.blockUser) })
+                    }
                 }
             }, label: {
                 if #available(iOS 26.0, *) {

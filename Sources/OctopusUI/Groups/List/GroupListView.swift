@@ -34,12 +34,9 @@ struct GroupListScreen: View {
 
 struct GroupListView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
 
     @Compat.StateObject private var viewModel: GroupListViewModel
-
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
 
     init(octopus: OctopusSDK, context: GroupListContext) {
         _viewModel = Compat.StateObject(wrappedValue: GroupListViewModel(octopus: octopus, context: context))
@@ -57,7 +54,7 @@ struct GroupListView: View {
                 case let .groupSelection(_, setSelectedGroup):
                     setSelectedGroup($0.id)
                 case .displayFeed:
-                    navigator.push(.groupDetail(topic: $0.coreTopic))
+                    navigator.push(.groupDetail(groupId: $0.id))
                 }
             },
             changeFollowStatus: viewModel.changeFollowStatus(groupId:follow:),
@@ -75,19 +72,7 @@ struct GroupListView: View {
         .onAppear {
             viewModel.recomputeSections()
         }
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in },
-            message: { error in
-                error.textView
-            })
-        .onReceive(viewModel.$error) { error in
-            guard let error else { return }
-            displayableError = error
-            displayError = true
-        }
+        .errorAlert(viewModel.$error)
     }
 
     var navBarTitleKey: LocalizedStringKey {
@@ -123,45 +108,51 @@ private struct ContentView: View {
                     .frame(height: 1)
             }
 #endif
-            Compat.ScrollView(refreshAction: refresh) {
-                VStack(alignment: .leading, spacing: 0) {
-                    if let groups {
-                        ForEach(groups.sections.indices, id: \.self) { sectionIdx in
-                            let section = groups.sections[sectionIdx]
-                            if let currentSectionGroups = groups.groupsBySection[section], !currentSectionGroups.isEmpty {
-                                SectionView(section: section, horizontalPadding: leadingPadding)
+            GeometryReader { geometry in
+                Compat.ScrollView(refreshAction: refresh) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if let groups {
+                            ForEach(groups.sections.indices, id: \.self) { sectionIdx in
+                                let section = groups.sections[sectionIdx]
+                                if let currentSectionGroups = groups.groupsBySection[section],
+                                   !currentSectionGroups.isEmpty {
+                                    SectionView(section: section, horizontalPadding: leadingPadding)
 
-                                ForEach(currentSectionGroups.indices, id: \.self) { groupIdx in
-                                    let group = currentSectionGroups[groupIdx]
-                                    GroupView(
-                                        context: context,
-                                        group: group,
-                                        canChangeFollowStatus: canChangeFollowStatusByGroupId[group.id] ?? false,
-                                        isFollowed: isFollowedByGroupId[group.id] ?? false,
-                                        leadingPadding: leadingPadding,
-                                        selectedGroupId: $selectedGroupId,
-                                        selectGroup: selectGroup,
-                                        changeFollowStatus: changeFollowStatus
-                                    )
+                                    ForEach(currentSectionGroups.indices, id: \.self) { groupIdx in
+                                        let group = currentSectionGroups[groupIdx]
+                                        GroupView(
+                                            context: context,
+                                            group: group,
+                                            canChangeFollowStatus: canChangeFollowStatusByGroupId[group.id] ?? false,
+                                            isFollowed: isFollowedByGroupId[group.id] ?? false,
+                                            leadingPadding: leadingPadding,
+                                            selectedGroupId: $selectedGroupId,
+                                            selectGroup: selectGroup,
+                                            changeFollowStatus: changeFollowStatus
+                                        )
+                                    }
                                 }
                             }
-                        }
 
-                        PoweredByOctopusView()
-                            .padding(.top, 20)
-                            .padding(.bottom, 60)
-                    } else {
-                        Compat.ProgressView()
-                            .frame(width: 100)
-                            .padding(.top, 20)
+                            Spacer(minLength: 0)
+
+                            PoweredByOctopusView()
+                                .padding(.top, 20)
+                                .padding(.bottom, 30)
+                        } else {
+                            Compat.ProgressView()
+                                .frame(width: 100)
+                                .padding(.top, 20)
+                        }
                     }
+                    .frame(minHeight: geometry.size.height)
                 }
-            }
-            .onValueChanged(of: context, initial: true) { context in
-                switch context {
-                case let .groupSelection(selectedGroupId, _):
-                    self.selectedGroupId = selectedGroupId
-                default: break
+                .onValueChanged(of: context, initial: true) { context in
+                    switch context {
+                    case let .groupSelection(selectedGroupId, _):
+                        self.selectedGroupId = selectedGroupId
+                    default: break
+                    }
                 }
             }
         }

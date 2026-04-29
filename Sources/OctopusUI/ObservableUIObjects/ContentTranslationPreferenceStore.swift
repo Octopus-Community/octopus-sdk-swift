@@ -2,7 +2,6 @@
 //  Copyright © 2025 Octopus Community. All rights reserved.
 //
 
-
 import Foundation
 import SwiftUI
 import Combine
@@ -29,5 +28,12 @@ final class ContentTranslationPreferenceStore: ObservableObject {
     @discardableResult
     func toggleDisplayTranslation(for contentId: String) -> Bool {
         return repository.toggleDisplayTranslation(for: contentId)
+    }
+}
+
+extension ContentTranslationPreferenceStore {
+    /// Preview factory — backed by the in-memory `PreviewContentTranslationPreferenceRepository`.
+    static func forPreviews() -> ContentTranslationPreferenceStore {
+        ContentTranslationPreferenceStore(repository: PreviewContentTranslationPreferenceRepository())
     }
 }

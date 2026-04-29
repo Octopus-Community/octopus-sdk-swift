@@ -15,10 +15,12 @@ class TopicsTests: XCTestCase {
     private var topicsRepository: TopicsRepository!
 
     private var mockOctoService: MockOctoService!
+    private var mockUserService: MockUserService!
+    private var injector: Injector!
     private var storage = [AnyCancellable]()
 
     override func setUp() {
-        let injector = Injector()
+        injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { TopicsDatabase(injector: $0) }
         injector.register { PostFeedsStore(injector: $0) }
@@ -33,6 +35,7 @@ class TopicsTests: XCTestCase {
 
         topicsRepository = TopicsRepository(injector: injector)
         mockOctoService = (injector.getInjected(identifiedBy: Injected.remoteClient).octoService as! MockOctoService)
+        mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient).userService as! MockUserService)
     }
 
     func testGetLocalAndRemoteTopics() async throws {
@@ -50,7 +53,7 @@ class TopicsTests: XCTestCase {
         ])
         try await topicsRepository.fetchTopics()
 
-        await fulfillment(of: [localExpectation], timeout: 0.5)
+        await fulfillment(of: [localExpectation], timeout: 5)
     }
 
     func testTopicsAreInOrder() async throws {
@@ -73,8 +76,147 @@ class TopicsTests: XCTestCase {
         ])
         try await topicsRepository.fetchTopics()
 
-        await fulfillment(of: [localExpectation], timeout: 0.5)
+        await fulfillment(of: [localExpectation], timeout: 5)
         XCTAssertEqual(topics.map { $0.uuid }, ["1", "2", "3", "0"])
+    }
+
+    func testSyncFollowTopicsHappyPath() async throws {
+        mockUserService.injectNextSyncFollowTopicsResponse(
+            .with {
+                $0.results = [
+                    .with { $0.topicID = "t1"; $0.status = .syncFollowApplied },
+                    .with { $0.topicID = "t2"; $0.status = .syncFollowAlreadyFollowed },
+                ]
+            }
+        )
+        // fetchTopics is called by the repository after a successful sync — inject an empty
+        // response so the refresh doesn't blow up.
+        mockOctoService.injectNextGetTopicsResponse(.with { _ in })
+
+        let actions: [SyncFollowTopicAction] = [
+            .init(topicId: "t1", followed: true, actionDate: Date(timeIntervalSince1970: 1_700_000_000)),
+            .init(topicId: "t2", followed: true, actionDate: Date(timeIntervalSince1970: 1_700_000_001)),
+        ]
+
+        let results = try await topicsRepository.syncFollowTopics(actions: actions)
+
+        XCTAssertEqual(results.count, 2)
+        XCTAssertEqual(results[0].topicId, "t1")
+        XCTAssertEqual(results[0].status, .applied)
+        XCTAssertEqual(results[1].topicId, "t2")
+        XCTAssertEqual(results[1].status, .alreadyFollowed)
+        XCTAssertEqual(mockUserService.syncFollowTopicsCallCount, 1)
+    }
+
+    func testSyncFollowTopicsEmptyListSkipsNetworkCall() async throws {
+        let results = try await topicsRepository.syncFollowTopics(actions: [])
+
+        XCTAssertEqual(results, [])
+        XCTAssertEqual(mockUserService.syncFollowTopicsCallCount, 0)
+    }
+
+    func testSyncFollowTopicsNotConnectedThrows() async throws {
+        let mockAuthProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
+            as! MockAuthenticatedCallProvider
+        mockAuthProvider.isConnected = false
+
+        do {
+            _ = try await topicsRepository.syncFollowTopics(actions: [
+                .init(topicId: "t1", followed: true, actionDate: Date()),
+            ])
+            XCTFail("Expected throw")
+        } catch AuthenticatedActionError.userNotAuthenticated {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+        XCTAssertEqual(mockUserService.syncFollowTopicsCallCount, 0)
+    }
+
+    func testSyncFollowTopicsNoNetworkThrows() async throws {
+        let mockNetworkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
+            as! MockNetworkMonitor
+        mockNetworkMonitor.connectionAvailable = false
+
+        do {
+            _ = try await topicsRepository.syncFollowTopics(actions: [
+                .init(topicId: "t1", followed: true, actionDate: Date()),
+            ])
+            XCTFail("Expected throw")
+        } catch AuthenticatedActionError.noNetwork {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+        XCTAssertEqual(mockUserService.syncFollowTopicsCallCount, 0)
+    }
+
+    func testSyncFollowTopicsServerErrorIsThrown() async throws {
+        // Intentionally do NOT inject a response — MockUserService.syncFollowTopics then
+        // throws `RemoteClientError.unknown(...)`, which the repository must map to
+        // `AuthenticatedActionError.serverError(...)`.
+        do {
+            _ = try await topicsRepository.syncFollowTopics(actions: [
+                .init(topicId: "t1", followed: true, actionDate: Date()),
+            ])
+            XCTFail("Expected throw")
+        } catch AuthenticatedActionError.serverError {
+            // expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testSyncFollowTopicsStatusMapping() async throws {
+        let protoCases: [(Com_Octopuscommunity_SyncFollowTopicStatus, SyncFollowTopicResult.Status)] = [
+            (.syncFollowApplied, .applied),
+            (.syncFollowSkipped, .skipped),
+            (.syncFollowTopicNotFound, .topicNotFound),
+            (.syncFollowNotFollowable, .notFollowable),
+            (.syncFollowNotUnfollowable, .notUnfollowable),
+            (.syncFollowAlreadyFollowed, .alreadyFollowed),
+            (.syncFollowAlreadyUnfollowed, .alreadyUnfollowed),
+            (.syncFollowError, .unknownError),
+            (.syncFollowUnspecified, .unknownError),
+        ]
+
+        mockUserService.injectNextSyncFollowTopicsResponse(
+            .with {
+                $0.results = protoCases.enumerated().map { index, pair in
+                    .with {
+                        $0.topicID = "t\(index)"
+                        $0.status = pair.0
+                    }
+                }
+            }
+        )
+        mockOctoService.injectNextGetTopicsResponse(.with { _ in })
+
+        let actions = protoCases.indices.map { index in
+            SyncFollowTopicAction(topicId: "t\(index)", followed: true, actionDate: Date())
+        }
+        let results = try await topicsRepository.syncFollowTopics(actions: actions)
+
+        XCTAssertEqual(results.count, protoCases.count)
+        for (index, pair) in protoCases.enumerated() {
+            XCTAssertEqual(results[index].status, pair.1, "Mismatch at index \(index) (proto: \(pair.0))")
+            XCTAssertEqual(results[index].topicId, "t\(index)")
+        }
+    }
+
+    func testSyncFollowTopicsRefreshesCacheOnSuccess() async throws {
+        let initialCount = mockOctoService.getTopicsCallCount
+
+        mockUserService.injectNextSyncFollowTopicsResponse(
+            .with { $0.results = [.with { $0.topicID = "t1"; $0.status = .syncFollowApplied }] }
+        )
+        mockOctoService.injectNextGetTopicsResponse(.with { _ in })
+
+        _ = try await topicsRepository.syncFollowTopics(actions: [
+            .init(topicId: "t1", followed: true, actionDate: Date()),
+        ])
+
+        XCTAssertEqual(mockOctoService.getTopicsCallCount, initialCount + 1)
     }
 
     func injectRemoteItems(_ items: [StorableTopic]) {

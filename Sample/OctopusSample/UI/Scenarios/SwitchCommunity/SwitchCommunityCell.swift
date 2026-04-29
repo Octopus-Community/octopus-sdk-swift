@@ -13,13 +13,17 @@ struct SwitchCommunityCell: View {
 
     var body: some View {
         NavigationLink(destination: SwitchCommunityView(showFullScreen: showFullScreen)) {
-            VStack(alignment: .leading) {
-                Text("Switch Community")
-                Text("Sometimes, you need to change of community. Although it is not something we recommend, it can be useful for example when you have one community per country.")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Switch Community")
+                    Text("Sometimes, you need to change of community. Although it is not something we recommend, it can be useful for example when you have one community per country.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

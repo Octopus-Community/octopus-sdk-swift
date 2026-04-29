@@ -43,21 +43,21 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     ///taken from header if not present
     public var appSessionID: String {
-      get {return _appSessionID ?? String()}
+      get {_appSessionID ?? String()}
       set {_appSessionID = newValue}
     }
     /// Returns true if `appSessionID` has been explicitly set.
-    public var hasAppSessionID: Bool {return self._appSessionID != nil}
+    public var hasAppSessionID: Bool {self._appSessionID != nil}
     /// Clears the value of `appSessionID`. Subsequent reads from it will return its default value.
     public mutating func clearAppSessionID() {self._appSessionID = nil}
 
     ///taken from header if not present
     public var octoSessionID: String {
-      get {return _octoSessionID ?? String()}
+      get {_octoSessionID ?? String()}
       set {_octoSessionID = newValue}
     }
     /// Returns true if `octoSessionID` has been explicitly set.
-    public var hasOctoSessionID: Bool {return self._octoSessionID != nil}
+    public var hasOctoSessionID: Bool {self._octoSessionID != nil}
     /// Clears the value of `octoSessionID`. Subsequent reads from it will return its default value.
     public mutating func clearOctoSessionID() {self._octoSessionID = nil}
 
@@ -192,6 +192,14 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .clickOnCta(newValue)}
     }
 
+    public var clientSetAbtestInfo: Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo {
+      get {
+        if case .clientSetAbtestInfo(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo()
+      }
+      set {eventType = .clientSetAbtestInfo(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_EventType: Equatable, Sendable {
@@ -212,6 +220,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case viewTranslationButtonHit(Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit)
       case videoPlayed(Com_Octopuscommunity_TrackRequest.VideoPlayed)
       case clickOnCta(Com_Octopuscommunity_TrackRequest.ClickOnCta)
+      case clientSetAbtestInfo(Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo)
 
     }
 
@@ -254,11 +263,11 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     /// true if it's the first app session after generating installId
     public var firstSession: Bool {
-      get {return _firstSession ?? false}
+      get {_firstSession ?? false}
       set {_firstSession = newValue}
     }
     /// Returns true if `firstSession` has been explicitly set.
-    public var hasFirstSession: Bool {return self._firstSession != nil}
+    public var hasFirstSession: Bool {self._firstSession != nil}
     /// Clears the value of `firstSession`. Subsequent reads from it will return its default value.
     public mutating func clearFirstSession() {self._firstSession = nil}
 
@@ -275,11 +284,11 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     // methods supported on all messages.
 
     public var sessionSummary: Com_Octopuscommunity_TrackRequest.SessionSummary {
-      get {return _sessionSummary ?? Com_Octopuscommunity_TrackRequest.SessionSummary()}
+      get {_sessionSummary ?? Com_Octopuscommunity_TrackRequest.SessionSummary()}
       set {_sessionSummary = newValue}
     }
     /// Returns true if `sessionSummary` has been explicitly set.
-    public var hasSessionSummary: Bool {return self._sessionSummary != nil}
+    public var hasSessionSummary: Bool {self._sessionSummary != nil}
     /// Clears the value of `sessionSummary`. Subsequent reads from it will return its default value.
     public mutating func clearSessionSummary() {self._sessionSummary = nil}
 
@@ -297,11 +306,11 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     /// true if it's the first octopus session after generating installId
     public var firstSession: Bool {
-      get {return _firstSession ?? false}
+      get {_firstSession ?? false}
       set {_firstSession = newValue}
     }
     /// Returns true if `firstSession` has been explicitly set.
-    public var hasFirstSession: Bool {return self._firstSession != nil}
+    public var hasFirstSession: Bool {self._firstSession != nil}
     /// Clears the value of `firstSession`. Subsequent reads from it will return its default value.
     public mutating func clearFirstSession() {self._firstSession = nil}
 
@@ -318,11 +327,11 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     // methods supported on all messages.
 
     public var sessionSummary: Com_Octopuscommunity_TrackRequest.SessionSummary {
-      get {return _sessionSummary ?? Com_Octopuscommunity_TrackRequest.SessionSummary()}
+      get {_sessionSummary ?? Com_Octopuscommunity_TrackRequest.SessionSummary()}
       set {_sessionSummary = newValue}
     }
     /// Returns true if `sessionSummary` has been explicitly set.
-    public var hasSessionSummary: Bool {return self._sessionSummary != nil}
+    public var hasSessionSummary: Bool {self._sessionSummary != nil}
     /// Clears the value of `sessionSummary`. Subsequent reads from it will return its default value.
     public mutating func clearSessionSummary() {self._sessionSummary = nil}
 
@@ -351,11 +360,11 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     // methods supported on all messages.
 
     public var origin: Com_Octopuscommunity_TrackRequest.Origin {
-      get {return _origin ?? Com_Octopuscommunity_TrackRequest.Origin()}
+      get {_origin ?? Com_Octopuscommunity_TrackRequest.Origin()}
       set {_origin = newValue}
     }
     /// Returns true if `origin` has been explicitly set.
-    public var hasOrigin: Bool {return self._origin != nil}
+    public var hasOrigin: Bool {self._origin != nil}
     /// Clears the value of `origin`. Subsequent reads from it will return its default value.
     public mutating func clearOrigin() {self._origin = nil}
 
@@ -447,11 +456,11 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public var duration: UInt64 = 0
 
     public var firstSession: Bool {
-      get {return _firstSession ?? false}
+      get {_firstSession ?? false}
       set {_firstSession = newValue}
     }
     /// Returns true if `firstSession` has been explicitly set.
-    public var hasFirstSession: Bool {return self._firstSession != nil}
+    public var hasFirstSession: Bool {self._firstSession != nil}
     /// Clears the value of `firstSession`. Subsequent reads from it will return its default value.
     public mutating func clearFirstSession() {self._firstSession = nil}
 
@@ -617,6 +626,18 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
+  public struct ClientSetABTestInfo: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var hasAccessToCommunity_p: Bool = false
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -636,9 +657,7 @@ fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_TrackRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TrackRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "events"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}events\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -668,27 +687,7 @@ extension Com_Octopuscommunity_TrackRequest: SwiftProtobuf.Message, SwiftProtobu
 
 extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Event"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "timestamp"),
-    2: .same(proto: "appSessionId"),
-    3: .same(proto: "octoSessionId"),
-    12: .same(proto: "enteringApp"),
-    13: .same(proto: "leavingApp"),
-    14: .same(proto: "enteringOctopus"),
-    15: .same(proto: "leavingOctopus"),
-    16: .same(proto: "customEvent"),
-    17: .same(proto: "bridgePostOpened"),
-    18: .same(proto: "openClientObjectFromBridge"),
-    19: .same(proto: "postOpened"),
-    20: .same(proto: "clientContentSharingStarted"),
-    21: .same(proto: "clientContentSharingCanceled"),
-    22: .same(proto: "viewTopic"),
-    23: .same(proto: "viewProfile"),
-    24: .same(proto: "searchTopicButtonHit"),
-    25: .same(proto: "viewTranslationButtonHit"),
-    26: .same(proto: "videoPlayed"),
-    27: .same(proto: "clickOnCta"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timestamp\0\u{1}appSessionId\0\u{1}octoSessionId\0\u{2}\u{9}enteringApp\0\u{1}leavingApp\0\u{1}enteringOctopus\0\u{1}leavingOctopus\0\u{1}customEvent\0\u{1}bridgePostOpened\0\u{1}openClientObjectFromBridge\0\u{1}postOpened\0\u{1}clientContentSharingStarted\0\u{1}clientContentSharingCanceled\0\u{1}viewTopic\0\u{1}viewProfile\0\u{1}searchTopicButtonHit\0\u{1}viewTranslationButtonHit\0\u{1}videoPlayed\0\u{1}clickOnCta\0\u{1}clientSetABTestInfo\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -907,6 +906,19 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .clickOnCta(v)
         }
       }()
+      case 28: try {
+        var v: Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .clientSetAbtestInfo(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .clientSetAbtestInfo(v)
+        }
+      }()
       default: break
       }
     }
@@ -991,6 +1003,10 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
       guard case .clickOnCta(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 27)
     }()
+    case .clientSetAbtestInfo?: try {
+      guard case .clientSetAbtestInfo(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 28)
+    }()
     case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -1008,10 +1024,7 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_TrackRequest.CustomEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".CustomEvent"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "name"),
-    2: .same(proto: "properties"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}properties\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1046,9 +1059,7 @@ extension Com_Octopuscommunity_TrackRequest.CustomEvent: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_TrackRequest.PropertyValue: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".PropertyValue"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "value"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}value\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1078,9 +1089,7 @@ extension Com_Octopuscommunity_TrackRequest.PropertyValue: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_TrackRequest.EnteringApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".EnteringApp"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "firstSession"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}firstSession\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1114,9 +1123,7 @@ extension Com_Octopuscommunity_TrackRequest.EnteringApp: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_TrackRequest.LeavingApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".LeavingApp"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    10: .same(proto: "sessionSummary"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{a}sessionSummary\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1150,9 +1157,7 @@ extension Com_Octopuscommunity_TrackRequest.LeavingApp: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_TrackRequest.EnteringOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".EnteringOctopus"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "firstSession"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}firstSession\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1186,9 +1191,7 @@ extension Com_Octopuscommunity_TrackRequest.EnteringOctopus: SwiftProtobuf.Messa
 
 extension Com_Octopuscommunity_TrackRequest.LeavingOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".LeavingOctopus"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    10: .same(proto: "sessionSummary"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{a}sessionSummary\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1222,9 +1225,7 @@ extension Com_Octopuscommunity_TrackRequest.LeavingOctopus: SwiftProtobuf.Messag
 
 extension Com_Octopuscommunity_TrackRequest.BridgePostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".BridgePostOpened"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1254,10 +1255,7 @@ extension Com_Octopuscommunity_TrackRequest.BridgePostOpened: SwiftProtobuf.Mess
 
 extension Com_Octopuscommunity_TrackRequest.PostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".PostOpened"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "origin"),
-    2: .same(proto: "success"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}origin\0\u{1}success\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1296,10 +1294,7 @@ extension Com_Octopuscommunity_TrackRequest.PostOpened: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_TrackRequest.Origin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Origin"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "fromClientApp"),
-    2: .same(proto: "fromOctopusSdk"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}fromClientApp\0\u{1}fromOctopusSdk\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1385,9 +1380,7 @@ extension Com_Octopuscommunity_TrackRequest.ClientApp: SwiftProtobuf.Message, Sw
 
 extension Com_Octopuscommunity_TrackRequest.Sdk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Sdk"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "hasFeaturedComment"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}hasFeaturedComment\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1436,12 +1429,7 @@ extension Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge: SwiftPro
 
 extension Com_Octopuscommunity_TrackRequest.SessionSummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".SessionSummary"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "startedAt"),
-    2: .same(proto: "endedAt"),
-    3: .same(proto: "duration"),
-    4: .same(proto: "firstSession"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}startedAt\0\u{1}endedAt\0\u{1}duration\0\u{1}firstSession\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1528,11 +1516,7 @@ extension Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled: SwiftP
 
 extension Com_Octopuscommunity_TrackRequest.ViewTopic: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewTopic"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    11: .same(proto: "search"),
-    12: .same(proto: "carousel"),
-    2: .same(proto: "value"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}value\0\u{2}\u{9}search\0\u{1}carousel\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1661,10 +1645,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel: Sw
 
 extension Com_Octopuscommunity_TrackRequest.ViewProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewProfile"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "self"),
-    2: .same(proto: "target"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}self\0\u{1}target\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1718,9 +1699,7 @@ extension Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit: SwiftProtobuf.
 
 extension Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewTranslationButtonHit"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "viewTranslated"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}viewTranslated\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1750,12 +1729,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit: SwiftProto
 
 extension Com_Octopuscommunity_TrackRequest.VideoPlayed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".VideoPlayed"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "objectId"),
-    2: .same(proto: "watchTimeSec"),
-    3: .same(proto: "videoDurationSec"),
-    4: .same(proto: "videoId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0\u{1}watchTimeSec\0\u{1}videoDurationSec\0\u{1}videoId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1800,9 +1774,7 @@ extension Com_Octopuscommunity_TrackRequest.VideoPlayed: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_TrackRequest.ClickOnCta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClickOnCta"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "objectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1825,6 +1797,36 @@ extension Com_Octopuscommunity_TrackRequest.ClickOnCta: SwiftProtobuf.Message, S
 
   public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClickOnCta, rhs: Com_Octopuscommunity_TrackRequest.ClickOnCta) -> Bool {
     if lhs.objectID != rhs.objectID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientSetABTestInfo"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}hasAccessToCommunity\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.hasAccessToCommunity_p) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.hasAccessToCommunity_p != false {
+      try visitor.visitSingularBoolField(value: self.hasAccessToCommunity_p, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo, rhs: Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo) -> Bool {
+    if lhs.hasAccessToCommunity_p != rhs.hasAccessToCommunity_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

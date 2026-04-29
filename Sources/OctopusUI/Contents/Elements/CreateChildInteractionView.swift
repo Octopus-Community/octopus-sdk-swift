@@ -19,6 +19,7 @@ struct CreateChildInteractionView: View {
     let kind: Kind
 
     @State private var animate = false
+    @Compat.ScaledMetric(relativeTo: .caption1) private var imageSize: CGFloat = 24
 
     private var normalFont: Font { theme.fonts.caption1 }
 
@@ -30,9 +31,10 @@ struct CreateChildInteractionView: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            IconImage(image)
-                .foregroundColor(textColor)
-                .padding(-2) // make it slightly bigger
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: imageSize, height: imageSize)
                 .scaleEffect(animate ? 1.4 : 1.0)
                 .opacity(animate ? 0.9 : 1.0)
                 .animation(.spring(response: 0.2, dampingFraction: 0.3), value: animate)
@@ -40,21 +42,14 @@ struct CreateChildInteractionView: View {
 
             Text(text, bundle: .module)
                 .fontWeight(.medium)
-                .foregroundColor(textColor)
         }
+        .foregroundColor(theme.colors.gray700)
         .font(normalFont)
-        .onValueChanged(of: image) { newValue in
+        .onValueChanged(of: image) { _ in
             animate = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 animate = false
             }
-        }
-    }
-
-    var textColor: Color {
-        switch kind {
-        case .comment: return theme.colors.gray900
-        case .reply: return theme.colors.gray700
         }
     }
 }

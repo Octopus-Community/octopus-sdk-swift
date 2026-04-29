@@ -14,13 +14,17 @@ struct TrackABTestsCell: View {
 
     var body: some View {
         NavigationLink(destination: TrackABTestsView(showFullScreen: showFullScreen)) {
-            VStack(alignment: .leading) {
-                Text("Track A/B Tests")
-                Text("If you are managing an AB Test to enable/disable community access to your users, inform the SDK if the user cannot access the community UI to improve the analytics data we provide.")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "chart.bar")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Track A/B Tests")
+                    Text("If you are managing an AB Test to enable/disable community access to your users, inform the SDK if the user cannot access the community UI to improve the analytics data we provide.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

@@ -49,7 +49,6 @@ public struct UpdateProfileData: Sendable {
     }
 }
 
-
 public protocol UserService {
     func getPrivateProfile(
         userId: String,
@@ -100,13 +99,18 @@ public protocol UserService {
 
     func unfollowTopic(topicId: String, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_FollowUnfollowTopicResponse
+
+    func syncFollowTopics(
+        actions: [Com_Octopuscommunity_SyncFollowTopicAction],
+        authenticationMethod: AuthenticationMethod
+    ) async throws(RemoteClientError) -> Com_Octopuscommunity_SyncFollowTopicsResponse
 }
 
 class UserServiceClient: ServiceClient, UserService {
     private let client: Com_Octopuscommunity_UserServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
-         getUserIdBlock:  @escaping () -> String?,
+         getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_UserServiceAsyncClient(
             channel: unaryChannel, interceptors: UserServiceInterceptor(
@@ -326,6 +330,20 @@ class UserServiceClient: ServiceClient, UserService {
 
         return try await callRemote(authenticationMethod) {
             try await client.unfollowTopic(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func syncFollowTopics(
+        actions: [Com_Octopuscommunity_SyncFollowTopicAction],
+        authenticationMethod: AuthenticationMethod
+    ) async throws(RemoteClientError) -> Com_Octopuscommunity_SyncFollowTopicsResponse {
+        let request = Com_Octopuscommunity_SyncFollowTopicsRequest.with {
+            $0.actions = actions
+        }
+
+        return try await callRemote(authenticationMethod) {
+            try await client.syncFollowTopics(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

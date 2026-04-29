@@ -21,7 +21,6 @@ public protocol TrackingService {
 class TrackingServiceClient: ServiceClient, TrackingService {
     private let client: Com_Octopuscommunity_TrackingServiceAsyncClient
 
-
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {

@@ -75,7 +75,7 @@ public class GrpcClient: OctopusRemoteClient {
                 target: .host("realtime-\(baseUrl)", port: 443),
                 transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()),
                 eventLoopGroup: group))
-        
+
         _octoService = OctoServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
             localeIdentifier: localeIdentifier,

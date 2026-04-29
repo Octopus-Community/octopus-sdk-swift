@@ -40,7 +40,7 @@ public enum ReportReason: Equatable, Sendable, CaseIterable, Hashable {
         }
     }
 
-    static public var allCases: [ReportReason] {
+    public static var allCases: [ReportReason] {
         // use a Set to avoid putting multiple .other in the array
         Set(
             Com_Octopuscommunity_ReportReasonCode.allCases

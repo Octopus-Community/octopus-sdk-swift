@@ -86,7 +86,7 @@ public protocol OctoService {
 }
 
 class OctoServiceClient: ServiceClient, OctoService {
-    
+
     private let client: Com_Octopuscommunity_OctoObjectServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,

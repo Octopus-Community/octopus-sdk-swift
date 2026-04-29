@@ -66,6 +66,7 @@ struct DisplayablePost: Equatable {
     let topic: String
     let canBeDeleted: Bool
     let canBeModerated: Bool
+    let canBeBlockedByUser: Bool
     let canBeOpened: Bool
     let content: Content
     let position: Int
@@ -93,6 +94,10 @@ extension DisplayablePost {
         uuid = post.uuid
         self.position = position
         self.isLast = isLast
+        author = .init(
+            profile: post.author,
+            gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
+        )
         switch post.status {
 
         case .published, .other:
@@ -131,16 +136,17 @@ extension DisplayablePost {
             )
             canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
             canBeModerated = post.author?.uuid != thisUserProfileId
+            canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
         case let .moderated(reasons):
             canBeOpened = false
             content = .moderated(reasons: reasons.map { $0.displayableString })
             canBeDeleted = false
             canBeModerated = false
+            // Moderated cells don't surface the more-menu, so blocking from them is not reachable.
+            // Keep this `false` explicitly so the field stays consistent with canBeDeleted/canBeModerated
+            // here rather than leaking an admin/self check that has no UI entry point.
+            canBeBlockedByUser = false
         }
-        author = .init(
-            profile: post.author,
-            gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
-        )
         relativeDate = dateFormatter.customLocalizedStructure(for: post.creationDate, relativeTo: Date())
         self.topic = topic?.name ?? ""
 

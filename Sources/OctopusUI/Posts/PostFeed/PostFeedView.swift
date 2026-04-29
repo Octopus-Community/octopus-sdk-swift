@@ -11,7 +11,6 @@ import os
 
 struct PostFeedView<EmptyPostView: View>: View {
     @Environment(\.presentationMode) private var presentationMode
-    @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: PostFeedViewModel
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
@@ -23,9 +22,6 @@ struct PostFeedView<EmptyPostView: View>: View {
 
     @ViewBuilder var emptyPostView: EmptyPostView
 
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
-
     @State private var displayReactionCount = false
 
     init(viewModel: PostFeedViewModel,
@@ -34,7 +30,7 @@ struct PostFeedView<EmptyPostView: View>: View {
          displayCommentDetail: @escaping (_ id: String, _ reply: Bool) -> Void,
          displayProfile: @escaping (String) -> Void,
          displayContentModeration: @escaping (String) -> Void,
-         @ViewBuilder _ emptyPostView: () -> EmptyPostView){
+         @ViewBuilder _ emptyPostView: () -> EmptyPostView) {
         _viewModel = Compat.StateObject(wrappedValue: viewModel)
         _zoomableImageInfo = zoomableImageInfo
         self.displayPostDetail = displayPostDetail
@@ -57,6 +53,7 @@ struct PostFeedView<EmptyPostView: View>: View {
                 displayProfile: displayProfile,
                 deletePost: viewModel.deletePost(postId:),
                 deleteComment: viewModel.deleteComment(commentId:),
+                blockAuthor: viewModel.blockAuthor(profileId:),
                 reactionTapped: viewModel.setReaction(_:postId:),
                 commentReactionTapped: viewModel.setCommentReaction(_:commentId:),
                 voteOnPoll: viewModel.vote(pollAnswerId:postId:),
@@ -65,33 +62,15 @@ struct PostFeedView<EmptyPostView: View>: View {
                         displayContentModeration($0)
                     }
                 },
-                displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId:$0) } : nil),
+                displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId: $0) } : nil),
                 emptyPostView: { emptyPostView }
             )
             if viewModel.isDeletingContent {
-                Compat.ProgressView()
-                    .padding(20)
-                    .background(
-                        RoundedRectangle(cornerSize: CGSize(width: 4, height: 4))
-                            .modify {
-                                if #available(iOS 15.0, *) {
-                                    $0.fill(.thickMaterial)
-                                } else {
-                                    $0.fill(theme.colors.gray200)
-                                }
-                            }
-                    )
+                LoadingOverlay()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in },
-            message: { error in
-                error.textView
-            })
+        .errorAlert(viewModel.$error)
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
@@ -102,11 +81,6 @@ struct PostFeedView<EmptyPostView: View>: View {
                     Alert(title: Text("Post.Delete.Done", bundle: .module))
                 }
             }
-        }
-        .onReceive(viewModel.$error) { error in
-            guard let error else { return }
-            displayableError = error
-            displayError = true
         }
     }
 }
@@ -122,6 +96,7 @@ private struct ContentView<EmptyPostView: View>: View {
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let deleteComment: (String) -> Void
+    let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
     let commentReactionTapped: (ReactionKind?, String) -> Void
     let voteOnPoll: (String, String) -> Bool
@@ -142,6 +117,7 @@ private struct ContentView<EmptyPostView: View>: View {
                           displayProfile: displayProfile,
                           deletePost: deletePost,
                           deleteComment: deleteComment,
+                          blockAuthor: blockAuthor,
                           reactionTapped: reactionTapped,
                           commentReactionTapped: commentReactionTapped,
                           voteOnPoll: voteOnPoll,
@@ -169,6 +145,7 @@ private struct PostsView<EmptyPostView: View>: View {
     let displayProfile: (String) -> Void
     let deletePost: (String) -> Void
     let deleteComment: (String) -> Void
+    let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
     let commentReactionTapped: (ReactionKind?, String) -> Void
     let voteOnPoll: (String, String) -> Bool
@@ -191,6 +168,7 @@ private struct PostsView<EmptyPostView: View>: View {
                                     displayProfile: displayProfile,
                                     deletePost: deletePost,
                                     deleteComment: deleteComment,
+                                    blockAuthor: blockAuthor,
                                     reactionTapped: reactionTapped,
                                     commentReactionTapped: commentReactionTapped,
                                     voteOnPoll: voteOnPoll,
@@ -198,7 +176,7 @@ private struct PostsView<EmptyPostView: View>: View {
                                     displayClientObject: displayClientObject)
                         .contentShape(Rectangle())
                         .onAppear { post.displayEvents.onAppear() }
-                        .onDisappear() { post.displayEvents.onDisappear() }
+                        .onDisappear { post.displayEvents.onDisappear() }
                         .modify {
                             if #available(iOS 17.0, *) {
                                 $0.geometryGroup()
@@ -211,6 +189,7 @@ private struct PostsView<EmptyPostView: View>: View {
                     Compat.ProgressView()
                         .frame(width: 100)
                         .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
                         .onAppear {
                             if #available(iOS 14, *) { Logger.posts.trace("Loader appeared, loading previous items...") }
                             loadPreviousItems()

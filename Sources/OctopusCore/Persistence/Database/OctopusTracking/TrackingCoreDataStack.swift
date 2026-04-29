@@ -25,7 +25,7 @@ class TrackingCoreDataStack: InjectableObject, @unchecked Sendable {
     private static let currentVersion: Int = 1
 
     /// latest version of the database. If it differs from currentVersion, a migration will be done
-    static private let latestVersionKey = "OctopusSDK.\(persistentContainerName).Migrator.dbVersion"
+    private static let latestVersionKey = "OctopusSDK.\(persistentContainerName).Migrator.dbVersion"
 
     private let stackManager: CoreDataStackManager
 
