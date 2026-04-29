@@ -61,7 +61,7 @@ class OctopusSDKProvider {
         // initializeSdkInSSOWithSomeFieldsAssociated
         // initializeSdkWithOctopusAuth
     }
-    
+
     /// Initialize the Octopus SDK in SSO with all fields that are app managed (i.e. fully associated)
     private func initializeSdkInSSOFullAssociated() {
         octopus = try! OctopusSDK(

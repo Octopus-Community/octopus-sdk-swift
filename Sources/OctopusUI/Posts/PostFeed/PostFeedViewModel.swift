@@ -145,7 +145,6 @@ class PostFeedViewModel: ObservableObject {
                     childLiveMeasuresPublisher = nil
                 }
 
-
                 return DisplayablePost(from: post,
                                        position: idx,
                                        isLast: feed.hasMoreData && idx == posts.count - 1,
@@ -393,6 +392,20 @@ class PostFeedViewModel: ObservableObject {
         do {
             try await octopus.core.commentsRepository.deleteComment(commentId: commentId)
             contentDeleted = true
+        } catch {
+            self.error = error.displayableMessage
+        }
+    }
+
+    func blockAuthor(profileId: String) {
+        Task {
+            await blockAuthor(profileId: profileId)
+        }
+    }
+
+    private func blockAuthor(profileId: String) async {
+        do {
+            try await octopus.core.profileRepository.blockUser(profileId: profileId)
         } catch {
             self.error = error.displayableMessage
         }

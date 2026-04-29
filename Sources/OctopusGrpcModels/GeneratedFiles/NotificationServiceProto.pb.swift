@@ -71,11 +71,11 @@ public struct Com_Octopuscommunity_GetUserNotificationsRequest: Sendable {
 
   ///Default to true
   public var markdownText: Bool {
-    get {return _markdownText ?? false}
+    get {_markdownText ?? false}
     set {_markdownText = newValue}
   }
   /// Returns true if `markdownText` has been explicitly set.
-  public var hasMarkdownText: Bool {return self._markdownText != nil}
+  public var hasMarkdownText: Bool {self._markdownText != nil}
   /// Clears the value of `markdownText`. Subsequent reads from it will return its default value.
   public mutating func clearMarkdownText() {self._markdownText = nil}
 
@@ -107,11 +107,11 @@ public struct Com_Octopuscommunity_MarkNotificationsAsReadRequest: Sendable {
 
   ///Default true
   public var read: Bool {
-    get {return _read ?? false}
+    get {_read ?? false}
     set {_read = newValue}
   }
   /// Returns true if `read` has been explicitly set.
-  public var hasRead: Bool {return self._read != nil}
+  public var hasRead: Bool {self._read != nil}
   /// Clears the value of `read`. Subsequent reads from it will return its default value.
   public mutating func clearRead() {self._read = nil}
 
@@ -143,21 +143,21 @@ public struct Com_Octopuscommunity_RegisterPushTokenRequest: Sendable {
 
   ///can be nullable if PN are disable on device
   public var pushToken: String {
-    get {return _pushToken ?? String()}
+    get {_pushToken ?? String()}
     set {_pushToken = newValue}
   }
   /// Returns true if `pushToken` has been explicitly set.
-  public var hasPushToken: Bool {return self._pushToken != nil}
+  public var hasPushToken: Bool {self._pushToken != nil}
   /// Clears the value of `pushToken`. Subsequent reads from it will return its default value.
   public mutating func clearPushToken() {self._pushToken = nil}
 
   ///Whether the token is for sandbox (iOS only, default to false).
   public var isSandbox: Bool {
-    get {return _isSandbox ?? false}
+    get {_isSandbox ?? false}
     set {_isSandbox = newValue}
   }
   /// Returns true if `isSandbox` has been explicitly set.
-  public var hasIsSandbox: Bool {return self._isSandbox != nil}
+  public var hasIsSandbox: Bool {self._isSandbox != nil}
   /// Clears the value of `isSandbox`. Subsequent reads from it will return its default value.
   public mutating func clearIsSandbox() {self._isSandbox = nil}
 
@@ -185,11 +185,11 @@ public struct Com_Octopuscommunity_SetNotificationSettingsRequest: Sendable {
   // methods supported on all messages.
 
   public var settings: Com_Octopuscommunity_NotificationSettings {
-    get {return _settings ?? Com_Octopuscommunity_NotificationSettings()}
+    get {_settings ?? Com_Octopuscommunity_NotificationSettings()}
     set {_settings = newValue}
   }
   /// Returns true if `settings` has been explicitly set.
-  public var hasSettings: Bool {return self._settings != nil}
+  public var hasSettings: Bool {self._settings != nil}
   /// Clears the value of `settings`. Subsequent reads from it will return its default value.
   public mutating func clearSettings() {self._settings = nil}
 
@@ -216,11 +216,11 @@ public struct Com_Octopuscommunity_NotificationSettingsResponse: Sendable {
   // methods supported on all messages.
 
   public var settings: Com_Octopuscommunity_NotificationSettings {
-    get {return _settings ?? Com_Octopuscommunity_NotificationSettings()}
+    get {_settings ?? Com_Octopuscommunity_NotificationSettings()}
     set {_settings = newValue}
   }
   /// Returns true if `settings` has been explicitly set.
-  public var hasSettings: Bool {return self._settings != nil}
+  public var hasSettings: Bool {self._settings != nil}
   /// Clears the value of `settings`. Subsequent reads from it will return its default value.
   public mutating func clearSettings() {self._settings = nil}
 
@@ -249,10 +249,7 @@ fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_SendCommunityNotificationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SendCommunityNotificationRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "langToNotifContent"),
-    2: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}langToNotifContent\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -287,9 +284,7 @@ extension Com_Octopuscommunity_SendCommunityNotificationRequest: SwiftProtobuf.M
 
 extension Com_Octopuscommunity_SendCommunityNotificationRequest.NotificationContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_SendCommunityNotificationRequest.protoMessageName + ".NotificationContent"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "text"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}text\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -319,9 +314,7 @@ extension Com_Octopuscommunity_SendCommunityNotificationRequest.NotificationCont
 
 extension Com_Octopuscommunity_SendCommunityNotificationResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SendCommunityNotificationResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "commuNotifId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}commuNotifId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -351,10 +344,7 @@ extension Com_Octopuscommunity_SendCommunityNotificationResponse: SwiftProtobuf.
 
 extension Com_Octopuscommunity_GetUserNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetUserNotificationsRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "markdownText"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}markdownText\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -393,9 +383,7 @@ extension Com_Octopuscommunity_GetUserNotificationsRequest: SwiftProtobuf.Messag
 
 extension Com_Octopuscommunity_GetUserNotificationsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetUserNotificationsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "notifications"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notifications\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -425,10 +413,7 @@ extension Com_Octopuscommunity_GetUserNotificationsResponse: SwiftProtobuf.Messa
 
 extension Com_Octopuscommunity_MarkNotificationsAsReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkNotificationsAsReadRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "notificationIds"),
-    2: .same(proto: "read"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notificationIds\0\u{1}read\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -467,9 +452,7 @@ extension Com_Octopuscommunity_MarkNotificationsAsReadRequest: SwiftProtobuf.Mes
 
 extension Com_Octopuscommunity_MarkNotificationsAsReadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkNotificationsAsReadResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "notificationIds"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notificationIds\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -499,10 +482,7 @@ extension Com_Octopuscommunity_MarkNotificationsAsReadResponse: SwiftProtobuf.Me
 
 extension Com_Octopuscommunity_RegisterPushTokenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RegisterPushTokenRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "pushToken"),
-    2: .same(proto: "isSandbox"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pushToken\0\u{1}isSandbox\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -560,9 +540,7 @@ extension Com_Octopuscommunity_RegisterPushTokenResponse: SwiftProtobuf.Message,
 
 extension Com_Octopuscommunity_SetNotificationSettingsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SetNotificationSettingsRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "settings"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}settings\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -615,9 +593,7 @@ extension Com_Octopuscommunity_GetNotificationSettingsRequest: SwiftProtobuf.Mes
 
 extension Com_Octopuscommunity_NotificationSettingsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NotificationSettingsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "settings"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}settings\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -651,9 +627,7 @@ extension Com_Octopuscommunity_NotificationSettingsResponse: SwiftProtobuf.Messa
 
 extension Com_Octopuscommunity_NotificationSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NotificationSettings"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "pushNotificationEnabled"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pushNotificationEnabled\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

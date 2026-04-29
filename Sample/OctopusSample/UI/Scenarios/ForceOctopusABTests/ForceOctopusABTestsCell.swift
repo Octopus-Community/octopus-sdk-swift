@@ -13,14 +13,18 @@ struct ForceOctopusABTestsCell: View {
 
     var body: some View {
         NavigationLink(destination: ForceOctopusABTestsView(showFullScreen: showFullScreen)) {
-            VStack(alignment: .leading) {
-                Text("Force Octopus A/B Tests Cohort")
-                Text("On some communities, Octopus can handle A/B Tests to let the user access the community or not. " +
-                     "In those cases, we still provide you an api to override the internal status of the user to force the user cohort during Octopus internal A/B Tests.")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "slider.horizontal.3")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Force Octopus A/B Tests Cohort")
+                    Text("On some communities, Octopus can handle A/B Tests to let the user access the community or not. " +
+                         "In those cases, we still provide you an api to override the internal status of the user to force the user cohort during Octopus internal A/B Tests.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

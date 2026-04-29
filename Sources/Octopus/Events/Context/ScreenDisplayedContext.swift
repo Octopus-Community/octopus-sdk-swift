@@ -67,8 +67,8 @@ extension OctopusEvent.Screen {
     public protocol PostsFeedContext: Sendable {
         /// The id of the feed that is displayed
         var feedId: String { get }
-        /// The id to the topic that is related to this feed. Nil if the feed is not representing a topic or is
-        /// multi-topic (for example, the feed "For You").
+        /// The id of the group related to this feed. Nil if the feed is not representing a group or is
+        /// multi-group (for example, the feed "For You").
         var relatedTopicId: String? { get }
     }
 
@@ -81,19 +81,29 @@ extension OctopusEvent.Screen {
     /// Context of the postDetail Screen
     public protocol PostDetailContext: Sendable {
         /// The id of the post that is displayed
-        var postId: String  { get }
+        var postId: String { get }
     }
 
     /// Context of the commentDetail Screen
     public protocol CommentDetailContext: Sendable {
         /// The id of the comment that is displayed
-        var commentId: String  { get }
+        var commentId: String { get }
+    }
+
+    /// The source from which a group detail screen was opened
+    public enum GroupDetailSource: Sendable {
+        /// Opened from the client app via the OctopusHomeScreen's initialScreen
+        case clientApp
+        /// Opened from within the SDK community
+        case community
     }
 
     /// Context of the event .groupDetail
     public protocol GroupDetailContext: Sendable {
         /// The id of the group.
         var groupId: String { get }
+        /// The source from which this screen was opened
+        var source: GroupDetailSource { get }
     }
 }
 
@@ -129,4 +139,15 @@ extension SdkEvent.ScreenDisplayedContext.OtherUserProfileContext: OctopusEvent.
 extension SdkEvent.ScreenDisplayedContext.MainFeedContext: OctopusEvent.Screen.MainFeedContext { }
 extension SdkEvent.ScreenDisplayedContext.CommentDetailContext: OctopusEvent.Screen.CommentDetailContext { }
 extension SdkEvent.ScreenDisplayedContext.PostDetailContext: OctopusEvent.Screen.PostDetailContext { }
-extension SdkEvent.ScreenDisplayedContext.GroupDetailContext: OctopusEvent.Screen.GroupDetailContext { }
+extension SdkEvent.ScreenDisplayedContext.GroupDetailContext: OctopusEvent.Screen.GroupDetailContext {
+    public var source: OctopusEvent.Screen.GroupDetailSource { .init(from: coreSource) }
+}
+
+extension OctopusEvent.Screen.GroupDetailSource {
+    init(from source: SdkEvent.ScreenDisplayedContext.GroupDetailContext.Source) {
+        self = switch source {
+        case .clientApp: .clientApp
+        case .community: .community
+        }
+    }
+}

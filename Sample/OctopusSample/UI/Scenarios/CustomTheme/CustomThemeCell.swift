@@ -13,10 +13,16 @@ struct CustomThemeCell: View {
 
     var body: some View {
         NavigationLink(destination: CustomThemeView(showFullScreen: showFullScreen)) {
-            VStack(alignment: .leading) {
-                Text("Custom theme")
-                Text("Customize the theme of the Octopus UI")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "paintbrush")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Custom theme")
+                    Text("Customize the theme of the Octopus UI")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }

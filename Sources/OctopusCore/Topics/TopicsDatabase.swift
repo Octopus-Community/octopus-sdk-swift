@@ -13,14 +13,14 @@ extension Injected {
 
 class TopicsDatabase: InjectableObject {
     static let injectedIdentifier = Injected.topicsDatabase
-    
+
     private let context: NSManagedObjectContext
-    
+
     init(injector: Injector) {
         let coreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
         context = coreDataStack.saveContext
     }
-    
+
     func topicsPublisher() -> AnyPublisher<[StorableTopic], Error> {
         return context
             .publisher(request: TopicEntity.fetchAllAndSorted()) {
@@ -54,13 +54,13 @@ class TopicsDatabase: InjectableObject {
             guard let existingTopic = try context.fetch(TopicEntity.fetchById(id: topicId)).first else {
                 throw InternalError.objectNotFound
             }
-            
+
             if isFollowing {
                 existingTopic.followStatusValue = StorableFollowStatus.followed.rawValue
             } else {
                 existingTopic.followStatusValue = StorableFollowStatus.notFollowed.rawValue
             }
-            
+
             try context.save()
         }
     }

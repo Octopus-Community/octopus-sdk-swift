@@ -13,7 +13,7 @@ struct AuthorAndDateHeaderView: View {
     var topPadding: CGFloat = 0
     var bottomPadding: CGFloat = 0
     let displayProfile: (String) -> Void
-    var displayContent: (() -> Void)? = nil
+    var displayContent: (() -> Void)?
 
     var body: some View {
         AdaptiveAccessibleStack2Contents(
@@ -44,7 +44,8 @@ struct AuthorAndDateHeaderView: View {
                     .font(theme.fonts.body2)
                     .fontWeight(.semibold)
                     .foregroundColor(theme.colors.gray900)
-                    .multilineTextAlignment(.leading)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
 
                 if author.tags.contains(.admin) {
                     Text("Profile.Tag.Admin", bundle: .module)

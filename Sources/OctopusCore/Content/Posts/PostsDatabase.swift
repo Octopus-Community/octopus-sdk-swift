@@ -15,7 +15,7 @@ extension Injected {
 class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
 
     static let injectedIdentifier = Injected.postsDatabase
-    
+
     private let context: NSManagedObjectContext
     private let viewContext: NSManagedObjectContext
 
@@ -41,7 +41,7 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
 
     func postsPublisher(ids: [String]) -> AnyPublisher<[StorablePost], Error> {
         return context
-            .publisher(request: PostEntity.fetchAllByIds(ids: ids)) {
+            .chunkedPublisher(ids: ids, requestBuilder: { PostEntity.fetchAllByIds(ids: $0) }) {
                 $0.map { StorablePost(from: $0) }
                     .sorted { post1, post2 in
                         guard let index1 = ids.firstIndex(of: post1.uuid),
@@ -92,7 +92,9 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
         let dict = Dictionary(infos.map { ($0.itemId, $0.updateDate) }, uniquingKeysWith: { (first, _) in first })
         return try await context.performAsync { [context] in
             let existingIds = try context
-                .fetch(PostEntity.fetchAllByIds(ids: Array(dict.keys)))
+                .chunkedFetch(ids: Array(dict.keys)) { chunk in
+                    PostEntity.fetchAllByIds(ids: chunk)
+                }
                 .filter { post in
                     let date = dict[post.uuid]!
                     return date.timeIntervalSince1970 <= post.updateTimestamp
@@ -104,8 +106,10 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
 
     func getPosts(ids: [String]) async throws -> [StorablePost] {
         let fetchedPosts = try await context.performAsync { [context] in
-            try context.fetch(PostEntity.fetchAllByIds(ids: ids))
-                .map { StorablePost(from: $0) }
+            try context.chunkedFetch(ids: ids) { chunk in
+                PostEntity.fetchAllByIds(ids: chunk)
+            }
+            .map { StorablePost(from: $0) }
         }
 
         // return them in the same order as Ids
@@ -117,12 +121,13 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
                 return index1 < index2
             }
     }
-    
+
     func upsert(posts: [StorablePost]) async throws {
         try await context.performAsync { [context] in
-            let request = PostEntity.fetchAllByIds(ids: posts.map(\.uuid))
-            let existingPosts = try context.fetch(request)
-            
+            let existingPosts = try context.chunkedFetch(ids: posts.map(\.uuid)) { chunk in
+                PostEntity.fetchAllByIds(ids: chunk)
+            }
+
             for post in posts {
                 let postEntity: PostEntity
                 if let existingPost = existingPosts.first(where: { $0.uuid == post.uuid }) {
@@ -132,7 +137,7 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
                 }
                 try postEntity.fill(with: post, context: context)
             }
-            
+
             try context.save()
         }
     }
@@ -156,7 +161,7 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
                         pollResult.voteCount = max(pollResult.voteCount - 1, 0)
                     }
                     if answerId == pollResult.optionId {
-                        pollResult.voteCount = pollResult.voteCount + 1
+                        pollResult.voteCount += 1
                         isModified = true
                     }
                     newPollResults.append(pollResult)

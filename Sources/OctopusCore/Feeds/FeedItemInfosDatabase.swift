@@ -56,8 +56,9 @@ class FeedItemInfosDatabase: InjectableObject {
             // first get the count of the items in the db
             let existingFeedItemInfosCount = try context.count(for: FeedItemInfoEntity.fetchAll(feedId: feedId))
 
-            let request = FeedItemInfoEntity.fetchAll(feedId: feedId, itemIds: feedItemInfos.map { $0.itemId })
-            let existingItemInfos = try context.fetch(request)
+            let existingItemInfos = try context.chunkedFetch(ids: feedItemInfos.map { $0.itemId }) { chunk in
+                FeedItemInfoEntity.fetchAll(feedId: feedId, itemIds: chunk)
+            }
 
             for (index, feedItemInfo) in feedItemInfos.enumerated() {
                 let feedItemInfoEntity: FeedItemInfoEntity

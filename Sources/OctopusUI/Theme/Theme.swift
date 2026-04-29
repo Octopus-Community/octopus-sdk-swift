@@ -17,7 +17,7 @@ public struct OctopusTheme: Sendable {
             public let lowContrast: Color
             /// Main color with a higher contrast
             public let highContrast: Color
-            
+
             /// Constructor
             /// - Parameters:
             ///   - main: the main color
@@ -152,14 +152,14 @@ public struct OctopusTheme: Sendable {
             self.navBarItem = navBarItem
         }
     }
-    
+
     /// The colors of the theme
     public let colors: Colors
     /// The fonts of the theme
     public let fonts: Fonts
     /// The assets of the theme
     public let assets: Assets
-    
+
     /// Constructor
     /// - Parameters:
     ///   - colors: the colors of the theme. Default value is default colors. See `OctopusTheme.Colors`.

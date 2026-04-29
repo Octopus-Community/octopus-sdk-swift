@@ -12,27 +12,49 @@ struct EventsView: View {
     @StateObjectCompat private var viewModel = EventsViewModel()
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(viewModel.events.indices, id: \.self) { index in
-                    let event = viewModel.events[index]
-                    VStack(spacing: 4) {
-                        Text(event.eventName)
-                            .bold()
+        Group {
+            if viewModel.events.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "list.bullet")
+                        .font(.system(size: 36))
+                        .foregroundColor(.secondary)
+                    Text("No events yet")
+                        .foregroundColor(.secondary)
+                    Text("Interact with the SDK to see events appear here")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(viewModel.events.indices, id: \.self) { index in
+                            let event = viewModel.events[index]
+                            HStack(alignment: .top, spacing: 10) {
+                                Image(systemName: "bolt.fill")
+                                    .foregroundColor(.accentColor)
+                                    .font(.caption)
+                                    .padding(.top, 2)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(event.eventName)
+                                        .bold()
+                                    ForEach(event.params, id: \.self) { param in
+                                        Text(param)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        ForEach(event.params, id: \.self) { param in
-                            Text(param)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.leading, 16)
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
+                            if index < viewModel.events.count - 1 {
+                                Divider().padding(.leading, 36)
+                            }
                         }
                     }
-                    .multilineTextAlignment(.leading)
-                    .padding()
-                    Color.gray.opacity(0.5).frame(height: 1)
                 }
             }
         }
     }
 }
-
-

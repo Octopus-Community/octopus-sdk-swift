@@ -86,7 +86,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
         let hasConfirmedNickname: EditableProfile.FieldUpdate<Bool>
         let findAvailableNickname: Bool
         // update the field if is appManaged or if the user has not yet confirmed it
-        if (appManagedFields.contains(.nickname) || !profileHasConfirmedNickname),
+        if appManagedFields.contains(.nickname) || !profileHasConfirmedNickname,
            let clientNickname = clientUser.profile.nickname?.nilIfEmpty,
            // check with the original nickname first because the nickname can vary from the one requested
            (profileOriginalNickname ?? profileNickname) != clientNickname {
@@ -103,7 +103,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
 
         let bio: EditableProfile.FieldUpdate<String?>
         let hasConfirmedBio: EditableProfile.FieldUpdate<Bool>
-        if (appManagedFields.contains(.bio) || !profileHasConfirmedBio),
+        if appManagedFields.contains(.bio) || !profileHasConfirmedBio,
            profileBio?.nilIfEmpty != clientUser.profile.bio?.nilIfEmpty {
             if #available(iOS 14, *) { Logger.profile.trace("Bio changed (old: \(profileBio ?? "nil"), new: \(clientUser.profile.bio ?? "nil"))") }
             bio = .updated(clientUser.profile.bio)
@@ -116,7 +116,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
 
         let picture: EditableProfile.FieldUpdate<Data?>
         let hasConfirmedPicture: EditableProfile.FieldUpdate<Bool>
-        if (appManagedFields.contains(.picture) || !profileHasConfirmedPicture),
+        if appManagedFields.contains(.picture) || !profileHasConfirmedPicture,
            latestClientUserPicture != clientUser.profile.picture,
            clientUser.profile.picture != nil || profilePictureUrl != nil {
             if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
@@ -187,7 +187,15 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
             // rollback client picture hash
             latestClientUserPicture = previousClientUserPicture
             if #available(iOS 14, *) { Logger.profile.debug("Error syncing profile: \(error)") }
-            return nil
+            if let error = error as? UpdateProfile.Error {
+                throw error
+            } else if let error = error as? AuthenticatedActionError {
+                throw .serverCall(error)
+            } else if let error = error as? RemoteClientError {
+                throw .serverCall(.serverError(ServerError(remoteClientError: error)))
+            } else {
+                throw .serverCall(.other(error))
+            }
         }
     }
 }

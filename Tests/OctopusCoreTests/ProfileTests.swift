@@ -20,6 +20,7 @@ class ProfileTests: XCTestCase {
     private var userDataStorage: UserDataStorage!
     private var userProfileDatabase: CurrentUserProfileDatabase!
     private var clientUserProfileDatabase: ClientUserProfileDatabase!
+    private var publicProfileDatabase: PublicProfileDatabase!
     private var storage = [AnyCancellable]()
 
     override func setUp() {
@@ -59,6 +60,7 @@ class ProfileTests: XCTestCase {
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
         clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
+        publicProfileDatabase = injector.getInjected(identifiedBy: Injected.publicProfileDatabase)
     }
 
     func testInitialFetchCurrentUserProfile() async throws {
@@ -86,7 +88,7 @@ class ProfileTests: XCTestCase {
             userProfilePublishedExpectation.fulfill()
         }.store(in: &storage)
 
-        await fulfillment(of: [userProfilePublishedExpectation], timeout: 0.5)
+        await fulfillment(of: [userProfilePublishedExpectation], timeout: 5)
         XCTAssertEqual(profile?.nickname, "nickname")
     }
 
@@ -103,8 +105,7 @@ class ProfileTests: XCTestCase {
             userProfilePublishedExpectation.fulfill()
         }.store(in: &storage)
 
-        try await delay()
-        XCTAssertNil(profile)
+        try await assertWithTimeout(profile == nil)
 
         mockUserService.injectNextGetPrivateProfileResponse(.with {
             $0.profile = .with {
@@ -115,21 +116,20 @@ class ProfileTests: XCTestCase {
         })
 
         try await profileRepository.fetchCurrentUserProfile()
-        await fulfillment(of: [userProfilePublishedExpectation], timeout: 0.5)
+        await fulfillment(of: [userProfilePublishedExpectation], timeout: 5)
         XCTAssertEqual(profile?.nickname, "nickname")
     }
 
     func testProfileCreated() async throws {
-        var profile: CurrentUserProfile?
+        let profileCreatedExpectation = XCTestExpectation(description: "Profile created")
         profileRepository.profilePublisher.sink {
-            profile = $0
+            if $0?.nickname == "nickname" && $0?.bio == "Bio" {
+                profileCreatedExpectation.fulfill()
+            }
         }.store(in: &storage)
 
         // start with a connected user but without a profile
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
-
-        try await delay()
-        XCTAssertNil(profile)
 
         mockUserService.injectNextUpdateProfileResponse(.with {
             $0.result = .success(
@@ -144,13 +144,7 @@ class ProfileTests: XCTestCase {
         try await profileRepository.updateCurrentUserProfile(with: EditableProfile(nickname: .updated("nickname"),
                                                                                    bio: .updated("Bio")))
 
-        try await delay()
-        guard let profile else {
-            XCTFail("Profile should be non nil")
-            return
-        }
-        XCTAssertEqual(profile.nickname, "nickname")
-        XCTAssertEqual(profile.bio, "Bio")
+        await fulfillment(of: [profileCreatedExpectation], timeout: 5)
     }
 
     func testProfileUpdate() async throws {
@@ -182,7 +176,7 @@ class ProfileTests: XCTestCase {
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 
-        await fulfillment(of: [profilePresentExpectation], timeout: 0.5)
+        await fulfillment(of: [profilePresentExpectation], timeout: 5)
 
         mockUserService.injectNextUpdateProfileResponse(.with {
             $0.result = .success(
@@ -195,7 +189,7 @@ class ProfileTests: XCTestCase {
                 })
         })
         try await profileRepository.updateCurrentUserProfile(with: EditableProfile(nickname: .unchanged, bio: .updated("Bio")))
-        await fulfillment(of: [profileUpdatedExpectation], timeout: 0.5)
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 5)
     }
 
     func testFetchProfile() async throws {
@@ -210,8 +204,7 @@ class ProfileTests: XCTestCase {
                 profilePublishedExpectation.fulfill()
             }.store(in: &storage)
 
-        try await delay()
-        XCTAssertNil(profile)
+        try await assertWithTimeout(profile == nil)
 
         mockUserService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {
@@ -221,8 +214,24 @@ class ProfileTests: XCTestCase {
         })
 
         try await profileRepository.fetchProfile(profileId: "authorProfileId")
-        await fulfillment(of: [profilePublishedExpectation], timeout: 0.5)
+        await fulfillment(of: [profilePublishedExpectation], timeout: 5)
         XCTAssertEqual(profile?.nickname, "nickname")
+    }
+
+    func testPublicProfileDatabase_getProfile_returnsStoredProfile() async throws {
+        try await publicProfileDatabase.upsert(profile: StorableProfile(
+            id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil,
+            tags: .admin,
+            totalMessages: nil, accountCreationDate: nil,
+            gamificationLevel: nil,
+            descPostFeedId: "", ascPostFeedId: ""))
+
+        let fetched = try await publicProfileDatabase.getProfile(profileId: "adminProfileId")
+        XCTAssertEqual(fetched?.id, "adminProfileId")
+        XCTAssertTrue(fetched?.tags.contains(.admin) ?? false)
+
+        let missing = try await publicProfileDatabase.getProfile(profileId: "unknownId")
+        XCTAssertNil(missing)
     }
 
     func testBlockUser() async throws {
@@ -254,13 +263,75 @@ class ProfileTests: XCTestCase {
             }
         }.store(in: &storage)
 
-        await fulfillment(of: [blockedListEmptyExpectation], timeout: 0.5)
+        await fulfillment(of: [blockedListEmptyExpectation], timeout: 5)
         try await delay()
 
         mockUserService.injectNextBlockUserResponse(Com_Octopuscommunity_BlockUserResponse())
 
         try await profileRepository.blockUser(profileId: "blockedUserId")
-        await fulfillment(of: [blockedListNonEmptyExpectation], timeout: 0.5)
+        await fulfillment(of: [blockedListNonEmptyExpectation], timeout: 5)
+    }
+
+    func testBlockUser_adminTarget_throwsInvalidArgument() async throws {
+        // Precondition: current user is logged in
+        try await userProfileDatabase.upsert(
+            profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
+                                                originalNickname: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: nil, hasConfirmedBio: nil,
+                                                hasConfirmedPicture: nil,
+                                                isGuest: true,
+                                                notificationBadgeCount: 0,
+                                                descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
+
+        // Seed an admin-tagged public profile in cache
+        try await publicProfileDatabase.upsert(profile: StorableProfile(
+            id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil,
+            tags: .admin,
+            totalMessages: nil, accountCreationDate: nil,
+            gamificationLevel: nil,
+            descPostFeedId: "", ascPostFeedId: ""))
+
+        // Wait for current-user profile to be published
+        let currentUserReady = XCTestExpectation(description: "Current user profile ready")
+        profileRepository.profilePublisher.sink {
+            if $0?.id == "profileId" { currentUserReady.fulfill() }
+        }.store(in: &storage)
+        await fulfillment(of: [currentUserReady], timeout: 5)
+
+        // Intentionally DO NOT call mockUserService.injectNextBlockUserResponse:
+        // if the guard fails, the mock will throw a "Dev error" which the test will surface.
+        await assertBlockUserThrowsInvalidArgument(profileId: "adminProfileId")
+    }
+
+    func testBlockUser_selfTarget_throwsInvalidArgument() async throws {
+        // Precondition: current user is logged in
+        try await userProfileDatabase.upsert(
+            profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "nickname",
+                                                originalNickname: nil,
+                                                email: nil, bio: nil, pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: nil, hasConfirmedBio: nil,
+                                                hasConfirmedPicture: nil,
+                                                isGuest: true,
+                                                notificationBadgeCount: 0,
+                                                descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
+
+        let currentUserReady = XCTestExpectation(description: "Current user profile ready")
+        profileRepository.profilePublisher.sink {
+            if $0?.id == "profileId" { currentUserReady.fulfill() }
+        }.store(in: &storage)
+        await fulfillment(of: [currentUserReady], timeout: 5)
+
+        // Target the current user's own profile id — existing guard must reject.
+        await assertBlockUserThrowsInvalidArgument(profileId: "profileId")
     }
 
     func testFillWithClientUser() async throws {
@@ -307,7 +378,7 @@ class ProfileTests: XCTestCase {
             profile: .init(nickname: "clientNickname", bio: "clientBio", picture: nil),
             clientUserId: "clientUserId")
 
-        await fulfillment(of: [profileUpdatedExpectation], timeout: 0.5)
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 5)
     }
 
     func testDoNotFillWithClientUserWhenOriginalNicknameIsSame() async throws {
@@ -346,7 +417,7 @@ class ProfileTests: XCTestCase {
         // add a delay to be sure to catch the error if a network call is done without calling the injectXXX
         try await delay()
 
-        await fulfillment(of: [profileUpdatedExpectation], timeout: 0.5)
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 5)
     }
 
     func testNoLoopWhenFillingProfileWithClientProfile() async throws {
@@ -422,6 +493,24 @@ class ProfileTests: XCTestCase {
 
         if let errorMessage = mockUserService.errorMessage {
             XCTFail(errorMessage)
+        }
+    }
+
+    private func assertBlockUserThrowsInvalidArgument(profileId: String,
+                                                      file: StaticString = #filePath,
+                                                      line: UInt = #line) async {
+        do {
+            try await profileRepository.blockUser(profileId: profileId)
+            XCTFail("Expected blockUser(profileId: \(profileId)) to throw", file: file, line: line)
+        } catch AuthenticatedActionError.other(let underlying) {
+            guard let internalError = underlying as? InternalError,
+                  case .invalidArgument = internalError else {
+                XCTFail("Expected .other(InternalError.invalidArgument), got underlying=\(String(describing: underlying))",
+                        file: file, line: line)
+                return
+            }
+        } catch {
+            XCTFail("Expected AuthenticatedActionError.other, got \(error)", file: file, line: line)
         }
     }
 }

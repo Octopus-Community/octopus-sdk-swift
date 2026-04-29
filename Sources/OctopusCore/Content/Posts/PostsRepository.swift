@@ -24,6 +24,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let commentFeedsStore: CommentFeedsStore
     private let blockedUserIdsProvider: BlockedUserIdsProvider
     private let validator: Validators.Post
+    // swiftlint:disable:next weak_delegate
     private let userInteractionsDelegate: UserInteractionsDelegate
     private let gamificationRepository: GamificationRepository
     private let toastsRepository: ToastsRepository
@@ -115,7 +116,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             }
         }
     }
-    
+
     /// Fetch additional data
     /// - Parameters:
     ///   - ids: list of tuple containing the id of the object and a boolean to know if the object has a video
@@ -384,7 +385,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 // send imageIsCompressed = true because we don't know what the client did on the image so avoid
                 // re-compressing it
                 post: clientPost.rwOctoPost(imageIsCompressed: true),
-                topicId: clientPost.topicId,
+                topicId: clientPost.groupId,
                 clientToken: clientToken,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
 
@@ -452,7 +453,7 @@ extension PostsRepository {
             }
             let response = try await remoteClient.octoService.getOrCreateBridgePost(
                 post: clientPost.rwOctoPost(imageIsCompressed: imageIsCompressed),
-                topicId: clientPost.topicId,
+                topicId: clientPost.groupId,
                 clientToken: clientPost.signature,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
 

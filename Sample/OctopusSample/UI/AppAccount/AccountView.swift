@@ -17,23 +17,40 @@ struct AccountView: View {
     @State private var showEditProfile = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("App User Config:")
-                .font(.headline)
-            VStack {
-                if viewModel.appUser == nil {
-                    Button("Login") {
-                        showLogin = true
+        VStack(spacing: 20) {
+            if viewModel.appUser == nil {
+                Button(action: { showLogin = true }) {
+                    HStack {
+                        Image(systemName: "person.badge.plus")
+                        Text("Login")
                     }
-                } else {
-                    Button("Edit user") {
-                        showEditProfile = true
-                    }
-                    Button("Logout") {
-                        viewModel.appUser = nil
-                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                    .foregroundColor(.white)
                 }
-            }.frame(maxWidth: .infinity)
+            } else {
+                Button(action: { showEditProfile = true }) {
+                    HStack {
+                        Image(systemName: "pencil.circle")
+                        Text("Edit user")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                    .foregroundColor(.white)
+                }
+                Button(action: { viewModel.appUser = nil }) {
+                    HStack {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                        Text("Logout")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.red))
+                    .foregroundColor(.red)
+                }
+            }
             Spacer()
         }
         .padding()

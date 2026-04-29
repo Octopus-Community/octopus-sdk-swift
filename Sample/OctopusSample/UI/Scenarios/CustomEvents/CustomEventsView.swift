@@ -14,14 +14,22 @@ struct CustomEventsView: View {
     @State private var success = false
 
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 16) {
+            Spacer()
+
             Button(action: {
                 Task {
                     try await viewModel.octopus.track(customEvent: CustomEvent(name: "CustomEvent1"))
                     success = true
                 }
             }) {
-                Text("Send CustomEvent1")
+                HStack {
+                    Image(systemName: "bolt")
+                    Text("Send CustomEvent1")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor))
             }
 
             Button(action: {
@@ -36,9 +44,18 @@ struct CustomEventsView: View {
                     success = true
                 }
             }) {
-                Text("Send Purchase event")
+                HStack {
+                    Image(systemName: "cart")
+                    Text("Send Purchase event")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.accentColor))
             }
+
+            Spacer()
         }
+        .padding()
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
@@ -52,5 +69,3 @@ struct CustomEventsView: View {
         }
     }
 }
-
-

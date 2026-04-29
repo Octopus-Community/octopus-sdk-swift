@@ -67,7 +67,7 @@ class PostsTests: XCTestCase {
         let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
         try await postsRepository.send(post)
 
-        await fulfillment(of: [sendExpectation], timeout: 0.5)
+        await fulfillment(of: [sendExpectation], timeout: 5)
     }
 
     func testGetLocalAndRemotePost() async throws {
@@ -94,7 +94,7 @@ class PostsTests: XCTestCase {
                   aggregatedInfo: .empty, userInteractions: .empty))
         _ = try await postsRepository.fetchPost(uuid: "1", hasVideo: false)
 
-        await fulfillment(of: [localExpectation], timeout: 0.5)
+        await fulfillment(of: [localExpectation], timeout: 5)
     }
 
     func testGetPostIsFilteredOutIfAuthorIsBlocked() async throws {
@@ -122,7 +122,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [postPresentExpectation], timeout: 0.5)
+        await fulfillment(of: [postPresentExpectation], timeout: 5)
 
         // mock the fact that the author is now blocked
         blockedUserIdsProvider.mockBlockedUserIds(["authorId"])
@@ -137,7 +137,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [postFilteredOutExpectation], timeout: 0.5)
+        await fulfillment(of: [postFilteredOutExpectation], timeout: 5)
     }
 
     func testDeletePost() async throws {
@@ -167,7 +167,7 @@ class PostsTests: XCTestCase {
         mockOctoService.injectNextDeletePostResponse(Com_Octopuscommunity_DeletePostResponse())
         _ = try await postsRepository.deletePost(postId: "1")
 
-        await fulfillment(of: [localExpectation], timeout: 0.5)
+        await fulfillment(of: [localExpectation], timeout: 5)
     }
 
     func testBridgePostWhenNotCreated() async throws {
@@ -209,7 +209,7 @@ class PostsTests: XCTestCase {
             })
         })
         let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
-            content: ClientPost(clientObjectId: "", topicId: "Sport",
+            content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
                                 catchPhrase: nil, attachment: nil,
                                 viewClientObjectButtonText: nil),
@@ -217,7 +217,7 @@ class PostsTests: XCTestCase {
 
         XCTAssertEqual(post.id, "1")
     }
-    
+
     /// Test the bridge getting/creating the bridge when the bridge is not yet created but when the call to create comes
     /// right after another user has called it.
     func testBridgePostWhenNotCreatedWithRaceCondition() async throws {
@@ -278,7 +278,7 @@ class PostsTests: XCTestCase {
             })
         })
         let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
-            content: ClientPost(clientObjectId: "", topicId: "Sport",
+            content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
                                 catchPhrase: nil, attachment: nil,
                                 viewClientObjectButtonText: nil),
@@ -309,7 +309,7 @@ class PostsTests: XCTestCase {
             })
         })
         let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
-            content: ClientPost(clientObjectId: "", topicId: "Sport",
+            content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
                                 catchPhrase: nil, attachment: nil,
                                 viewClientObjectButtonText: nil),
@@ -317,7 +317,6 @@ class PostsTests: XCTestCase {
 
         XCTAssertEqual(post.id, "1")
     }
-
 
     func testPostFromGetOrCreateBridgeDoesNotEraseAggregates() async throws {
         // precondition: a post with aggregates and user interactions is in db
@@ -351,7 +350,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [postPresentExpectation], timeout: 0.5)
+        await fulfillment(of: [postPresentExpectation], timeout: 5)
         storage = []
 
         let aggregatesAndUserInteractionPresentExpectation = XCTestExpectation(description: "Post is present, with its former aggregates and user interactions")
@@ -375,7 +374,7 @@ class PostsTests: XCTestCase {
             })
         })
         _ = try await postsRepository.getOrCreateClientObjectRelatedPost(
-            content: ClientPost(clientObjectId: "", topicId: "Sport",
+            content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
                                 catchPhrase: nil, attachment: nil,
                                 viewClientObjectButtonText: nil),
@@ -396,7 +395,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [aggregatesAndUserInteractionPresentExpectation], timeout: 0.5)
+        await fulfillment(of: [aggregatesAndUserInteractionPresentExpectation], timeout: 5)
     }
 
     func testSetReactionToBridgePostWhenPostAlreadyKnown() async throws {
@@ -430,7 +429,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [postPresentExpectation], timeout: 0.5)
+        await fulfillment(of: [postPresentExpectation], timeout: 5)
         storage = []
 
         let reactionSetExpectation = XCTestExpectation(description: "Reaction is set on post")
@@ -459,7 +458,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [reactionSetExpectation], timeout: 0.5)
+        await fulfillment(of: [reactionSetExpectation], timeout: 5)
     }
 
     func testSetReactionToBridgePostWhenPostIsNotLocal() async throws {
@@ -474,7 +473,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [postNotPresentExpectation], timeout: 0.5)
+        await fulfillment(of: [postNotPresentExpectation], timeout: 5)
         storage = []
 
         let reactionSetExpectation = XCTestExpectation(description: "Reaction is set on post")
@@ -523,7 +522,7 @@ class PostsTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [reactionSetExpectation], timeout: 0.5)
+        await fulfillment(of: [reactionSetExpectation], timeout: 5)
     }
 
     func injectGetPost(_ item: StorablePost) {

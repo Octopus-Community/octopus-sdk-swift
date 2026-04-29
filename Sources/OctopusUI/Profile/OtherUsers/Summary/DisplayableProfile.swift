@@ -13,10 +13,13 @@ struct DisplayableProfile: Equatable, Sendable {
     let totalMessages: Int?
     let accountCreationDate: Date?
     let gamificationLevel: GamificationLevel?
+    let isCurrentUser: Bool
+
+    var canBeBlocked: Bool { !tags.contains(.admin) && !isCurrentUser }
 }
 
 extension DisplayableProfile {
-    init(from profile: Profile) {
+    init(from profile: Profile, isCurrentUser: Bool) {
         nickname = profile.nickname
         bio = EllipsizableText(text: profile.bio?.cleanedBio, maxLength: 140, maxLines: 2)
         pictureUrl = profile.pictureUrl
@@ -24,5 +27,6 @@ extension DisplayableProfile {
         totalMessages = profile.totalMessages
         accountCreationDate = profile.accountCreationDate
         gamificationLevel = profile.gamificationLevel
+        self.isCurrentUser = isCurrentUser
     }
 }

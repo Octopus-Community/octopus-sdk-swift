@@ -4,7 +4,6 @@
 
 import Foundation
 import Combine
-import SwiftUI
 import OctopusCore
 
 class PreviewContentTranslationPreferenceRepository: ContentTranslationPreferenceRepository {
@@ -32,19 +31,5 @@ class PreviewContentTranslationPreferenceRepository: ContentTranslationPreferenc
         contentDisplayTranslations[contentId] = newValue
 
         return newValue
-    }
-}
-
-private struct MockContentTranslationPreferenceStoreModifier: ViewModifier {
-    @Compat.StateObject var store = ContentTranslationPreferenceStore(repository: PreviewContentTranslationPreferenceRepository())
-
-    func body(content: Content) -> some View {
-        content.environmentObject(store)
-    }
-}
-
-extension View {
-    func mockContentTranslationPreferenceStore() -> some View {
-        self.modifier(MockContentTranslationPreferenceStoreModifier())
     }
 }

@@ -36,7 +36,7 @@ public class ContentTranslationPreferenceRepositoryDefault: ContentTranslationPr
     @Published private(set) var contentDisplayTranslations: [String: Bool] = [:]
 
     init(injector: Injector) {
-        
+
     }
 
     /// Returns whether the given content should display the original text.

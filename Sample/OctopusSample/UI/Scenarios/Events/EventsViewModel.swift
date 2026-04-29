@@ -41,7 +41,7 @@ extension EventsViewModel.DisplayableEvent {
             }
             params = [
                 "Id: \(context.postId)",
-                "Topic: \(context.topicId)",
+                "Group: \(context.groupId)",
                 "Text length: \(context.textLength)",
                 "Content: \(content.joined(separator: ", "))"
             ]
@@ -164,7 +164,7 @@ extension EventsViewModel.DisplayableEvent {
                 eventName = "Posts Feed Screen Displayed"
                 params = [
                     "Feed Id: \(context.feedId)",
-                    "Related Topic Id: \(context.relatedTopicId ?? "-")"
+                    "Related Group Id: \(context.relatedTopicId ?? "-")"
                 ]
             }
         case let .notificationClicked(context):

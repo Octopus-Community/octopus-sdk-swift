@@ -46,9 +46,17 @@ class MockUserService: UserService {
     /// Fifo of the responses to `unfollowTopic`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var unfollowTopicResponses = [Com_Octopuscommunity_FollowUnfollowTopicResponse]()
+    /// Fifo of the responses to `syncFollowTopics`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var syncFollowTopicsResponses = [Com_Octopuscommunity_SyncFollowTopicsResponse]()
+
+    /// Number of times syncFollowTopics has been called. Useful to assert no-network-call behavior.
+    private(set) var syncFollowTopicsCallCount = 0
+
+    /// The last actions passed to syncFollowTopics. Useful to assert correct proto mapping.
+    private(set) var lastSyncFollowTopicsActions: [Com_Octopuscommunity_SyncFollowTopicAction] = []
 
     private(set) var errorMessage: String?
-
 
     func getPublicProfile(profileId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetPublicProfileResponse {
@@ -191,6 +199,20 @@ class MockUserService: UserService {
         }
         return response
     }
+
+    func syncFollowTopics(
+        actions: [Com_Octopuscommunity_SyncFollowTopicAction],
+        authenticationMethod: AuthenticationMethod
+    ) async throws(RemoteClientError) -> Com_Octopuscommunity_SyncFollowTopicsResponse {
+        syncFollowTopicsCallCount += 1
+        lastSyncFollowTopicsActions = actions
+        guard let response = syncFollowTopicsResponses.popLast() else {
+            let message = "Dev error, injectNextSyncFollowTopicsResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
+        }
+        return response
+    }
 }
 
 extension MockUserService {
@@ -236,5 +258,9 @@ extension MockUserService {
 
     func injectNextunfollowTopicResponse(_ response: Com_Octopuscommunity_FollowUnfollowTopicResponse) {
         unfollowTopicResponses.insert(response, at: 0)
+    }
+
+    func injectNextSyncFollowTopicsResponse(_ response: Com_Octopuscommunity_SyncFollowTopicsResponse) {
+        syncFollowTopicsResponses.insert(response, at: 0)
     }
 }

@@ -29,9 +29,4 @@ extension ReplyEntity: FetchableContentEntity {
         return request
     }
 
-    @nonobjc public class func fetchAllExcept(ids: [String]) -> NSFetchRequest<ReplyEntity> {
-        let request = fetchAll()
-        request.predicate = NSPredicate(format: "NOT (%K IN %@)", #keyPath(ReplyEntity.uuid), ids)
-        return request
-    }
 }

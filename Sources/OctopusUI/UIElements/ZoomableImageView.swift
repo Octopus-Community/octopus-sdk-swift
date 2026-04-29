@@ -20,7 +20,6 @@ struct ZoomableImageInfo: Equatable {
     }
 }
 
-
 /// A view that displays an image that the user can zoom in and drag it.
 /// Zoom and drag gestures ensure that the image is kept inside parent's bounds.
 /// An identifier can be passed to be used in a matched geometry effet
@@ -44,7 +43,7 @@ struct ZoomableImageView: View {
     // For velocity-based panning
     @State private var dragVelocity: CGSize = .zero
     @State private var isDecelerating: Bool = false
-    @State private var decelerationTimer: Timer? = nil
+    @State private var decelerationTimer: Timer?
 
     var body: some View {
         GeometryReader { containerGeo in
@@ -218,7 +217,7 @@ struct ZoomableImageView: View {
         MagnificationGesture()
             .onChanged { value in
                 stopDeceleration()
-                
+
                 let newScale = max(1, lastScale * value)
 
                 // Calculate the vector from pinch center to center of view
@@ -278,7 +277,7 @@ struct ZoomableImageView: View {
 
         stopDeceleration()
 
-        decelerationTimer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true) { timer in
+        decelerationTimer = Timer.scheduledTimer(withTimeInterval: 1/60, repeats: true) { _ in
             DispatchQueue.main.async {
                 let velocityOffset = CGSize(
                     width: currentVelocity.width * 1/60,

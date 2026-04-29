@@ -14,12 +14,12 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
     public var connectionStatePublisher: AnyPublisher<ConnectionState, Never> {
         $connectionState.receive(on: DispatchQueue.main).eraseToAnyPublisher()
     }
-    @Published private(set) public var connectionState = ConnectionState.notConnected(nil)
+    @Published public private(set) var connectionState = ConnectionState.notConnected(nil)
 
     public var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> {
         $magicLinkRequest.receive(on: DispatchQueue.main).eraseToAnyPublisher()
     }
-    @Published private(set) public var magicLinkRequest: MagicLinkRequest?
+    @Published public private(set) var magicLinkRequest: MagicLinkRequest?
 
     public let clientUserConnected = false
 
@@ -268,7 +268,7 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
                         .replaceError(with: nil)
                         .first { $0 != nil }
                         .receive(on: DispatchQueue.main)
-                        .sink { [weak self] result in
+                        .sink { [weak self] _ in
                             guard let self else { return }
                             userDataStorage.store(userData: .init(id: success.userID, jwtToken: success.jwt))
                             userDataStorage.store(magicLinkData: nil)
@@ -292,7 +292,7 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
                     let error = MagicLinkConfirmationError.userBanned(error.message)
                     self.magicLinkRequest = MagicLinkRequest(email: magicLinkRequest.email, error: error)
                     throw error
-                case .unknownError, .UNRECOGNIZED(_):
+                case .unknownError, .UNRECOGNIZED:
                     let error = MagicLinkConfirmationError.unknown(nil)
                     self.magicLinkRequest = MagicLinkRequest(email: magicLinkRequest.email, error: error)
                     throw error

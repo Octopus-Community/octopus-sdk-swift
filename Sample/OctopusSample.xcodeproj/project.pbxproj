@@ -7,12 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B20BDE572D0363C3001F1922 /* Octopus in Frameworks */ = {isa = PBXBuildFile; productRef = B20BDE562D0363C3001F1922 /* Octopus */; };
-		B20BDE592D0363C3001F1922 /* OctopusUI in Frameworks */ = {isa = PBXBuildFile; productRef = B20BDE582D0363C3001F1922 /* OctopusUI */; };
+		B22CA86F2F8E94F800FBA2E4 /* Octopus in Frameworks */ = {isa = PBXBuildFile; productRef = B22CA86E2F8E94F800FBA2E4 /* Octopus */; };
+		B22CA8712F8E94F900FBA2E4 /* OctopusUI in Frameworks */ = {isa = PBXBuildFile; productRef = B22CA8702F8E94F900FBA2E4 /* OctopusUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B20BDE8B2D0365AF001F1922 /* octopus-sdk-swift */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "octopus-sdk-swift"; path = ../; sourceTree = SOURCE_ROOT; };
 		B20BDEC92D036F93001F1922 /* OctopusSample.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = OctopusSample.xctestplan; sourceTree = "<group>"; };
 		B273BB2F2CA1A38100715F2F /* OctopusSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OctopusSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -46,8 +45,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B20BDE592D0363C3001F1922 /* OctopusUI in Frameworks */,
-				B20BDE572D0363C3001F1922 /* Octopus in Frameworks */,
+				B22CA8712F8E94F900FBA2E4 /* OctopusUI in Frameworks */,
+				B22CA86F2F8E94F800FBA2E4 /* Octopus in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,7 +74,6 @@
 				B273BB312CA1A38100715F2F /* OctopusSample */,
 				B20BDEC82D036F83001F1922 /* Tests */,
 				B20BDD212D01B575001F1922 /* Frameworks */,
-				B20BDE8B2D0365AF001F1922 /* octopus-sdk-swift */,
 				B273BB302CA1A38100715F2F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -108,8 +106,8 @@
 			);
 			name = OctopusSample;
 			packageProductDependencies = (
-				B20BDE562D0363C3001F1922 /* Octopus */,
-				B20BDE582D0363C3001F1922 /* OctopusUI */,
+				B22CA86E2F8E94F800FBA2E4 /* Octopus */,
+				B22CA8702F8E94F900FBA2E4 /* OctopusUI */,
 			);
 			productName = TestNav;
 			productReference = B273BB2F2CA1A38100715F2F /* OctopusSample.app */;
@@ -149,7 +147,6 @@
 			mainGroup = B273BB262CA1A38100715F2F;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B20BDE552D0363C3001F1922 /* XCRemoteSwiftPackageReference "octopus-sdk-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B273BB302CA1A38100715F2F /* Products */;
@@ -408,26 +405,13 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		B20BDE552D0363C3001F1922 /* XCRemoteSwiftPackageReference "octopus-sdk-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:Octopus-Community/octopus-sdk-swift.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		B20BDE562D0363C3001F1922 /* Octopus */ = {
+		B22CA86E2F8E94F800FBA2E4 /* Octopus */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B20BDE552D0363C3001F1922 /* XCRemoteSwiftPackageReference "octopus-sdk-swift" */;
 			productName = Octopus;
 		};
-		B20BDE582D0363C3001F1922 /* OctopusUI */ = {
+		B22CA8702F8E94F900FBA2E4 /* OctopusUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B20BDE552D0363C3001F1922 /* XCRemoteSwiftPackageReference "octopus-sdk-swift" */;
 			productName = OctopusUI;
 		};
 /* End XCSwiftPackageProductDependency section */

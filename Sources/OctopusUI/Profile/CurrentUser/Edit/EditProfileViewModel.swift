@@ -58,7 +58,6 @@ class EditProfileViewModel: ObservableObject {
     private let validator: Validators.CurrentUserProfile
     private let preventDismissAfterUpdate: Bool
 
-
     private var storage = [AnyCancellable]()
     private var savedProfile: CurrentUserProfile?
 

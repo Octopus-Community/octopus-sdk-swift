@@ -8,7 +8,7 @@ import UIKit
 import Octopus
 
 @MainActor
-final class URLOpener: ObservableObject {
+final class URLOpener: URLOpening {
     private let octopus: OctopusSDK
 
     init(octopus: OctopusSDK) {

@@ -40,7 +40,7 @@ extension TrackingCoreDataStack {
             // }
             return false
         }
-        
+
         /// Do a soft custom migration if needed
         /// - Parameters:
         ///   - latestVersion: the version of the db file

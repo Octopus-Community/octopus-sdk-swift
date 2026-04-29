@@ -185,8 +185,8 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
     }
 
     // MARK: Push Notifications
-    public static func isAnOctopusNotification(notification: UNNotification) -> Bool {
-        getAdditionnalData(notification: notification)?[Self.pnIsOctopusKey] != nil
+    public static func isAnOctopusNotification(userInfo: [AnyHashable: Any]) -> Bool {
+        getAdditionnalData(userInfo: userInfo)?[Self.pnIsOctopusKey] != nil
     }
 
     public func set(notificationDeviceToken: String) {
@@ -209,10 +209,9 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
             }
     }
 
-    public func getPushNotificationTappedAction(notificationResponse: UNNotificationResponse)
+    public func getPushNotificationTappedAction(userInfo: [AnyHashable: Any])
     -> NotifAction? {
-        let notification = notificationResponse.notification
-        guard let pnInfos = Self.getAdditionnalData(notification: notification) else { return nil }
+        guard let pnInfos = Self.getAdditionnalData(userInfo: userInfo) else { return nil }
         if let link = pnInfos[Self.pnLinkPathKey] as? String,
            let contentsToOpen: [NotifAction.OctoScreen] = .init(from: link).nilIfEmpty {
             return .open(path: contentsToOpen)
@@ -238,8 +237,7 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    private static func getAdditionnalData(notification: UNNotification) -> [String: Any]? {
-        let userInfo = notification.request.content.userInfo
+    private static func getAdditionnalData(userInfo: [AnyHashable: Any]) -> [String: Any]? {
         return userInfo[Self.pnAdditionalDataKey] as? [String: Any]
     }
 

@@ -4,11 +4,18 @@
     "" : {
 
     },
-    "%@" : {
-
-    },
     "%lld comments" : {
 
+    },
+    "%lld unseen notification%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld unseen notification%2$@"
+          }
+        }
+      }
     },
     "%lld views" : {
 
@@ -23,13 +30,25 @@
         }
       }
     },
+    "A/B Testing" : {
+
+    },
     "Account" : {
 
     },
-    "App Login Flow" : {
+    "Action date" : {
 
     },
-    "App User Config:" : {
+    "Actions" : {
+
+    },
+    "Add action" : {
+
+    },
+    "Analytics" : {
+
+    },
+    "App Login Flow" : {
 
     },
     "App Version: %@" : {
@@ -105,10 +124,13 @@
     "Ask for notification permission" : {
 
     },
-    "Associated Fields:" : {
+    "Associated Fields" : {
 
     },
-    "Authentication mode:" : {
+    "Authentication mode" : {
+
+    },
+    "Available Groups" : {
 
     },
     "Avatar 1" : {
@@ -117,10 +139,13 @@
     "Avatar 2" : {
 
     },
+    "Batch follow/unfollow groups with per-action timestamps." : {
+
+    },
     "Bio" : {
 
     },
-    "Bio:" : {
+    "Bridge" : {
 
     },
     "Bridge to Client Object" : {
@@ -135,69 +160,11 @@
     "Center the title" : {
 
     },
-    "Community" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gemeinschaft"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Community"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Comunidad"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Communauté"
-          }
-        },
-        "fr-BE" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Communauté"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Comunità"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Społeczność"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Comunidade"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gemenskap"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Topluluk"
-          }
-        }
-      }
+    "Configuration" : {
+
+    },
+    "Connection Error (displayed by the app)" : {
+
     },
     "Custom events" : {
 
@@ -214,13 +181,7 @@
     "Edit your profile" : {
 
     },
-    "Email" : {
-
-    },
-    "Email:" : {
-
-    },
-    "Email: %@" : {
+    "Enter a Post ID" : {
 
     },
     "Error" : {
@@ -229,22 +190,40 @@
     "Events" : {
 
     },
+    "Followed" : {
+
+    },
     "Force login on strong actions" : {
 
     },
     "Force Octopus A/B Tests Cohort" : {
 
     },
+    "Group" : {
+
+    },
+    "Groups" : {
+
+    },
     "Have a post directly linked to a specific object (article, product, item...) of your app" : {
 
     },
-    "Icons customization:" : {
+    "Icons" : {
+
+    },
+    "Identifier: %@" : {
 
     },
     "If you are managing an AB Test to enable/disable community access to your users, inform the SDK if the user cannot access the community UI to improve the analytics data we provide." : {
 
     },
+    "Initial Screen" : {
+
+    },
     "Integrate some of your custom events to the analytics we provide to you." : {
+
+    },
+    "Interact with the SDK to see events appear here" : {
 
     },
     "Login" : {
@@ -256,28 +235,46 @@
     "Modal" : {
 
     },
+    "Mode" : {
+
+    },
     "More" : {
+
+    },
+    "Navigation Bar" : {
 
     },
     "Nickname" : {
 
     },
-    "Nickname:" : {
+    "No events yet" : {
 
     },
     "No existing community to match this configuration" : {
 
     },
+    "No unseen notifications" : {
+
+    },
     "None" : {
+
+    },
+    "Not existing Group" : {
+
+    },
+    "not-existing-group-id" : {
 
     },
     "Notification Badge" : {
 
     },
-    "Notification permission granted. Tap here to go to the system settings to change it." : {
+    "Notifications" : {
 
     },
-    "Notification permission is denied. Tap here to go to the system settings to enable it." : {
+    "Notifications denied. Tap to open Settings." : {
+
+    },
+    "Notifications enabled. Tap to open Settings." : {
 
     },
     "Octo Tab" : {
@@ -292,13 +289,22 @@
     "Octopus SDK publishes events to inform you about what the user is doing inside the community. You can use these events to feed your own analytics tool." : {
 
     },
+    "OK" : {
+
+    },
+    "Open a specific post or group directly" : {
+
+    },
     "Open Octopus Home Screen" : {
 
     },
-    "Open Octopus Home Screen as full screen modal" : {
+    "Open on a sheet" : {
 
     },
-    "Open on a sheet" : {
+    "Open Post" : {
+
+    },
+    "Open the Octopus Community" : {
 
     },
     "Open the Octopus SDK in a non full screen sheet" : {
@@ -313,7 +319,13 @@
     "Picture" : {
 
     },
-    "Random identifier (new each time the sample is launched)" : {
+    "Presentation" : {
+
+    },
+    "Random identifier" : {
+
+    },
+    "Results" : {
 
     },
     "Save" : {
@@ -326,6 +338,15 @@
 
     },
     "SDK configured with: %@" : {
+
+    },
+    "Security" : {
+
+    },
+    "Select a group" : {
+
+    },
+    "Select a recipe to open" : {
 
     },
     "Select the language by tapping on the name." : {
@@ -349,6 +370,15 @@
     "Switch Community" : {
 
     },
+    "Sync" : {
+
+    },
+    "Sync Follow Groups" : {
+
+    },
+    "Testing" : {
+
+    },
     "The following switch simulates an A/B test.\nWhen off, the community is hidden to the user." : {
 
     },
@@ -367,10 +397,13 @@
     "Track A/B Tests" : {
 
     },
-    "Use logo on Octopus Home Screen nav bar" : {
+    "Unique Identifier" : {
 
     },
-    "Use primary color on Octopus Home Screen nav bar" : {
+    "Use logo on nav bar" : {
+
+    },
+    "Use primary color on nav bar" : {
 
     }
   },

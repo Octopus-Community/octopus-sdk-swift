@@ -10,18 +10,32 @@ on:
     branches: [ ] # build on all branches
 
 jobs:
+  lint:
+    runs-on: macos-26
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: 'true'
+        token: ${{ secrets.CI_PAT }}
+
+    - name: Install SwiftLint
+      run: brew list swiftlint &>/dev/null || brew install swiftlint
+
+    - name: Lint
+      run: swiftlint lint --strict --reporter github-actions-logging
+
   build:
-    runs-on: macos-26 #[self-hosted, macOS]
+    runs-on: macos-26
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: 'true'
         token: ${{ secrets.CI_PAT }}
 
     - uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: 26.1
+        xcode-version: 26.4
 
     - name: Get active Xcode version
       id: xcode-version
@@ -39,12 +53,13 @@ jobs:
 
     - uses: irgaly/xcode-cache@v1
       with:
+        swiftpm-cache-key: swiftpm-${{ runner.os }}-${{ steps.swift-version.outputs.version }}-${{ hashFiles('**/Package.resolved') }}
         swiftpm-cache-restore-keys: |
-          swiftpm-${{ runner.os }}-swift-${{ steps.swift-version.outputs.version }}
+          swiftpm-${{ runner.os }}-${{ steps.swift-version.outputs.version }}-
 
     - name: Build Package and run tests
       run: |
         xcodebuild test \
           -scheme 'OctopusSdkSwift-Package' \
-          -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.1' \
+          -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
           CODE_SIGNING_ALLOWED='NO'

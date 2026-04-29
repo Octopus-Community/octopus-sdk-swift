@@ -30,7 +30,7 @@ class ModelCoreDataStack: InjectableObject, @unchecked Sendable {
     private let stackManager: CoreDataStackManager
 
     /// latest version of the database. If it differs from currentVersion, a migration will be done
-    static private let latestVersionKey = "OctopusSDK.\(persistentContainerName).Migrator.dbVersion"
+    private static let latestVersionKey = "OctopusSDK.\(persistentContainerName).Migrator.dbVersion"
 
     init(forceReset: Bool = false, inRam: Bool = false) throws(CoreDataErrors) {
         let latestVersion = UserDefaults.standard.integer(forKey: Self.latestVersionKey)

@@ -25,4 +25,3 @@ class UserNotificationCenterProviderDefault: UserNotificationCenterProvider, Inj
         await notifCenter.notificationSettings().authorizationStatus
     }
 }
-

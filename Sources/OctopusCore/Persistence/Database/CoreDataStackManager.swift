@@ -48,7 +48,7 @@ class CoreDataStackManager: @unchecked Sendable {
             return model
         }
 
-        guard let modelURL = Bundle.module.url(forResource: name, withExtension:"momd") else {
+        guard let modelURL = Bundle.module.url(forResource: name, withExtension: "momd") else {
             throw .modelFileNotFound(name)
         }
 

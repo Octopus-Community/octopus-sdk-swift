@@ -19,7 +19,7 @@ struct AppEditUserScreen: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("Email: \(viewModel.appUser?.userId ?? "")")
+                Text("Identifier: \(viewModel.appUser?.userId ?? "")")
                 AppEditUserView(nickname: $nickname, bio: $bio, picture: $picture)
             }
             .navigationBarTitle("Edit your profile")

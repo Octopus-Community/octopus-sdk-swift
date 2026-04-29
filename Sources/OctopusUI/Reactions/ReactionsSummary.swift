@@ -53,14 +53,19 @@ private struct ContentView: View {
     let countPlacement: ReactionsSummary.CountPlacement
     let maxReactionsKind: Int
 
+    @Compat.ScaledMetric(relativeTo: .caption1) private var reactionImageSize: CGFloat = 20
+
     var body: some View {
         HStack(spacing: 2) {
             if countPlacement == .leading {
                 countView
             }
-            HStack(spacing: -5) {
+            HStack(spacing: -8) {
                 ForEach(reactionsToDisplay, id: \.self) { reactionKind in
-                    Text(reactionKind.unicode)
+                    Image(uiImage: theme.assets.icons.content.reaction[reactionKind])
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: reactionImageSize, height: reactionImageSize)
                         .shadow(color: Color(UIColor.systemBackground), radius: 0, x: -1, y: 0)
                 }
             }
@@ -69,8 +74,8 @@ private struct ContentView: View {
             }
         }
         .font(theme.fonts.caption1)
-        .padding(.vertical, 14)
-        .frame(minWidth: 44)
+        .padding(.vertical, 6)
+        .frame(minWidth: 44, minHeight: 44)
         .accessibilityElement(children: .ignore)
         .accessibilityLabelInBundle("Accessibility.Reaction.Count_count:\(reactionsCount)")
     }
@@ -80,7 +85,7 @@ private struct ContentView: View {
     }
 
     var reactionsToDisplay: [ReactionKind] {
-        reactions.filter { $0.count > 0 }.prefix(maxReactionsKind).map(\.reactionKind)
+        reactions.filter { !$0.isEmpty }.prefix(maxReactionsKind).map(\.reactionKind)
     }
 
     var countView: some View {

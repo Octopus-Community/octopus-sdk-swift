@@ -9,11 +9,8 @@ import OctopusCore
 
 struct NotificationCenterView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Compat.StateObject private var viewModel: NotificationCenterViewModel
-
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
 
     init(viewModel: NotificationCenterViewModel) {
         _viewModel = Compat.StateObject(wrappedValue: viewModel)
@@ -41,19 +38,7 @@ struct NotificationCenterView: View {
         .onDisappear {
             viewModel.viewDidDisappear()
         }
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in },
-            message: { error in
-                error.textView
-            })
-        .onReceive(viewModel.$displayableError) { error in
-            guard let error else { return }
-            displayableError = error
-            displayError = true
-        }
+        .errorAlert(viewModel.$displayableError)
     }
 }
 

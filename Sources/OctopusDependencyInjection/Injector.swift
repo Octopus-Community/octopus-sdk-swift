@@ -38,7 +38,7 @@ public final class Injector {
         }
         injectedObjects[IO.injectedIdentifier.uuid] = .factory(factory)
     }
-    
+
     /// Gets an injected object using its identifier
     /// - Parameter identifier: the identifier of the object
     /// - Returns: the injected object

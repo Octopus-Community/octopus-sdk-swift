@@ -6,106 +6,60 @@ import Foundation
 import SwiftUI
 import OctopusCore
 
-struct ReactionsPickerView: View {
+struct PopoverReactionsBar: View {
     @Environment(\.octopusTheme) private var theme
 
-    let contentId: String
-    let userReaction: UserReaction?
+    let reactions: [ReactionKind]
+    let screenWidth: CGFloat
     let reactionTapped: (ReactionKind?) -> Void
 
-    @State private var showReactionPicker = false
+    private let barHorizontalPadding: CGFloat = 12
+    private let emojiSpacing: CGFloat = 4
 
-    private var quickReactions: [ReactionKind] {
-        guard !UIAccessibility.isVoiceOverRunning else {
-            return ReactionKind.knownValues
-        }
-        if let userReaction {
-            return [userReaction.kind]
-        } else {
-            let randomReactions = [
-                ReactionKind.joy,
-                ReactionKind.mouthOpen,
-                ReactionKind.clap,
-            ]
-                .shuffled(seed: UInt64(bitPattern: Int64(contentId.hash)))
-                .prefix(upTo: 1)
-            return [ReactionKind.heart] + randomReactions
-        }
-    }
-
-    private var remainingReactions: [ReactionKind] {
-        return ReactionKind.knownValues
-            .filter { reaction in
-                !quickReactions.contains { $0 == reaction }
-            }
+    /// Cap emoji size so the bar fits within the screen width with some margin.
+    private var maxEmojiSize: CGFloat? {
+        guard screenWidth > 0, !reactions.isEmpty else { return nil }
+        let margin: CGFloat = 32 // safety margin on each side
+        let availableWidth = screenWidth - margin * 2
+            - barHorizontalPadding * 2
+            - emojiSpacing * CGFloat(reactions.count - 1)
+        return max(availableWidth / CGFloat(reactions.count), 16)
     }
 
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(quickReactions, id: \.self) { reaction in
-                ReactionButton(reaction: reaction,
-                               isSelected: userReaction?.kind == reaction,
-                               reactionTapped: reactionTapped)
-            }
-            if userReaction == nil && !remainingReactions.isEmpty {
-                // Invisible button, with a visible overlay, just to give the correct size to the overlay
-                ReactionButton(reaction: .clap, isSelected: false, reactionTapped: { _ in })
-                    .opacity(0)
-                    .accessibilityHidden(true)
-                    .overlay(
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                showReactionPicker.toggle()
-                            }
-                        }) {
-                            Image(uiImage: theme.assets.icons.content.post.moreReactions)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .padding(-4)
-                                .foregroundColor(theme.colors.gray900)
-                        }.buttonStyle(OctopusButtonStyle(.small, style: .outline,
-                                                         hasLeadingIcon: true,
-                                                         hasTrailingIcon: true,
-                                                         externalVerticalPadding: 5,
-                                                         externalTrailingPadding: 10))
-                        .modify {
-                            if #available(iOS 17.0, *) {
-                                $0.accessibilityAddTraits(.isToggle)
-                            } else { $0 }
-                        }
-                    )
-                    .displayableOverlay(isPresented: $showReactionPicker,
-                                        horizontalPadding: 12,
-                                        verticalPadding: 8) {
-                        PopoverReactionsBar(reactions: remainingReactions,
-                                            reactionTapped: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                showReactionPicker = false
-                            }
-                            reactionTapped($0)
-                        })
-                    }
+        HStack(spacing: emojiSpacing) {
+            ForEach(reactions, id: \.self) { reaction in
+                ReactionButton(
+                    reaction: reaction,
+                    maxSize: maxEmojiSize,
+                    reactionTapped: reactionTapped)
             }
         }
-        .animation(.default, value: userReaction)
-        .onValueChanged(of: showReactionPicker) { _ in
-            // weirdly needed in order to display the reaction picker on iOS 26
-        }
-        .onDisappear {
-            showReactionPicker = false
-        }
+        .padding(.horizontal, barHorizontalPadding)
+        .background(
+            Capsule()
+                .fill(Color(.systemBackground))
+                .overlay(Capsule().stroke(theme.colors.gray300, lineWidth: 1))
+                .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+        )
+        .accessibilityFocusOnAppear()
     }
 }
 
 private struct ReactionButton: View {
     @Environment(\.octopusTheme) private var theme
-    @EnvironmentObject private var languageManager: LanguageManager
 
     let reaction: ReactionKind
-    let isSelected: Bool
+    let maxSize: CGFloat?
     let reactionTapped: (ReactionKind?) -> Void
 
+    @Compat.ScaledMetric(relativeTo: .largeTitle) private var emojiSize: CGFloat = 44
     @State private var animate = false
+
+    private var effectiveSize: CGFloat {
+        if let maxSize { return min(emojiSize, maxSize) }
+        return emojiSize
+    }
 
     var body: some View {
         Button(action: {
@@ -113,73 +67,23 @@ private struct ReactionButton: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 animate = false
             }
-            reactionTapped(!isSelected ? reaction : nil)
+            reactionTapped(reaction)
         }) {
-            Text(reaction.unicode)
-                .font(theme.fonts.body2)
-                .fixedSize()
+            Image(uiImage: theme.assets.icons.content.reaction[reaction])
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: effectiveSize, height: effectiveSize)
                 .scaleEffect(animate ? 1.4 : 1.0)
                 .opacity(animate ? 0.9 : 1.0)
-                .animation(.spring(response: 0.2, dampingFraction: 0.3), value: animate)
+                .animation(
+                    .spring(response: 0.2, dampingFraction: 0.3),
+                    value: animate)
+                .padding(.vertical, 4)
         }
-        .buttonStyle(
-            OctopusButtonStyle(.small, style: .outline,
-                               backgroundColor: isSelected ? theme.colors.primaryLowContrast : nil,
-                               externalVerticalPadding: 5))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabelInBundle("Accessibility.Reaction.Button_reaction:\(reaction.accessibilityValue(locale: languageManager.overridenLocale))")
-        .accessibilityValueInBundle(isSelected ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected")
-        .modify {
-            if #available(iOS 17.0, *) {
-                $0.accessibilityAddTraits(.isToggle)
-            } else { $0 }
-        }
+        .accessibilityLabelInBundle(reaction.labelKey)
         .hapticFeedback(trigger: animate) { oldValue, newValue in
             guard oldValue != newValue, newValue else { return false }
             return true
         }
-    }
-}
-
-struct PopoverReactionsBar: View {
-    @Environment(\.octopusTheme) private var theme
-    
-    let reactions: [ReactionKind]
-    let reactionTapped: (ReactionKind?) -> Void
-
-    @State private var animate = false
-
-    var body: some View {
-        HStack {
-            ForEach(reactions, id: \.self) { reaction in
-                Button(action: {
-                    animate = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        animate = false
-                    }
-                    reactionTapped(reaction)
-                }) {
-                    Text(reaction.unicode)
-                        .font(theme.fonts.title2)
-                        .fixedSize()
-                        .scaleEffect(animate ? 1.4 : 1.0)
-                        .opacity(animate ? 0.9 : 1.0)
-                        .animation(.spring(response: 0.2, dampingFraction: 0.3), value: animate)
-                }
-            }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            Capsule()
-                .fill(Color(.systemBackground))
-                .overlay(Capsule().stroke(theme.colors.gray300, lineWidth: 1))
-                .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-        )
-        .hapticFeedback(trigger: animate) { oldValue, newValue in
-            guard oldValue != newValue, newValue else { return false }
-            return true
-        }
-        .accessibilityFocusOnAppear()
     }
 }

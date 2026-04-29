@@ -50,66 +50,85 @@ struct CustomThemeView: View {
                 icons: iconFamily.icons))
     }
 
-
-
     var body: some View {
         VStack(spacing: 0) {
             ScrollView {
-                VStack(spacing: 10) {
-                    Toggle(isOn: $titleCentered) {
-                        Text("Center the title")
-                    }
-                    Toggle(isOn: $titleAsLogo) {
-                        Text("Use logo on Octopus Home Screen nav bar")
-                    }
-                    Toggle(isOn: $navBarWithColor) {
-                        Text("Use primary color on Octopus Home Screen nav bar")
-                    }
-                    Spacer().frame(height: 10)
-                    Text("Icons customization:")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    ForEach(IconFamily.allCases.indices, id: \.self) { index in
-                        let iconFamily = IconFamily.allCases[index]
-                        Button(action: { self.iconFamily = iconFamily }) {
-                            HStack {
-                                VStack(spacing: 4) {
-                                    Text(iconFamily.name)
-                                        .bold()
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(iconFamily.comment)
-                                        .font(.callout)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                .multilineTextAlignment(.leading)
-
-                                Text("\(self.iconFamily == iconFamily ? "✅" : "✔️")")
-                            }
-                            .contentShape(Rectangle())
+                VStack(spacing: 16) {
+                    VStack(spacing: 8) {
+                        Text("Navigation Bar")
+                            .font(.subheadline).bold()
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Toggle(isOn: $titleCentered) {
+                            Text("Center the title")
                         }
-                        .buttonStyle(.plain)
-                        .padding(.leading, 8)
-                        Color.gray.opacity(0.5).frame(height: 1)
+                        Toggle(isOn: $titleAsLogo) {
+                            Text("Use logo on nav bar")
+                        }
+                        Toggle(isOn: $navBarWithColor) {
+                            Text("Use primary color on nav bar")
+                        }
                     }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+
+                    VStack(spacing: 8) {
+                        Text("Icons")
+                            .font(.subheadline).bold()
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        ForEach(IconFamily.allCases.indices, id: \.self) { index in
+                            let iconFamily = IconFamily.allCases[index]
+                            Button(action: { self.iconFamily = iconFamily }) {
+                                HStack {
+                                    Image(systemName: self.iconFamily == iconFamily ?
+                                          "checkmark.circle.fill" : "circle")
+                                        .foregroundColor(
+                                            self.iconFamily == iconFamily ? .accentColor : .secondary)
+                                    VStack(spacing: 2) {
+                                        Text(iconFamily.name)
+                                            .bold()
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        Text(iconFamily.comment)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    .multilineTextAlignment(.leading)
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            if index < IconFamily.allCases.count - 1 {
+                                Divider()
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
                 }
                 .padding()
             }
-            Button("Open Octopus Home Screen as full screen modal") {
+            Button(action: {
                 // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                 showFullScreen {
                     OctopusUIView(
                         octopus: viewModel.octopus,
-                        // customize the leading nav bar item of the main screen.
-                        // Either pass `.logo` to display the logo you provided in the theme, or `.text` to display
-                        // a text you provide.
                         mainFeedNavBarTitle: .init(
                             content: titleAsLogo ? .logo : .text(.init(text: "Bake It")),
                             placement: titleCentered ? .center : .leading),
-                        // pass true to use the primary color you provided in the theme on the nav bar of the main
-                        // screen. Otherwise it will be the default nav bar color.
                         mainFeedColoredNavBar: navBarWithColor)
-                    /// Pass the custom theme
                     .environment(\.octopusTheme, appTheme)
                 }
+            }) {
+                HStack {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    Text("Open Octopus Home Screen")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                .foregroundColor(.white)
             }
             .padding()
         }
@@ -138,6 +157,18 @@ extension CustomThemeView.IconFamily {
         case .dualTint: "All icons are a tinted circle with two colors"
         case .horizontalRatio: "All icons are a circle in a non-squared rectangle"
         case .verticalRatio: "All icons are a circle in a non-squared rectangle"
+        }
+    }
+
+    private static func sfSymbol(_ name: String, color: UIColor) -> UIImage {
+        let config = UIImage.SymbolConfiguration(pointSize: 64)
+        let symbol = UIImage(systemName: name, withConfiguration: config)!
+            .withTintColor(color, renderingMode: .alwaysOriginal)
+        // Rasterize to bake the color into the bitmap — SwiftUI's Image(uiImage:)
+        // ignores tintColor on symbol images otherwise.
+        let renderer = UIGraphicsImageRenderer(size: symbol.size)
+        return renderer.image { _ in
+            symbol.draw(in: CGRect(origin: .zero, size: symbol.size))
         }
     }
 
@@ -201,6 +232,14 @@ extension CustomThemeView.IconFamily {
                     ),
                     poll: .init(
                         selectedOption: IconSet.contentPollSelectedOption
+                    ),
+                    reaction: .init(
+                        heart: Self.sfSymbol("heart.fill", color: .systemRed),
+                        joy: Self.sfSymbol("figure.dance", color: .systemYellow),
+                        mouthOpen: Self.sfSymbol("exclamationmark.circle.fill", color: .systemOrange),
+                        clap: Self.sfSymbol("hands.clap.fill", color: .systemGreen),
+                        cry: Self.sfSymbol("person.fill.turn.down", color: .systemBlue),
+                        rage: Self.sfSymbol("flame.fill", color: .systemRed)
                     ),
                     delete: IconSet.contentDelete,
                     report: IconSet.contentReport
@@ -292,6 +331,14 @@ extension CustomThemeView.IconFamily {
                     ),
                     poll: .init(
                         selectedOption: IconSet.contentPollSelectedOption
+                    ),
+                    reaction: .init(
+                        heart: Self.sfSymbol("circle.fill", color: .systemRed),
+                        joy: Self.sfSymbol("star.fill", color: .systemYellow),
+                        mouthOpen: Self.sfSymbol("seal.fill", color: .systemOrange),
+                        clap: Self.sfSymbol("square.fill", color: .systemGreen),
+                        cry: Self.sfSymbol("triangle.fill", color: .systemBlue),
+                        rage: Self.sfSymbol("hexagon.fill", color: .systemPurple)
                     ),
                     delete: IconSet.contentDelete,
                     report: IconSet.contentReport
@@ -391,8 +438,12 @@ extension CustomThemeView.IconFamily {
                     poll: .init(
                         selectedOption: icon
                     ),
+                    reaction: .init(
+                        heart: icon, joy: icon, mouthOpen: icon,
+                        clap: icon, cry: icon, rage: icon
+                    ),
                     delete: icon,
-                    //report: icon, defaultReport will be used
+                    // report: icon, defaultReport will be used
                     defaultAddPicture: icon,
                     defaultDeletePicture: icon,
                     defaultCreateResponse: icon,
@@ -403,7 +454,7 @@ extension CustomThemeView.IconFamily {
                     editPicture: icon,
                     addBio: icon,
                     emptyNotifications: icon,
-                    //report: icon, defaultReport will be used
+                    // report: icon, defaultReport will be used
                     notConnected: icon,
                     blockUser: icon
                 ),

@@ -135,7 +135,7 @@ public class Feed<Item: FeedItem, ChildItem: FeedItem>: @MainActor Hashable {
             }
         }
     }
-    
+
     /// Fetches all feed item until having fetched the item with the provided id
     public func fetchAll(until id: String) async throws {
         if #available(iOS 14, *) { Logger.feed.trace("Fetch all until \(id) called") }
@@ -168,7 +168,6 @@ public class Feed<Item: FeedItem, ChildItem: FeedItem>: @MainActor Hashable {
             }
         }
     }
-
 
     private func listenForItems(publisher: AnyPublisher<[Item], Error>) {
         feedItemsCancellable = Publishers.CombineLatest(

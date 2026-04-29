@@ -10,7 +10,7 @@ public enum ConnectionMode {
     case octopus(deepLink: String?)
     /// You provide to OctopusSDK the user and their lifecycle are tight to their lifecycle in your app
     case sso(SSOConfiguration)
-    
+
     /// Configuration of the SSO connection mode
     public struct SSOConfiguration {
         /// The field of a Profile

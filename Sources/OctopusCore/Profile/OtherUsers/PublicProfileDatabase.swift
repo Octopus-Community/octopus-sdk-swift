@@ -56,4 +56,13 @@ class PublicProfileDatabase: InjectableObject {
             try context.save()
         }
     }
+
+    func getProfile(profileId: String) async throws -> StorableProfile? {
+        try await context.performAsync { [context] in
+            try context
+                .fetch(PublicProfileEntity.fetchById(id: profileId))
+                .first
+                .map(StorableProfile.init(from:))
+        }
+    }
 }

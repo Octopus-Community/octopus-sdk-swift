@@ -17,3 +17,4 @@ Sample/fastlane/report.xml
 Tests/OctopusCoreTests/Secrets/secrets.json
 Sample/OctopusSample/Config/secrets.xcconfig
 CocoaPodsValidationApp/Pods/
+/Package.resolved

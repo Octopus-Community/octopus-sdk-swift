@@ -14,7 +14,7 @@ extension Injected {
 
 class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
     static let injectedIdentifier = Injected.commentsDatabase
-    
+
     private let context: NSManagedObjectContext
 
     override init(injector: Injector) {
@@ -38,7 +38,7 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
 
     func commentsPublisher(ids: [String]) -> AnyPublisher<[StorableComment], Error> {
         return context
-            .publisher(request: CommentEntity.fetchAllByIds(ids: ids)) {
+            .chunkedPublisher(ids: ids, requestBuilder: { CommentEntity.fetchAllByIds(ids: $0) }) {
                 $0.map { StorableComment(from: $0) }
                     .sorted { comment1, comment2 in
                         guard let index1 = ids.firstIndex(of: comment1.uuid),
@@ -54,8 +54,10 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
 
     func getComments(ids: [String]) async throws -> [StorableComment] {
         let fetchedComments = try await context.performAsync { [context] in
-            try context.fetch(CommentEntity.fetchAllByIds(ids: ids))
-                .map { StorableComment(from: $0) }
+            try context.chunkedFetch(ids: ids) { chunk in
+                CommentEntity.fetchAllByIds(ids: chunk)
+            }
+            .map { StorableComment(from: $0) }
         }
 
         // return them in the same order as Ids
@@ -71,10 +73,9 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
     func upsert(comments: [StorableComment]) async throws {
         try await context.performAsync { [context] in
             let context = context
-            let request: NSFetchRequest<CommentEntity> = CommentEntity.fetchAll()
-            request.predicate = NSPredicate(format: "%K IN %@", #keyPath(CommentEntity.uuid),
-                                            comments.map { $0.uuid })
-            let existingComments = try context.fetch(request)
+            let existingComments = try context.chunkedFetch(ids: comments.map { $0.uuid }) { chunk in
+                CommentEntity.fetchAllByIds(ids: chunk)
+            }
 
             for comment in comments {
                 let commentEntity: CommentEntity
@@ -85,7 +86,7 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
                 }
                 try commentEntity.fill(with: comment, context: context)
             }
-            
+
             try context.save()
         }
     }

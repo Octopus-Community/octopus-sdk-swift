@@ -48,7 +48,7 @@ class APITests {
         let ssoConfiguration = ConnectionMode.SSOConfiguration(loginRequired: { })
         let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
 
-        octopus.connectUser(
+        try await octopus.connectUser(
             ClientUser(userId: "USER_ID", profile: .init(nickname: "NICKNAME")),
             tokenProvider: {
                 try await Task.sleep(nanoseconds: 1)
@@ -56,11 +56,53 @@ class APITests {
             })
     }
 
+    @Test func testConnectUserError() async throws {
+        let ssoConfiguration = ConnectionMode.SSOConfiguration(loginRequired: { })
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
+
+        func handleError(_ error: OctopusConnectUserError) {
+            switch error {
+            case let .userBanned(message):
+                let _: String = message
+            case let .profileError(validationErrors):
+                for validationError in validationErrors {
+                    let _: OctopusConnectUserError.ProfileValidationError.ErrorKind = validationError.errorKind
+                    let _: OctopusConnectUserError.ProfileValidationError.Field? = validationError.field
+                    let _: String = validationError.message
+                    switch validationError.errorKind {
+                    case .unknown, .maxCharLimitReached, .alreadyTaken, .badFormat,
+                         .emptyFile, .fileSizeTooBig, .badFileFormat, .uploadIssue,
+                         .moderatedContent, .avatarInProcess: break
+                    case let .bannedWordUsed(words):
+                        let _: [String] = words
+                    }
+                    switch validationError.field {
+                    case .nickname, .bio, .picture, .none: break
+                    }
+                }
+            case .jwtError: break
+            case .communityAccessDenied: break
+            case .noNetwork: break
+            case .server: break
+            case .other: break
+            }
+            let _: String = error.debugDescription
+        }
+
+        do {
+            try await octopus.connectUser(
+                ClientUser(userId: "USER_ID", profile: .init(nickname: "NICKNAME")),
+                tokenProvider: { "TOKEN" })
+        } catch {
+            handleError(error)
+        }
+    }
+
     @Test func testDisconnectUser() async throws {
         let ssoConfiguration = ConnectionMode.SSOConfiguration(loginRequired: { })
         let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
 
-        octopus.disconnectUser()
+        try await octopus.disconnectUser()
     }
 
     @Test func testNotSeenNotificationCount() async throws {
@@ -75,9 +117,9 @@ class APITests {
         octopus.set(notificationDeviceToken: "")
     }
 
-    @Test func testIsAnOctopusNotification() async throws {
-        // Can force unwrap because we only need the test to compile, not to run
-        _ = OctopusSDK.isAnOctopusNotification(notification: UNNotification(coder: NSCoder())!) != false
+    @Test func testIsAnOctopusNotificationFromUserInfo() async throws {
+        let userInfo: [AnyHashable: Any] = [:]
+        _ = OctopusSDK.isAnOctopusNotification(userInfo: userInfo) != false
     }
 
     @Test func testTrackCommunityAccess() async throws {
@@ -95,7 +137,6 @@ class APITests {
         _ = octopus.hasAccessToCommunity
         _ = octopus.$hasAccessToCommunity
     }
-
 
     @Test func testTrackCustomEvent() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
@@ -155,14 +196,20 @@ class APITests {
 
     @Test func testSetDisplayClientObjectCallback() throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
-        octopus.set(displayClientObjectCallback: { objectId in })
+        octopus.set(displayClientObjectCallback: { _ in })
     }
 
-    @Test func testTopics() async throws {
+    @Test func testGroups() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
-        let _: [Topic] = octopus.topics
-        _ = octopus.$topics
-        try await octopus.fetchTopics()
+        let groups: [OctopusGroup] = octopus.groups
+        if let group = groups.first {
+            _ = group.id
+            _ = group.name
+            _ = group.isFollowed
+            _ = group.canChangeFollowStatus
+        }
+        _ = octopus.$groups
+        try await octopus.fetchGroups()
     }
 
     @Test func testSetOnNavigateToUrlCallback() async throws {
@@ -190,7 +237,8 @@ class APITests {
                 _ = context.content.contains(.poll)
                 _ = context.content.contains(.image)
                 let _: String = context.postId
-                let _: String = context.topicId
+                let _: String = context.groupId
+                let _: String = context.topicId // deprecated
                 let _: Int = context.textLength
             case let .commentCreated(context):
                 let _: String = context.commentId
@@ -262,6 +310,7 @@ class APITests {
                 case .groups: break
                 case let .groupDetail(context):
                     let _: String = context.groupId
+                    let _: OctopusEvent.Screen.GroupDetailSource = context.source
                 case let .postDetail(context):
                     let _: String = context.postId
                 case let .commentDetail(context):
@@ -292,7 +341,7 @@ class APITests {
                 }
             case let .translationButtonClicked(context):
                 let _: String = context.contentId
-                let _:OctopusEvent.ContentKind = context.contentKind
+                let _: OctopusEvent.ContentKind = context.contentKind
                 let _: Bool = context.viewTranslated
             case let .commentButtonClicked(context):
                 let _: String = context.postId
@@ -327,6 +376,59 @@ class APITests {
                 let _: String = context.sessionId
             }
         }
+    }
+
+    @Test func testSyncFollowGroupsAPI() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+
+        let action = OctopusSyncFollowGroup.Action(
+            groupId: "g1", followed: true, actionDate: Date()
+        )
+        do {
+            let results: [OctopusSyncFollowGroup.Result] = try await octopus.syncFollowGroups(actions: [action])
+            for result in results {
+                _ = result.groupId
+                switch result.status {
+                case .applied, .skipped, .groupNotFound, .notFollowable, .notUnfollowable,
+                     .alreadyFollowed, .alreadyUnfollowed, .unknownError:
+                    break
+                }
+            }
+        } catch {
+            switch error {
+            case .notConnected: break
+            case .noNetwork: break
+            // swiftlint:disable empty_enum_arguments
+            // Keep the associated values explicit so the test fails to compile if they are
+            // removed from the public API surface in a later version.
+            case .server(_): break
+            case .other(_): break
+            // swiftlint:enable empty_enum_arguments
+            }
+
+            _ = error.debugDescription
+        }
+    }
+}
+
+extension APITests {
+    @Test func testConnectUserSync() throws {
+        let ssoConfiguration = ConnectionMode.SSOConfiguration(loginRequired: { })
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
+
+        octopus.connectUser(
+            ClientUser(userId: "USER_ID", profile: .init(nickname: "NICKNAME")),
+            tokenProvider: {
+                try await Task.sleep(nanoseconds: 1)
+                return "TOKEN"
+            })
+    }
+
+    @Test func testDisconnectUserSync() throws {
+        let ssoConfiguration = ConnectionMode.SSOConfiguration(loginRequired: { })
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
+
+        octopus.disconnectUser()
     }
 }
 
@@ -369,9 +471,31 @@ extension APITests {
     }
 
     @Test func testClientPostInit() async throws {
+        _ = ClientPost(clientObjectId: "", groupId: "", text: "", attachment: .distantImage(URL(string: "")!),
+                       viewClientObjectButtonText: nil)
+        _ = ClientPost(clientObjectId: "", text: "", attachment: .localImage(Data()),
+                       viewClientObjectButtonText: nil)
+    }
+
+}
+
+/// Deprecated APIs (tests are still here to ensure old APIs can still be called)
+extension APITests {
+    @Test func testTopics() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let _: [Topic] = octopus.topics
+        try await octopus.fetchTopics()
+    }
+
+    @Test func testDeprecatedClientPostInit() async throws {
         _ = ClientPost(clientObjectId: "", text: "", attachment: .distantImage(URL(string: "")!),
                        viewClientObjectButtonText: nil, signature: nil)
         _ = ClientPost(clientObjectId: "", topicId: "", text: "", catchPhrase: "", attachment: .localImage(Data()),
                        viewClientObjectButtonText: nil, signature: nil)
+    }
+
+    @Test func testIsAnOctopusNotification() async throws {
+        // Can force unwrap because we only need the test to compile, not to run
+        _ = OctopusSDK.isAnOctopusNotification(notification: UNNotification(coder: NSCoder())!) != false
     }
 }

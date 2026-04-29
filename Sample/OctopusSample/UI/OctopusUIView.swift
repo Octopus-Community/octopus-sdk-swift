@@ -13,9 +13,9 @@ struct OctopusUIView: View {
     let bottomSafeAreaInset: CGFloat
     let mainFeedNavBarTitle: OctopusMainFeedTitle?
     let mainFeedColoredNavBar: Bool
-    let postId: String?
+    let initialScreen: OctopusInitialScreen
 
-    @Binding var octopusNotification: UNNotificationResponse?
+    @Binding var octopusNotificationUserInfo: [AnyHashable: Any]?
 
     @State private var displayAppUserLogin = false
     @State private var displayEditAppUserProfile = false
@@ -27,26 +27,24 @@ struct OctopusUIView: View {
         bottomSafeAreaInset: CGFloat = 0,
         mainFeedNavBarTitle: OctopusMainFeedTitle? = nil,
         mainFeedColoredNavBar: Bool = false,
-        postId: String? = nil,
-        octopusNotification: Binding<UNNotificationResponse?> = .constant(nil)) {
+        initialScreen: OctopusInitialScreen = .mainFeed,
+        octopusNotificationUserInfo: Binding<[AnyHashable: Any]?> = .constant(nil)) {
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
         self.mainFeedNavBarTitle = mainFeedNavBarTitle
         self.mainFeedColoredNavBar = mainFeedColoredNavBar
-        self.postId = postId
-        self._octopusNotification = octopusNotification
+        self.initialScreen = initialScreen
+        self._octopusNotificationUserInfo = octopusNotificationUserInfo
     }
 
     var body: some View {
         OctopusHomeScreen(
             octopus: octopus,
             bottomSafeAreaInset: bottomSafeAreaInset,
-            mainFeedNavBarTitle: mainFeedNavBarTitle ?? .init(
-                content: .text(.init(text: NSLocalizedString("Community", comment: ""))),
-                placement: .leading),
+            mainFeedNavBarTitle: mainFeedNavBarTitle,
             mainFeedColoredNavBar: mainFeedColoredNavBar,
-            postId: postId,
-            notificationResponse: $octopusNotification
+            initialScreen: initialScreen,
+            notificationUserInfo: $octopusNotificationUserInfo
         )
         .fullScreenCover(isPresented: $displayAppUserLogin) {
             AppLoginScreen()

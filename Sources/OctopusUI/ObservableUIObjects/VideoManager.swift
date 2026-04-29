@@ -17,16 +17,52 @@ final class VideoManager: ObservableObject {
         didSet { configureAudioSession() }
     }
 
-    private let octopus: OctopusSDK
-    let videosRepository: VideosRepository
+    private let updateWatchTimeHandler: (_ contentId: String, _ videoId: String,
+                                          _ currentWatchTime: TimeInterval, _ duration: TimeInterval) -> Void
+    private let increaseCompletionHandler: (_ contentId: String, _ videoId: String,
+                                             _ duration: TimeInterval) -> Void
+    private let appManagedAudioSession: Bool
     private var currentTimes: [String: TimeInterval] = [:]
     private var audioSessionActive = false
 
     private var storage = [AnyCancellable]()
 
-    init(octopus: OctopusSDK) {
-        self.octopus = octopus
-        videosRepository = octopus.core.videosRepository
+    /// Designated init. Accepts closures for repository side effects and a boolean that controls
+    /// whether the app manages its own audio session (in which case this manager never touches
+    /// `AVAudioSession`). Used directly by previews/tests.
+    init(
+        updateWatchTime: @escaping (_ contentId: String, _ videoId: String,
+                                    _ currentWatchTime: TimeInterval, _ duration: TimeInterval) -> Void,
+        increaseCompletion: @escaping (_ contentId: String, _ videoId: String,
+                                       _ duration: TimeInterval) -> Void,
+        appManagedAudioSession: Bool
+    ) {
+        self.updateWatchTimeHandler = updateWatchTime
+        self.increaseCompletionHandler = increaseCompletion
+        self.appManagedAudioSession = appManagedAudioSession
+    }
+
+    /// Production convenience.
+    convenience init(octopus: OctopusSDK) {
+        let repo = octopus.core.videosRepository
+        self.init(
+            updateWatchTime: { contentId, videoId, currentWatchTime, duration in
+                repo.updateWatchTime(contentId: contentId, videoId: videoId,
+                                     currentWatchTime: currentWatchTime, duration: duration)
+            },
+            increaseCompletion: { contentId, videoId, duration in
+                repo.increaseCompletion(contentId: contentId, videoId: videoId, duration: duration)
+            },
+            appManagedAudioSession: octopus.core.sdkConfig.appManagedAudioSession)
+    }
+
+    /// Preview factory — no-op handlers; `appManagedAudioSession: true` means `AVAudioSession`
+    /// is never touched.
+    static func forPreviews() -> VideoManager {
+        VideoManager(
+            updateWatchTime: { _, _, _, _ in },
+            increaseCompletion: { _, _, _ in },
+            appManagedAudioSession: true)
     }
 
     func set(autoPlayVideoId: String?) {
@@ -54,13 +90,12 @@ final class VideoManager: ObservableObject {
     }
 
     func updateWatchTime(contentId: String, videoId: String, currentWatchTime: TimeInterval, duration: TimeInterval) {
-        videosRepository.updateWatchTime(contentId: contentId, videoId: videoId, currentWatchTime: currentWatchTime,
-                                         duration: duration)
+        updateWatchTimeHandler(contentId, videoId, currentWatchTime, duration)
         currentTimes[videoId] = currentWatchTime
     }
 
     func increaseCompletion(contentId: String, videoId: String, duration: TimeInterval) {
-        videosRepository.increaseCompletion(contentId: contentId, videoId: videoId, duration: duration)
+        increaseCompletionHandler(contentId, videoId, duration)
     }
 
     func getCurrentTime(videoId: String) -> TimeInterval? {
@@ -69,17 +104,19 @@ final class VideoManager: ObservableObject {
 
     private func willPlay() {
         configureAudioSession()
+        guard !appManagedAudioSession else { return }
         try? AVAudioSession.sharedInstance().setActive(true)
     }
 
     private func didPause() {
+        guard !appManagedAudioSession else { return }
         DispatchQueue.global(qos: .background).async {
             try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         }
     }
 
     private func configureAudioSession() {
-        guard !octopus.core.sdkConfig.appManagedAudioSession else { return }
+        guard !appManagedAudioSession else { return }
         let session = AVAudioSession.sharedInstance()
 
         if isMuted {

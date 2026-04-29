@@ -63,7 +63,7 @@ extension View {
     }
 
     func namespacedMatchedGeometryEffect<ID>(
-        id: ID, anchor: UnitPoint = .center, isSource: Bool = true) -> some View where ID : Hashable {
+        id: ID, anchor: UnitPoint = .center, isSource: Bool = true) -> some View where ID: Hashable {
             if #available(iOS 14, *) {
                 return NamespaceReader(content: self, id: id, anchor: anchor, isSource: isSource)
             } else {

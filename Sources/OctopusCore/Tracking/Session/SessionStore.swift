@@ -59,7 +59,7 @@ class SessionStore {
 
         self.session = session
     }
-    
+
     /// This function is here because there was a bug up until the 1.9.3 where the prefix was missing the
     /// `OctopusSDK.tracking.`
     ///

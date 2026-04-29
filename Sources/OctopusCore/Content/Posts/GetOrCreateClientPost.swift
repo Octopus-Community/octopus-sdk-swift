@@ -83,4 +83,3 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Fail {
         return false
     }
 }
-

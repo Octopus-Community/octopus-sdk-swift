@@ -11,7 +11,7 @@ class ClientPostTests {
     @Test func hashClientPostWithNullValues() throws {
         let clientPost = ClientPost(
             clientObjectId: "a7dada1c-f933-4186-9e72-88927ef3bf90",
-            topicId: nil,
+            groupId: nil,
             text: "Text here",
             catchPhrase: nil,
             attachment: nil,
@@ -24,7 +24,7 @@ class ClientPostTests {
     @Test func hashClientPostWithRemoteImage() throws {
         let clientPost = ClientPost(
             clientObjectId: "a7dada1c-f933-4186-9e72-88927ef3bf90",
-            topicId: nil,
+            groupId: nil,
             text: "Text here",
             catchPhrase: nil,
             attachment: .distantImage(URL(string: "https://media-content-dev.octocdn.net/sample_640%C3%97426.jpeg")!),
@@ -39,7 +39,7 @@ class ClientPostTests {
         let imageData = try Data(contentsOf: imageUrl)
         let clientPost = ClientPost(
             clientObjectId: "ea2ebba8-c2d6-4945-95e7-1c2eafd97c2e",
-            topicId: nil,
+            groupId: nil,
             text: "Text here",
             catchPhrase: "What do you think ?",
             attachment: .localImage(imageData),
@@ -54,7 +54,7 @@ class ClientPostTests {
         let imageData = try Data(contentsOf: imageUrl)
         let clientPost = ClientPost(
             clientObjectId: "570c32e4-5179-44f1-9ed6-95b92ed885d6",
-            topicId: "a1snSDVg0BRLQHZ-qKrdPS",
+            groupId: "a1snSDVg0BRLQHZ-qKrdPS",
             text: "Text here",
             catchPhrase: "What do you think ?",
             attachment: .localImage(imageData),

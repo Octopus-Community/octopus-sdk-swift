@@ -1,0 +1,83 @@
+# SwiftLint Configuration for Octopus Community Swift SDK
+
+excluded:
+  - Sources/OctopusGrpcModels/GeneratedFiles
+  - Sources/OctopusGrpcModels/ProtoFiles
+  - .build
+  - DerivedData
+  - CocoaPodsValidationApp
+  - Sources/OctopusUI/NavigationBackport
+  - Package.swift
+  - Sources/OctopusUI/Resources/Assets+Generated.swift
+
+# Disabled rules — too noisy on existing codebase, re-enable incrementally
+disabled_rules:
+  - todo
+  - trailing_comma
+  - type_body_length
+  - file_length
+  - function_body_length
+  - cyclomatic_complexity
+  - line_length
+  - multiple_closures_with_trailing_closure
+  - force_cast
+  - force_try
+  - compiler_protocol_init
+  - large_tuple
+  - vertical_parameter_alignment
+  - switch_case_alignment
+  - for_where
+  - no_fallthrough_only
+  - function_parameter_count
+  - optional_data_string_conversion
+
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - contains_over_filter_count
+  - last_where
+  - modifier_order
+  - overridden_super_call
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - weak_delegate
+  - file_header
+
+type_name:
+  min_length: 3
+  max_length:
+    warning: 50
+    error: 60
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  max_length:
+    warning: 60
+    error: 70
+  excluded:
+    - id
+    - ok
+    - i
+    - x
+    - y
+    - to
+    - a
+    - b
+    - r
+    - g
+    - h
+    - s
+    - d
+    - k
+
+nesting:
+  type_level: 4
+  function_level: 3
+
+file_header:
+  required_pattern: |
+    \/\/
+    \/\/  Copyright © \d{4} Octopus Community\. All rights reserved\.
+    \/\/

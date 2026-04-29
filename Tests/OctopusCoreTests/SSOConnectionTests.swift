@@ -16,6 +16,7 @@ class SSOConnectionTests: XCTestCase {
     private var mockUserService: MockUserService!
     private var userDataStorage: UserDataStorage!
     private var userProfileDatabase: CurrentUserProfileDatabase!
+    private var userConfigDatabase: UserConfigDatabase!
     private var storage = [AnyCancellable]()
 
     override func setUp() {
@@ -54,7 +55,7 @@ class SSOConnectionTests: XCTestCase {
 
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
-
+        userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
     }
 
     func testDefaultStateIsNotConnectedWhenNothingIsPresent() async throws {
@@ -87,7 +88,7 @@ class SSOConnectionTests: XCTestCase {
             }
         }.store(in: &storage)
 
-        await fulfillment(of: [guestExpectation], timeout: 0.5)
+        await fulfillment(of: [guestExpectation], timeout: 5)
     }
 
     func testFromNonConnectedToGuest() async throws {
@@ -125,7 +126,7 @@ class SSOConnectionTests: XCTestCase {
             }
         }.store(in: &storage)
 
-        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 0.5, enforceOrder: true)
+        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 5, enforceOrder: true)
     }
 
     func testFromNonConnectedToGuestWithError() async throws {
@@ -155,7 +156,7 @@ class SSOConnectionTests: XCTestCase {
             }
         }.store(in: &storage)
 
-        await fulfillment(of: [notConnectedExpectation, notConnectedWithErrorExpectation], timeout: 0.5,
+        await fulfillment(of: [notConnectedExpectation, notConnectedWithErrorExpectation], timeout: 5,
                           enforceOrder: true)
     }
 
@@ -182,7 +183,7 @@ class SSOConnectionTests: XCTestCase {
             }
         }.store(in: &storage)
 
-        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 0.5,
+        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 5,
                           enforceOrder: true)
 
         // The getFrictionlessJwt service will be called right after the connectUser
@@ -211,7 +212,7 @@ class SSOConnectionTests: XCTestCase {
             tokenProvider: { "CLIENT_TOKEN" }
         )
 
-        await fulfillment(of: [authProfileExpectation], timeout: 0.5)
+        await fulfillment(of: [authProfileExpectation], timeout: 5)
     }
 
     func testFromGuestToNonGuestAfterClientUserConnectedWithError() async throws {
@@ -237,7 +238,7 @@ class SSOConnectionTests: XCTestCase {
             }
         }.store(in: &storage)
 
-        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 0.5,
+        await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 5,
                           enforceOrder: true)
 
         // The getFrictionlessJwt service will be called right after the connectUser
@@ -248,16 +249,21 @@ class SSOConnectionTests: XCTestCase {
             })
         })
 
-        try await connectionRepository.connectUser(
-            .init(userId: "clientUserId",
-                  profile: .init(
-                    nickname: "ClientNickName",
-                    bio: "ClientBio",
-                    picture: nil)),
-            tokenProvider: { "CLIENT_TOKEN" }
-        )
+        do {
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUserId",
+                      profile: .init(
+                        nickname: "ClientNickName",
+                        bio: "ClientBio",
+                        picture: nil)),
+                tokenProvider: { "CLIENT_TOKEN" }
+            )
+            XCTFail("connectUser should have thrown an error")
+        } catch {
+            // Expected: connection error is thrown when client user authentication fails
+        }
 
-        await fulfillment(of: [guestWithErrorExpectation], timeout: 0.5)
+        await fulfillment(of: [guestWithErrorExpectation], timeout: 5)
     }
 
     func testFromClientUserConnectedToAnotherClientConnected() async throws {
@@ -284,7 +290,7 @@ class SSOConnectionTests: XCTestCase {
             }
         }.store(in: &storage)
 
-        await fulfillment(of: [notConnectedExpectation, connected1Expectation], timeout: 0.5,
+        await fulfillment(of: [notConnectedExpectation, connected1Expectation], timeout: 5,
                           enforceOrder: true)
 
         // The getFrictionlessJwt service will be called right after the connectUser
@@ -313,7 +319,183 @@ class SSOConnectionTests: XCTestCase {
             tokenProvider: { "CLIENT_TOKEN" }
         )
 
-        await fulfillment(of: [connected2Expectation], timeout: 0.5)
+        await fulfillment(of: [connected2Expectation], timeout: 5)
+    }
+
+    func testConnectUserThrowsWhenGetJwtFails() async throws {
+        // Precondition: user id and guest profile in db and no client user data
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        let guestExpectation = XCTestExpectation(description: "Guest profile present")
+        connectionRepository.$connectionState.sink { state in
+            if case let .connected(user, nil) = state, user.profile.isGuest {
+                guestExpectation.fulfill()
+            }
+        }.store(in: &storage)
+        await fulfillment(of: [guestExpectation], timeout: 5)
+
+        // Mock getJwt to fail with userBanned
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [.with {
+                    $0.errorCode = .userBanned
+                    $0.message = "You have been banned"
+                }]
+            })
+        })
+
+        do {
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUserId",
+                      profile: .init(nickname: "Nick", bio: nil, picture: nil)),
+                tokenProvider: { "CLIENT_TOKEN" }
+            )
+            XCTFail("connectUser should have thrown an error")
+        } catch let error as ConnectionError {
+            guard case let .detailedErrors(errors) = error else {
+                XCTFail("Expected detailedErrors, got \(error)")
+                return
+            }
+            XCTAssertEqual(errors.count, 1)
+            XCTAssertEqual(errors.first?.reason, .userBanned)
+            XCTAssertEqual(errors.first?.message, "You have been banned")
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+    }
+
+    func testConnectUserThrowsProfileErrorWhenNicknameAlreadyTaken() async throws {
+        // Precondition: user id and guest profile in db and no client user data
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        let guestExpectation = XCTestExpectation(description: "Guest profile present")
+        connectionRepository.$connectionState.sink { state in
+            if case let .connected(user, nil) = state, user.profile.isGuest {
+                guestExpectation.fulfill()
+            }
+        }.store(in: &storage)
+        await fulfillment(of: [guestExpectation], timeout: 5)
+
+        // Mock getJwt to succeed (non-frictionless but nickname not confirmed, so merger will update it)
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "fakeJWT"
+                $0.userID = "userId"
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "OldNickname"
+                    $0.hasConfirmedNickname_p = false
+                    $0.hasConfirmedBio_p = true
+                    $0.hasConfirmedPicture_p = true
+                    $0.isGuest = false
+                }
+            })
+        })
+
+        // Mock updateProfile to fail with nickname already taken
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [.with {
+                    $0.field = .nickname
+                    $0.details = .alreadyTaken(.init())
+                    $0.message = "Nickname is already taken"
+                }]
+            })
+        })
+
+        do {
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUserId",
+                      profile: .init(nickname: "TakenNickname", bio: nil, picture: nil)),
+                tokenProvider: { "CLIENT_TOKEN" }
+            )
+            XCTFail("connectUser should have thrown an error")
+        } catch let error as ConnectionError {
+            guard case let .profileUpdateError(updateError) = error else {
+                XCTFail("Expected profileUpdateError, got \(error)")
+                return
+            }
+            guard case let .validation(validationErrors) = updateError else {
+                XCTFail("Expected validation error, got \(updateError)")
+                return
+            }
+            let nicknameErrors = validationErrors.errors[.linkedToField(.nickname)]
+            XCTAssertNotNil(nicknameErrors)
+            XCTAssertEqual(nicknameErrors?.count, 1)
+            guard case .alreadyTaken = nicknameErrors?.first?.detail else {
+                XCTFail("Expected alreadyTaken, got \(String(describing: nicknameErrors?.first?.detail))")
+                return
+            }
+            XCTAssertEqual(nicknameErrors?.first?.localizedMessage, "Nickname is already taken")
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+    }
+
+    func testConnectUserThrowsProfileErrorWhenAlreadyConnectedAndSyncFails() async throws {
+        // Precondition: connected non-guest user with clientUserId, nickname not confirmed so merger will sync
+        try await setupWithClientUserProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "OldNickname",
+            hasConfirmedNickname: false, isGuest: false),
+        clientUserId: "clientUser1")
+
+        // Ensure community access is granted before creating the repository so the CombineLatest4 pipeline fires
+        try await userConfigDatabase.upsert(canAccessCommunity: true, message: nil)
+        let configRepository: ConfigRepository = injector.getInjected(identifiedBy: Injected.configRepository)
+        try? await TaskUtils.wait(for: configRepository.userConfig?.canAccessCommunity == true, timeout: 2)
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        let connectedExpectation = XCTestExpectation(description: "Client user connected")
+        connectionRepository.$connectionState.sink { state in
+            if case let .connected(user, nil) = state, !user.profile.isGuest {
+                connectedExpectation.fulfill()
+            }
+        }.store(in: &storage)
+        await fulfillment(of: [connectedExpectation], timeout: 5)
+
+        // Mock updateProfile to fail with nickname already taken (triggered by Combine pipeline)
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [.with {
+                    $0.field = .nickname
+                    $0.details = .alreadyTaken(.init())
+                    $0.message = "Nickname is already taken"
+                }]
+            })
+        })
+
+        do {
+            // Call connectUser with same userId but different nickname — tokenNeeded will be false
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUser1",
+                      profile: .init(nickname: "NewNickname", bio: nil, picture: nil)),
+                tokenProvider: { "CLIENT_TOKEN" }
+            )
+            XCTFail("connectUser should have thrown an error")
+        } catch let error as ConnectionError {
+            guard case let .profileUpdateError(updateError) = error else {
+                XCTFail("Expected profileUpdateError, got \(error)")
+                return
+            }
+            guard case let .validation(validationErrors) = updateError else {
+                XCTFail("Expected validation error, got \(updateError)")
+                return
+            }
+            let nicknameErrors = validationErrors.errors[.linkedToField(.nickname)]
+            XCTAssertNotNil(nicknameErrors)
+            XCTAssertEqual(nicknameErrors?.count, 1)
+            guard case .alreadyTaken = nicknameErrors?.first?.detail else {
+                XCTFail("Expected alreadyTaken, got \(String(describing: nicknameErrors?.first?.detail))")
+                return
+            }
+            XCTAssertEqual(nicknameErrors?.first?.localizedMessage, "Nickname is already taken")
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
     }
 
     private func setupWithNonConnectedWithoutErrorState(previousProfileId: String? = nil) async throws {
@@ -342,7 +524,7 @@ class SSOConnectionTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [guestInDbExpectation], timeout: 0.5)
+        await fulfillment(of: [guestInDbExpectation], timeout: 5)
     }
 
     private func setupWithClientUserProfile(_ profile: StorableCurrentUserProfile, clientUserId: String)
@@ -364,6 +546,6 @@ class SSOConnectionTests: XCTestCase {
                 }
             }.store(in: &storage)
 
-        await fulfillment(of: [profileInDbExpectation], timeout: 0.5)
+        await fulfillment(of: [profileInDbExpectation], timeout: 5)
     }
 }

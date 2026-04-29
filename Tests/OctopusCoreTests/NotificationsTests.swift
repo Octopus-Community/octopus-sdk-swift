@@ -157,6 +157,10 @@ private class MockProfileRepository: ProfileRepository, InjectableObject, @unche
         Empty(completeImmediately: false).eraseToAnyPublisher()
     }
 
+    var profileSyncResultPublisher: AnyPublisher<Result<Void, UpdateProfile.Error>, Never> {
+        Empty(completeImmediately: false).eraseToAnyPublisher()
+    }
+
     func fetchCurrentUserProfile() async throws(AuthenticatedActionError) { }
 
     func updateCurrentUserProfile(with profile: EditableProfile) async throws(UpdateProfile.Error)

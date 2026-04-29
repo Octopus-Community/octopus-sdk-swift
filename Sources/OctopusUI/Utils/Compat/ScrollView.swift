@@ -251,7 +251,7 @@ extension Compat {
 
     /// A ScrollView that uses a custom solution for the pull to refresh
     /// - Note: this view cannot scroll to top.
-    private struct ScrollViewIOS13<Content:View>: View {
+    private struct ScrollViewIOS13<Content: View>: View {
         let axes: Axis.Set
         let showIndicators: Bool
         let refreshAction: (@Sendable () async -> Void)?

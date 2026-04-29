@@ -18,6 +18,9 @@ public protocol ProfileRepository: Sendable {
 
     var onCurrentUserProfileUpdated: AnyPublisher<Void, Never> { get }
 
+    /// Emits the result of each profile sync attempt triggered by the Combine pipeline.
+    var profileSyncResultPublisher: AnyPublisher<Result<Void, UpdateProfile.Error>, Never> { get }
+
     func fetchCurrentUserProfile() async throws(AuthenticatedActionError)
 
 //    @discardableResult
@@ -52,6 +55,11 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         _onCurrentUserProfileUpdated.receive(on: DispatchQueue.main).eraseToAnyPublisher()
     }
     private let _onCurrentUserProfileUpdated = PassthroughSubject<Void, Never>()
+
+    var profileSyncResultPublisher: AnyPublisher<Result<Void, UpdateProfile.Error>, Never> {
+        _profileSyncResult.eraseToAnyPublisher()
+    }
+    private let _profileSyncResult = PassthroughSubject<Result<Void, UpdateProfile.Error>, Never>()
 
     private var profileClientUserId: String?
 
@@ -165,7 +173,14 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                   !profile.isGuest else { return }
             Task { [weak self] in
                 guard let self else { return }
-                try await updateProfileWithClientUser(clientUser, profile: profile)
+                do {
+                    try await updateProfileWithClientUser(clientUser, profile: profile)
+                    _profileSyncResult.send(.success(()))
+                } catch let error as UpdateProfile.Error {
+                    _profileSyncResult.send(.failure(error))
+                } catch {
+                    _profileSyncResult.send(.failure(.other(error)))
+                }
             }
         }.store(in: &storage)
     }
@@ -245,6 +260,11 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     public func blockUser(profileId: String) async throws(AuthenticatedActionError) {
         guard let profile = profile else { throw .userNotAuthenticated }
         guard profileId != profile.id else { throw .other(InternalError.invalidArgument) }
+        // Refuse to block admin-tagged profiles (UI hides the entry, this is the safety net).
+        if let target = try? await publicProfileDatabase.getProfile(profileId: profileId),
+           target.tags.contains(.admin) {
+            throw .other(InternalError.invalidArgument)
+        }
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             _ = try await remoteClient.userService.blockUser(
@@ -356,11 +376,15 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     }
 
     func updateProfileWithClientUser(_ clientUser: ClientUser, profile: CurrentUserProfile)
-    async throws {
-        guard let userData = userDataStorage.userData else { throw AuthenticatedActionError.userNotAuthenticated }
+    async throws(UpdateProfile.Error) {
+        guard let userData = userDataStorage.userData else { throw .serverCall(.userNotAuthenticated) }
         if let updatedProfile = try await clientUserProfileMerger.updateProfileWithClientUser(
             clientUser, profile: profile, userId: userData.id) {
-            try await userProfileDatabase.upsert(profile: updatedProfile)
+            do {
+                try await userProfileDatabase.upsert(profile: updatedProfile)
+            } catch {
+                throw .serverCall(.other(error))
+            }
             _onCurrentUserProfileUpdated.send()
         }
     }

@@ -28,11 +28,11 @@ public struct Com_Octopuscommunity_RwOctoObject: Sendable {
   public var parentID: String = String()
 
   public var content: Com_Octopuscommunity_Content {
-    get {return _content ?? Com_Octopuscommunity_Content()}
+    get {_content ?? Com_Octopuscommunity_Content()}
     set {_content = newValue}
   }
   /// Returns true if `content` has been explicitly set.
-  public var hasContent: Bool {return self._content != nil}
+  public var hasContent: Bool {self._content != nil}
   /// Clears the value of `content`. Subsequent reads from it will return its default value.
   public mutating func clearContent() {self._content = nil}
 
@@ -56,11 +56,11 @@ public struct Com_Octopuscommunity_UpdatePostRequest: Sendable {
   public var octoObjectID: String = String()
 
   public var update: Com_Octopuscommunity_UpdatePostRequest.Update {
-    get {return _update ?? Com_Octopuscommunity_UpdatePostRequest.Update()}
+    get {_update ?? Com_Octopuscommunity_UpdatePostRequest.Update()}
     set {_update = newValue}
   }
   /// Returns true if `update` has been explicitly set.
-  public var hasUpdate: Bool {return self._update != nil}
+  public var hasUpdate: Bool {self._update != nil}
   /// Clears the value of `update`. Subsequent reads from it will return its default value.
   public mutating func clearUpdate() {self._update = nil}
 
@@ -72,65 +72,65 @@ public struct Com_Octopuscommunity_UpdatePostRequest: Sendable {
     // methods supported on all messages.
 
     public var topicID: String {
-      get {return _topicID ?? String()}
+      get {_topicID ?? String()}
       set {_topicID = newValue}
     }
     /// Returns true if `topicID` has been explicitly set.
-    public var hasTopicID: Bool {return self._topicID != nil}
+    public var hasTopicID: Bool {self._topicID != nil}
     /// Clears the value of `topicID`. Subsequent reads from it will return its default value.
     public mutating func clearTopicID() {self._topicID = nil}
 
     public var postContent: Com_Octopuscommunity_Post {
-      get {return _postContent ?? Com_Octopuscommunity_Post()}
+      get {_postContent ?? Com_Octopuscommunity_Post()}
       set {_postContent = newValue}
     }
     /// Returns true if `postContent` has been explicitly set.
-    public var hasPostContent: Bool {return self._postContent != nil}
+    public var hasPostContent: Bool {self._postContent != nil}
     /// Clears the value of `postContent`. Subsequent reads from it will return its default value.
     public mutating func clearPostContent() {self._postContent = nil}
 
     public var maxActivityScore: UInt64 {
-      get {return _maxActivityScore ?? 0}
+      get {_maxActivityScore ?? 0}
       set {_maxActivityScore = newValue}
     }
     /// Returns true if `maxActivityScore` has been explicitly set.
-    public var hasMaxActivityScore: Bool {return self._maxActivityScore != nil}
+    public var hasMaxActivityScore: Bool {self._maxActivityScore != nil}
     /// Clears the value of `maxActivityScore`. Subsequent reads from it will return its default value.
     public mutating func clearMaxActivityScore() {self._maxActivityScore = nil}
 
     public var deleteMaxActivityScore: Bool {
-      get {return _deleteMaxActivityScore ?? false}
+      get {_deleteMaxActivityScore ?? false}
       set {_deleteMaxActivityScore = newValue}
     }
     /// Returns true if `deleteMaxActivityScore` has been explicitly set.
-    public var hasDeleteMaxActivityScore: Bool {return self._deleteMaxActivityScore != nil}
+    public var hasDeleteMaxActivityScore: Bool {self._deleteMaxActivityScore != nil}
     /// Clears the value of `deleteMaxActivityScore`. Subsequent reads from it will return its default value.
     public mutating func clearDeleteMaxActivityScore() {self._deleteMaxActivityScore = nil}
 
     public var minActivityScore: UInt64 {
-      get {return _minActivityScore ?? 0}
+      get {_minActivityScore ?? 0}
       set {_minActivityScore = newValue}
     }
     /// Returns true if `minActivityScore` has been explicitly set.
-    public var hasMinActivityScore: Bool {return self._minActivityScore != nil}
+    public var hasMinActivityScore: Bool {self._minActivityScore != nil}
     /// Clears the value of `minActivityScore`. Subsequent reads from it will return its default value.
     public mutating func clearMinActivityScore() {self._minActivityScore = nil}
 
     public var deleteMinActivityScore: Bool {
-      get {return _deleteMinActivityScore ?? false}
+      get {_deleteMinActivityScore ?? false}
       set {_deleteMinActivityScore = newValue}
     }
     /// Returns true if `deleteMinActivityScore` has been explicitly set.
-    public var hasDeleteMinActivityScore: Bool {return self._deleteMinActivityScore != nil}
+    public var hasDeleteMinActivityScore: Bool {self._deleteMinActivityScore != nil}
     /// Clears the value of `deleteMinActivityScore`. Subsequent reads from it will return its default value.
     public mutating func clearDeleteMinActivityScore() {self._deleteMinActivityScore = nil}
 
     public var shadowBanned: Bool {
-      get {return _shadowBanned ?? false}
+      get {_shadowBanned ?? false}
       set {_shadowBanned = newValue}
     }
     /// Returns true if `shadowBanned` has been explicitly set.
-    public var hasShadowBanned: Bool {return self._shadowBanned != nil}
+    public var hasShadowBanned: Bool {self._shadowBanned != nil}
     /// Clears the value of `shadowBanned`. Subsequent reads from it will return its default value.
     public mutating func clearShadowBanned() {self._shadowBanned = nil}
 
@@ -189,11 +189,11 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
     // methods supported on all messages.
 
     public var post: Com_Octopuscommunity_OctoObject {
-      get {return _post ?? Com_Octopuscommunity_OctoObject()}
+      get {_post ?? Com_Octopuscommunity_OctoObject()}
       set {_post = newValue}
     }
     /// Returns true if `post` has been explicitly set.
-    public var hasPost: Bool {return self._post != nil}
+    public var hasPost: Bool {self._post != nil}
     /// Clears the value of `post`. Subsequent reads from it will return its default value.
     public mutating func clearPost() {self._post = nil}
 
@@ -224,11 +224,11 @@ public struct Com_Octopuscommunity_UpdatePostResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_UpdatePostResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -367,21 +367,21 @@ public struct Com_Octopuscommunity_GetRequest: Sendable {
   public var fetchAggregate: Bool = false
 
   public var registerView: Bool {
-    get {return _registerView ?? false}
+    get {_registerView ?? false}
     set {_registerView = newValue}
   }
   /// Returns true if `registerView` has been explicitly set.
-  public var hasRegisterView: Bool {return self._registerView != nil}
+  public var hasRegisterView: Bool {self._registerView != nil}
   /// Clears the value of `registerView`. Subsequent reads from it will return its default value.
   public mutating func clearRegisterView() {self._registerView = nil}
 
   ///For analytics
   public var hasVideo_p: Bool {
-    get {return _hasVideo_p ?? false}
+    get {_hasVideo_p ?? false}
     set {_hasVideo_p = newValue}
   }
   /// Returns true if `hasVideo_p` has been explicitly set.
-  public var hasHasVideo_p: Bool {return self._hasVideo_p != nil}
+  public var hasHasVideo_p: Bool {self._hasVideo_p != nil}
   /// Clears the value of `hasVideo_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasVideo_p() {self._hasVideo_p = nil}
 
@@ -401,29 +401,29 @@ public struct Com_Octopuscommunity_GetResponse: Sendable {
   public var octoObjectID: String = String()
 
   public var octoObject: Com_Octopuscommunity_OctoObject {
-    get {return _octoObject ?? Com_Octopuscommunity_OctoObject()}
+    get {_octoObject ?? Com_Octopuscommunity_OctoObject()}
     set {_octoObject = newValue}
   }
   /// Returns true if `octoObject` has been explicitly set.
-  public var hasOctoObject: Bool {return self._octoObject != nil}
+  public var hasOctoObject: Bool {self._octoObject != nil}
   /// Clears the value of `octoObject`. Subsequent reads from it will return its default value.
   public mutating func clearOctoObject() {self._octoObject = nil}
 
   public var aggregate: Com_Octopuscommunity_Aggregate {
-    get {return _aggregate ?? Com_Octopuscommunity_Aggregate()}
+    get {_aggregate ?? Com_Octopuscommunity_Aggregate()}
     set {_aggregate = newValue}
   }
   /// Returns true if `aggregate` has been explicitly set.
-  public var hasAggregate: Bool {return self._aggregate != nil}
+  public var hasAggregate: Bool {self._aggregate != nil}
   /// Clears the value of `aggregate`. Subsequent reads from it will return its default value.
   public mutating func clearAggregate() {self._aggregate = nil}
 
   public var requesterCtx: Com_Octopuscommunity_RequesterCtx {
-    get {return _requesterCtx ?? Com_Octopuscommunity_RequesterCtx()}
+    get {_requesterCtx ?? Com_Octopuscommunity_RequesterCtx()}
     set {_requesterCtx = newValue}
   }
   /// Returns true if `requesterCtx` has been explicitly set.
-  public var hasRequesterCtx: Bool {return self._requesterCtx != nil}
+  public var hasRequesterCtx: Bool {self._requesterCtx != nil}
   /// Clears the value of `requesterCtx`. Subsequent reads from it will return its default value.
   public mutating func clearRequesterCtx() {self._requesterCtx = nil}
 
@@ -466,21 +466,21 @@ public struct Com_Octopuscommunity_PutRequest: @unchecked Sendable {
   // methods supported on all messages.
 
   public var octoObject: Com_Octopuscommunity_RwOctoObject {
-    get {return _storage._octoObject ?? Com_Octopuscommunity_RwOctoObject()}
+    get {_storage._octoObject ?? Com_Octopuscommunity_RwOctoObject()}
     set {_uniqueStorage()._octoObject = newValue}
   }
   /// Returns true if `octoObject` has been explicitly set.
-  public var hasOctoObject: Bool {return _storage._octoObject != nil}
+  public var hasOctoObject: Bool {_storage._octoObject != nil}
   /// Clears the value of `octoObject`. Subsequent reads from it will return its default value.
   public mutating func clearOctoObject() {_uniqueStorage()._octoObject = nil}
 
   /// Whether the interaction happened on a translated or original content. Default false
   public var translatedContent: Bool {
-    get {return _storage._translatedContent ?? false}
+    get {_storage._translatedContent ?? false}
     set {_uniqueStorage()._translatedContent = newValue}
   }
   /// Returns true if `translatedContent` has been explicitly set.
-  public var hasTranslatedContent: Bool {return _storage._translatedContent != nil}
+  public var hasTranslatedContent: Bool {_storage._translatedContent != nil}
   /// Clears the value of `translatedContent`. Subsequent reads from it will return its default value.
   public mutating func clearTranslatedContent() {_uniqueStorage()._translatedContent = nil}
 
@@ -528,21 +528,21 @@ public struct Com_Octopuscommunity_PutCommentResponse: Sendable {
     // methods supported on all messages.
 
     public var comment: Com_Octopuscommunity_OctoObject {
-      get {return _comment ?? Com_Octopuscommunity_OctoObject()}
+      get {_comment ?? Com_Octopuscommunity_OctoObject()}
       set {_comment = newValue}
     }
     /// Returns true if `comment` has been explicitly set.
-    public var hasComment: Bool {return self._comment != nil}
+    public var hasComment: Bool {self._comment != nil}
     /// Clears the value of `comment`. Subsequent reads from it will return its default value.
     public mutating func clearComment() {self._comment = nil}
 
     ///For analytics
     public var hasTargetVideoContent_p: Bool {
-      get {return _hasTargetVideoContent_p ?? false}
+      get {_hasTargetVideoContent_p ?? false}
       set {_hasTargetVideoContent_p = newValue}
     }
     /// Returns true if `hasTargetVideoContent_p` has been explicitly set.
-    public var hasHasTargetVideoContent_p: Bool {return self._hasTargetVideoContent_p != nil}
+    public var hasHasTargetVideoContent_p: Bool {self._hasTargetVideoContent_p != nil}
     /// Clears the value of `hasTargetVideoContent_p`. Subsequent reads from it will return its default value.
     public mutating func clearHasTargetVideoContent_p() {self._hasTargetVideoContent_p = nil}
 
@@ -574,11 +574,11 @@ public struct Com_Octopuscommunity_PutCommentResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_PutCommentResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -764,11 +764,11 @@ public struct Com_Octopuscommunity_PutReplyResponse: Sendable {
     // methods supported on all messages.
 
     public var reply: Com_Octopuscommunity_OctoObject {
-      get {return _reply ?? Com_Octopuscommunity_OctoObject()}
+      get {_reply ?? Com_Octopuscommunity_OctoObject()}
       set {_reply = newValue}
     }
     /// Returns true if `reply` has been explicitly set.
-    public var hasReply: Bool {return self._reply != nil}
+    public var hasReply: Bool {self._reply != nil}
     /// Clears the value of `reply`. Subsequent reads from it will return its default value.
     public mutating func clearReply() {self._reply = nil}
 
@@ -799,11 +799,11 @@ public struct Com_Octopuscommunity_PutReplyResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_PutReplyResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -989,11 +989,11 @@ public struct Com_Octopuscommunity_PutPollVoteResponse: Sendable {
     // methods supported on all messages.
 
     public var pollVote: Com_Octopuscommunity_OctoObject {
-      get {return _pollVote ?? Com_Octopuscommunity_OctoObject()}
+      get {_pollVote ?? Com_Octopuscommunity_OctoObject()}
       set {_pollVote = newValue}
     }
     /// Returns true if `pollVote` has been explicitly set.
-    public var hasPollVote: Bool {return self._pollVote != nil}
+    public var hasPollVote: Bool {self._pollVote != nil}
     /// Clears the value of `pollVote`. Subsequent reads from it will return its default value.
     public mutating func clearPollVote() {self._pollVote = nil}
 
@@ -1024,11 +1024,11 @@ public struct Com_Octopuscommunity_PutPollVoteResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_PutPollVoteResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -1145,11 +1145,11 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
     // methods supported on all messages.
 
     public var post: Com_Octopuscommunity_OctoObject {
-      get {return _post ?? Com_Octopuscommunity_OctoObject()}
+      get {_post ?? Com_Octopuscommunity_OctoObject()}
       set {_post = newValue}
     }
     /// Returns true if `post` has been explicitly set.
-    public var hasPost: Bool {return self._post != nil}
+    public var hasPost: Bool {self._post != nil}
     /// Clears the value of `post`. Subsequent reads from it will return its default value.
     public mutating func clearPost() {self._post = nil}
 
@@ -1180,11 +1180,11 @@ public struct Com_Octopuscommunity_PutPostResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_PutPostResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -1717,11 +1717,11 @@ public struct Com_Octopuscommunity_ReportContentRequest: Sendable {
   public var reasonCodes: [Com_Octopuscommunity_ReportReasonCode] = []
 
   public var customReason: String {
-    get {return _customReason ?? String()}
+    get {_customReason ?? String()}
     set {_customReason = newValue}
   }
   /// Returns true if `customReason` has been explicitly set.
-  public var hasCustomReason: Bool {return self._customReason != nil}
+  public var hasCustomReason: Bool {self._customReason != nil}
   /// Clears the value of `customReason`. Subsequent reads from it will return its default value.
   public mutating func clearCustomReason() {self._customReason = nil}
 
@@ -1749,31 +1749,31 @@ public struct Com_Octopuscommunity_GetOrCreateBridgePostRequest: Sendable {
 
   ///Better to fill it for security reasons
   public var clientToken: String {
-    get {return _clientToken ?? String()}
+    get {_clientToken ?? String()}
     set {_clientToken = newValue}
   }
   /// Returns true if `clientToken` has been explicitly set.
-  public var hasClientToken: Bool {return self._clientToken != nil}
+  public var hasClientToken: Bool {self._clientToken != nil}
   /// Clears the value of `clientToken`. Subsequent reads from it will return its default value.
   public mutating func clearClientToken() {self._clientToken = nil}
 
   ///Default bridge topic if not filled
   public var topicID: String {
-    get {return _topicID ?? String()}
+    get {_topicID ?? String()}
     set {_topicID = newValue}
   }
   /// Returns true if `topicID` has been explicitly set.
-  public var hasTopicID: Bool {return self._topicID != nil}
+  public var hasTopicID: Bool {self._topicID != nil}
   /// Clears the value of `topicID`. Subsequent reads from it will return its default value.
   public mutating func clearTopicID() {self._topicID = nil}
 
   /// must contain bridgeToClientObject
   public var postBridge: Com_Octopuscommunity_Post {
-    get {return _postBridge ?? Com_Octopuscommunity_Post()}
+    get {_postBridge ?? Com_Octopuscommunity_Post()}
     set {_postBridge = newValue}
   }
   /// Returns true if `postBridge` has been explicitly set.
-  public var hasPostBridge: Bool {return self._postBridge != nil}
+  public var hasPostBridge: Bool {self._postBridge != nil}
   /// Clears the value of `postBridge`. Subsequent reads from it will return its default value.
   public mutating func clearPostBridge() {self._postBridge = nil}
 
@@ -1824,31 +1824,31 @@ public struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Sendable {
 
     /// The created post
     public var postBridge: Com_Octopuscommunity_OctoObject {
-      get {return _postBridge ?? Com_Octopuscommunity_OctoObject()}
+      get {_postBridge ?? Com_Octopuscommunity_OctoObject()}
       set {_postBridge = newValue}
     }
     /// Returns true if `postBridge` has been explicitly set.
-    public var hasPostBridge: Bool {return self._postBridge != nil}
+    public var hasPostBridge: Bool {self._postBridge != nil}
     /// Clears the value of `postBridge`. Subsequent reads from it will return its default value.
     public mutating func clearPostBridge() {self._postBridge = nil}
 
     /// The aggregate for the created post
     public var aggregate: Com_Octopuscommunity_Aggregate {
-      get {return _aggregate ?? Com_Octopuscommunity_Aggregate()}
+      get {_aggregate ?? Com_Octopuscommunity_Aggregate()}
       set {_aggregate = newValue}
     }
     /// Returns true if `aggregate` has been explicitly set.
-    public var hasAggregate: Bool {return self._aggregate != nil}
+    public var hasAggregate: Bool {self._aggregate != nil}
     /// Clears the value of `aggregate`. Subsequent reads from it will return its default value.
     public mutating func clearAggregate() {self._aggregate = nil}
 
     /// Used for analytics only
     public var status: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus {
-      get {return _status ?? .unknown}
+      get {_status ?? .unknown}
       set {_status = newValue}
     }
     /// Returns true if `status` has been explicitly set.
-    public var hasStatus: Bool {return self._status != nil}
+    public var hasStatus: Bool {self._status != nil}
     /// Clears the value of `status`. Subsequent reads from it will return its default value.
     public mutating func clearStatus() {self._status = nil}
 
@@ -1923,11 +1923,11 @@ public struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -2178,11 +2178,11 @@ public struct Com_Octopuscommunity_GetOctoObjectTranslationsResponse: Sendable {
 
   /// Can be null if not detected
   public var originalLanguageCode: String {
-    get {return _originalLanguageCode ?? String()}
+    get {_originalLanguageCode ?? String()}
     set {_originalLanguageCode = newValue}
   }
   /// Returns true if `originalLanguageCode` has been explicitly set.
-  public var hasOriginalLanguageCode: Bool {return self._originalLanguageCode != nil}
+  public var hasOriginalLanguageCode: Bool {self._originalLanguageCode != nil}
   /// Clears the value of `originalLanguageCode`. Subsequent reads from it will return its default value.
   public mutating func clearOriginalLanguageCode() {self._originalLanguageCode = nil}
 
@@ -2203,31 +2203,31 @@ public struct Com_Octopuscommunity_FieldTranslationsByLanguage: Sendable {
   public var translationLanguageCode: String = String()
 
   public var text: Com_Octopuscommunity_FieldTranslations {
-    get {return _text ?? Com_Octopuscommunity_FieldTranslations()}
+    get {_text ?? Com_Octopuscommunity_FieldTranslations()}
     set {_text = newValue}
   }
   /// Returns true if `text` has been explicitly set.
-  public var hasText: Bool {return self._text != nil}
+  public var hasText: Bool {self._text != nil}
   /// Clears the value of `text`. Subsequent reads from it will return its default value.
   public mutating func clearText() {self._text = nil}
 
   public var pollAnswers: [Com_Octopuscommunity_FieldTranslations] = []
 
   public var ctaButton: Com_Octopuscommunity_FieldTranslations {
-    get {return _ctaButton ?? Com_Octopuscommunity_FieldTranslations()}
+    get {_ctaButton ?? Com_Octopuscommunity_FieldTranslations()}
     set {_ctaButton = newValue}
   }
   /// Returns true if `ctaButton` has been explicitly set.
-  public var hasCtaButton: Bool {return self._ctaButton != nil}
+  public var hasCtaButton: Bool {self._ctaButton != nil}
   /// Clears the value of `ctaButton`. Subsequent reads from it will return its default value.
   public mutating func clearCtaButton() {self._ctaButton = nil}
 
   public var catchPhrase: Com_Octopuscommunity_FieldTranslations {
-    get {return _catchPhrase ?? Com_Octopuscommunity_FieldTranslations()}
+    get {_catchPhrase ?? Com_Octopuscommunity_FieldTranslations()}
     set {_catchPhrase = newValue}
   }
   /// Returns true if `catchPhrase` has been explicitly set.
-  public var hasCatchPhrase: Bool {return self._catchPhrase != nil}
+  public var hasCatchPhrase: Bool {self._catchPhrase != nil}
   /// Clears the value of `catchPhrase`. Subsequent reads from it will return its default value.
   public mutating func clearCatchPhrase() {self._catchPhrase = nil}
 
@@ -2260,11 +2260,7 @@ fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_RwOctoObject: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RwOctoObject"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parentId"),
-    2: .same(proto: "content"),
-    3: .same(proto: "pressedEnterAt"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parentId\0\u{1}content\0\u{1}pressedEnterAt\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2308,10 +2304,7 @@ extension Com_Octopuscommunity_RwOctoObject: SwiftProtobuf.Message, SwiftProtobu
 
 extension Com_Octopuscommunity_UpdatePostRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdatePostRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "update"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}update\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2350,15 +2343,7 @@ extension Com_Octopuscommunity_UpdatePostRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdatePostRequest.protoMessageName + ".Update"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "topicId"),
-    2: .same(proto: "postContent"),
-    3: .same(proto: "maxActivityScore"),
-    31: .same(proto: "deleteMaxActivityScore"),
-    4: .same(proto: "minActivityScore"),
-    41: .same(proto: "deleteMinActivityScore"),
-    5: .same(proto: "shadowBanned"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0\u{1}postContent\0\u{1}maxActivityScore\0\u{1}minActivityScore\0\u{1}shadowBanned\0\u{2}\u{1a}deleteMaxActivityScore\0\u{2}\u{a}deleteMinActivityScore\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2422,10 +2407,7 @@ extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_UpdatePostResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdatePostResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2492,9 +2474,7 @@ extension Com_Octopuscommunity_UpdatePostResponse: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_UpdatePostResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdatePostResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "post"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}post\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2528,9 +2508,7 @@ extension Com_Octopuscommunity_UpdatePostResponse.Success: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_UpdatePostResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdatePostResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2560,17 +2538,7 @@ extension Com_Octopuscommunity_UpdatePostResponse.Fail: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_UpdatePostResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdatePostResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    102: .same(proto: "missingText"),
-    103: .same(proto: "bannedWordUsed"),
-    104: .same(proto: "maxCharLimitReached"),
-    105: .same(proto: "emptyFile"),
-    106: .same(proto: "fileSizeTooBig"),
-    107: .same(proto: "badFileFormat"),
-    108: .same(proto: "uploadIssue"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}d\u{1}missingText\0\u{1}bannedWordUsed\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2731,23 +2699,12 @@ extension Com_Octopuscommunity_UpdatePostResponse.Error: SwiftProtobuf.Message, 
 }
 
 extension Com_Octopuscommunity_UpdatePostResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    2: .same(proto: "CONTENT_TEXT"),
-    4: .same(proto: "CONTENT_FILE"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{2}\u{2}CONTENT_TEXT\0\u{2}\u{2}CONTENT_FILE\0")
 }
 
 extension Com_Octopuscommunity_GetRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "fetchObject"),
-    3: .same(proto: "fetchRequesterCtx"),
-    4: .same(proto: "fetchAggregate"),
-    6: .same(proto: "registerView"),
-    7: .same(proto: "hasVideo"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}fetchObject\0\u{1}fetchRequesterCtx\0\u{1}fetchAggregate\0\u{2}\u{2}registerView\0\u{1}hasVideo\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2806,12 +2763,7 @@ extension Com_Octopuscommunity_GetRequest: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension Com_Octopuscommunity_GetResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "octoObject"),
-    3: .same(proto: "aggregate"),
-    4: .same(proto: "requesterCtx"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}octoObject\0\u{1}aggregate\0\u{1}requesterCtx\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2860,9 +2812,7 @@ extension Com_Octopuscommunity_GetResponse: SwiftProtobuf.Message, SwiftProtobuf
 
 extension Com_Octopuscommunity_GetBatchRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetBatchRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "requests"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}requests\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2892,9 +2842,7 @@ extension Com_Octopuscommunity_GetBatchRequest: SwiftProtobuf.Message, SwiftProt
 
 extension Com_Octopuscommunity_GetBatchResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetBatchResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "responses"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}responses\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2924,24 +2872,17 @@ extension Com_Octopuscommunity_GetBatchResponse: SwiftProtobuf.Message, SwiftPro
 
 extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObject"),
-    10: .same(proto: "translatedContent"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObject\0\u{2}\u{9}translatedContent\0")
 
   fileprivate class _StorageClass {
     var _octoObject: Com_Octopuscommunity_RwOctoObject? = nil
     var _translatedContent: Bool? = nil
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -3008,10 +2949,7 @@ extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf.
 
 extension Com_Octopuscommunity_PutCommentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutCommentResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3078,10 +3016,7 @@ extension Com_Octopuscommunity_PutCommentResponse: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_PutCommentResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutCommentResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "comment"),
-    2: .same(proto: "hasTargetVideoContent"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}comment\0\u{1}hasTargetVideoContent\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3120,9 +3055,7 @@ extension Com_Octopuscommunity_PutCommentResponse.Success: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_PutCommentResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutCommentResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3152,19 +3085,7 @@ extension Com_Octopuscommunity_PutCommentResponse.Fail: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_PutCommentResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutCommentResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingParent"),
-    102: .same(proto: "bannedWordUsed"),
-    103: .same(proto: "maxCharLimitReached"),
-    104: .same(proto: "emptyFile"),
-    105: .same(proto: "fileSizeTooBig"),
-    106: .same(proto: "badFileFormat"),
-    107: .same(proto: "uploadIssue"),
-    108: .same(proto: "emptyPublication"),
-    109: .same(proto: "publicationRateLimitExceeded"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0\u{1}bannedWordUsed\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}emptyPublication\0\u{1}publicationRateLimitExceeded\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3359,20 +3280,12 @@ extension Com_Octopuscommunity_PutCommentResponse.Error: SwiftProtobuf.Message, 
 }
 
 extension Com_Octopuscommunity_PutCommentResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_PARENT"),
-    2: .same(proto: "CONTENT_TEXT"),
-    3: .same(proto: "CONTENT_FILE"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0\u{1}CONTENT_TEXT\0\u{1}CONTENT_FILE\0")
 }
 
 extension Com_Octopuscommunity_PutReplyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutReplyResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3439,9 +3352,7 @@ extension Com_Octopuscommunity_PutReplyResponse: SwiftProtobuf.Message, SwiftPro
 
 extension Com_Octopuscommunity_PutReplyResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReplyResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "reply"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reply\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3475,9 +3386,7 @@ extension Com_Octopuscommunity_PutReplyResponse.Success: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_PutReplyResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReplyResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3507,19 +3416,7 @@ extension Com_Octopuscommunity_PutReplyResponse.Fail: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_PutReplyResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReplyResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingParent"),
-    102: .same(proto: "bannedWordUsed"),
-    103: .same(proto: "maxCharLimitReached"),
-    104: .same(proto: "emptyFile"),
-    105: .same(proto: "fileSizeTooBig"),
-    106: .same(proto: "badFileFormat"),
-    107: .same(proto: "uploadIssue"),
-    108: .same(proto: "emptyPublication"),
-    109: .same(proto: "publicationRateLimitExceeded"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0\u{1}bannedWordUsed\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}emptyPublication\0\u{1}publicationRateLimitExceeded\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3714,20 +3611,12 @@ extension Com_Octopuscommunity_PutReplyResponse.Error: SwiftProtobuf.Message, Sw
 }
 
 extension Com_Octopuscommunity_PutReplyResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_PARENT"),
-    2: .same(proto: "CONTENT_TEXT"),
-    3: .same(proto: "CONTENT_FILE"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0\u{1}CONTENT_TEXT\0\u{1}CONTENT_FILE\0")
 }
 
 extension Com_Octopuscommunity_PutPollVoteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutPollVoteResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3794,9 +3683,7 @@ extension Com_Octopuscommunity_PutPollVoteResponse: SwiftProtobuf.Message, Swift
 
 extension Com_Octopuscommunity_PutPollVoteResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutPollVoteResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "pollVote"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pollVote\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3830,9 +3717,7 @@ extension Com_Octopuscommunity_PutPollVoteResponse.Success: SwiftProtobuf.Messag
 
 extension Com_Octopuscommunity_PutPollVoteResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutPollVoteResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3862,12 +3747,7 @@ extension Com_Octopuscommunity_PutPollVoteResponse.Fail: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_PutPollVoteResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutPollVoteResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingParent"),
-    102: .same(proto: "missingPollAnswer"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0\u{1}missingPollAnswer\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3943,19 +3823,12 @@ extension Com_Octopuscommunity_PutPollVoteResponse.Error: SwiftProtobuf.Message,
 }
 
 extension Com_Octopuscommunity_PutPollVoteResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_PARENT"),
-    2: .same(proto: "CONTENT_TARGET"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0\u{1}CONTENT_TARGET\0")
 }
 
 extension Com_Octopuscommunity_PutPostResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutPostResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4022,9 +3895,7 @@ extension Com_Octopuscommunity_PutPostResponse: SwiftProtobuf.Message, SwiftProt
 
 extension Com_Octopuscommunity_PutPostResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutPostResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "post"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}post\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4058,9 +3929,7 @@ extension Com_Octopuscommunity_PutPostResponse.Success: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_PutPostResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutPostResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4090,25 +3959,7 @@ extension Com_Octopuscommunity_PutPostResponse.Fail: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutPostResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingParent"),
-    102: .same(proto: "missingText"),
-    103: .same(proto: "bannedWordUsed"),
-    104: .same(proto: "maxCharLimitReached"),
-    105: .same(proto: "emptyFile"),
-    106: .same(proto: "fileSizeTooBig"),
-    107: .same(proto: "badFileFormat"),
-    108: .same(proto: "uploadIssue"),
-    109: .same(proto: "badPollAnswerNumber"),
-    110: .same(proto: "missingClientObjectId"),
-    111: .same(proto: "invalidAuthor"),
-    112: .same(proto: "missingCtaText"),
-    113: .same(proto: "missingCtaTarget"),
-    114: .same(proto: "invalidCtaTarget"),
-    115: .same(proto: "publicationRateLimitExceeded"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0\u{1}missingText\0\u{1}bannedWordUsed\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}badPollAnswerNumber\0\u{1}missingClientObjectId\0\u{1}invalidAuthor\0\u{1}missingCtaText\0\u{1}missingCtaTarget\0\u{1}invalidCtaTarget\0\u{1}publicationRateLimitExceeded\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4405,16 +4256,7 @@ extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.Message, Swi
 }
 
 extension Com_Octopuscommunity_PutPostResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_PARENT"),
-    2: .same(proto: "CONTENT_TEXT"),
-    4: .same(proto: "CONTENT_FILE"),
-    5: .same(proto: "CONTENT_POLL"),
-    6: .same(proto: "CONTENT_CATCHPHRASE"),
-    7: .same(proto: "CONTENT_CTA"),
-    8: .same(proto: "CONTENT_CLIENT_OBJECT"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0\u{1}CONTENT_TEXT\0\u{2}\u{2}CONTENT_FILE\0\u{1}CONTENT_POLL\0\u{1}CONTENT_CATCHPHRASE\0\u{1}CONTENT_CTA\0\u{1}CONTENT_CLIENT_OBJECT\0")
 }
 
 extension Com_Octopuscommunity_GetTopicsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -4438,10 +4280,7 @@ extension Com_Octopuscommunity_GetTopicsRequest: SwiftProtobuf.Message, SwiftPro
 
 extension Com_Octopuscommunity_GetTopicsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetTopicsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "topics"),
-    2: .same(proto: "sections"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topics\0\u{1}sections\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4476,9 +4315,7 @@ extension Com_Octopuscommunity_GetTopicsResponse: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_DeletePostRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeletePostRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4527,9 +4364,7 @@ extension Com_Octopuscommunity_DeletePostResponse: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_DeleteCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteCommentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4578,9 +4413,7 @@ extension Com_Octopuscommunity_DeleteCommentResponse: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_DeleteReplyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteReplyRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4629,10 +4462,7 @@ extension Com_Octopuscommunity_DeleteReplyResponse: SwiftProtobuf.Message, Swift
 
 extension Com_Octopuscommunity_ModeratePostRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModeratePostRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "reasonCodes"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}reasonCodes\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4686,10 +4516,7 @@ extension Com_Octopuscommunity_ModeratePostResponse: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_ModerateCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModerateCommentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "reasonCodes"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}reasonCodes\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4743,10 +4570,7 @@ extension Com_Octopuscommunity_ModerateCommentResponse: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_ModerateReplyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModerateReplyRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "reasonCodes"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}reasonCodes\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4800,9 +4624,7 @@ extension Com_Octopuscommunity_ModerateReplyResponse: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_ShadowbanPostRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ShadowbanPostRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4851,9 +4673,7 @@ extension Com_Octopuscommunity_ShadowbanPostResponse: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_ShadowbanCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ShadowbanCommentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4902,9 +4722,7 @@ extension Com_Octopuscommunity_ShadowbanCommentResponse: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_ShadowbanReplyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ShadowbanReplyRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4953,9 +4771,7 @@ extension Com_Octopuscommunity_ShadowbanReplyResponse: SwiftProtobuf.Message, Sw
 
 extension Com_Octopuscommunity_UnshadowbanPostRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnshadowbanPostRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5004,9 +4820,7 @@ extension Com_Octopuscommunity_UnshadowbanPostResponse: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_UnshadowbanCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnshadowbanCommentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5055,9 +4869,7 @@ extension Com_Octopuscommunity_UnshadowbanCommentResponse: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_UnshadowbanReplyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnshadowbanReplyRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5106,11 +4918,7 @@ extension Com_Octopuscommunity_UnshadowbanReplyResponse: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_ReportContentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ReportContentRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "reasonCodes"),
-    3: .same(proto: "customReason"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}reasonCodes\0\u{1}customReason\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5173,11 +4981,7 @@ extension Com_Octopuscommunity_ReportContentResponse: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_GetOrCreateBridgePostRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetOrCreateBridgePostRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "clientToken"),
-    2: .same(proto: "topicId"),
-    3: .same(proto: "postBridge"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientToken\0\u{1}topicId\0\u{1}postBridge\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5221,10 +5025,7 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostRequest: SwiftProtobuf.Messa
 
 extension Com_Octopuscommunity_GetOrCreateBridgePostResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetOrCreateBridgePostResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5291,11 +5092,7 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostResponse: SwiftProtobuf.Mess
 
 extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetOrCreateBridgePostResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "postBridge"),
-    3: .same(proto: "aggregate"),
-    2: .same(proto: "status"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}postBridge\0\u{1}status\0\u{1}aggregate\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5338,18 +5135,12 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success: SwiftProto
 }
 
 extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CREATED"),
-    2: .same(proto: "RETRIEVED"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CREATED\0\u{1}RETRIEVED\0")
 }
 
 extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetOrCreateBridgePostResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5379,26 +5170,7 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Fail: SwiftProtobuf
 
 extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetOrCreateBridgePostResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingText"),
-    102: .same(proto: "maxCharLimitReached"),
-    103: .same(proto: "emptyFile"),
-    104: .same(proto: "fileSizeTooBig"),
-    105: .same(proto: "badFileFormat"),
-    106: .same(proto: "uploadIssue"),
-    107: .same(proto: "downloadIssue"),
-    108: .same(proto: "missingCtaText"),
-    109: .same(proto: "missingClientObjectId"),
-    110: .same(proto: "invalidClientToken"),
-    111: .same(proto: "bridgePostUnavailable"),
-    112: .same(proto: "expiredClientToken"),
-    113: .same(proto: "invalidTopicId"),
-    114: .same(proto: "invalidAuthor"),
-    115: .same(proto: "postAlreadyExists"),
-    116: .same(proto: "postNotFound"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingText\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}downloadIssue\0\u{1}missingCtaText\0\u{1}missingClientObjectId\0\u{1}invalidClientToken\0\u{1}bridgePostUnavailable\0\u{1}expiredClientToken\0\u{1}invalidTopicId\0\u{1}invalidAuthor\0\u{1}postAlreadyExists\0\u{1}postNotFound\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5712,19 +5484,12 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error: SwiftProtobu
 }
 
 extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_TEXT"),
-    2: .same(proto: "CONTENT_FILE"),
-    3: .same(proto: "CONTENT_CLIENT_OBJECT"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_TEXT\0\u{1}CONTENT_FILE\0\u{1}CONTENT_CLIENT_OBJECT\0")
 }
 
 extension Com_Octopuscommunity_GetBridgePostRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetBridgePostRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "clientObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5754,9 +5519,7 @@ extension Com_Octopuscommunity_GetBridgePostRequest: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_GetOctoObjectTranslationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetOctoObjectTranslationsRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5786,11 +5549,7 @@ extension Com_Octopuscommunity_GetOctoObjectTranslationsRequest: SwiftProtobuf.M
 
 extension Com_Octopuscommunity_GetOctoObjectTranslationsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetOctoObjectTranslationsResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-    2: .same(proto: "originalLanguageCode"),
-    3: .same(proto: "fieldTranslationsByLanguages"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}originalLanguageCode\0\u{1}fieldTranslationsByLanguages\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5834,13 +5593,7 @@ extension Com_Octopuscommunity_GetOctoObjectTranslationsResponse: SwiftProtobuf.
 
 extension Com_Octopuscommunity_FieldTranslationsByLanguage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FieldTranslationsByLanguage"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "translationLanguageCode"),
-    2: .same(proto: "text"),
-    3: .same(proto: "pollAnswers"),
-    4: .same(proto: "ctaButton"),
-    5: .same(proto: "catchPhrase"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}translationLanguageCode\0\u{1}text\0\u{1}pollAnswers\0\u{1}ctaButton\0\u{1}catchPhrase\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5894,10 +5647,7 @@ extension Com_Octopuscommunity_FieldTranslationsByLanguage: SwiftProtobuf.Messag
 
 extension Com_Octopuscommunity_FieldTranslations: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FieldTranslations"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "originalText"),
-    2: .same(proto: "translatedText"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}originalText\0\u{1}translatedText\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

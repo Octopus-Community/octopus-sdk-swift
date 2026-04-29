@@ -103,8 +103,8 @@ let newRecipe = Recipe(
     Begin folding in the 1/3 of the dry ingredients.
     Be careful to add the remaining dry ingredients and fold gently.
     The final mixture should look like flowing lava, and be able to fall into a figure eight without breaking. Spoon into a piping bag with a medium round piping tip and you’re ready to start piping.
-    Pipe one inch dollops onto a baking sheet lined with parchment paper (this should be glued down with dabs of batter). Tap on counter several times to release air bubbles. Allow to sit for about 40 minutes before placing in oven. 
-    Bake at 300F for 12-15 minutes, rotate tray after 7 minutes. Allow to cool completely before removing from baking sheet. 
+    Pipe one inch dollops onto a baking sheet lined with parchment paper (this should be glued down with dabs of batter). Tap on counter several times to release air bubbles. Allow to sit for about 40 minutes before placing in oven.
+    Bake at 300F for 12-15 minutes, rotate tray after 7 minutes. Allow to cool completely before removing from baking sheet.
 
     For the French Buttercream Filling:
     Combine sugar and water in medium saucepan. Heat over low heat while stirring until sugar dissolves. Increase heat to medium- high and bring to a boil

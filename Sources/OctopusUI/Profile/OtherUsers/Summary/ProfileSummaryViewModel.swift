@@ -39,25 +39,28 @@ class ProfileSummaryViewModel: ObservableObject {
         self.profileId = profileId
         self.connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
-        octopus.core.profileRepository.getProfile(profileId: profileId)
-            .removeDuplicates()
-            .sink { [unowned self] in
-                self.profile = $0.map { DisplayableProfile(from: $0) }
-                if let newestFirstPostsFeed = $0?.newestFirstPostsFeed {
-                    // Update the view model only if feed id has changed
-                    if postFeedViewModel?.feed.id != newestFirstPostsFeed.id {
-                        postFeedViewModel = PostFeedViewModel(
-                            octopus: octopus, postFeed: newestFirstPostsFeed,
-                            translationStore: translationStore,
-                            ensureConnected: { [weak self] action in
-                                guard let self else { return false }
-                                return self.ensureConnected(action: action)
-                            })
-                    }
-                } else {
-                    postFeedViewModel = nil
+        Publishers.CombineLatest(
+            octopus.core.profileRepository.getProfile(profileId: profileId).removeDuplicates(),
+            octopus.core.profileRepository.profilePublisher.map { $0?.id }.removeDuplicates()
+        )
+        .sink { [unowned self] profile, currentUserId in
+            let isCurrentUser = self.profileId == currentUserId
+            self.profile = profile.map { DisplayableProfile(from: $0, isCurrentUser: isCurrentUser) }
+            if let newestFirstPostsFeed = profile?.newestFirstPostsFeed {
+                // Update the view model only if feed id has changed
+                if postFeedViewModel?.feed.id != newestFirstPostsFeed.id {
+                    postFeedViewModel = PostFeedViewModel(
+                        octopus: octopus, postFeed: newestFirstPostsFeed,
+                        translationStore: translationStore,
+                        ensureConnected: { [weak self] action in
+                            guard let self else { return false }
+                            return self.ensureConnected(action: action)
+                        })
                 }
-            }.store(in: &storage)
+            } else {
+                postFeedViewModel = nil
+            }
+        }.store(in: &storage)
 
         octopus.core.configRepository
             .communityConfigPublisher

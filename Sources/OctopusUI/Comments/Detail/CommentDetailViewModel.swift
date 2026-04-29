@@ -24,6 +24,7 @@ class CommentDetailViewModel: ObservableObject {
         let userInteractions: UserInteractions
         let canBeDeleted: Bool
         let canBeModerated: Bool
+        let canBeBlockedByUser: Bool
     }
 
     enum CommentDeletion {
@@ -371,6 +372,12 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
+    func blockAuthor(profileId: String) {
+        Task {
+            await blockAuthor(profileId: profileId)
+        }
+    }
+
     private func startAutoFetchLatestReplies() {
         guard autoFetchLatestRepliesTask == nil else {
             if #available(iOS 14, *) { Logger.replies.trace("startAutoFetchLatestReplies called multiple times") }
@@ -449,7 +456,7 @@ class CommentDetailViewModel: ObservableObject {
     -> [Reply] {
         var mergedReplies = oldestFirstRepliesFeedItems
         for newReply in newestFirstRepliesFeedItems.reversed() {
-            if !mergedReplies.contains(where: { $0.uuid == newReply.uuid}) {
+            if !mergedReplies.contains(where: { $0.uuid == newReply.uuid }) {
                 mergedReplies.append(newReply)
             }
         }
@@ -557,6 +564,14 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
+    private func blockAuthor(profileId: String) async {
+        do {
+            try await octopus.core.profileRepository.blockUser(profileId: profileId)
+        } catch {
+            self.error = error.displayableMessage
+        }
+    }
+
     func loadPreviousReplies() {
         guard let feed else { return }
         Task {
@@ -650,25 +665,5 @@ class CommentDetailViewModel: ObservableObject {
                 self.error = .localizationKey("Error.Unknown")
             }
         }
-    }
-}
-
-extension CommentDetailViewModel.CommentDetail {
-    init(from comment: Comment,
-         gamificationLevels: [GamificationLevel],
-         thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter) {
-        uuid = comment.uuid
-        parentId = comment.parentId
-        text = comment.text
-        image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
-        author = .init(
-            profile: comment.author,
-            gamificationLevel: gamificationLevels.first { $0.level == comment.author?.gamificationLevel }
-        )
-        relativeDate = dateFormatter.localizedString(for: comment.creationDate, relativeTo: Date())
-        canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
-        canBeModerated = comment.author?.uuid != thisUserProfileId
-        aggregatedInfo = comment.aggregatedInfo
-        userInteractions = comment.userInteractions
     }
 }

@@ -9,7 +9,7 @@ import OctopusCore
 struct ToggleTextTranslationButton: View {
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
-    @EnvironmentObject private var trackingApi: TrackingApi
+    @Environment(\.trackingApi) private var trackingApi
     let contentId: String
     let originalLanguage: String?
     let contentKind: SdkEvent.ContentKind
@@ -24,12 +24,13 @@ struct ToggleTextTranslationButton: View {
             }
         }) {
             Text(localizedKey, bundle: .module)
-            .font(theme.fonts.caption1)
-            .fontWeight(.medium)
-            .foregroundColor(theme.colors.gray700)
-            .contentShape(Rectangle())
+                .font(theme.fonts.caption1)
+                .fontWeight(.medium)
+                .foregroundColor(theme.colors.gray700)
+                .contentShape(Rectangle())
+                .padding(.top, 6)
+                .padding(.bottom, 10)
         }
-        .padding(.vertical, 8)
     }
 
     var localizedKey: LocalizedStringKey {

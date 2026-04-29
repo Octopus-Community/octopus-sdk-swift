@@ -8,7 +8,7 @@ import Combine
 import OctopusCore
 
 extension View {
-    func hapticFeedback<T>(trigger: T, _ shouldFeedback: @escaping (_ oldValue: T, _ newValue: T) -> Bool) -> some View where T : Equatable {
+    func hapticFeedback<T>(trigger: T, _ shouldFeedback: @escaping (_ oldValue: T, _ newValue: T) -> Bool) -> some View where T: Equatable {
         self.modify {
             if #available(iOS 17.0, *) {
                 $0.sensoryFeedback(trigger: trigger) {

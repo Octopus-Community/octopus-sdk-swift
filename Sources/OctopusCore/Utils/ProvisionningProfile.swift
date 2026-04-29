@@ -9,7 +9,7 @@ import Foundation
 struct ProvisionningProfile: Decodable {
     let entitlements: Entitlements
 
-    private enum CodingKeys : String, CodingKey {
+    private enum CodingKeys: String, CodingKey {
         case entitlements = "Entitlements"
     }
 

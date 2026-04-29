@@ -13,13 +13,17 @@ struct BridgeToClientObjectCell: View {
 
     var body: some View {
         NavigationLink(destination: BridgeToClientObjectView(showFullScreen: showFullScreen)) {
-            VStack(alignment: .leading) {
-                Text("Bridge to Client Object")
-                Text("Have a post directly linked to a specific object (article, product, item...) of your app")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "link")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Bridge to Client Object")
+                    Text("Have a post directly linked to a specific object (article, product, item...) of your app")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

@@ -14,14 +14,13 @@ class MockMagicLinkService: MagicLinkService {
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var getJwtResponses = [Com_Octopuscommunity_IsAuthenticatedResponse]()
 
-
     func generateLink(email: String, deepLink: String?) async throws(RemoteClientError) -> Com_Octopuscommunity_GenerateLinkResponse {
         guard let generateLinkResponse = generateLinkResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGenerateLinkResponse must be called before"))
         }
         return generateLinkResponse
     }
-    
+
     func getJwt(magicLinkId: String, email: String) async throws(RemoteClientError) -> Com_Octopuscommunity_IsAuthenticatedResponse {
         guard let getJwtResponse = getJwtResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetJwtResponse must be called before"))

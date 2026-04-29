@@ -9,7 +9,7 @@ import Octopus
 
 struct SettingsListView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Compat.StateObject private var viewModel: SettingsListViewModel
 
     @State private var displayError = false
@@ -34,7 +34,7 @@ struct SettingsListView: View {
             isPresented: $displayError,
             presenting: error,
             actions: { _ in },
-            message: { error in
+            message: { _ in
                 Text("Error.Unknown", bundle: .module)
             })
         .onReceive(viewModel.$error) { error in

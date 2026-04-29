@@ -11,7 +11,6 @@ import GRPCSwift
 import OctopusGrpcModels
 import Logging
 
-
 public protocol FeedService {
     func getRootFeedsInfo(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetRootFeedsInfoResponse
@@ -27,7 +26,6 @@ public protocol FeedService {
 
 class FeedServiceClient: ServiceClient, FeedService {
     private let client: Com_Octopuscommunity_FeedServiceAsyncClient
-
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          getUserIdBlock: @escaping () -> String?,

@@ -24,5 +24,3 @@ struct EmbeddedOctopusAuthView: View {
         }
     }
 }
-
-

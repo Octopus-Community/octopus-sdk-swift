@@ -21,12 +21,16 @@ struct ValidateNicknameFlowNavigationStack<RootView: View>: View {
     var body: some View {
         NBNavigationStack(path: $flowPath.path) {
             rootView
+                .hideBackButtonTitle()
                 .nbNavigationDestination(for: ValidateNicknameFlowScreen.self) { screen in
-                    switch screen {
-                    case .editProfile:
-                        EditProfileView(octopus: octopus, bioFocused: false, photoPickerFocused: false,
-                                        preventDismissAfterUpdate: true)
+                    Group {
+                        switch screen {
+                        case .editProfile:
+                            EditProfileView(octopus: octopus, bioFocused: false, photoPickerFocused: false,
+                                            preventDismissAfterUpdate: true)
+                        }
                     }
+                    .hideBackButtonTitle()
                 }
         }
         .nbUseNavigationStack(.whenAvailable)

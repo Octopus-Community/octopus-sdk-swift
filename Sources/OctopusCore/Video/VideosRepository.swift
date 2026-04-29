@@ -9,7 +9,6 @@ import os
 import OctopusDependencyInjection
 import OctopusGrpcModels
 
-
 extension Injected {
     static let videosRepository = Injector.InjectedIdentifier<VideosRepository>()
 }

@@ -7,18 +7,18 @@ import SwiftUI
 
 private extension Character {
     var asciiValue: UInt32? {
-        return String(self).unicodeScalars.filter{ $0.isASCII }.first?.value
+        return String(self).unicodeScalars.first(where: { $0.isASCII })?.value
     }
 }
 
 private extension String {
     var asciiArray: [UInt32] {
-        return unicodeScalars.filter{ $0.isASCII }.map { $0.value }
+        return unicodeScalars.filter { $0.isASCII }.map { $0.value }
     }
 
     /// Produces the same hash code as in Kotlin
     func hashCode() -> Int32 {
-        var h : Int32 = 0
+        var h: Int32 = 0
         for i in self.asciiArray {
             h = 31 &* h &+ Int32(i)
         }

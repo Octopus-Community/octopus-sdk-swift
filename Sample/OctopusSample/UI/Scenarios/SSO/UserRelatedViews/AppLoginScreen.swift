@@ -12,41 +12,56 @@ struct AppLoginScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @StateObjectCompat private var viewModel = AppUserViewModel()
 
-    @State private var email: String = ""
+    @State private var uniqueIdentifier: String = ""
     @State private var nickname: String = ""
     @State private var bio: String = ""
     @State private var picture: Data?
 
-    @State private var emailEmptyError = false
+    @State private var identifierEmptyError = false
 
     var body: some View {
         NavigationView {
             VStack {
-                Spacer().frame(height: 50)
+                Spacer().frame(height: 30)
                 Text("This is your app's login flow")
-                VStack(alignment: .leading) {
-                    Text("Email:")
-                    TextField("Email", text: $email)
+                    .font(.headline)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Image(systemName: "person.text.rectangle")
+                            .foregroundColor(.secondary)
+                        Text("Unique Identifier")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    TextField("Unique Identifier", text: $uniqueIdentifier)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
-                        .textContentType(.emailAddress)
-                        .keyboardType(.emailAddress)
+                        .textFieldStyle(.roundedBorder)
                 }
                 .padding(.horizontal)
                 .padding(.top)
                 AppEditUserView(nickname: $nickname, bio: $bio, picture: $picture)
-                Spacer()
-                Button("Login") {
-                    guard !email.isEmpty else {
-                        emailEmptyError = true
+                Button(action: {
+                    guard !uniqueIdentifier.isEmpty else {
+                        identifierEmptyError = true
                         return
                     }
-                    viewModel.appUser = .init(userId: email.lowercased(),
+                    viewModel.appUser = .init(userId: uniqueIdentifier.lowercased(),
                                               nickname: nickname,
                                               bio: bio,
                                               picture: picture)
                     presentationMode.wrappedValue.dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "person.badge.plus")
+                        Text("Login")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                    .foregroundColor(.white)
                 }
+                .padding(.horizontal)
                 Spacer()
             }
             .padding()
@@ -65,11 +80,11 @@ struct AppLoginScreen: View {
             .modify {
                 if #available(iOS 15.0, *) {
                     $0.alert(
-                        Text(verbatim: "Please fill the email"),
-                        isPresented: $emailEmptyError, actions: { })
+                        Text(verbatim: "Please fill the unique identifier"),
+                        isPresented: $identifierEmptyError, actions: { })
                 } else {
-                    $0.alert(isPresented: $emailEmptyError) {
-                        Alert(title: Text(verbatim: "Please fill the email"))
+                    $0.alert(isPresented: $identifierEmptyError) {
+                        Alert(title: Text(verbatim: "Please fill the unique identifier"))
                     }
                 }
             }

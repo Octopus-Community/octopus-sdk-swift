@@ -16,6 +16,7 @@ class MockOctoService: OctoService {
     // Fifo of the responses to `getTopics`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var getTopicsResponses = [Com_Octopuscommunity_GetTopicsResponse]()
+    private(set) var getTopicsCallCount = 0
     /// Fifo of the responses to `put(post:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putPostResponses = [Com_Octopuscommunity_PutPostResponse]()
@@ -73,6 +74,7 @@ class MockOctoService: OctoService {
     }
 
     func getTopics(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_GetTopicsResponse {
+        getTopicsCallCount += 1
         guard let response = getTopicsResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetTopicsResponse must be called before"))
         }

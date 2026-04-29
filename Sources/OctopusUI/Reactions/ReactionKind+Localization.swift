@@ -22,4 +22,17 @@ extension ReactionKind {
     func accessibilityValue(locale: Locale?) -> String {
         L10n(accessibilityKey, locale: locale)
     }
+
+    /// Localization key for the reaction label displayed on the interaction button.
+    var labelKey: LocalizedStringKey {
+        switch self {
+        case .heart: "Content.AggregatedInfo.Reaction.Heart"
+        case .joy: "Content.AggregatedInfo.Reaction.Joy"
+        case .mouthOpen: "Content.AggregatedInfo.Reaction.MouthOpen"
+        case .clap: "Content.AggregatedInfo.Reaction.Clap"
+        case .cry: "Content.AggregatedInfo.Reaction.Cry"
+        case .rage: "Content.AggregatedInfo.Reaction.Rage"
+        case .unknown: "Content.AggregatedInfo.Reaction.Heart"
+        }
+    }
 }

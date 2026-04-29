@@ -10,11 +10,6 @@ import OctopusCore
 import UIKit
 import os
 
-enum PostDetailNavigationOrigin {
-    case clientApp
-    case sdk
-}
-
 @MainActor
 class PostDetailViewModel: ObservableObject {
 
@@ -42,6 +37,7 @@ class PostDetailViewModel: ObservableObject {
         let userInteractions: UserInteractions
         let canBeDeleted: Bool
         let canBeModerated: Bool
+        let canBeBlockedByUser: Bool
         let catchPhrase: TranslatableText?
         let bridgeCTA: BridgeCTA?
         let customAction: CustomAction?
@@ -62,6 +58,7 @@ class PostDetailViewModel: ObservableObject {
     @Published private(set) var comments: [DisplayableFeedResponse]?
     @Published var scrollToBottom = false
     @Published var scrollToId: String?
+    @Published var commentTextFocused = false
     @Published private(set) var hasMoreData = false
     @Published private(set) var hideLoadMoreCommentsLoader = false
     @Published private var modelComments: [Comment]?
@@ -74,6 +71,7 @@ class PostDetailViewModel: ObservableObject {
     @Published var commentDeleted = false
 
     @Published var postNotAvailable = false
+    @Published var postDisappeared = false
 
     var canDisplayClientObject: Bool { octopus.displayClientObjectCallback != nil }
 
@@ -108,6 +106,8 @@ class PostDetailViewModel: ObservableObject {
     private var newestFirstCommentsFeed: Feed<Comment, Never>?
     private var commentToScrollTo: String?
     private var scrollToMostRecentComment: Bool
+    private var shouldFocusComment: Bool
+    private var pendingScrollToBottom = false
     private let origin: PostDetailNavigationOrigin
     private let hasFeaturedComment: Bool
 
@@ -131,12 +131,15 @@ class PostDetailViewModel: ObservableObject {
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          postUuid: String, commentToScrollTo: String?,
          scrollToMostRecentComment: Bool,
+         comment: Bool,
          origin: PostDetailNavigationOrigin,
          hasFeaturedComment: Bool) {
         self.octopus = octopus
         self.postUuid = postUuid
         self.commentToScrollTo = commentToScrollTo
         self.scrollToMostRecentComment = scrollToMostRecentComment
+        self.shouldFocusComment = comment
+        self.pendingScrollToBottom = scrollToMostRecentComment
         self.origin = origin
         self.hasFeaturedComment = hasFeaturedComment
         self.translationStore = translationStore
@@ -163,6 +166,7 @@ class PostDetailViewModel: ObservableObject {
 
                 if postWontBeAvailable {
                     postNotAvailable = true
+                    postDisappeared = true
                 }
                 return
             }
@@ -171,6 +175,7 @@ class PostDetailViewModel: ObservableObject {
                 self.post = nil
                 self.comments = nil
                 postNotAvailable = true
+                postDisappeared = true
                 return
             }
 
@@ -291,6 +296,38 @@ class PostDetailViewModel: ObservableObject {
 
         fetchPost(incrementViewCount: true)
         fetchTopics()
+
+        // When scrollToBottom completes (true → false) and focus is pending, focus the comment input
+        $scrollToBottom
+            .dropFirst()
+            .removeDuplicates()
+            .filter { !$0 }
+            .sink { [unowned self] _ in
+                pendingScrollToBottom = false
+                guard shouldFocusComment else { return }
+                shouldFocusComment = false
+                commentTextFocused = true
+                // Delay the second scroll to wait for the keyboard appearance animation, so the scroll
+                // targets the reduced visible area rather than the full pre-keyboard layout.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.66) {
+                    self.scrollToBottom = true
+                }
+            }.store(in: &storage)
+
+        // When comments load but no scroll is pending, focus immediately
+        $comments
+            .removeDuplicates()
+            .filter { $0 != nil }
+            .sink { [unowned self] _ in
+                guard shouldFocusComment, !scrollToBottom, !pendingScrollToBottom else { return }
+                shouldFocusComment = false
+                commentTextFocused = true
+                // Delay the second scroll to wait for the keyboard appearance animation, so the scroll
+                // targets the reduced visible area rather than the full pre-keyboard layout.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.66) {
+                    self.scrollToBottom = true
+                }
+            }.store(in: &storage)
 
         octopus.core.commentsRepository.commentSentPublisher
             .sink { [unowned self] comment in
@@ -541,7 +578,7 @@ class PostDetailViewModel: ObservableObject {
     -> [Comment] {
         var mergedComments = oldestFirstCommentsFeedItems
         for newComment in newestFirstCommentsFeedItems.reversed() {
-            if !mergedComments.contains(where: { $0.uuid == newComment.uuid}) {
+            if !mergedComments.contains(where: { $0.uuid == newComment.uuid }) {
                 mergedComments.append(newComment)
             }
         }
@@ -678,6 +715,20 @@ class PostDetailViewModel: ObservableObject {
         do {
             try await octopus.core.commentsRepository.deleteComment(commentId: commentId)
             commentDeleted = true
+        } catch {
+            self.error = error.displayableMessage
+        }
+    }
+
+    func blockAuthor(profileId: String) {
+        Task {
+            await blockAuthor(profileId: profileId)
+        }
+    }
+
+    private func blockAuthor(profileId: String) async {
+        do {
+            try await octopus.core.profileRepository.blockUser(profileId: profileId)
         } catch {
             self.error = error.displayableMessage
         }
@@ -830,69 +881,6 @@ class PostDetailViewModel: ObservableObject {
             case .other:
                 self.error = .localizationKey("Error.Unknown")
             }
-        }
-    }
-}
-
-extension PostDetailViewModel.Post.Attachment {
-    init?(from post: Post) {
-        if let poll = post.poll {
-            self = .poll(DisplayablePoll(from: poll))
-        } else if let media = post.medias.first(where: { $0.kind == .video }),
-                  let videoMedia = VideoMedia(from: media) {
-            self = .video(videoMedia)
-        } else if let media = post.medias.first(where: { $0.kind == .image }),
-                  let imageMedia = ImageMedia(from: media) {
-            self = .image(imageMedia)
-        } else {
-            return nil
-        }
-    }
-}
-
-extension PostDetailViewModel.Post {
-    init(from post: Post,
-         gamificationLevels: [GamificationLevel],
-         thisUserProfileId: String?, topic: OctopusCore.Topic,
-         dateFormatter: RelativeDateTimeFormatter) {
-        uuid = post.uuid
-        text = post.text
-        author = .init(
-            profile: post.author,
-            gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
-        )
-        relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())
-        self.topic = topic.name
-        attachment = .init(from: post)
-        canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
-        canBeModerated = post.author?.uuid != thisUserProfileId
-        aggregatedInfo = post.aggregatedInfo
-        userInteractions = post.userInteractions
-        bridgeCTA = if let bridgeInfo = post.clientObjectBridgeInfo,
-                       let ctaText = bridgeInfo.ctaText {
-            BridgeCTA(text: ctaText, clientObjectId: bridgeInfo.objectId)
-        } else {
-            nil
-        }
-        customAction = if let customAction = post.customAction {
-            CustomAction(ctaText: customAction.ctaText, targetUrl: customAction.targetUrl)
-        } else {
-            nil
-        }
-        catchPhrase = post.clientObjectBridgeInfo?.catchPhrase
-    }
-
-    var hasVideo: Bool {
-        switch attachment {
-        case .video: return true
-        default: return false
-        }
-    }
-
-    var videoId: String? {
-        switch attachment {
-        case let .video(video): return video.videoId
-        default: return nil
         }
     }
 }

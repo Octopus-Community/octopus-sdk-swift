@@ -15,9 +15,6 @@ struct MainRootFeedView: View {
 
     @Compat.StateObject private var viewModel: MainRootFeedViewModel
 
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
-
     private let mainFlowPath: MainFlowPath
     private let navBarTitle: OctopusMainFeedTitle?
     private let coloredNavBar: Bool
@@ -56,24 +53,13 @@ struct MainRootFeedView: View {
         }
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
+                                defaultLeadingSharedBackgroundVisibility: .hidden,
                                 defaultTrailingBarItem: trailingBarItem,
-                                defaultCenteredBarItem: title,
-                                defaultCenteredBarItemVisibility: titleVisibility,
+                                defaultCenteredBarItem: centeredBarItem,
+                                defaultCenteredBarItemVisibility: centeredItemVisibility,
                                 navBarTitle: titleText,
                                 defaultNavigationBarPrimaryColor: coloredNavBar)
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in },
-            message: { error in
-                error.textView
-            })
-        .onReceive(viewModel.$error) { error in
-            guard let error else { return }
-            displayableError = error
-            displayError = true
-        }
+        .errorAlert(viewModel.$error)
     }
 
     @ViewBuilder
@@ -88,6 +74,8 @@ struct MainRootFeedView: View {
                         .frame(height: 33)
                         .fixedSize()
                         .accessibilityHidden(true)
+                } else {
+                    defaultLeadingTitle
                 }
             case let .text(title):
                 Text(title.text)
@@ -96,7 +84,27 @@ struct MainRootFeedView: View {
                     .foregroundColor(coloredNavBar ? theme.colors.onPrimary : theme.colors.gray900)
                     .fixedSize()
             }
+        } else if hasNoMeaningfulTitle {
+            defaultLeadingTitle
         }
+    }
+
+    private var defaultLeadingTitle: some View {
+        Text("Community.Default.Title", bundle: .module)
+            .font(theme.fonts.title2)
+            .fontWeight(.semibold)
+            .foregroundColor(coloredNavBar ? theme.colors.onPrimary : theme.colors.gray900)
+            .fixedSize()
+    }
+
+    /// True when `navBarTitle` doesn't resolve to any visible content —
+    /// either because it's nil or because it requests a logo that hasn't been customized.
+    private var hasNoMeaningfulTitle: Bool {
+        guard let navBarTitle else { return true }
+        if case .logo = navBarTitle.content, !theme.assets.logoIsCustomized {
+            return true
+        }
+        return false
     }
 
     @ViewBuilder
@@ -124,7 +132,7 @@ struct MainRootFeedView: View {
     }
 
     @ViewBuilder
-    private var title: some View {
+    private var centeredBarItem: some View {
         if let navBarTitle, navBarTitle.placement == .center {
             switch navBarTitle.content {
             case .logo:
@@ -135,22 +143,24 @@ struct MainRootFeedView: View {
                         .frame(height: 33)
                         .fixedSize()
                         .accessibilityHidden(true)
-                } else {
-                    Text("Community.Default.Title", bundle: .module)
                 }
             case let .text(title):
+                // This view is rendered inside `ToolbarItem(placement: .principal)`, which
+                // does not inherit the system navigation bar title styling the way
+                // `.navigationBarTitle(_:displayMode: .inline)` does. We therefore apply
+                // `inlineNavigationBarTitleFont()` on each `Text` branch so the result
+                // visually matches a native inline nav bar title. The helper reads the
+                // font from `UINavigationBar.appearance()` so any host-app customization
+                // is honored, falling back to the system default (`.headline`) otherwise.
                 Text(title.text)
-                    .font(theme.fonts.title2)
-                    .fontWeight(.semibold)
+                    .inlineNavigationBarTitleFont()
                     .foregroundColor(coloredNavBar ? theme.colors.onPrimary : theme.colors.gray900)
                     .fixedSize()
             }
-        } else {
-            Text("Community.Default.Title", bundle: .module)
         }
     }
 
-    private var titleVisibility: Compat.Visibility {
+    private var centeredItemVisibility: Compat.Visibility {
         if let navBarTitle, navBarTitle.placement == .center {
             switch navBarTitle.content {
             case .logo:

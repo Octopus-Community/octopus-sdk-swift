@@ -56,8 +56,9 @@ class EventsDatabase: InjectableObject {
 
     func incrementSendingAttempts(ids: [String]) async throws {
         try await context.performAsync { [context] in
-            let request = EventEntity.fetchAllByIds(ids: ids)
-            let existingEvents = try context.fetch(request)
+            let existingEvents = try context.chunkedFetch(ids: ids) { chunk in
+                EventEntity.fetchAllByIds(ids: chunk)
+            }
 
             for event in existingEvents {
                 event.sendingAttempts += 1
@@ -68,8 +69,9 @@ class EventsDatabase: InjectableObject {
 
     func deleteAll(ids: [String]) async throws {
         try await context.performAsync { [context] in
-            let request = EventEntity.fetchAllByIds(ids: ids)
-            let existingEvents = try context.fetch(request)
+            let existingEvents = try context.chunkedFetch(ids: ids) { chunk in
+                EventEntity.fetchAllByIds(ids: chunk)
+            }
 
             for event in existingEvents {
                 context.delete(event)

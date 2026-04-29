@@ -8,7 +8,11 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import SwiftProtobuf
 
 // If the compiler emits an error on this type, it is because this file
@@ -19,6 +23,86 @@ import SwiftProtobuf
 fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
+}
+
+public enum Com_Octopuscommunity_SyncFollowTopicStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  /// Default/unspecified (protobuf convention)
+  case syncFollowUnspecified // = 0
+
+  /// Change was applied
+  case syncFollowApplied // = 1
+
+  /// Stale timestamp — stored date is more recent
+  case syncFollowSkipped // = 2
+
+  /// topicId does not exist
+  case syncFollowTopicNotFound // = 3
+
+  /// Topic is force-hidden (cannot be followed)
+  case syncFollowNotFollowable // = 4
+
+  /// Topic is force-shown (cannot be unfollowed)
+  case syncFollowNotUnfollowable // = 5
+
+  /// Topic is already in followed state
+  case syncFollowAlreadyFollowed // = 6
+
+  /// Topic is already in unfollowed state
+  case syncFollowAlreadyUnfollowed // = 7
+
+  /// Unexpected internal error
+  case syncFollowError // = 8
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .syncFollowUnspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .syncFollowUnspecified
+    case 1: self = .syncFollowApplied
+    case 2: self = .syncFollowSkipped
+    case 3: self = .syncFollowTopicNotFound
+    case 4: self = .syncFollowNotFollowable
+    case 5: self = .syncFollowNotUnfollowable
+    case 6: self = .syncFollowAlreadyFollowed
+    case 7: self = .syncFollowAlreadyUnfollowed
+    case 8: self = .syncFollowError
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .syncFollowUnspecified: return 0
+    case .syncFollowApplied: return 1
+    case .syncFollowSkipped: return 2
+    case .syncFollowTopicNotFound: return 3
+    case .syncFollowNotFollowable: return 4
+    case .syncFollowNotUnfollowable: return 5
+    case .syncFollowAlreadyFollowed: return 6
+    case .syncFollowAlreadyUnfollowed: return 7
+    case .syncFollowError: return 8
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Com_Octopuscommunity_SyncFollowTopicStatus] = [
+    .syncFollowUnspecified,
+    .syncFollowApplied,
+    .syncFollowSkipped,
+    .syncFollowTopicNotFound,
+    .syncFollowNotFollowable,
+    .syncFollowNotUnfollowable,
+    .syncFollowAlreadyFollowed,
+    .syncFollowAlreadyUnfollowed,
+    .syncFollowError,
+  ]
+
 }
 
 public struct Com_Octopuscommunity_DeleteUserRequest: Sendable {
@@ -133,11 +217,11 @@ public struct Com_Octopuscommunity_GetGuestJwtResponse: Sendable {
 
     /// The profile of the user
     public var profile: Com_Octopuscommunity_PrivateProfile {
-      get {return _profile ?? Com_Octopuscommunity_PrivateProfile()}
+      get {_profile ?? Com_Octopuscommunity_PrivateProfile()}
       set {_profile = newValue}
     }
     /// Returns true if `profile` has been explicitly set.
-    public var hasProfile: Bool {return self._profile != nil}
+    public var hasProfile: Bool {self._profile != nil}
     /// Clears the value of `profile`. Subsequent reads from it will return its default value.
     public mutating func clearProfile() {self._profile = nil}
 
@@ -276,11 +360,11 @@ public struct Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse: Sendable
 
     /// The profile of the user
     public var profile: Com_Octopuscommunity_PrivateProfile {
-      get {return _profile ?? Com_Octopuscommunity_PrivateProfile()}
+      get {_profile ?? Com_Octopuscommunity_PrivateProfile()}
       set {_profile = newValue}
     }
     /// Returns true if `profile` has been explicitly set.
-    public var hasProfile: Bool {return self._profile != nil}
+    public var hasProfile: Bool {self._profile != nil}
     /// Clears the value of `profile`. Subsequent reads from it will return its default value.
     public mutating func clearProfile() {self._profile = nil}
 
@@ -413,51 +497,51 @@ public struct Com_Octopuscommunity_UpdateProfileRequest: Sendable {
   public var userID: String = String()
 
   public var update: Com_Octopuscommunity_ProfileUpdate {
-    get {return _update ?? Com_Octopuscommunity_ProfileUpdate()}
+    get {_update ?? Com_Octopuscommunity_ProfileUpdate()}
     set {_update = newValue}
   }
   /// Returns true if `update` has been explicitly set.
-  public var hasUpdate: Bool {return self._update != nil}
+  public var hasUpdate: Bool {self._update != nil}
   /// Clears the value of `update`. Subsequent reads from it will return its default value.
   public mutating func clearUpdate() {self._update = nil}
 
   ///Default to false
   public var fetchUserBlockList: Bool {
-    get {return _fetchUserBlockList ?? false}
+    get {_fetchUserBlockList ?? false}
     set {_fetchUserBlockList = newValue}
   }
   /// Returns true if `fetchUserBlockList` has been explicitly set.
-  public var hasFetchUserBlockList: Bool {return self._fetchUserBlockList != nil}
+  public var hasFetchUserBlockList: Bool {self._fetchUserBlockList != nil}
   /// Clears the value of `fetchUserBlockList`. Subsequent reads from it will return its default value.
   public mutating func clearFetchUserBlockList() {self._fetchUserBlockList = nil}
 
   ///Default to false
   public var fetchNotificationsBadge: Bool {
-    get {return _fetchNotificationsBadge ?? false}
+    get {_fetchNotificationsBadge ?? false}
     set {_fetchNotificationsBadge = newValue}
   }
   /// Returns true if `fetchNotificationsBadge` has been explicitly set.
-  public var hasFetchNotificationsBadge: Bool {return self._fetchNotificationsBadge != nil}
+  public var hasFetchNotificationsBadge: Bool {self._fetchNotificationsBadge != nil}
   /// Clears the value of `fetchNotificationsBadge`. Subsequent reads from it will return its default value.
   public mutating func clearFetchNotificationsBadge() {self._fetchNotificationsBadge = nil}
 
   ///Default to false
   public var fetchTotalMessages: Bool {
-    get {return _fetchTotalMessages ?? false}
+    get {_fetchTotalMessages ?? false}
     set {_fetchTotalMessages = newValue}
   }
   /// Returns true if `fetchTotalMessages` has been explicitly set.
-  public var hasFetchTotalMessages: Bool {return self._fetchTotalMessages != nil}
+  public var hasFetchTotalMessages: Bool {self._fetchTotalMessages != nil}
   /// Clears the value of `fetchTotalMessages`. Subsequent reads from it will return its default value.
   public mutating func clearFetchTotalMessages() {self._fetchTotalMessages = nil}
 
   ///Default to false
   public var fetchGamification: Bool {
-    get {return _fetchGamification ?? false}
+    get {_fetchGamification ?? false}
     set {_fetchGamification = newValue}
   }
   /// Returns true if `fetchGamification` has been explicitly set.
-  public var hasFetchGamification: Bool {return self._fetchGamification != nil}
+  public var hasFetchGamification: Bool {self._fetchGamification != nil}
   /// Clears the value of `fetchGamification`. Subsequent reads from it will return its default value.
   public mutating func clearFetchGamification() {self._fetchGamification = nil}
 
@@ -479,94 +563,94 @@ public struct Com_Octopuscommunity_ProfileUpdate: Sendable {
 
   ///If a field is not set, it means that the user does not want to update it
   public var email: String {
-    get {return _email ?? String()}
+    get {_email ?? String()}
     set {_email = newValue}
   }
   /// Returns true if `email` has been explicitly set.
-  public var hasEmail: Bool {return self._email != nil}
+  public var hasEmail: Bool {self._email != nil}
   /// Clears the value of `email`. Subsequent reads from it will return its default value.
   public mutating func clearEmail() {self._email = nil}
 
   public var nickname: String {
-    get {return _nickname ?? String()}
+    get {_nickname ?? String()}
     set {_nickname = newValue}
   }
   /// Returns true if `nickname` has been explicitly set.
-  public var hasNickname: Bool {return self._nickname != nil}
+  public var hasNickname: Bool {self._nickname != nil}
   /// Clears the value of `nickname`. Subsequent reads from it will return its default value.
   public mutating func clearNickname() {self._nickname = nil}
 
   public var picture: Com_Octopuscommunity_PictureUpdateRequest {
-    get {return _picture ?? Com_Octopuscommunity_PictureUpdateRequest()}
+    get {_picture ?? Com_Octopuscommunity_PictureUpdateRequest()}
     set {_picture = newValue}
   }
   /// Returns true if `picture` has been explicitly set.
-  public var hasPicture: Bool {return self._picture != nil}
+  public var hasPicture: Bool {self._picture != nil}
   /// Clears the value of `picture`. Subsequent reads from it will return its default value.
   public mutating func clearPicture() {self._picture = nil}
 
   public var bio: String {
-    get {return _bio ?? String()}
+    get {_bio ?? String()}
     set {_bio = newValue}
   }
   /// Returns true if `bio` has been explicitly set.
-  public var hasBio: Bool {return self._bio != nil}
+  public var hasBio: Bool {self._bio != nil}
   /// Clears the value of `bio`. Subsequent reads from it will return its default value.
   public mutating func clearBio() {self._bio = nil}
 
   public var hasSeenOnboarding_p: Bool {
-    get {return _hasSeenOnboarding_p ?? false}
+    get {_hasSeenOnboarding_p ?? false}
     set {_hasSeenOnboarding_p = newValue}
   }
   /// Returns true if `hasSeenOnboarding_p` has been explicitly set.
-  public var hasHasSeenOnboarding_p: Bool {return self._hasSeenOnboarding_p != nil}
+  public var hasHasSeenOnboarding_p: Bool {self._hasSeenOnboarding_p != nil}
   /// Clears the value of `hasSeenOnboarding_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasSeenOnboarding_p() {self._hasSeenOnboarding_p = nil}
 
   public var hasAcceptedCgu_p: Bool {
-    get {return _hasAcceptedCgu_p ?? false}
+    get {_hasAcceptedCgu_p ?? false}
     set {_hasAcceptedCgu_p = newValue}
   }
   /// Returns true if `hasAcceptedCgu_p` has been explicitly set.
-  public var hasHasAcceptedCgu_p: Bool {return self._hasAcceptedCgu_p != nil}
+  public var hasHasAcceptedCgu_p: Bool {self._hasAcceptedCgu_p != nil}
   /// Clears the value of `hasAcceptedCgu_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasAcceptedCgu_p() {self._hasAcceptedCgu_p = nil}
 
   public var hasConfirmedNickname_p: Bool {
-    get {return _hasConfirmedNickname_p ?? false}
+    get {_hasConfirmedNickname_p ?? false}
     set {_hasConfirmedNickname_p = newValue}
   }
   /// Returns true if `hasConfirmedNickname_p` has been explicitly set.
-  public var hasHasConfirmedNickname_p: Bool {return self._hasConfirmedNickname_p != nil}
+  public var hasHasConfirmedNickname_p: Bool {self._hasConfirmedNickname_p != nil}
   /// Clears the value of `hasConfirmedNickname_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasConfirmedNickname_p() {self._hasConfirmedNickname_p = nil}
 
   public var hasConfirmedBio_p: Bool {
-    get {return _hasConfirmedBio_p ?? false}
+    get {_hasConfirmedBio_p ?? false}
     set {_hasConfirmedBio_p = newValue}
   }
   /// Returns true if `hasConfirmedBio_p` has been explicitly set.
-  public var hasHasConfirmedBio_p: Bool {return self._hasConfirmedBio_p != nil}
+  public var hasHasConfirmedBio_p: Bool {self._hasConfirmedBio_p != nil}
   /// Clears the value of `hasConfirmedBio_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasConfirmedBio_p() {self._hasConfirmedBio_p = nil}
 
   public var hasConfirmedPicture_p: Bool {
-    get {return _hasConfirmedPicture_p ?? false}
+    get {_hasConfirmedPicture_p ?? false}
     set {_hasConfirmedPicture_p = newValue}
   }
   /// Returns true if `hasConfirmedPicture_p` has been explicitly set.
-  public var hasHasConfirmedPicture_p: Bool {return self._hasConfirmedPicture_p != nil}
+  public var hasHasConfirmedPicture_p: Bool {self._hasConfirmedPicture_p != nil}
   /// Clears the value of `hasConfirmedPicture_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasConfirmedPicture_p() {self._hasConfirmedPicture_p = nil}
 
   ///true -> use an algorithm to generate an available nickname if non provided, are already taken
   ///false -> do not generate a nickname, just return an error if the provided nickname is already taken
   public var optFindAvailableNickname: Bool {
-    get {return _optFindAvailableNickname ?? false}
+    get {_optFindAvailableNickname ?? false}
     set {_optFindAvailableNickname = newValue}
   }
   /// Returns true if `optFindAvailableNickname` has been explicitly set.
-  public var hasOptFindAvailableNickname: Bool {return self._optFindAvailableNickname != nil}
+  public var hasOptFindAvailableNickname: Bool {self._optFindAvailableNickname != nil}
   /// Clears the value of `optFindAvailableNickname`. Subsequent reads from it will return its default value.
   public mutating func clearOptFindAvailableNickname() {self._optFindAvailableNickname = nil}
 
@@ -620,7 +704,7 @@ public struct Com_Octopuscommunity_PictureUpdateRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_PictureUploadRequest: @unchecked Sendable {
+public struct Com_Octopuscommunity_PictureUploadRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -629,11 +713,11 @@ public struct Com_Octopuscommunity_PictureUploadRequest: @unchecked Sendable {
 
   ///True if sdk resized the file before uploading it. Skip backend resize process if true
   public var isOptimized: Bool {
-    get {return _isOptimized ?? false}
+    get {_isOptimized ?? false}
     set {_isOptimized = newValue}
   }
   /// Returns true if `isOptimized` has been explicitly set.
-  public var hasIsOptimized: Bool {return self._isOptimized != nil}
+  public var hasIsOptimized: Bool {self._isOptimized != nil}
   /// Clears the value of `isOptimized`. Subsequent reads from it will return its default value.
   public mutating func clearIsOptimized() {self._isOptimized = nil}
 
@@ -696,20 +780,20 @@ public struct Com_Octopuscommunity_UpdateProfileResponse: Sendable {
     // methods supported on all messages.
 
     public var profile: Com_Octopuscommunity_PrivateProfile {
-      get {return _profile ?? Com_Octopuscommunity_PrivateProfile()}
+      get {_profile ?? Com_Octopuscommunity_PrivateProfile()}
       set {_profile = newValue}
     }
     /// Returns true if `profile` has been explicitly set.
-    public var hasProfile: Bool {return self._profile != nil}
+    public var hasProfile: Bool {self._profile != nil}
     /// Clears the value of `profile`. Subsequent reads from it will return its default value.
     public mutating func clearProfile() {self._profile = nil}
 
     public var shouldDisplayProfileCompletedGamificationToast: Bool {
-      get {return _shouldDisplayProfileCompletedGamificationToast ?? false}
+      get {_shouldDisplayProfileCompletedGamificationToast ?? false}
       set {_shouldDisplayProfileCompletedGamificationToast = newValue}
     }
     /// Returns true if `shouldDisplayProfileCompletedGamificationToast` has been explicitly set.
-    public var hasShouldDisplayProfileCompletedGamificationToast: Bool {return self._shouldDisplayProfileCompletedGamificationToast != nil}
+    public var hasShouldDisplayProfileCompletedGamificationToast: Bool {self._shouldDisplayProfileCompletedGamificationToast != nil}
     /// Clears the value of `shouldDisplayProfileCompletedGamificationToast`. Subsequent reads from it will return its default value.
     public mutating func clearShouldDisplayProfileCompletedGamificationToast() {self._shouldDisplayProfileCompletedGamificationToast = nil}
 
@@ -1014,21 +1098,21 @@ public struct Com_Octopuscommunity_GetPublicProfileRequest: Sendable {
 
   ///Default to false
   public var fetchTotalMessages: Bool {
-    get {return _fetchTotalMessages ?? false}
+    get {_fetchTotalMessages ?? false}
     set {_fetchTotalMessages = newValue}
   }
   /// Returns true if `fetchTotalMessages` has been explicitly set.
-  public var hasFetchTotalMessages: Bool {return self._fetchTotalMessages != nil}
+  public var hasFetchTotalMessages: Bool {self._fetchTotalMessages != nil}
   /// Clears the value of `fetchTotalMessages`. Subsequent reads from it will return its default value.
   public mutating func clearFetchTotalMessages() {self._fetchTotalMessages = nil}
 
   ///Default to false
   public var fetchGamification: Bool {
-    get {return _fetchGamification ?? false}
+    get {_fetchGamification ?? false}
     set {_fetchGamification = newValue}
   }
   /// Returns true if `fetchGamification` has been explicitly set.
-  public var hasFetchGamification: Bool {return self._fetchGamification != nil}
+  public var hasFetchGamification: Bool {self._fetchGamification != nil}
   /// Clears the value of `fetchGamification`. Subsequent reads from it will return its default value.
   public mutating func clearFetchGamification() {self._fetchGamification = nil}
 
@@ -1046,11 +1130,11 @@ public struct Com_Octopuscommunity_GetPublicProfileResponse: Sendable {
   // methods supported on all messages.
 
   public var profile: Com_Octopuscommunity_PublicProfile {
-    get {return _profile ?? Com_Octopuscommunity_PublicProfile()}
+    get {_profile ?? Com_Octopuscommunity_PublicProfile()}
     set {_profile = newValue}
   }
   /// Returns true if `profile` has been explicitly set.
-  public var hasProfile: Bool {return self._profile != nil}
+  public var hasProfile: Bool {self._profile != nil}
   /// Clears the value of `profile`. Subsequent reads from it will return its default value.
   public mutating func clearProfile() {self._profile = nil}
 
@@ -1069,29 +1153,29 @@ public struct Com_Octopuscommunity_PublicProfile: Sendable {
   public var id: String = String()
 
   public var nickname: String {
-    get {return _nickname ?? String()}
+    get {_nickname ?? String()}
     set {_nickname = newValue}
   }
   /// Returns true if `nickname` has been explicitly set.
-  public var hasNickname: Bool {return self._nickname != nil}
+  public var hasNickname: Bool {self._nickname != nil}
   /// Clears the value of `nickname`. Subsequent reads from it will return its default value.
   public mutating func clearNickname() {self._nickname = nil}
 
   public var pictureURL: String {
-    get {return _pictureURL ?? String()}
+    get {_pictureURL ?? String()}
     set {_pictureURL = newValue}
   }
   /// Returns true if `pictureURL` has been explicitly set.
-  public var hasPictureURL: Bool {return self._pictureURL != nil}
+  public var hasPictureURL: Bool {self._pictureURL != nil}
   /// Clears the value of `pictureURL`. Subsequent reads from it will return its default value.
   public mutating func clearPictureURL() {self._pictureURL = nil}
 
   public var bio: String {
-    get {return _bio ?? String()}
+    get {_bio ?? String()}
     set {_bio = newValue}
   }
   /// Returns true if `bio` has been explicitly set.
-  public var hasBio: Bool {return self._bio != nil}
+  public var hasBio: Bool {self._bio != nil}
   /// Clears the value of `bio`. Subsequent reads from it will return its default value.
   public mutating func clearBio() {self._bio = nil}
 
@@ -1102,39 +1186,39 @@ public struct Com_Octopuscommunity_PublicProfile: Sendable {
   public var tags: [Com_Octopuscommunity_ProfileTag] = []
 
   public var gamificationScore: Com_Octopuscommunity_PublicGamificationScore {
-    get {return _gamificationScore ?? Com_Octopuscommunity_PublicGamificationScore()}
+    get {_gamificationScore ?? Com_Octopuscommunity_PublicGamificationScore()}
     set {_gamificationScore = newValue}
   }
   /// Returns true if `gamificationScore` has been explicitly set.
-  public var hasGamificationScore: Bool {return self._gamificationScore != nil}
+  public var hasGamificationScore: Bool {self._gamificationScore != nil}
   /// Clears the value of `gamificationScore`. Subsequent reads from it will return its default value.
   public mutating func clearGamificationScore() {self._gamificationScore = nil}
 
   public var totalMessages: Int32 {
-    get {return _totalMessages ?? 0}
+    get {_totalMessages ?? 0}
     set {_totalMessages = newValue}
   }
   /// Returns true if `totalMessages` has been explicitly set.
-  public var hasTotalMessages: Bool {return self._totalMessages != nil}
+  public var hasTotalMessages: Bool {self._totalMessages != nil}
   /// Clears the value of `totalMessages`. Subsequent reads from it will return its default value.
   public mutating func clearTotalMessages() {self._totalMessages = nil}
 
   public var accountCreatedAt: UInt64 {
-    get {return _accountCreatedAt ?? 0}
+    get {_accountCreatedAt ?? 0}
     set {_accountCreatedAt = newValue}
   }
   /// Returns true if `accountCreatedAt` has been explicitly set.
-  public var hasAccountCreatedAt: Bool {return self._accountCreatedAt != nil}
+  public var hasAccountCreatedAt: Bool {self._accountCreatedAt != nil}
   /// Clears the value of `accountCreatedAt`. Subsequent reads from it will return its default value.
   public mutating func clearAccountCreatedAt() {self._accountCreatedAt = nil}
 
   ///JSON string
   public var metadata: String {
-    get {return _metadata ?? String()}
+    get {_metadata ?? String()}
     set {_metadata = newValue}
   }
   /// Returns true if `metadata` has been explicitly set.
-  public var hasMetadata: Bool {return self._metadata != nil}
+  public var hasMetadata: Bool {self._metadata != nil}
   /// Clears the value of `metadata`. Subsequent reads from it will return its default value.
   public mutating func clearMetadata() {self._metadata = nil}
 
@@ -1159,41 +1243,41 @@ public struct Com_Octopuscommunity_GetPrivateProfileRequest: Sendable {
   public var userID: String = String()
 
   public var fetchUserBlockList: Bool {
-    get {return _fetchUserBlockList ?? false}
+    get {_fetchUserBlockList ?? false}
     set {_fetchUserBlockList = newValue}
   }
   /// Returns true if `fetchUserBlockList` has been explicitly set.
-  public var hasFetchUserBlockList: Bool {return self._fetchUserBlockList != nil}
+  public var hasFetchUserBlockList: Bool {self._fetchUserBlockList != nil}
   /// Clears the value of `fetchUserBlockList`. Subsequent reads from it will return its default value.
   public mutating func clearFetchUserBlockList() {self._fetchUserBlockList = nil}
 
   ///Default to false
   public var fetchNotificationsBadge: Bool {
-    get {return _fetchNotificationsBadge ?? false}
+    get {_fetchNotificationsBadge ?? false}
     set {_fetchNotificationsBadge = newValue}
   }
   /// Returns true if `fetchNotificationsBadge` has been explicitly set.
-  public var hasFetchNotificationsBadge: Bool {return self._fetchNotificationsBadge != nil}
+  public var hasFetchNotificationsBadge: Bool {self._fetchNotificationsBadge != nil}
   /// Clears the value of `fetchNotificationsBadge`. Subsequent reads from it will return its default value.
   public mutating func clearFetchNotificationsBadge() {self._fetchNotificationsBadge = nil}
 
   ///Default to false
   public var fetchTotalMessages: Bool {
-    get {return _fetchTotalMessages ?? false}
+    get {_fetchTotalMessages ?? false}
     set {_fetchTotalMessages = newValue}
   }
   /// Returns true if `fetchTotalMessages` has been explicitly set.
-  public var hasFetchTotalMessages: Bool {return self._fetchTotalMessages != nil}
+  public var hasFetchTotalMessages: Bool {self._fetchTotalMessages != nil}
   /// Clears the value of `fetchTotalMessages`. Subsequent reads from it will return its default value.
   public mutating func clearFetchTotalMessages() {self._fetchTotalMessages = nil}
 
   ///Default to false
   public var fetchGamification: Bool {
-    get {return _fetchGamification ?? false}
+    get {_fetchGamification ?? false}
     set {_fetchGamification = newValue}
   }
   /// Returns true if `fetchGamification` has been explicitly set.
-  public var hasFetchGamification: Bool {return self._fetchGamification != nil}
+  public var hasFetchGamification: Bool {self._fetchGamification != nil}
   /// Clears the value of `fetchGamification`. Subsequent reads from it will return its default value.
   public mutating func clearFetchGamification() {self._fetchGamification = nil}
 
@@ -1214,11 +1298,11 @@ public struct Com_Octopuscommunity_GetPrivateProfileResponse: Sendable {
   // methods supported on all messages.
 
   public var profile: Com_Octopuscommunity_PrivateProfile {
-    get {return _profile ?? Com_Octopuscommunity_PrivateProfile()}
+    get {_profile ?? Com_Octopuscommunity_PrivateProfile()}
     set {_profile = newValue}
   }
   /// Returns true if `profile` has been explicitly set.
-  public var hasProfile: Bool {return self._profile != nil}
+  public var hasProfile: Bool {self._profile != nil}
   /// Clears the value of `profile`. Subsequent reads from it will return its default value.
   public mutating func clearProfile() {self._profile = nil}
 
@@ -1235,169 +1319,169 @@ public struct Com_Octopuscommunity_PrivateProfile: @unchecked Sendable {
   // methods supported on all messages.
 
   public var id: String {
-    get {return _storage._id}
+    get {_storage._id}
     set {_uniqueStorage()._id = newValue}
   }
 
   public var email: String {
-    get {return _storage._email ?? String()}
+    get {_storage._email ?? String()}
     set {_uniqueStorage()._email = newValue}
   }
   /// Returns true if `email` has been explicitly set.
-  public var hasEmail: Bool {return _storage._email != nil}
+  public var hasEmail: Bool {_storage._email != nil}
   /// Clears the value of `email`. Subsequent reads from it will return its default value.
   public mutating func clearEmail() {_uniqueStorage()._email = nil}
 
   public var nickname: String {
-    get {return _storage._nickname ?? String()}
+    get {_storage._nickname ?? String()}
     set {_uniqueStorage()._nickname = newValue}
   }
   /// Returns true if `nickname` has been explicitly set.
-  public var hasNickname: Bool {return _storage._nickname != nil}
+  public var hasNickname: Bool {_storage._nickname != nil}
   /// Clears the value of `nickname`. Subsequent reads from it will return its default value.
   public mutating func clearNickname() {_uniqueStorage()._nickname = nil}
 
   public var pictureURL: String {
-    get {return _storage._pictureURL ?? String()}
+    get {_storage._pictureURL ?? String()}
     set {_uniqueStorage()._pictureURL = newValue}
   }
   /// Returns true if `pictureURL` has been explicitly set.
-  public var hasPictureURL: Bool {return _storage._pictureURL != nil}
+  public var hasPictureURL: Bool {_storage._pictureURL != nil}
   /// Clears the value of `pictureURL`. Subsequent reads from it will return its default value.
   public mutating func clearPictureURL() {_uniqueStorage()._pictureURL = nil}
 
   public var bio: String {
-    get {return _storage._bio ?? String()}
+    get {_storage._bio ?? String()}
     set {_uniqueStorage()._bio = newValue}
   }
   /// Returns true if `bio` has been explicitly set.
-  public var hasBio: Bool {return _storage._bio != nil}
+  public var hasBio: Bool {_storage._bio != nil}
   /// Clears the value of `bio`. Subsequent reads from it will return its default value.
   public mutating func clearBio() {_uniqueStorage()._bio = nil}
 
   public var hasSeenOnboarding_p: Bool {
-    get {return _storage._hasSeenOnboarding_p ?? false}
+    get {_storage._hasSeenOnboarding_p ?? false}
     set {_uniqueStorage()._hasSeenOnboarding_p = newValue}
   }
   /// Returns true if `hasSeenOnboarding_p` has been explicitly set.
-  public var hasHasSeenOnboarding_p: Bool {return _storage._hasSeenOnboarding_p != nil}
+  public var hasHasSeenOnboarding_p: Bool {_storage._hasSeenOnboarding_p != nil}
   /// Clears the value of `hasSeenOnboarding_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasSeenOnboarding_p() {_uniqueStorage()._hasSeenOnboarding_p = nil}
 
   public var hasAcceptedCgu_p: Bool {
-    get {return _storage._hasAcceptedCgu_p ?? false}
+    get {_storage._hasAcceptedCgu_p ?? false}
     set {_uniqueStorage()._hasAcceptedCgu_p = newValue}
   }
   /// Returns true if `hasAcceptedCgu_p` has been explicitly set.
-  public var hasHasAcceptedCgu_p: Bool {return _storage._hasAcceptedCgu_p != nil}
+  public var hasHasAcceptedCgu_p: Bool {_storage._hasAcceptedCgu_p != nil}
   /// Clears the value of `hasAcceptedCgu_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasAcceptedCgu_p() {_uniqueStorage()._hasAcceptedCgu_p = nil}
 
   public var hasConfirmedNickname_p: Bool {
-    get {return _storage._hasConfirmedNickname_p ?? false}
+    get {_storage._hasConfirmedNickname_p ?? false}
     set {_uniqueStorage()._hasConfirmedNickname_p = newValue}
   }
   /// Returns true if `hasConfirmedNickname_p` has been explicitly set.
-  public var hasHasConfirmedNickname_p: Bool {return _storage._hasConfirmedNickname_p != nil}
+  public var hasHasConfirmedNickname_p: Bool {_storage._hasConfirmedNickname_p != nil}
   /// Clears the value of `hasConfirmedNickname_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasConfirmedNickname_p() {_uniqueStorage()._hasConfirmedNickname_p = nil}
 
   public var hasConfirmedPicture_p: Bool {
-    get {return _storage._hasConfirmedPicture_p ?? false}
+    get {_storage._hasConfirmedPicture_p ?? false}
     set {_uniqueStorage()._hasConfirmedPicture_p = newValue}
   }
   /// Returns true if `hasConfirmedPicture_p` has been explicitly set.
-  public var hasHasConfirmedPicture_p: Bool {return _storage._hasConfirmedPicture_p != nil}
+  public var hasHasConfirmedPicture_p: Bool {_storage._hasConfirmedPicture_p != nil}
   /// Clears the value of `hasConfirmedPicture_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasConfirmedPicture_p() {_uniqueStorage()._hasConfirmedPicture_p = nil}
 
   public var hasConfirmedBio_p: Bool {
-    get {return _storage._hasConfirmedBio_p ?? false}
+    get {_storage._hasConfirmedBio_p ?? false}
     set {_uniqueStorage()._hasConfirmedBio_p = newValue}
   }
   /// Returns true if `hasConfirmedBio_p` has been explicitly set.
-  public var hasHasConfirmedBio_p: Bool {return _storage._hasConfirmedBio_p != nil}
+  public var hasHasConfirmedBio_p: Bool {_storage._hasConfirmedBio_p != nil}
   /// Clears the value of `hasConfirmedBio_p`. Subsequent reads from it will return its default value.
   public mutating func clearHasConfirmedBio_p() {_uniqueStorage()._hasConfirmedBio_p = nil}
 
   public var isGuest: Bool {
-    get {return _storage._isGuest}
+    get {_storage._isGuest}
     set {_uniqueStorage()._isGuest = newValue}
   }
 
   public var descPostFeedID: String {
-    get {return _storage._descPostFeedID}
+    get {_storage._descPostFeedID}
     set {_uniqueStorage()._descPostFeedID = newValue}
   }
 
   public var ascPostFeedID: String {
-    get {return _storage._ascPostFeedID}
+    get {_storage._ascPostFeedID}
     set {_uniqueStorage()._ascPostFeedID = newValue}
   }
 
   ///If nickname is present, but originalNickname is not. It means that nickname is the original one.
   public var originalNickname: String {
-    get {return _storage._originalNickname ?? String()}
+    get {_storage._originalNickname ?? String()}
     set {_uniqueStorage()._originalNickname = newValue}
   }
   /// Returns true if `originalNickname` has been explicitly set.
-  public var hasOriginalNickname: Bool {return _storage._originalNickname != nil}
+  public var hasOriginalNickname: Bool {_storage._originalNickname != nil}
   /// Clears the value of `originalNickname`. Subsequent reads from it will return its default value.
   public mutating func clearOriginalNickname() {_uniqueStorage()._originalNickname = nil}
 
   public var notSeenNotificationsCount: UInt32 {
-    get {return _storage._notSeenNotificationsCount ?? 0}
+    get {_storage._notSeenNotificationsCount ?? 0}
     set {_uniqueStorage()._notSeenNotificationsCount = newValue}
   }
   /// Returns true if `notSeenNotificationsCount` has been explicitly set.
-  public var hasNotSeenNotificationsCount: Bool {return _storage._notSeenNotificationsCount != nil}
+  public var hasNotSeenNotificationsCount: Bool {_storage._notSeenNotificationsCount != nil}
   /// Clears the value of `notSeenNotificationsCount`. Subsequent reads from it will return its default value.
   public mutating func clearNotSeenNotificationsCount() {_uniqueStorage()._notSeenNotificationsCount = nil}
 
   public var tags: [Com_Octopuscommunity_ProfileTag] {
-    get {return _storage._tags}
+    get {_storage._tags}
     set {_uniqueStorage()._tags = newValue}
   }
 
   public var gamificationScore: Com_Octopuscommunity_PrivateGamificationScore {
-    get {return _storage._gamificationScore ?? Com_Octopuscommunity_PrivateGamificationScore()}
+    get {_storage._gamificationScore ?? Com_Octopuscommunity_PrivateGamificationScore()}
     set {_uniqueStorage()._gamificationScore = newValue}
   }
   /// Returns true if `gamificationScore` has been explicitly set.
-  public var hasGamificationScore: Bool {return _storage._gamificationScore != nil}
+  public var hasGamificationScore: Bool {_storage._gamificationScore != nil}
   /// Clears the value of `gamificationScore`. Subsequent reads from it will return its default value.
   public mutating func clearGamificationScore() {_uniqueStorage()._gamificationScore = nil}
 
   public var totalMessages: Int32 {
-    get {return _storage._totalMessages ?? 0}
+    get {_storage._totalMessages ?? 0}
     set {_uniqueStorage()._totalMessages = newValue}
   }
   /// Returns true if `totalMessages` has been explicitly set.
-  public var hasTotalMessages: Bool {return _storage._totalMessages != nil}
+  public var hasTotalMessages: Bool {_storage._totalMessages != nil}
   /// Clears the value of `totalMessages`. Subsequent reads from it will return its default value.
   public mutating func clearTotalMessages() {_uniqueStorage()._totalMessages = nil}
 
   public var accountCreatedAt: UInt64 {
-    get {return _storage._accountCreatedAt ?? 0}
+    get {_storage._accountCreatedAt ?? 0}
     set {_uniqueStorage()._accountCreatedAt = newValue}
   }
   /// Returns true if `accountCreatedAt` has been explicitly set.
-  public var hasAccountCreatedAt: Bool {return _storage._accountCreatedAt != nil}
+  public var hasAccountCreatedAt: Bool {_storage._accountCreatedAt != nil}
   /// Clears the value of `accountCreatedAt`. Subsequent reads from it will return its default value.
   public mutating func clearAccountCreatedAt() {_uniqueStorage()._accountCreatedAt = nil}
 
   public var usersBlockList: [String] {
-    get {return _storage._usersBlockList}
+    get {_storage._usersBlockList}
     set {_uniqueStorage()._usersBlockList = newValue}
   }
 
   ///JSON string
   public var metadata: String {
-    get {return _storage._metadata ?? String()}
+    get {_storage._metadata ?? String()}
     set {_uniqueStorage()._metadata = newValue}
   }
   /// Returns true if `metadata` has been explicitly set.
-  public var hasMetadata: Bool {return _storage._metadata != nil}
+  public var hasMetadata: Bool {_storage._metadata != nil}
   /// Clears the value of `metadata`. Subsequent reads from it will return its default value.
   public mutating func clearMetadata() {_uniqueStorage()._metadata = nil}
 
@@ -1431,11 +1515,11 @@ public struct Com_Octopuscommunity_PublicGamificationScore: Sendable {
 
   ///For BO users only
   public var score: Int32 {
-    get {return _score ?? 0}
+    get {_score ?? 0}
     set {_score = newValue}
   }
   /// Returns true if `score` has been explicitly set.
-  public var hasScore: Bool {return self._score != nil}
+  public var hasScore: Bool {self._score != nil}
   /// Clears the value of `score`. Subsequent reads from it will return its default value.
   public mutating func clearScore() {self._score = nil}
 
@@ -1544,11 +1628,11 @@ public struct Com_Octopuscommunity_DeleteMyProfileRequest: Sendable {
   public var userID: String = String()
 
   public var reason: Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReason {
-    get {return _reason ?? Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReason()}
+    get {_reason ?? Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReason()}
     set {_reason = newValue}
   }
   /// Returns true if `reason` has been explicitly set.
-  public var hasReason: Bool {return self._reason != nil}
+  public var hasReason: Bool {self._reason != nil}
   /// Clears the value of `reason`. Subsequent reads from it will return its default value.
   public mutating func clearReason() {self._reason = nil}
 
@@ -1664,11 +1748,11 @@ public struct Com_Octopuscommunity_ReportUserRequest: Sendable {
   public var reasonCodes: [Com_Octopuscommunity_ReportReasonCode] = []
 
   public var customReason: String {
-    get {return _customReason ?? String()}
+    get {_customReason ?? String()}
     set {_customReason = newValue}
   }
   /// Returns true if `customReason` has been explicitly set.
-  public var hasCustomReason: Bool {return self._customReason != nil}
+  public var hasCustomReason: Bool {self._customReason != nil}
   /// Clears the value of `customReason`. Subsequent reads from it will return its default value.
   public mutating func clearCustomReason() {self._customReason = nil}
 
@@ -1856,11 +1940,11 @@ public struct Com_Octopuscommunity_CanAccessCommunityResponse: Sendable {
   public var canAccessCommunity: Bool = false
 
   public var communityDisabledMessage: String {
-    get {return _communityDisabledMessage ?? String()}
+    get {_communityDisabledMessage ?? String()}
     set {_communityDisabledMessage = newValue}
   }
   /// Returns true if `communityDisabledMessage` has been explicitly set.
-  public var hasCommunityDisabledMessage: Bool {return self._communityDisabledMessage != nil}
+  public var hasCommunityDisabledMessage: Bool {self._communityDisabledMessage != nil}
   /// Clears the value of `communityDisabledMessage`. Subsequent reads from it will return its default value.
   public mutating func clearCommunityDisabledMessage() {self._communityDisabledMessage = nil}
 
@@ -1984,11 +2068,11 @@ public struct Com_Octopuscommunity_SetProfileTagResponse: Sendable {
 
     /// The public profile related to the user, with the new profile tag
     public var profile: Com_Octopuscommunity_PublicProfile {
-      get {return _profile ?? Com_Octopuscommunity_PublicProfile()}
+      get {_profile ?? Com_Octopuscommunity_PublicProfile()}
       set {_profile = newValue}
     }
     /// Returns true if `profile` has been explicitly set.
-    public var hasProfile: Bool {return self._profile != nil}
+    public var hasProfile: Bool {self._profile != nil}
     /// Clears the value of `profile`. Subsequent reads from it will return its default value.
     public mutating func clearProfile() {self._profile = nil}
 
@@ -2049,20 +2133,20 @@ public struct Com_Octopuscommunity_EnteringOctopusResponse: Sendable {
   // methods supported on all messages.
 
   public var shouldDisplayGamificationLoginToast: Bool {
-    get {return _shouldDisplayGamificationLoginToast ?? false}
+    get {_shouldDisplayGamificationLoginToast ?? false}
     set {_shouldDisplayGamificationLoginToast = newValue}
   }
   /// Returns true if `shouldDisplayGamificationLoginToast` has been explicitly set.
-  public var hasShouldDisplayGamificationLoginToast: Bool {return self._shouldDisplayGamificationLoginToast != nil}
+  public var hasShouldDisplayGamificationLoginToast: Bool {self._shouldDisplayGamificationLoginToast != nil}
   /// Clears the value of `shouldDisplayGamificationLoginToast`. Subsequent reads from it will return its default value.
   public mutating func clearShouldDisplayGamificationLoginToast() {self._shouldDisplayGamificationLoginToast = nil}
 
   public var shouldDisplayGamificationAnswerToast: Bool {
-    get {return _shouldDisplayGamificationAnswerToast ?? false}
+    get {_shouldDisplayGamificationAnswerToast ?? false}
     set {_shouldDisplayGamificationAnswerToast = newValue}
   }
   /// Returns true if `shouldDisplayGamificationAnswerToast` has been explicitly set.
-  public var hasShouldDisplayGamificationAnswerToast: Bool {return self._shouldDisplayGamificationAnswerToast != nil}
+  public var hasShouldDisplayGamificationAnswerToast: Bool {self._shouldDisplayGamificationAnswerToast != nil}
   /// Clears the value of `shouldDisplayGamificationAnswerToast`. Subsequent reads from it will return its default value.
   public mutating func clearShouldDisplayGamificationAnswerToast() {self._shouldDisplayGamificationAnswerToast = nil}
 
@@ -2147,11 +2231,11 @@ public struct Com_Octopuscommunity_FollowUnfollowTopicResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_FollowUnfollowTopicResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -2243,15 +2327,73 @@ public struct Com_Octopuscommunity_FollowUnfollowTopicResponse: Sendable {
   public init() {}
 }
 
+public struct Com_Octopuscommunity_SyncFollowTopicsRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var actions: [Com_Octopuscommunity_SyncFollowTopicAction] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_SyncFollowTopicAction: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var topicID: String = String()
+
+  /// true = follow, false = unfollow
+  public var followed: Bool = false
+
+  /// epoch millis of the follow/unfollow action
+  public var actionTimestamp: Int64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_SyncFollowTopicsResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var results: [Com_Octopuscommunity_SyncFollowTopicResult] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct Com_Octopuscommunity_SyncFollowTopicResult: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var topicID: String = String()
+
+  public var status: Com_Octopuscommunity_SyncFollowTopicStatus = .syncFollowUnspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "com.octopuscommunity"
 
+extension Com_Octopuscommunity_SyncFollowTopicStatus: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SYNC_FOLLOW_UNSPECIFIED\0\u{1}SYNC_FOLLOW_APPLIED\0\u{1}SYNC_FOLLOW_SKIPPED\0\u{1}SYNC_FOLLOW_TOPIC_NOT_FOUND\0\u{1}SYNC_FOLLOW_NOT_FOLLOWABLE\0\u{1}SYNC_FOLLOW_NOT_UNFOLLOWABLE\0\u{1}SYNC_FOLLOW_ALREADY_FOLLOWED\0\u{1}SYNC_FOLLOW_ALREADY_UNFOLLOWED\0\u{1}SYNC_FOLLOW_ERROR\0")
+}
+
 extension Com_Octopuscommunity_DeleteUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2319,10 +2461,7 @@ extension Com_Octopuscommunity_GetGuestJwtRequest: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_GetGuestJwtResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetGuestJwtResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2388,18 +2527,12 @@ extension Com_Octopuscommunity_GetGuestJwtResponse: SwiftProtobuf.Message, Swift
 }
 
 extension Com_Octopuscommunity_GetGuestJwtResponse.ErrorCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN_ERROR"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0")
 }
 
 extension Com_Octopuscommunity_GetGuestJwtResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetGuestJwtResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "jwt"),
-    2: .same(proto: "userId"),
-    3: .same(proto: "profile"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}jwt\0\u{1}userId\0\u{1}profile\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2443,9 +2576,7 @@ extension Com_Octopuscommunity_GetGuestJwtResponse.Success: SwiftProtobuf.Messag
 
 extension Com_Octopuscommunity_GetGuestJwtResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetGuestJwtResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2475,10 +2606,7 @@ extension Com_Octopuscommunity_GetGuestJwtResponse.Fail: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_GetGuestJwtResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetGuestJwtResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errorCode"),
-    2: .same(proto: "message"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errorCode\0\u{1}message\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2513,9 +2641,7 @@ extension Com_Octopuscommunity_GetGuestJwtResponse.Error: SwiftProtobuf.Message,
 
 extension Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetJwtFromClientSignedTokenRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "clientToken"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientToken\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2545,10 +2671,7 @@ extension Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest: SwiftProtobuf
 
 extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetJwtFromClientSignedTokenResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2614,19 +2737,12 @@ extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse: SwiftProtobu
 }
 
 extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.ErrorCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN_ERROR"),
-    1: .same(proto: "USER_BANNED"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0\u{1}USER_BANNED\0")
 }
 
 extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "jwt"),
-    2: .same(proto: "userId"),
-    3: .same(proto: "profile"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}jwt\0\u{1}userId\0\u{1}profile\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2670,9 +2786,7 @@ extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.Success: Swif
 
 extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2702,10 +2816,7 @@ extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.Fail: SwiftPr
 
 extension Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "error_code"),
-    2: .same(proto: "message"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}error_code\0\u{1}message\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2759,10 +2870,7 @@ extension Com_Octopuscommunity_CreateUserRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_CreateUserResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateUserResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2829,9 +2937,7 @@ extension Com_Octopuscommunity_CreateUserResponse: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_CreateUserResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_CreateUserResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2861,9 +2967,7 @@ extension Com_Octopuscommunity_CreateUserResponse.Success: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_CreateUserResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_CreateUserResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2893,9 +2997,7 @@ extension Com_Octopuscommunity_CreateUserResponse.Fail: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_CreateUserResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_CreateUserResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2925,14 +3027,7 @@ extension Com_Octopuscommunity_CreateUserResponse.Error: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_UpdateProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateProfileRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "update"),
-    3: .same(proto: "fetchUserBlockList"),
-    4: .same(proto: "fetchNotificationsBadge"),
-    5: .same(proto: "fetchTotalMessages"),
-    6: .same(proto: "fetchGamification"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}update\0\u{1}fetchUserBlockList\0\u{1}fetchNotificationsBadge\0\u{1}fetchTotalMessages\0\u{1}fetchGamification\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2991,18 +3086,7 @@ extension Com_Octopuscommunity_UpdateProfileRequest: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_ProfileUpdate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ProfileUpdate"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    2: .same(proto: "email"),
-    3: .same(proto: "nickname"),
-    4: .same(proto: "picture"),
-    5: .same(proto: "bio"),
-    6: .same(proto: "hasSeenOnboarding"),
-    7: .same(proto: "hasAcceptedCgu"),
-    8: .same(proto: "hasConfirmedNickname"),
-    9: .same(proto: "hasConfirmedBio"),
-    10: .same(proto: "hasConfirmedPicture"),
-    11: .same(proto: "optFindAvailableNickname"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}email\0\u{1}nickname\0\u{1}picture\0\u{1}bio\0\u{1}hasSeenOnboarding\0\u{1}hasAcceptedCgu\0\u{1}hasConfirmedNickname\0\u{1}hasConfirmedBio\0\u{1}hasConfirmedPicture\0\u{1}optFindAvailableNickname\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3081,10 +3165,7 @@ extension Com_Octopuscommunity_ProfileUpdate: SwiftProtobuf.Message, SwiftProtob
 
 extension Com_Octopuscommunity_PictureUpdateRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PictureUpdateRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "new"),
-    2: .same(proto: "delete"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}new\0\u{1}delete\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3151,10 +3232,7 @@ extension Com_Octopuscommunity_PictureUpdateRequest: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_PictureUploadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PictureUploadRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "file"),
-    2: .same(proto: "isOptimized"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}file\0\u{1}isOptimized\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3212,10 +3290,7 @@ extension Com_Octopuscommunity_PictureDeleteRequest: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_UpdateProfileResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateProfileResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3282,10 +3357,7 @@ extension Com_Octopuscommunity_UpdateProfileResponse: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_UpdateProfileResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "profile"),
-    2: .same(proto: "shouldDisplayProfileCompletedGamificationToast"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profile\0\u{1}shouldDisplayProfileCompletedGamificationToast\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3324,9 +3396,7 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Success: SwiftProtobuf.Mess
 
 extension Com_Octopuscommunity_UpdateProfileResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3356,20 +3426,7 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Fail: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_UpdateProfileResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "bannedWordUsed"),
-    102: .same(proto: "alreadyTaken"),
-    103: .same(proto: "badFormat"),
-    104: .same(proto: "emptyFile"),
-    105: .same(proto: "fileSizeTooBig"),
-    106: .same(proto: "badFileFormat"),
-    107: .same(proto: "uploadIssue"),
-    108: .same(proto: "charLimitReached"),
-    109: .same(proto: "moderatedContent"),
-    110: .same(proto: "avatarInProcess"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}bannedWordUsed\0\u{1}alreadyTaken\0\u{1}badFormat\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}charLimitReached\0\u{1}moderatedContent\0\u{1}avatarInProcess\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3581,20 +3638,12 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Error: SwiftProtobuf.Messag
 }
 
 extension Com_Octopuscommunity_UpdateProfileResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "EMAIL"),
-    2: .same(proto: "NICKNAME"),
-    3: .same(proto: "PROFILE_PICTURE"),
-    4: .same(proto: "BIO"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}EMAIL\0\u{1}NICKNAME\0\u{1}PROFILE_PICTURE\0\u{1}BIO\0")
 }
 
 extension Com_Octopuscommunity_UpdateProfileResponse.Error.BannedWordUsed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.Error.protoMessageName + ".BannedWordUsed"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "words"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}words\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3795,11 +3844,7 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess: Swif
 
 extension Com_Octopuscommunity_GetPublicProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetPublicProfileRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "fetchTotalMessages"),
-    3: .same(proto: "fetchGamification"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}fetchTotalMessages\0\u{1}fetchGamification\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3843,9 +3888,7 @@ extension Com_Octopuscommunity_GetPublicProfileRequest: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_GetPublicProfileResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetPublicProfileResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "profile"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profile\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3879,19 +3922,7 @@ extension Com_Octopuscommunity_GetPublicProfileResponse: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PublicProfile"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "id"),
-    2: .same(proto: "nickname"),
-    3: .same(proto: "pictureUrl"),
-    4: .same(proto: "bio"),
-    10: .same(proto: "descPostFeedId"),
-    11: .same(proto: "ascPostFeedId"),
-    20: .same(proto: "tags"),
-    30: .same(proto: "gamificationScore"),
-    40: .same(proto: "totalMessages"),
-    41: .same(proto: "accountCreatedAt"),
-    999: .same(proto: "metadata"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{2}\u{6}descPostFeedId\0\u{1}ascPostFeedId\0\u{2}\u{9}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}~\u{e}metadata\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3975,13 +4006,7 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
 
 extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetPrivateProfileRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "fetchUserBlockList"),
-    3: .same(proto: "fetchNotificationsBadge"),
-    4: .same(proto: "fetchTotalMessages"),
-    5: .same(proto: "fetchGamification"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}fetchUserBlockList\0\u{1}fetchNotificationsBadge\0\u{1}fetchTotalMessages\0\u{1}fetchGamification\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4035,9 +4060,7 @@ extension Com_Octopuscommunity_GetPrivateProfileRequest: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_GetPrivateProfileResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetPrivateProfileResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "profile"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profile\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4071,29 +4094,7 @@ extension Com_Octopuscommunity_GetPrivateProfileResponse: SwiftProtobuf.Message,
 
 extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PrivateProfile"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "id"),
-    2: .same(proto: "email"),
-    3: .same(proto: "nickname"),
-    4: .same(proto: "pictureUrl"),
-    5: .same(proto: "bio"),
-    6: .same(proto: "hasSeenOnboarding"),
-    7: .same(proto: "hasAcceptedCgu"),
-    113: .same(proto: "hasConfirmedNickname"),
-    114: .same(proto: "hasConfirmedPicture"),
-    115: .same(proto: "hasConfirmedBio"),
-    9: .same(proto: "isGuest"),
-    10: .same(proto: "descPostFeedId"),
-    11: .same(proto: "ascPostFeedId"),
-    12: .same(proto: "originalNickname"),
-    20: .same(proto: "notSeenNotificationsCount"),
-    30: .same(proto: "tags"),
-    40: .same(proto: "gamificationScore"),
-    50: .same(proto: "totalMessages"),
-    51: .same(proto: "accountCreatedAt"),
-    100: .same(proto: "usersBlockList"),
-    999: .same(proto: "metadata"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}email\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{1}hasSeenOnboarding\0\u{1}hasAcceptedCgu\0\u{2}\u{2}isGuest\0\u{1}descPostFeedId\0\u{1}ascPostFeedId\0\u{1}originalNickname\0\u{2}\u{8}notSeenNotificationsCount\0\u{2}\u{a}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}1usersBlockList\0\u{2}\u{d}hasConfirmedNickname\0\u{1}hasConfirmedPicture\0\u{1}hasConfirmedBio\0\u{2}t\u{d}metadata\0")
 
   fileprivate class _StorageClass {
     var _id: String = String()
@@ -4118,15 +4119,11 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     var _usersBlockList: [String] = []
     var _metadata: String? = nil
 
-    #if swift(>=5.10)
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
       // This will force a copy to be made of this reference when the first mutation occurs;
       // hence, it is safe to mark this as `nonisolated(unsafe)`.
       static nonisolated(unsafe) let defaultInstance = _StorageClass()
-    #else
-      static let defaultInstance = _StorageClass()
-    #endif
 
     private init() {}
 
@@ -4307,10 +4304,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
 
 extension Com_Octopuscommunity_PrivateGamificationScore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PrivateGamificationScore"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "score"),
-    2: .same(proto: "level"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}score\0\u{1}level\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4345,10 +4339,7 @@ extension Com_Octopuscommunity_PrivateGamificationScore: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_PublicGamificationScore: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PublicGamificationScore"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "level"),
-    2: .same(proto: "score"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}level\0\u{1}score\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4387,10 +4378,7 @@ extension Com_Octopuscommunity_PublicGamificationScore: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_BanUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BanUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "reasons"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}reasons\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4444,9 +4432,7 @@ extension Com_Octopuscommunity_BanUserResponse: SwiftProtobuf.Message, SwiftProt
 
 extension Com_Octopuscommunity_UnbanUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnbanUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4495,9 +4481,7 @@ extension Com_Octopuscommunity_UnbanUserResponse: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_ShadowBanUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ShadowBanUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4546,9 +4530,7 @@ extension Com_Octopuscommunity_ShadowBanUserResponse: SwiftProtobuf.Message, Swi
 
 extension Com_Octopuscommunity_ShadowUnbanUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ShadowUnbanUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4597,10 +4579,7 @@ extension Com_Octopuscommunity_UnShadowBanUserResponse: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_DeleteMyProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteMyProfileRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "reason"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}reason\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4638,23 +4617,12 @@ extension Com_Octopuscommunity_DeleteMyProfileRequest: SwiftProtobuf.Message, Sw
 }
 
 extension Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReasonCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNSPECIFIED_DELETE_REASON"),
-    1: .same(proto: "NO_MORE_INTERESTED"),
-    2: .same(proto: "MISSING_KEY_FEATURES"),
-    3: .same(proto: "TECHNICAL_ISSUES"),
-    4: .same(proto: "CONFIDENTIALITY_WORRYING"),
-    5: .same(proto: "COMMUNITY_QUALITY"),
-    6: .same(proto: "REDUCING_SN_TIME"),
-    9999: .same(proto: "OTHER"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSPECIFIED_DELETE_REASON\0\u{1}NO_MORE_INTERESTED\0\u{1}MISSING_KEY_FEATURES\0\u{1}TECHNICAL_ISSUES\0\u{1}CONFIDENTIALITY_WORRYING\0\u{1}COMMUNITY_QUALITY\0\u{1}REDUCING_SN_TIME\0\u{2}I\\\u{2}OTHER\0")
 }
 
 extension Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReason: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_DeleteMyProfileRequest.protoMessageName + ".DeleteMyProfileReason"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "code"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}code\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4703,11 +4671,7 @@ extension Com_Octopuscommunity_DeleteMyProfileResponse: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_ReportUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ReportUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "reasonCodes"),
-    3: .same(proto: "customReason"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}reasonCodes\0\u{1}customReason\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4770,9 +4734,7 @@ extension Com_Octopuscommunity_ReportUserResponse: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_BlockUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BlockUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4821,10 +4783,7 @@ extension Com_Octopuscommunity_BlockUserResponse: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_ByPassAbTestingRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ByPassAbTestingRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "giveCommunityAccess"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}giveCommunityAccess\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4859,10 +4818,7 @@ extension Com_Octopuscommunity_ByPassAbTestingRequest: SwiftProtobuf.Message, Sw
 
 extension Com_Octopuscommunity_ByPassAbTestingResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ByPassAbTestingResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4928,16 +4884,12 @@ extension Com_Octopuscommunity_ByPassAbTestingResponse: SwiftProtobuf.Message, S
 }
 
 extension Com_Octopuscommunity_ByPassAbTestingResponse.ErrorCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN_ERROR"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0")
 }
 
 extension Com_Octopuscommunity_ByPassAbTestingResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ByPassAbTestingResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "jwt"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}jwt\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4967,9 +4919,7 @@ extension Com_Octopuscommunity_ByPassAbTestingResponse.Success: SwiftProtobuf.Me
 
 extension Com_Octopuscommunity_ByPassAbTestingResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ByPassAbTestingResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4999,10 +4949,7 @@ extension Com_Octopuscommunity_ByPassAbTestingResponse.Fail: SwiftProtobuf.Messa
 
 extension Com_Octopuscommunity_ByPassAbTestingResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ByPassAbTestingResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errorCode"),
-    2: .same(proto: "message"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errorCode\0\u{1}message\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5056,10 +5003,7 @@ extension Com_Octopuscommunity_CanAccessCommunityRequest: SwiftProtobuf.Message,
 
 extension Com_Octopuscommunity_CanAccessCommunityResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CanAccessCommunityResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "canAccessCommunity"),
-    2: .same(proto: "communityDisabledMessage"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}canAccessCommunity\0\u{1}communityDisabledMessage\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5098,9 +5042,7 @@ extension Com_Octopuscommunity_CanAccessCommunityResponse: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_SearchUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SearchUserRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "filterValue"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}filterValue\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5130,9 +5072,7 @@ extension Com_Octopuscommunity_SearchUserRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_SearchUserResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SearchUserResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "profiles"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profiles\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5162,10 +5102,7 @@ extension Com_Octopuscommunity_SearchUserResponse: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_SetProfileTagRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SetProfileTagRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "userId"),
-    2: .same(proto: "tags"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}tags\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5200,10 +5137,7 @@ extension Com_Octopuscommunity_SetProfileTagRequest: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_SetProfileTagResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SetProfileTagResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5269,16 +5203,12 @@ extension Com_Octopuscommunity_SetProfileTagResponse: SwiftProtobuf.Message, Swi
 }
 
 extension Com_Octopuscommunity_SetProfileTagResponse.ErrorCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN_ERROR"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0")
 }
 
 extension Com_Octopuscommunity_SetProfileTagResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_SetProfileTagResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "profile"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profile\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5312,9 +5242,7 @@ extension Com_Octopuscommunity_SetProfileTagResponse.Success: SwiftProtobuf.Mess
 
 extension Com_Octopuscommunity_SetProfileTagResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_SetProfileTagResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5344,10 +5272,7 @@ extension Com_Octopuscommunity_SetProfileTagResponse.Fail: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_SetProfileTagResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_SetProfileTagResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errorCode"),
-    2: .same(proto: "message"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errorCode\0\u{1}message\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5382,9 +5307,7 @@ extension Com_Octopuscommunity_SetProfileTagResponse.Error: SwiftProtobuf.Messag
 
 extension Com_Octopuscommunity_EnteringOctopusRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EnteringOctopusRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "fetchGamificationToasts"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}fetchGamificationToasts\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5414,10 +5337,7 @@ extension Com_Octopuscommunity_EnteringOctopusRequest: SwiftProtobuf.Message, Sw
 
 extension Com_Octopuscommunity_EnteringOctopusResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EnteringOctopusResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "shouldDisplayGamificationLoginToast"),
-    2: .same(proto: "shouldDisplayGamificationAnswerToast"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}shouldDisplayGamificationLoginToast\0\u{1}shouldDisplayGamificationAnswerToast\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5456,9 +5376,7 @@ extension Com_Octopuscommunity_EnteringOctopusResponse: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_FollowUnfollowTopicRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FollowUnfollowTopicRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "topicId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5488,10 +5406,7 @@ extension Com_Octopuscommunity_FollowUnfollowTopicRequest: SwiftProtobuf.Message
 
 extension Com_Octopuscommunity_FollowUnfollowTopicResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FollowUnfollowTopicResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5577,9 +5492,7 @@ extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Success: SwiftProtobu
 
 extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_FollowUnfollowTopicResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5609,14 +5522,7 @@ extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Fail: SwiftProtobuf.M
 
 extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_FollowUnfollowTopicResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingParent"),
-    102: .same(proto: "unFollowableTopic"),
-    103: .same(proto: "topicAlreadyFollowed"),
-    104: .same(proto: "topicAlreadyUnfollowed"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0\u{1}unFollowableTopic\0\u{1}topicAlreadyFollowed\0\u{1}topicAlreadyUnfollowed\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5726,8 +5632,140 @@ extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Error: SwiftProtobuf.
 }
 
 extension Com_Octopuscommunity_FollowUnfollowTopicResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_PARENT"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0")
+}
+
+extension Com_Octopuscommunity_SyncFollowTopicsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SyncFollowTopicsRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}actions\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.actions) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.actions.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.actions, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_SyncFollowTopicsRequest, rhs: Com_Octopuscommunity_SyncFollowTopicsRequest) -> Bool {
+    if lhs.actions != rhs.actions {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_SyncFollowTopicAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SyncFollowTopicAction"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0\u{1}followed\0\u{1}actionTimestamp\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.topicID) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.followed) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.actionTimestamp) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.topicID.isEmpty {
+      try visitor.visitSingularStringField(value: self.topicID, fieldNumber: 1)
+    }
+    if self.followed != false {
+      try visitor.visitSingularBoolField(value: self.followed, fieldNumber: 2)
+    }
+    if self.actionTimestamp != 0 {
+      try visitor.visitSingularInt64Field(value: self.actionTimestamp, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_SyncFollowTopicAction, rhs: Com_Octopuscommunity_SyncFollowTopicAction) -> Bool {
+    if lhs.topicID != rhs.topicID {return false}
+    if lhs.followed != rhs.followed {return false}
+    if lhs.actionTimestamp != rhs.actionTimestamp {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_SyncFollowTopicsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SyncFollowTopicsResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}results\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.results) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.results.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.results, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_SyncFollowTopicsResponse, rhs: Com_Octopuscommunity_SyncFollowTopicsResponse) -> Bool {
+    if lhs.results != rhs.results {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_SyncFollowTopicResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SyncFollowTopicResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0\u{1}status\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.topicID) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.topicID.isEmpty {
+      try visitor.visitSingularStringField(value: self.topicID, fieldNumber: 1)
+    }
+    if self.status != .syncFollowUnspecified {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_SyncFollowTopicResult, rhs: Com_Octopuscommunity_SyncFollowTopicResult) -> Bool {
+    if lhs.topicID != rhs.topicID {return false}
+    if lhs.status != rhs.status {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }

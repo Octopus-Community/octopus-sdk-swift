@@ -10,10 +10,7 @@ struct EditProfileView: View {
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: EditProfileViewModel
     @Environment(\.presentationMode) private var presentationMode
-    @EnvironmentObject private var trackingApi: TrackingApi
-
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
+    @Environment(\.trackingApi) private var trackingApi
 
     @State private var showChangesWillBeLostAlert = false
 
@@ -43,51 +40,18 @@ struct EditProfileView: View {
         .navigationBarTitle(Text("Common.Edit", bundle: .module), displayMode: .inline)
         .toolbar(leading: leadingBarItem, trailing: trailingBarItem,
                  trailingSharedBackgroundVisibility: .hidden)
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in
-
-            }, message: { error in
-                error.textView
-            })
+        .errorAlert(viewModel.$alertError)
         .emitScreenDisplayed(.editProfile, trackingApi: trackingApi)
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
             presentationMode.wrappedValue.dismiss()
         }
-        .onReceive(viewModel.$alertError) { displayableError in
-            guard let displayableError else { return }
-            self.displayableError = displayableError
-            displayError = true
-        }
-        .modify {
-            if #available(iOS 15.0, *) {
-                $0.alert(
-                    Text("Common.CancelModifications", bundle: .module),
-                    isPresented: $showChangesWillBeLostAlert) {
-                        Button(role: .cancel, action: {}) {
-                            Text("Common.No", bundle: .module)
-                        }
-                        Button(role: .destructive, action: {
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            Text("Common.Yes", bundle: .module)
-                        }
-                    }
-            } else {
-                $0.alert(isPresented: $showChangesWillBeLostAlert) {
-                    Alert(title: Text("Common.CancelModifications", bundle: .module),
-                          primaryButton: .default(Text("Common.No", bundle: .module)),
-                          secondaryButton: .destructive(
-                            Text("Common.Yes", bundle: .module),
-                            action: { presentationMode.wrappedValue.dismiss() }
-                          )
-                    )
-                }
-            }
-        }
+        .destructiveConfirmationAlert(
+            "Common.CancelModifications",
+            isPresented: $showChangesWillBeLostAlert,
+            cancelLabel: "Common.No",
+            destructiveLabel: "Common.Yes",
+            action: { presentationMode.wrappedValue.dismiss() })
     }
 
     @ViewBuilder
@@ -436,7 +400,7 @@ private struct PictureView: View {
     }
 }
 
-//#Preview {
+// #Preview {
 //    ContentView(state: .emailEntry(.emailNeeded), sendEmailButtonAvailable: true, email: .constant(""),
 //                sendMagicLink: { }, enterNewEmail: { }, checkMagicLinkConfirmed: { })
-//}
+// }

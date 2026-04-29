@@ -96,14 +96,9 @@ extension PostEntity: FetchableContentEntity {
         return request
     }
 
-    @nonobjc public class func fetchAllExcept(ids: [String]) -> NSFetchRequest<PostEntity> {
-        let request = fetchAll()
-        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
-            NSPredicate(format: "NOT (%K IN %@)", #keyPath(PostEntity.uuid), ids),
-            // Special case for bridge posts. To avoid deleting them too often, we do not clean them
-            NSPredicate(format: "%K = nil", #keyPath(PostEntity.clientObjectId))
-        ])
-        return request
+    // Bridge posts should not be cleaned up during regular bulk deletion
+    static var additionalDeletionPredicate: NSPredicate? {
+        NSPredicate(format: "%K = nil", #keyPath(PostEntity.clientObjectId))
     }
 
     @nonobjc public class func fetchAll() -> NSFetchRequest<PostEntity> {

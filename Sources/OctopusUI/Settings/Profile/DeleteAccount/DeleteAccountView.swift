@@ -10,14 +10,11 @@ import OctopusCore
 
 struct DeleteAccountView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Compat.StateObject private var viewModel: DeleteAccountViewModel
     @Environment(\.octopusTheme) private var theme
 
     @State private var displayDeleteUserAlert = false
-
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
 
     @State private var selectedReason: DeleteAccountReason?
 
@@ -82,18 +79,7 @@ struct DeleteAccountView: View {
                 .disabled(selectedReason == nil || viewModel.deleteAccountInProgress)
             }
             if viewModel.deleteAccountInProgress {
-                Compat.ProgressView()
-                    .padding(20)
-                    .background(
-                        RoundedRectangle(cornerSize: CGSize(width: 4, height: 4))
-                            .modify {
-                                if #available(iOS 15.0, *) {
-                                    $0.fill(.thickMaterial)
-                                } else {
-                                    $0.fill(theme.colors.gray200)
-                                }
-                            }
-                    )
+                LoadingOverlay()
             }
         }
         .navigationBarTitle(Text("Settings.Profile.DeleteAccount.Title", bundle: .module), displayMode: .inline)
@@ -109,21 +95,8 @@ struct DeleteAccountView: View {
                 secondaryButton: .cancel()
             )
         }
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in
-
-            }, message: { error in
-                error.textView
-            })
+        .errorAlert(viewModel.$error)
         .emitScreenDisplayed(.deleteAccount, trackingApi: trackingApi)
-        .onReceive(viewModel.$error) { displayableError in
-            guard let displayableError else { return }
-            self.displayableError = displayableError
-            displayError = true
-        }
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(

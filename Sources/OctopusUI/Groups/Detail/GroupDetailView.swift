@@ -11,59 +11,34 @@ import os
 struct GroupDetailView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.presentationMode) private var presentationMode
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
 
     @Compat.StateObject private var viewModel: GroupDetailViewModel
 
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
-
     private let mainFlowPath: MainFlowPath
+    private let canClose: Bool
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, topic: OctopusCore.Topic, mainFlowPath: MainFlowPath,
-         translationStore: ContentTranslationPreferenceStore) {
+    init(octopus: OctopusSDK, groupId: String, mainFlowPath: MainFlowPath,
+         translationStore: ContentTranslationPreferenceStore,
+         canClose: Bool = false, origin: GroupDetailNavigationOrigin = .sdk) {
         _viewModel = Compat.StateObject(wrappedValue: GroupDetailViewModel(
-            octopus: octopus, topic: topic, mainFlowPath: mainFlowPath, translationStore: translationStore))
+            octopus: octopus, groupId: groupId, mainFlowPath: mainFlowPath,
+            translationStore: translationStore, origin: origin))
         self.mainFlowPath = mainFlowPath
+        self.canClose = canClose
     }
 
     var body: some View {
         ContentView(
             group: viewModel.group,
+            groupNotFound: viewModel.groupNotFound,
             scrollToTop: $viewModel.scrollToTop,
             refresh: viewModel.refresh) {
-                PostFeedView(
-                    viewModel: viewModel.postFeedViewModel,
-                    zoomableImageInfo: $zoomableImageInfo,
-                    displayPostDetail: {
-                        if !$1 && !$2 && $3 == nil {
-                            trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .feed)))
-                        }
-                        navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
-                                                   scrollToMostRecentComment: $2, origin: .sdk,
-                                                   hasFeaturedComment: $4))
-                    },
-                    displayCommentDetail: {
-                        navigator.push(.commentDetail(
-                            commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
-                    },
-                    displayProfile: { profileId in
-                        if #available(iOS 14, *) { Logger.profile.trace("Display profile \(profileId)") }
-                        if profileId == viewModel.thisUserProfileId {
-                            navigator.push(.currentUserProfile)
-                        } else {
-                            navigator.push(.publicProfile(profileId: profileId))
-                        }
-                    },
-                    displayContentModeration: {
-                        navigator.push(.reportContent(contentId: $0))
-                    }) {
-                        DefaultEmptyPostsView()
-                    }
+                postFeedView
             }
             .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
             .toastContainer(octopus: viewModel.octopus)
@@ -78,59 +53,97 @@ struct GroupDetailView: View {
                                 }
                             },
                             actionTapped: {
-                                navigator.push(.createPost(withPoll: false, defaultTopic: viewModel.group.coreTopic))
+                                navigator.push(.createPost(withPoll: false, defaultTopic: viewModel.group?.coreTopic))
                             })
                         .accessibilitySortPriority(1)
                     })
                 } else {
                     $0.overlay(
-                        AuthorActionView(octopus: viewModel.octopus, actionKind: .post,
-                                         userProfileTapped: {
-                                             if viewModel.ensureConnected(action: .viewOwnProfile) {
-                                                 navigator.push(.currentUserProfile)
-                                             }
-                                         },
-                                         actionTapped: {
-                                             navigator.push(.createPost(withPoll: false, defaultTopic: viewModel.group.coreTopic))
-                                         }),
+                        AuthorActionView(
+                            octopus: viewModel.octopus, actionKind: .post,
+                            userProfileTapped: {
+                                if viewModel.ensureConnected(action: .viewOwnProfile) {
+                                    navigator.push(.currentUserProfile)
+                                }
+                            },
+                            actionTapped: {
+                                navigator.push(.createPost(withPoll: false, defaultTopic: viewModel.group?.coreTopic))
+                            }),
                         alignment: .bottomTrailing)
                 }
             }
             .zoomableImageContainer(
                 zoomableImageInfo: $zoomableImageInfo,
-                defaultLeadingBarItem: EmptyView(),
-                defaultTrailingBarItem: trailingBarItem,
+                defaultLeadingBarItem: leadingBarItem(group: viewModel.group),
+                defaultTrailingBarItem: trailingBarItem(group: viewModel.group),
                 defaultTrailingSharedBackgroundVisibility: .hidden,
-                defaultNavigationBarTitle: Text(viewModel.group.name)
+                defaultNavigationBarTitle: Text(viewModel.group?.name ?? "")
             )
-            .compatAlert(
-                "Common.Error",
-                isPresented: $displayError,
-                presenting: displayableError,
-                actions: { _ in },
-                message: { error in
-                    error.textView
-                })
-            .emitScreenDisplayed(.groupDetail(.init(groupId: viewModel.group.id)), trackingApi: trackingApi)
-            .onReceive(viewModel.$error) { error in
-                guard let error else { return }
-                displayableError = error
-                displayError = true
-            }
+            .errorAlert(viewModel.$error)
+            .emitScreenDisplayed(
+                .groupDetail(.init(groupId: viewModel.groupId, source: viewModel.analyticsSource)),
+                trackingApi: trackingApi)
     }
 
     @ViewBuilder
-    private var trailingBarItem: some View {
-        let group = viewModel.group
-        FollowGroupButton(canChangeFollowStatus: group.canChangeFollowStatus, isFollowed: group.isFollowed,
-                          toggleFollow: viewModel.toggleFollowGroup)
+    private var postFeedView: some View {
+        if let postFeedViewModel = viewModel.postFeedViewModel {
+            PostFeedView(
+                viewModel: postFeedViewModel,
+                zoomableImageInfo: $zoomableImageInfo,
+                displayPostDetail: {
+                    if !$1 && !$2 && $3 == nil {
+                        trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .feed)))
+                    }
+                    navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
+                                               scrollToMostRecentComment: $2, origin: .sdk,
+                                               hasFeaturedComment: $4))
+                },
+                displayCommentDetail: {
+                    navigator.push(.commentDetail(
+                        commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
+                },
+                displayProfile: { profileId in
+                    if #available(iOS 14, *) { Logger.profile.trace("Display profile \(profileId)") }
+                    if profileId == viewModel.thisUserProfileId {
+                        navigator.push(.currentUserProfile)
+                    } else {
+                        navigator.push(.publicProfile(profileId: profileId))
+                    }
+                },
+                displayContentModeration: {
+                    navigator.push(.reportContent(contentId: $0))
+                }) {
+                    DefaultEmptyPostsView()
+                }
+        } else {
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func leadingBarItem(group: GroupDetail?) -> some View {
+        if canClose {
+            CloseButton(action: { presentationMode.wrappedValue.dismiss() })
+        } else {
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private func trailingBarItem(group: GroupDetail?) -> some View {
+        if let group {
+            FollowGroupButton(canChangeFollowStatus: group.canChangeFollowStatus, isFollowed: group.isFollowed,
+                              toggleFollow: viewModel.toggleFollowGroup)
+        }
     }
 
 }
 
 private struct ContentView<PostsView: View>: View {
     @Environment(\.octopusTheme) private var theme
-    let group: GroupDetail
+    let group: GroupDetail?
+    let groupNotFound: Bool
     @Binding var scrollToTop: Bool
     let refresh: @Sendable () async -> Void
 
@@ -152,12 +165,33 @@ private struct ContentView<PostsView: View>: View {
                 scrollToTop: $scrollToTop,
                 refreshAction: refresh) {
                     Compat.LazyVStack(spacing: 0) {
-                        if group.description.fullText.nilIfEmpty != nil {
-                            GroupDetailContentView(group: group)
-                            theme.colors.gray300.frame(height: 1)
-                        }
+                        if let group {
+                            if group.description.fullText.nilIfEmpty != nil {
+                                GroupDetailContentView(group: group)
+                                theme.colors.gray300.frame(height: 1)
+                            }
 
-                        postsView
+                            postsView
+                        } else if groupNotFound {
+                            VStack {
+                                Image(uiImage: theme.assets.icons.content.post.notAvailable)
+                                    .accessibilityHidden(true)
+                                Text("Content.Detail.NotAvailable", bundle: .module)
+                                    .font(theme.fonts.body2)
+                                    .fontWeight(.medium)
+                                    .multilineTextAlignment(.center)
+                                Spacer()
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .foregroundColor(theme.colors.gray500)
+                        } else {
+                            VStack {
+                                Spacer()
+                                Compat.ProgressView()
+                                Spacer()
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

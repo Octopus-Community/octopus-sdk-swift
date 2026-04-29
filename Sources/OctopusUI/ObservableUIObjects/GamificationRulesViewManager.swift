@@ -11,8 +11,6 @@ import OctopusCore
 /// Object that manages whether the gamification rules should be automatically displayed
 @MainActor
 final class GamificationRulesViewManager: ObservableObject {
-    private let octopus: OctopusSDK
-
     @Published var shouldDisplayGamificationRules = false
     @Published private(set) var gamificationConfig: GamificationConfig?
 
@@ -25,15 +23,28 @@ final class GamificationRulesViewManager: ObservableObject {
     private var gamificationEnabled: Bool { gamificationConfig != nil }
     private var storage = [AnyCancellable]()
 
-    init(octopus: OctopusSDK) {
-        self.octopus = octopus
-
-        octopus.core.configRepository.communityConfigPublisher
-            .map { $0?.gamificationConfig }
+    /// Designated init. Accepts the gamification-config publisher directly so previews/tests can
+    /// inject a fixed value without requiring a full `OctopusSDK`.
+    init(gamificationConfigPublisher: AnyPublisher<GamificationConfig?, Never>) {
+        gamificationConfigPublisher
             .sink { [unowned self] in
                 gamificationConfig = $0
                 updateShouldDisplayGamificationRules()
             }.store(in: &storage)
+    }
+
+    /// Production convenience.
+    convenience init(octopus: OctopusSDK) {
+        self.init(gamificationConfigPublisher:
+            octopus.core.configRepository.communityConfigPublisher
+                .map { $0?.gamificationConfig }
+                .eraseToAnyPublisher())
+    }
+
+    /// Preview factory — no gamification config is ever emitted.
+    static func forPreviews() -> GamificationRulesViewManager {
+        GamificationRulesViewManager(
+            gamificationConfigPublisher: Just<GamificationConfig?>(nil).eraseToAnyPublisher())
     }
 
     func gamificationRulesDisplayed() {

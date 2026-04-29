@@ -42,4 +42,3 @@ extension ValidationErrors where Field == PollVote.Field, ErrorDetail == PollVot
          errors = dictionary
      }
  }
-

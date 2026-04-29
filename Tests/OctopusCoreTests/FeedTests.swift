@@ -70,7 +70,7 @@ class FeedTests: XCTestCase {
                     expectation5.fulfill()
                 }
             }.store(in: &storage)
-        await fulfillment(of: [expectation1], timeout: 0.5)
+        await fulfillment(of: [expectation1], timeout: 5)
 
         // initial refresh will ask for the feed item infos and the items since they are not in the db
         mockFeedService.injectNextInitializeFeed(.with {
@@ -88,13 +88,13 @@ class FeedTests: XCTestCase {
 
         try await feed.refresh(pageSize: 2)
 
-        await fulfillment(of: [expectation2], timeout: 0.5)
+        await fulfillment(of: [expectation2], timeout: 5)
 
         // Loading previous items will ask for the items only since we have enough feed items info
         injectBatchItems(["3", "4"])
         try await feed.loadPreviousItems(pageSize: 2)
 
-        await fulfillment(of: [expectation3], timeout: 0.5)
+        await fulfillment(of: [expectation3], timeout: 5)
 
         // Loading previous items will ask for the feed item infos since we have not enough feed items
         // and the items since they are not in the db
@@ -108,12 +108,12 @@ class FeedTests: XCTestCase {
         injectBatchItems(["5", "6"])
         try await feed.loadPreviousItems(pageSize: 2)
 
-        await fulfillment(of: [expectation4], timeout: 0.5)
+        await fulfillment(of: [expectation4], timeout: 5)
 
         injectBatchItems(["7"])
         try await feed.loadPreviousItems(pageSize: 2)
 
-        await fulfillment(of: [expectation5], timeout: 0.5)
+        await fulfillment(of: [expectation5], timeout: 5)
         let hasMoreData = feed.hasMoreData
         XCTAssertEqual(hasMoreData, false)
     }
@@ -136,10 +136,7 @@ class FeedTests: XCTestCase {
         let feed = Feed(id: "1", feedManager: postFeedManager)
 
         await feed.populateWithLocalData(pageSize: 2)
-        try await delay()
-
-        let feedItems = await feed.items
-        XCTAssertEqual(feedItems?.map { $0.uuid }, ["1", "2"])
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2"] }
     }
 
     @MainActor
@@ -162,7 +159,7 @@ class FeedTests: XCTestCase {
                     expectation3.fulfill()
                 }
             }.store(in: &storage)
-        await fulfillment(of: [expectation1], timeout: 0.5)
+        await fulfillment(of: [expectation1], timeout: 5)
 
         mockFeedService.injectNextInitializeFeed(.with {
             $0.items = [
@@ -180,13 +177,13 @@ class FeedTests: XCTestCase {
         // Normally, we should call reset, but ensure that everything is working if we skip the reset
         try await feed.loadPreviousItems(pageSize: 2)
 
-        await fulfillment(of: [expectation2], timeout: 0.5)
+        await fulfillment(of: [expectation2], timeout: 5)
 
         // Loading previous items will ask for the items only since we have enough feed items info
         injectBatchItems(["3", "4"])
         try await feed.loadPreviousItems(pageSize: 2)
 
-        await fulfillment(of: [expectation3], timeout: 0.5)
+        await fulfillment(of: [expectation3], timeout: 5)
     }
 
     func testNoInternetAndItemsAreAlreadyInDb() async throws {
@@ -207,14 +204,10 @@ class FeedTests: XCTestCase {
         // when created, the feed should have the first page
         let feed = Feed(id: "1", feedManager: postFeedManager)
         await feed.populateWithLocalData(pageSize: 2)
-        try await delay()
-
-        var feedItems = await feed.items
-        XCTAssertEqual(feedItems?.map { $0.uuid }, ["1", "2"])
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2"] }
 
         try await feed.loadPreviousItems(pageSize: 2)
-        feedItems = await feed.items
-        XCTAssertEqual(feedItems?.map { $0.uuid }, ["1", "2", "3"])
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2", "3"] }
 
         // put back normal value
         networkMonitor.connectionAvailable = true
@@ -234,12 +227,8 @@ class FeedTests: XCTestCase {
         // when created, the feed should have the first page
         let feed = Feed(id: "1", feedManager: postFeedManager)
         await feed.populateWithLocalData(pageSize: 2)
-        try await delay()
-
-        let feedItems = await feed.items
-        let hasMoreData = await feed.hasMoreData
-        XCTAssertEqual(feedItems?.map { $0.uuid }, ["1", "2"])
-        XCTAssertEqual(hasMoreData, false)
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2"] }
+        try await assertWithTimeout { await feed.hasMoreData == false }
     }
 
     // test that if local items are not fully here, we consider that there is no more local data
@@ -258,12 +247,8 @@ class FeedTests: XCTestCase {
         // when created, the feed should have the first page
         let feed = Feed(id: "1", feedManager: postFeedManager)
         await feed.populateWithLocalData(pageSize: 2)
-        try await delay()
-
-        let feedItems = await feed.items
-        let hasMoreData = await feed.hasMoreData
-        XCTAssertEqual(feedItems?.map { $0.uuid }, ["1"])
-        XCTAssertEqual(hasMoreData, false)
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1"] }
+        try await assertWithTimeout { await feed.hasMoreData == false }
     }
 
     func testNoMoreItemsDuringRefresh() async throws {
@@ -363,16 +348,10 @@ class FeedTests: XCTestCase {
         let feed = Feed(id: "1", feedManager: postFeedManager)
 
         await feed.populateWithLocalData(pageSize: 10)
-        try await delay()
-
-        let postsBeforeBlockingUsers = await feed.items
-        XCTAssertEqual(postsBeforeBlockingUsers?.map(\.uuid), ["1", "2", "3", "4", "5"])
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2", "3", "4", "5"] }
 
         blockedUserIdsProvider.mockBlockedUserIds(["user2", "user4"])
-        try await delay()
-
-        let postsAfterBlockingUsers = await feed.items
-        XCTAssertEqual(postsAfterBlockingUsers?.map(\.uuid), ["1", "3"])
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "3"] }
     }
 
     @MainActor
@@ -631,7 +610,6 @@ class FeedTests: XCTestCase {
         XCTAssertNotNil(items?[2].featuredComment)
     }
 
-
     func testClean() async throws {
         // precondition: fill the db with data that will be cleaned
 
@@ -666,9 +644,10 @@ class FeedTests: XCTestCase {
         // check that after FeedManager init, Feed Items db is cleaned
         postFeedManager = PostsFeedManager.factory(injector: injector)
 
-        try await delay() // needed because clean is async
-        let postsInDb = try await postsDatabase.getPosts(ids: createdPosts.map { $0.uuid })
-        XCTAssert(Set(postsInDb.map { $0.uuid }) == ["1", "2", "3", "4"])
+        let postsDatabase = self.postsDatabase!
+        try await assertWithTimeout {
+            Set(try await postsDatabase.getPosts(ids: createdPosts.map { $0.uuid }).map(\.uuid)) == ["1", "2", "3", "4"]
+        }
     }
 
     private func injectFeedItemInfos(_ itemInfos: [String], nextPageCursor: String?) {

@@ -14,10 +14,16 @@ struct SheetCell: View {
     @StateObjectCompat private var viewModel = OctopusAuthSDKViewModel()
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Open on a sheet")
-            Text("Open the Octopus SDK in a non full screen sheet")
-                .font(.caption)
+        HStack(spacing: 12) {
+            Image(systemName: "rectangle.on.rectangle")
+                .foregroundColor(.accentColor)
+                .frame(width: 24)
+            VStack(alignment: .leading) {
+                Text("Open on a sheet")
+                Text("Open the Octopus SDK in a non full screen sheet")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
         .onTapGesture {
             // Display the SDK in a sheet but outside the navigation view (see Architecture.md for more info)

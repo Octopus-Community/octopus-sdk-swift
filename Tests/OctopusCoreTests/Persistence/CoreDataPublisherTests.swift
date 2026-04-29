@@ -8,7 +8,7 @@ import Combine
 import OctopusDependencyInjection
 @testable import OctopusCore
 
-@Suite
+@Suite(.serialized)
 class CoreDataPublisherTests {
     let coreDataStack = try! ModelCoreDataStack(inRam: true)
     private var storage = [AnyCancellable]()
@@ -88,6 +88,38 @@ class CoreDataPublisherTests {
         let newPost = try #require(posts?.first)
         #expect(newPost.uuid == "PostID")
         #expect(newPost.author?.nickname == "New Author")
+    }
+
+    @Test
+    @MainActor
+    func testChunkedPublisherWithLotsOfPosts() async throws {
+        let context = coreDataStack.saveContext
+        let ids = (0..<1200).map { "post-\($0)" }
+
+        // Insert more posts than SQLite's variable limit (999)
+        for id in ids {
+            let postEntity = PostEntity(context: context)
+            postEntity.uuid = id
+            postEntity.text = "Test post \(id)"
+            postEntity.creationTimestamp = 0
+            postEntity.parentId = ""
+        }
+        try context.save()
+
+        var receivedPosts = [PostEntity]()
+        context
+            .chunkedPublisher(ids: ids, requestBuilder: { PostEntity.fetchAllByIds(ids: $0) }) { $0 }
+            .sink(receiveCompletion: { completion in
+                if case .failure = completion {
+                    #expect(Bool(false))
+                }
+            }, receiveValue: {
+                receivedPosts = $0
+            })
+            .store(in: &storage)
+
+        try await delay()
+        #expect(receivedPosts.count == 1200)
     }
 
 //    @Test

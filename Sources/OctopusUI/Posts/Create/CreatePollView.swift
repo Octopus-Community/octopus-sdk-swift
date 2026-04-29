@@ -57,7 +57,7 @@ struct EditablePoll: Equatable {
         guard canRemoveOptions else { return }
         options.remove(at: index)
     }
-    
+
     /// Add a new empty option
     /// - Returns: returns the UUID of the newly added option. Nil if the option has not been added
     mutating func addOption() -> UUID? {

@@ -123,6 +123,9 @@ public enum ExchangeTokenError: Error {
     case noNetwork
     case detailedErrors([DetailedError])
     case server(ServerError)
+    case jwtError
+    case communityAccessDenied
+    case profileUpdateError(UpdateProfile.Error)
     case unknown(Error?)
 }
 
@@ -132,6 +135,9 @@ extension ExchangeTokenError {
         case .noNetwork: .noNetwork
         case let .detailedErrors(detailedErrors): .detailedErrors(detailedErrors.map { .init(from: $0) })
         case let .server(serverError): .server(serverError)
+        case .jwtError: .jwtError
+        case .communityAccessDenied: .communityAccessDenied
+        case let .profileUpdateError(updateError): .profileUpdateError(updateError)
         case let .unknown(underlyingError): .unknown(underlyingError)
         }
     }
@@ -165,6 +171,9 @@ public enum ConnectionError: Error {
     case noNetwork
     case detailedErrors([DetailedError])
     case server(ServerError)
+    case jwtError
+    case communityAccessDenied
+    case profileUpdateError(UpdateProfile.Error)
     case unknown(Error?)
 }
 
@@ -174,6 +183,9 @@ extension ConnectionError {
         case .noNetwork: .noNetwork
         case let .detailedErrors(detailedErrors): .detailedErrors(detailedErrors.map { .init(from: $0) })
         case let .server(serverError): .server(serverError)
+        case .jwtError: .jwtError
+        case .communityAccessDenied: .communityAccessDenied
+        case let .profileUpdateError(updateError): .profileUpdateError(updateError)
         case let .unknown(underlyingError): .unknown(underlyingError)
         }
     }

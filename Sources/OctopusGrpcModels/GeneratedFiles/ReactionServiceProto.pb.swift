@@ -57,11 +57,11 @@ public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
     // methods supported on all messages.
 
     public var like: Com_Octopuscommunity_OctoObject {
-      get {return _like ?? Com_Octopuscommunity_OctoObject()}
+      get {_like ?? Com_Octopuscommunity_OctoObject()}
       set {_like = newValue}
     }
     /// Returns true if `like` has been explicitly set.
-    public var hasLike: Bool {return self._like != nil}
+    public var hasLike: Bool {self._like != nil}
     /// Clears the value of `like`. Subsequent reads from it will return its default value.
     public mutating func clearLike() {self._like = nil}
 
@@ -92,11 +92,11 @@ public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_PutLikeResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -220,21 +220,21 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
     // methods supported on all messages.
 
     public var reaction: Com_Octopuscommunity_OctoObject {
-      get {return _reaction ?? Com_Octopuscommunity_OctoObject()}
+      get {_reaction ?? Com_Octopuscommunity_OctoObject()}
       set {_reaction = newValue}
     }
     /// Returns true if `reaction` has been explicitly set.
-    public var hasReaction: Bool {return self._reaction != nil}
+    public var hasReaction: Bool {self._reaction != nil}
     /// Clears the value of `reaction`. Subsequent reads from it will return its default value.
     public mutating func clearReaction() {self._reaction = nil}
 
     ///For analytics
     public var hasTargetVideoContent_p: Bool {
-      get {return _hasTargetVideoContent_p ?? false}
+      get {_hasTargetVideoContent_p ?? false}
       set {_hasTargetVideoContent_p = newValue}
     }
     /// Returns true if `hasTargetVideoContent_p` has been explicitly set.
-    public var hasHasTargetVideoContent_p: Bool {return self._hasTargetVideoContent_p != nil}
+    public var hasHasTargetVideoContent_p: Bool {self._hasTargetVideoContent_p != nil}
     /// Clears the value of `hasTargetVideoContent_p`. Subsequent reads from it will return its default value.
     public mutating func clearHasTargetVideoContent_p() {self._hasTargetVideoContent_p = nil}
 
@@ -266,11 +266,11 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
     public var message: String = String()
 
     public var field: Com_Octopuscommunity_PutReactionResponse.Error.Field {
-      get {return _field ?? .unknown}
+      get {_field ?? .unknown}
       set {_field = newValue}
     }
     /// Returns true if `field` has been explicitly set.
-    public var hasField: Bool {return self._field != nil}
+    public var hasField: Bool {self._field != nil}
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
@@ -363,10 +363,7 @@ fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_PutLikeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutLikeResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -433,9 +430,7 @@ extension Com_Octopuscommunity_PutLikeResponse: SwiftProtobuf.Message, SwiftProt
 
 extension Com_Octopuscommunity_PutLikeResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutLikeResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "like"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}like\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -469,9 +464,7 @@ extension Com_Octopuscommunity_PutLikeResponse.Success: SwiftProtobuf.Message, S
 
 extension Com_Octopuscommunity_PutLikeResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutLikeResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -501,11 +494,7 @@ extension Com_Octopuscommunity_PutLikeResponse.Fail: SwiftProtobuf.Message, Swif
 
 extension Com_Octopuscommunity_PutLikeResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutLikeResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingParent"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -560,17 +549,12 @@ extension Com_Octopuscommunity_PutLikeResponse.Error: SwiftProtobuf.Message, Swi
 }
 
 extension Com_Octopuscommunity_PutLikeResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_PARENT"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0")
 }
 
 extension Com_Octopuscommunity_DeleteLikeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteLikeRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -619,10 +603,7 @@ extension Com_Octopuscommunity_DeleteLikeResponse: SwiftProtobuf.Message, SwiftP
 
 extension Com_Octopuscommunity_PutReactionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutReactionResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "success"),
-    2: .same(proto: "fail"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -689,10 +670,7 @@ extension Com_Octopuscommunity_PutReactionResponse: SwiftProtobuf.Message, Swift
 
 extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Success"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "reaction"),
-    2: .same(proto: "hasTargetVideoContent"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reaction\0\u{1}hasTargetVideoContent\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -731,9 +709,7 @@ extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Messag
 
 extension Com_Octopuscommunity_PutReactionResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Fail"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "errors"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -763,11 +739,7 @@ extension Com_Octopuscommunity_PutReactionResponse.Fail: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_PutReactionResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "message"),
-    2: .same(proto: "field"),
-    101: .same(proto: "missingParent"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -822,17 +794,12 @@ extension Com_Octopuscommunity_PutReactionResponse.Error: SwiftProtobuf.Message,
 }
 
 extension Com_Octopuscommunity_PutReactionResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    0: .same(proto: "UNKNOWN"),
-    1: .same(proto: "CONTENT_PARENT"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0")
 }
 
 extension Com_Octopuscommunity_DeleteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteRequest"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "octoObjectId"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

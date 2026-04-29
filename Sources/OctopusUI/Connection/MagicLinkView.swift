@@ -118,7 +118,6 @@ private struct ContentView: View {
     let enterNewEmail: () -> Void
     let checkMagicLinkConfirmed: () -> Void
 
-
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 12)
@@ -247,7 +246,6 @@ private struct MagicLinkConfirmationPendingView: View {
         }
     }
 }
-
 
 #Preview {
     ContentView(state: .emailEntry(.emailNeeded), sendEmailButtonAvailable: true, email: .constant(""),

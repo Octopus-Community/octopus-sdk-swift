@@ -10,7 +10,7 @@ import OctopusCore
 
 struct PostListView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
-    @EnvironmentObject var trackingApi: TrackingApi
+    @Environment(\.trackingApi) var trackingApi
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: PostListViewModel
 
@@ -108,7 +108,7 @@ struct PostListView: View {
             }
 
         }
-        .onAppear() {
+        .onAppear {
             guard let selectedRootFeed = selectedRootFeed else { return }
             viewModel.set(feed: selectedRootFeed.feed)
             if lastScreenFeedIdSent != selectedRootFeed.feedId {

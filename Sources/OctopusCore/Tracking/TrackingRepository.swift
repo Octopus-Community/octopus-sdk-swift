@@ -42,7 +42,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
 
         // listen to current UI session in order to create `enteringUI` event
         octopusUISessionManager.$currentSession
-            .removeDuplicates(by: {$0?.uuid == $1?.uuid })
+            .removeDuplicates(by: { $0?.uuid == $1?.uuid })
             .sink { [unowned self] in
                 guard let session = $0 else { return }
                 if #available(iOS 14, *) { Logger.tracking.trace("UI session started with uuid: \(session.uuid)") }
@@ -84,7 +84,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
                 triggerLeavingAppEvent(appSession: session)
             }.store(in: &storage)
     }
-    
+
     /// Inform the SDK that the OctopusUI is displayed
     public func octopusUISessionStarted() {
         octopusUIIsDisplayed = true
@@ -102,6 +102,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
 
     public func set(hasAccessToCommunity: Bool) {
         remoteClient.set(hasAccessToCommunity: hasAccessToCommunity)
+        track(content: .clientSetABTest(hasAccessToCommunity: hasAccessToCommunity))
     }
 
     public func trackPostOpened(origin: PostOpenedOrigin, success: Bool) {
@@ -244,7 +245,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     private func track(content: Event.Content) {
         track(contents: [content])
     }
-    
+
     /// Track some events content.
     /// Current date, current app session and current UI session will be picked. If you want custom value, use
     /// `track(events:)` instead.

@@ -60,7 +60,6 @@ public enum OctopusEvent: Sendable {
     /// Sent when the user follows or unfollows a group
     case groupFollowingChanged(GroupFollowingChangedContext)
 
-
     // MARK: Session
 
     /// Sent when an Octopus UI session is started

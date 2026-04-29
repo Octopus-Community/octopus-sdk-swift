@@ -9,7 +9,7 @@ import OctopusCore
 
 struct ReportExplanationView: View {
     @Environment(\.octopusTheme) private var theme
-    @EnvironmentObject private var trackingApi: TrackingApi
+    @Environment(\.trackingApi) private var trackingApi
     @Compat.StateObject private var viewModel: LinksProviderViewModel
 
     var explanationString: String {

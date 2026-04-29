@@ -29,6 +29,31 @@ extension NSManagedObjectContext {
                 }
                 .eraseToAnyPublisher()
         }
+
+    /// Publisher variant that chunks IDs to avoid exceeding SQLite's variable limit.
+    func chunkedPublisher<Entity: NSManagedObject, MappedEntity>(
+        ids: [String],
+        requestBuilder: @escaping @Sendable ([String]) -> NSFetchRequest<Entity>,
+        relatedTypes: [NSManagedObject.Type] = [],
+        transform: @escaping @Sendable ([Entity]) -> [MappedEntity])
+    -> AnyPublisher<[MappedEntity], Error> {
+            return NotificationCenter.default
+                .publisher(for: .NSManagedObjectContextDidSave, object: self)
+                .filter { $0.isUpdateOf(managedObjectTypes: [Entity.self] + relatedTypes) }
+                .map { _ in return Void() }
+                .prepend(Void())
+                .tryMap { [weak self] in
+                    guard let self else { return [] }
+                    if #available(iOS 15.0, *) {
+                        return try self.performAndWait {
+                            transform(try self.chunkedFetch(ids: ids, requestBuilder: requestBuilder))
+                        }
+                    } else {
+                        return transform(try self.chunkedFetch(ids: ids, requestBuilder: requestBuilder))
+                    }
+                }
+                .eraseToAnyPublisher()
+        }
 }
 
 /// Add CoreData conditional behavior to Notification
@@ -48,4 +73,3 @@ extension Notification {
         }
     }
 }
-

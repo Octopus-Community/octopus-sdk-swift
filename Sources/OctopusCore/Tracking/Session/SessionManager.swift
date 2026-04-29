@@ -71,7 +71,7 @@ class SessionManager: @unchecked Sendable {
         timer?.invalidate()
         timer = nil
         // start the timer
-        timer = Timer.scheduledTimer(withTimeInterval: .minutes(1), repeats: true) { [weak self] timer in
+        timer = Timer.scheduledTimer(withTimeInterval: .minutes(1), repeats: true) { [weak self] _ in
             guard var currentSession = self?.currentSession else { return }
             currentSession.lastHeartbeatDate = Date()
             self?.currentSessionStore.store(session: currentSession.storableValue)
@@ -85,7 +85,7 @@ class SessionManager: @unchecked Sendable {
     func clearPreviousSession() {
         previousSessionStore.store(session: nil)
     }
-    
+
     /// Set the current session as completed
     /// - Parameter useLastHeartbeatAsEndDate: whether to use the last hearbeat of the current session as end date.
     ///      If false, the current date will be used.

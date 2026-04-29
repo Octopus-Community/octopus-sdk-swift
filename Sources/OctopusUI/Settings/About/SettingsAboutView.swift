@@ -9,7 +9,7 @@ import OctopusCore
 
 struct SettingsAboutView: View {
     @Environment(\.octopusTheme) private var theme
-    @EnvironmentObject private var trackingApi: TrackingApi
+    @Environment(\.trackingApi) private var trackingApi
 
     @Compat.StateObject private var viewModel: LinksProviderViewModel
 

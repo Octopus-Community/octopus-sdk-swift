@@ -29,74 +29,74 @@ public struct Com_Octopuscommunity_HelloResponse: Sendable {
 
   ///Present only for octopus admin
   public var shortCommitHash: String {
-    get {return _shortCommitHash ?? String()}
+    get {_shortCommitHash ?? String()}
     set {_shortCommitHash = newValue}
   }
   /// Returns true if `shortCommitHash` has been explicitly set.
-  public var hasShortCommitHash: Bool {return self._shortCommitHash != nil}
+  public var hasShortCommitHash: Bool {self._shortCommitHash != nil}
   /// Clears the value of `shortCommitHash`. Subsequent reads from it will return its default value.
   public mutating func clearShortCommitHash() {self._shortCommitHash = nil}
 
   public var fullCommitHash: String {
-    get {return _fullCommitHash ?? String()}
+    get {_fullCommitHash ?? String()}
     set {_fullCommitHash = newValue}
   }
   /// Returns true if `fullCommitHash` has been explicitly set.
-  public var hasFullCommitHash: Bool {return self._fullCommitHash != nil}
+  public var hasFullCommitHash: Bool {self._fullCommitHash != nil}
   /// Clears the value of `fullCommitHash`. Subsequent reads from it will return its default value.
   public mutating func clearFullCommitHash() {self._fullCommitHash = nil}
 
   public var githubLink: String {
-    get {return _githubLink ?? String()}
+    get {_githubLink ?? String()}
     set {_githubLink = newValue}
   }
   /// Returns true if `githubLink` has been explicitly set.
-  public var hasGithubLink: Bool {return self._githubLink != nil}
+  public var hasGithubLink: Bool {self._githubLink != nil}
   /// Clears the value of `githubLink`. Subsequent reads from it will return its default value.
   public mutating func clearGithubLink() {self._githubLink = nil}
 
   public var uncommitted: String {
-    get {return _uncommitted ?? String()}
+    get {_uncommitted ?? String()}
     set {_uncommitted = newValue}
   }
   /// Returns true if `uncommitted` has been explicitly set.
-  public var hasUncommitted: Bool {return self._uncommitted != nil}
+  public var hasUncommitted: Bool {self._uncommitted != nil}
   /// Clears the value of `uncommitted`. Subsequent reads from it will return its default value.
   public mutating func clearUncommitted() {self._uncommitted = nil}
 
   public var protoShortCommitHash: String {
-    get {return _protoShortCommitHash ?? String()}
+    get {_protoShortCommitHash ?? String()}
     set {_protoShortCommitHash = newValue}
   }
   /// Returns true if `protoShortCommitHash` has been explicitly set.
-  public var hasProtoShortCommitHash: Bool {return self._protoShortCommitHash != nil}
+  public var hasProtoShortCommitHash: Bool {self._protoShortCommitHash != nil}
   /// Clears the value of `protoShortCommitHash`. Subsequent reads from it will return its default value.
   public mutating func clearProtoShortCommitHash() {self._protoShortCommitHash = nil}
 
   public var protoFullCommitHash: String {
-    get {return _protoFullCommitHash ?? String()}
+    get {_protoFullCommitHash ?? String()}
     set {_protoFullCommitHash = newValue}
   }
   /// Returns true if `protoFullCommitHash` has been explicitly set.
-  public var hasProtoFullCommitHash: Bool {return self._protoFullCommitHash != nil}
+  public var hasProtoFullCommitHash: Bool {self._protoFullCommitHash != nil}
   /// Clears the value of `protoFullCommitHash`. Subsequent reads from it will return its default value.
   public mutating func clearProtoFullCommitHash() {self._protoFullCommitHash = nil}
 
   public var protoGithubLink: String {
-    get {return _protoGithubLink ?? String()}
+    get {_protoGithubLink ?? String()}
     set {_protoGithubLink = newValue}
   }
   /// Returns true if `protoGithubLink` has been explicitly set.
-  public var hasProtoGithubLink: Bool {return self._protoGithubLink != nil}
+  public var hasProtoGithubLink: Bool {self._protoGithubLink != nil}
   /// Clears the value of `protoGithubLink`. Subsequent reads from it will return its default value.
   public mutating func clearProtoGithubLink() {self._protoGithubLink = nil}
 
   public var protoUncommitted: String {
-    get {return _protoUncommitted ?? String()}
+    get {_protoUncommitted ?? String()}
     set {_protoUncommitted = newValue}
   }
   /// Returns true if `protoUncommitted` has been explicitly set.
-  public var hasProtoUncommitted: Bool {return self._protoUncommitted != nil}
+  public var hasProtoUncommitted: Bool {self._protoUncommitted != nil}
   /// Clears the value of `protoUncommitted`. Subsequent reads from it will return its default value.
   public mutating func clearProtoUncommitted() {self._protoUncommitted = nil}
 
@@ -120,17 +120,7 @@ fileprivate let _protobuf_package = "com.octopuscommunity"
 
 extension Com_Octopuscommunity_HelloResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HelloResponse"
-  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    4: .same(proto: "version"),
-    1: .same(proto: "shortCommitHash"),
-    2: .same(proto: "fullCommitHash"),
-    3: .same(proto: "githubLink"),
-    5: .same(proto: "uncommitted"),
-    11: .same(proto: "protoShortCommitHash"),
-    12: .same(proto: "protoFullCommitHash"),
-    13: .same(proto: "protoGithubLink"),
-    15: .same(proto: "protoUncommitted"),
-  ]
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}shortCommitHash\0\u{1}fullCommitHash\0\u{1}githubLink\0\u{1}version\0\u{1}uncommitted\0\u{2}\u{6}protoShortCommitHash\0\u{1}protoFullCommitHash\0\u{1}protoGithubLink\0\u{2}\u{2}protoUncommitted\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {

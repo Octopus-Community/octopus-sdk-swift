@@ -10,13 +10,11 @@ import OctopusCore
 struct CreatePostView: View {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
-    @EnvironmentObject private var trackingApi: TrackingApi
+    @Environment(\.trackingApi) private var trackingApi
 
     @Compat.StateObject private var viewModel: CreatePostViewModel
 
     @State private var showTopicPicker = false
-    @State private var displayError = false
-    @State private var displayableError: DisplayableString?
     @State private var showChangesWillBeLostAlert = false
 
     init(octopus: OctopusSDK, withPoll: Bool, defaultTopic: OctopusCore.Topic?) {
@@ -52,50 +50,17 @@ struct CreatePostView: View {
                 }))
         }
 
-        .compatAlert(
-            "Common.Error",
-            isPresented: $displayError,
-            presenting: displayableError,
-            actions: { _ in
-
-            }, message: { error in
-                error.textView
-            })
-        .modify {
-            if #available(iOS 15.0, *) {
-                $0.alert(
-                    Text("Common.CancelModifications", bundle: .module),
-                    isPresented: $showChangesWillBeLostAlert) {
-                        Button(role: .cancel, action: {}) { Text("Common.No", bundle: .module) }
-                        Button(role: .destructive, action: { presentationMode.wrappedValue.dismiss() }) {
-                            Text("Common.Yes", bundle: .module)
-                        }
-                    }
-            } else {
-                $0.alert(isPresented: $showChangesWillBeLostAlert) {
-                    Alert(title: Text("Common.CancelModifications", bundle: .module),
-                          primaryButton: .default(Text("Common.No", bundle: .module)),
-                          secondaryButton: .destructive(
-                            Text("Common.Yes", bundle: .module),
-                            action: { presentationMode.wrappedValue.dismiss() }
-                          )
-                    )
-                }
-            }
-        }
+        .errorAlert(viewModel.$alertError, onDismiss: { viewModel.alertError = nil })
+        .destructiveConfirmationAlert(
+            "Common.CancelModifications",
+            isPresented: $showChangesWillBeLostAlert,
+            cancelLabel: "Common.No",
+            destructiveLabel: "Common.Yes",
+            action: { presentationMode.wrappedValue.dismiss() })
         .emitScreenDisplayed(.createPost, trackingApi: trackingApi)
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
             presentationMode.wrappedValue.dismiss()
-        }
-        .onReceive(viewModel.$alertError) { displayableError in
-            guard let displayableError else { return }
-            self.displayableError = displayableError
-            displayError = true
-        }
-        .onValueChanged(of: displayError) {
-            guard !$0 else { return }
-            viewModel.alertError = nil
         }
     }
 

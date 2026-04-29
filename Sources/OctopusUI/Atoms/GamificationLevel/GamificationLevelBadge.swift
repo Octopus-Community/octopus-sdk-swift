@@ -45,6 +45,5 @@ struct GamificationLevelBadge: View {
             EmptyView()
         }
 
-
     }
 }

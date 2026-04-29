@@ -41,6 +41,8 @@ struct Event {
         case videoPlayed(objectId: String, videoId: String, watchTime: TimeInterval, duration: TimeInterval)
         /// Triggered when the user taps on the button of a post with CTA
         case ctaPostButtonHit(objectId: String)
+        /// Triggered when the client sets the A/B test info (community access)
+        case clientSetABTest(hasAccessToCommunity: Bool)
         /// Custom event, set by the client
         case custom(CustomEvent)
     }
@@ -111,6 +113,9 @@ extension Event.Content: CustomStringConvertible {
         case let .ctaPostButtonHit(objectId):
             name = "ctaPostButtonHit"
             extra = "        objectId: \(objectId)"
+        case let .clientSetABTest(hasAccessToCommunity):
+            name = "clientSetABTest"
+            extra = "        hasAccessToCommunity: \(hasAccessToCommunity)"
         case let .custom(customEvent):
             name = "custom"
             extra = "        name: \(customEvent.name)\n" +
@@ -163,6 +168,8 @@ extension Event {
                 )
         case let evt as CtaPostButtonHitEntity:
                 .ctaPostButtonHit(objectId: evt.octoObjectId)
+        case let evt as ClientSetABTestEventEntity:
+                .clientSetABTest(hasAccessToCommunity: evt.hasAccessToCommunity)
         case let evt as CustomEventEntity:
                 .custom(CustomEvent(
                     name: evt.name,

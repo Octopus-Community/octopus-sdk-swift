@@ -26,7 +26,7 @@ class FrictionlessProfileMigrator: InjectableObject, @unchecked Sendable {
 
     func migrateUserToFrictionlessUserIfNeeded(
         profile: Com_Octopuscommunity_PrivateProfile,
-        userId: String) async throws -> StorableCurrentUserProfile {
+        userId: String) async throws(UpdateProfile.Error) -> StorableCurrentUserProfile {
             // profile need migration only if hasConfirmedNickname is null
             guard !profile.hasHasConfirmedNickname_p else {
                 return StorableCurrentUserProfile(from: profile, userId: userId)
@@ -55,17 +55,29 @@ class FrictionlessProfileMigrator: InjectableObject, @unchecked Sendable {
                     optFindAvailableNickname: true
                 )
             }
-            let response = try await remoteClient.userService.updateProfile(
-                userId: userId,
-                profile: migratedProfile,
-                authenticationMethod: try authCallProvider.authenticatedMethod())
-            switch response.result {
-            case let .success(content):
-                return StorableCurrentUserProfile(from: content.profile, userId: userId)
-            case let .fail(failure):
-                throw UpdateProfile.Error.validation(.init(from: failure))
-            case .none:
-                throw UpdateProfile.Error.serverCall(.other(nil))
+            do {
+                let response = try await remoteClient.userService.updateProfile(
+                    userId: userId,
+                    profile: migratedProfile,
+                    authenticationMethod: try authCallProvider.authenticatedMethod())
+                switch response.result {
+                case let .success(content):
+                    return StorableCurrentUserProfile(from: content.profile, userId: userId)
+                case let .fail(failure):
+                    throw UpdateProfile.Error.validation(.init(from: failure))
+                case .none:
+                    throw UpdateProfile.Error.serverCall(.other(nil))
+                }
+            } catch {
+                if let error = error as? UpdateProfile.Error {
+                    throw error
+                } else if let error = error as? AuthenticatedActionError {
+                    throw .serverCall(error)
+                } else if let error = error as? RemoteClientError {
+                    throw .serverCall(.serverError(ServerError(remoteClientError: error)))
+                } else {
+                    throw .serverCall(.other(error))
+                }
             }
     }
 }

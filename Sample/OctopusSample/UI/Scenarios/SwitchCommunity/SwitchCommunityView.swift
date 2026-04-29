@@ -25,12 +25,18 @@ struct SwitchCommunityView: View {
                 Spacer()
 
                 Button(action: {
-                    // Display the SDK full screen but outside the navigation view (see Architecture.md for more info)
                     showFullScreen {
                         OctopusUIView(octopus: viewModel.octopus)
                     }
                 }) {
-                    Text("Open Octopus Home Screen")
+                    HStack {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        Text("Open Octopus Home Screen")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
+                    .foregroundColor(.white)
                 }
             }
             if #available(iOS 14.0, *), viewModel.isLoading {

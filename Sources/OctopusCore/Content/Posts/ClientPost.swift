@@ -17,7 +17,7 @@ public struct ClientPost: Sendable, Encodable {
     public let clientObjectId: String
     /// The topic id to save your post to. If nil, a default topic that you should configure with our backend team will
     /// be used.
-    public let topicId: String?
+    public let groupId: String?
     /// The text of the post. Length must be between 10 and 5000 characters.
     public let text: String
     /// The catch phrase. You can use something like "What do you think about this?". It will be displayed below the
@@ -34,24 +34,24 @@ public struct ClientPost: Sendable, Encodable {
     public let signature: String?
 
     public init(clientObjectId: String,
-                topicId: String?,
+                groupId: String?,
                 text: String,
                 catchPhrase: String?,
                 attachment: Attachment?,
                 viewClientObjectButtonText: String?,
                 signature: String? = nil) {
         self.clientObjectId = clientObjectId
-        self.topicId = topicId
+        self.groupId = groupId
         self.text = text
         self.catchPhrase = catchPhrase
         self.attachment = attachment
         self.viewClientObjectButtonText = viewClientObjectButtonText
         self.signature = signature
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case clientObjectId
-        case topicId
+        case topicId // Need to be topicId in the computation of the sha1
         case text
         case catchPhrase
         case image
@@ -61,7 +61,7 @@ public struct ClientPost: Sendable, Encodable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(clientObjectId, forKey: .clientObjectId)
-        try container.encodeIfPresent(topicId, forKey: .topicId)
+        try container.encodeIfPresent(groupId, forKey: .topicId)
         try container.encode(text, forKey: .text)
         try container.encodeIfPresent(catchPhrase, forKey: .catchPhrase)
         if let attachment = attachment {
@@ -129,4 +129,3 @@ extension ClientPost {
         }
     }
 }
-

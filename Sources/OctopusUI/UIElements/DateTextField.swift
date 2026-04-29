@@ -56,7 +56,7 @@ struct DateTextField: View {
     }
 }
 
-fileprivate struct TextFieldWithInputView<Content: View>: UIViewRepresentable {
+private struct TextFieldWithInputView<Content: View>: UIViewRepresentable {
     var id: String
     @ViewBuilder var content: Content
 
@@ -72,7 +72,7 @@ fileprivate struct TextFieldWithInputView<Content: View>: UIViewRepresentable {
             if let textField = textField as? UITextField {
                 textField.tintColor = .clear
 
-                //Converting SwiftUI View to UIKit View
+                // Converting SwiftUI View to UIKit View
                 let hostView = UIHostingController(rootView: content).view!
                 hostView.frame.size = hostView.intrinsicContentSize
                 /// Adding as InputView
@@ -85,7 +85,6 @@ fileprivate struct TextFieldWithInputView<Content: View>: UIViewRepresentable {
 
     func updateUIView(_ uiView: UIViewType, context: Context) { }
 }
-
 
 fileprivate extension UIView {
     func firstSubview(matching: (UIView) -> Bool) -> UIView? {

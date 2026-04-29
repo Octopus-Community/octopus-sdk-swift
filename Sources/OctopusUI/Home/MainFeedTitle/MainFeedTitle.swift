@@ -44,7 +44,7 @@ public struct OctopusMainFeedTitle {
     public let content: Content
     /// The place of the title
     public let placement: Placement
-    
+
     /// Constructor of a main feed title
     /// - Parameters:
     ///   - content: the content of the title.

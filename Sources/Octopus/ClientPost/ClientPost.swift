@@ -18,9 +18,13 @@ public struct ClientPost: Sendable {
     /// An id that uniquely identifies the object linked to this post. It will be used to retrieve the post if it
     /// already exists and in the `displayClientObject` callback.
     public let clientObjectId: String
-    /// The topic id to save your post to. If nil, a default topic that you should configure with our backend team will
+    /// The group id to save your post to. If nil, a default group that you should configure with our backend team will
     /// be used.
-    public let topicId: String?
+    public let groupId: String?
+
+    /// The topic id to save your post to.
+    @available(*, deprecated, renamed: "groupId")
+    public var topicId: String? { groupId }
     /// The text of the post. Length must be between 10 and 5000 characters.
     public let text: String
     /// The catch phrase. You can use something like "What do you think about this?". It will be displayed below the
@@ -43,7 +47,7 @@ public struct ClientPost: Sendable {
     /// - Parameters:
     ///   - clientObjectId: an id that uniquely identifies the object linked to this post. It will be used to retrieve
     ///                     the post if it already exists and in the `displayClientObject` callback.
-    ///   - topicId: the topic id to save your post to. If nil, a default topic that you should configure with our
+    ///   - groupId: the group id to save your post to. If nil, a default group that you should configure with our
     ///              backend team will be used.
     ///              Default is nil.
     ///   - text: the text of the post. Length must be between 10 and 5000 characters.
@@ -57,13 +61,13 @@ public struct ClientPost: Sendable {
     ///                                 callback will be called with your object id.
     ///                                 **Must be below 28 characters**. We recommand between 4 and 28 characters.
     public init(clientObjectId: String,
-                topicId: String? = nil,
+                groupId: String? = nil,
                 text: String,
                 catchPhrase: String? = nil,
                 attachment: Attachment?,
                 viewClientObjectButtonText: String?) {
         self.clientObjectId = clientObjectId
-        self.topicId = topicId
+        self.groupId = groupId
         self.text = text
         self.catchPhrase = catchPhrase
         self.attachment = attachment
@@ -99,7 +103,7 @@ public struct ClientPost: Sendable {
                 viewClientObjectButtonText: String?,
                 signature: String?) {
         self.clientObjectId = clientObjectId
-        self.topicId = topicId
+        self.groupId = topicId
         self.text = text
         self.catchPhrase = catchPhrase
         self.attachment = attachment
@@ -112,7 +116,7 @@ extension ClientPost {
     var coreValue: OctopusCore.ClientPost {
         .init(
             clientObjectId: clientObjectId,
-            topicId: topicId,
+            groupId: groupId,
             text: text,
             catchPhrase: catchPhrase,
             attachment: attachment?.coreValue,
@@ -131,4 +135,3 @@ extension ClientPost.Attachment {
         }
     }
 }
-

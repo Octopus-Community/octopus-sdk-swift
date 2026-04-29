@@ -29,6 +29,7 @@ struct MainFlowNavigationStack<RootView: View>: View {
     var body: some View {
         NBNavigationStack(path: $mainFlowPath.path) {
             rootView
+                .hideBackButtonTitle()
                 .nbNavigationDestination(for: MainFlowScreen.self) { screen in
                     Group {
                         switch screen {
@@ -43,8 +44,9 @@ struct MainFlowNavigationStack<RootView: View>: View {
                             CreatePostView(octopus: octopus, withPoll: withPoll, defaultTopic: defaultTopic)
                         case let .groupList(context):
                             GroupListView(octopus: octopus, context: context)
-                        case let .groupDetail(topic):
-                            GroupDetailView(octopus: octopus, topic: topic, mainFlowPath: mainFlowPath, translationStore: translationStore)
+                        case let .groupDetail(groupId):
+                            GroupDetailView(octopus: octopus, groupId: groupId, mainFlowPath: mainFlowPath,
+                                            translationStore: translationStore)
                         case let .postDetail(postId, comment, commentToScrollTo, scrollToMostRecentComment, origin, hasFeaturedComment):
                             PostDetailView(
                                 octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
@@ -78,6 +80,7 @@ struct MainFlowNavigationStack<RootView: View>: View {
                         }
                     }
                     .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
+                    .hideBackButtonTitle()
                 }
 
         }

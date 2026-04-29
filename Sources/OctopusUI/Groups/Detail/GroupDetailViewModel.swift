@@ -11,7 +11,8 @@ import OctopusCore
 @MainActor
 class GroupDetailViewModel: ObservableObject {
     @Published var scrollToTop = false
-    @Published private(set) var group: GroupDetail
+    @Published private(set) var group: GroupDetail?
+    @Published private(set) var groupNotFound = false
     @Published private(set) var error: DisplayableString?
 
     @Published var authenticationAction: ConnectedActionReplacement?
@@ -22,34 +23,39 @@ class GroupDetailViewModel: ObservableObject {
         )
     }
 
-    @Published private(set) var postFeedViewModel: PostFeedViewModel!
+    @Published private(set) var postFeedViewModel: PostFeedViewModel?
     var thisUserProfileId: String? {
         octopus.core.profileRepository.profile?.id
     }
 
+    var analyticsSource: SdkEvent.ScreenDisplayedContext.GroupDetailContext.Source {
+        switch origin {
+        case .clientApp: .clientApp
+        case .sdk: .community
+        }
+    }
+
     let octopus: OctopusSDK
+    let origin: GroupDetailNavigationOrigin
     let connectedActionChecker: ConnectedActionChecker
+    let groupId: String
     private let translationStore: ContentTranslationPreferenceStore
 
     private var storage = [AnyCancellable]()
     private var topics: [OctopusCore.Topic] = []
+    private var hasFetchedTopicsOnce = false
 
-    init(octopus: OctopusSDK, topic: OctopusCore.Topic, mainFlowPath: MainFlowPath,
-         translationStore: ContentTranslationPreferenceStore) {
+    init(octopus: OctopusSDK, groupId: String, mainFlowPath: MainFlowPath,
+         translationStore: ContentTranslationPreferenceStore,
+         origin: GroupDetailNavigationOrigin = .sdk) {
         self.octopus = octopus
-        self.group = .init(from: topic)
+        self.groupId = groupId
         self.translationStore = translationStore
+        self.origin = origin
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
-        postFeedViewModel = PostFeedViewModel(
-            octopus: octopus, postFeed: topic.feed,
-            displayModeratedPosts: false,
-            displayGroup: false,
-            translationStore: translationStore,
-            ensureConnected: { [weak self] action in
-                guard let self else { return false }
-                return self.ensureConnected(action: action)
-            })
+        // Synchronously resolve the topic from cached data if available
+        resolveGroup(from: octopus.core.topicsRepository.topics)
 
         mainFlowPath.$path
             .prepend([])
@@ -62,26 +68,15 @@ class GroupDetailViewModel: ObservableObject {
             }.store(in: &storage)
 
         octopus.core.topicsRepository.$topics
-            .sink { [unowned self] in
-                topics = $0
-                guard let topic = $0.first(where: { $0.uuid == topic.uuid }) else { return }
-                self.group = .init(from: topic)
-                guard postFeedViewModel.feed.id != topic.feed.id else { return }
-                postFeedViewModel = PostFeedViewModel(
-                    octopus: octopus, postFeed: topic.feed,
-                    displayModeratedPosts: false,
-                    displayGroup: false,
-                    translationStore: translationStore,
-                    ensureConnected: { [weak self] action in
-                        guard let self else { return false }
-                        return self.ensureConnected(action: action)
-                    })
+            .sink { [unowned self] allTopics in
+                resolveGroup(from: allTopics)
             }.store(in: &storage)
 
         fetchTopics(isManual: false)
     }
 
     func toggleFollowGroup() {
+        guard let group else { return }
         let shouldFollow = !group.isFollowed
         Task {
             await changeFollowStatus(topicId: group.id, follow: shouldFollow)
@@ -121,14 +116,40 @@ class GroupDetailViewModel: ObservableObject {
     func refresh() async {
         await withTaskGroup(of: Void.self) { group in
             // refresh of the topics is done in postFeedViewModel.refresh()
-            group.addTask { [self] in await postFeedViewModel.refresh() }
+            if let postFeedViewModel {
+                group.addTask { [postFeedViewModel] in await postFeedViewModel.refresh() }
+            }
 
             await group.waitForAll()
         }
     }
 
+    private func resolveGroup(from allTopics: [OctopusCore.Topic]) {
+        topics = allTopics
+        guard let topic = allTopics.first(where: { $0.uuid == groupId }) else {
+            if hasFetchedTopicsOnce {
+                groupNotFound = true
+            }
+            return
+        }
+        groupNotFound = false
+        group = GroupDetail(from: topic)
+        if let existingFeed = postFeedViewModel, existingFeed.feed.id == topic.feed.id {
+            return
+        }
+        postFeedViewModel = PostFeedViewModel(
+            octopus: octopus, postFeed: topic.feed,
+            displayModeratedPosts: false,
+            displayGroup: false,
+            translationStore: translationStore,
+            ensureConnected: { [weak self] action in
+                guard let self else { return false }
+                return self.ensureConnected(action: action)
+            })
+    }
+
     private func refreshFeed(isManual: Bool) {
-        postFeedViewModel.refreshFeed(isManual: isManual)
+        postFeedViewModel?.refreshFeed(isManual: isManual)
     }
 
     private func fetchTopics(isManual: Bool) {
@@ -147,5 +168,8 @@ class GroupDetailViewModel: ObservableObject {
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
         }
+        hasFetchedTopicsOnce = true
+        // Re-resolve after fetch in case $topics fired before hasFetchedTopicsOnce was set
+        resolveGroup(from: octopus.core.topicsRepository.topics)
     }
 }

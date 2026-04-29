@@ -13,13 +13,17 @@ struct NotSeenNotificationsCell: View {
 
     var body: some View {
         NavigationLink(destination: NotSeenNotificationsView(showFullScreen: showFullScreen)) {
-            VStack(alignment: .leading) {
-                Text("Notification Badge")
-                Text("To increase user engagement, let your users know that they have not seen internal notifications")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "bell.badge")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Notification Badge")
+                    Text("To increase user engagement, let your users know that they have not seen internal notifications")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

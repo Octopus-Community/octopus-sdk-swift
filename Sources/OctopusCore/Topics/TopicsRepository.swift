@@ -62,6 +62,37 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
+    public func syncFollowTopics(
+        actions: [SyncFollowTopicAction]
+    ) async throws(AuthenticatedActionError) -> [SyncFollowTopicResult] {
+        guard !actions.isEmpty else { return [] }
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        do {
+            let protoActions = actions.map { Com_Octopuscommunity_SyncFollowTopicAction(from: $0) }
+            let response = try await remoteClient.userService.syncFollowTopics(
+                actions: protoActions,
+                authenticationMethod: try authCallProvider.authenticatedMethod())
+            // Refresh the local cache so the published `groups` reflects the new state.
+            do { _ = try await fetchTopics() } catch {
+                if #available(iOS 14, *) {
+                    Logger.groups.debug("Cache refresh after syncFollowTopics failed: \(error)")
+                }
+            }
+            return response.results.map { SyncFollowTopicResult(from: $0) }
+        } catch {
+            if #available(iOS 14, *) {
+                Logger.groups.debug("Error during syncFollowTopics: \(error)")
+            }
+            if let error = error as? AuthenticatedActionError {
+                throw error
+            } else if let error = error as? RemoteClientError {
+                throw .serverError(ServerError(remoteClientError: error))
+            } else {
+                throw .other(error)
+            }
+        }
+    }
+
     public func changeFollowStatus(topicId: String, follow: Bool) async throws(FollowTopic.Error) {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         guard let topic = topics.first(where: { $0.uuid == topicId }) else { throw .other(InternalError.objectNotFound) }

@@ -1,16 +1,16 @@
-////
-////  Copyright © 2024 Octopus Community. All rights reserved.
-////
 //
-//import Foundation
-//import Testing
-//import Combine
-//import OctopusDependencyInjection
-//import OctopusRemoteClient
-//import OctopusGrpcModels
-//@testable import OctopusCore
+//  Copyright © 2024 Octopus Community. All rights reserved.
 //
-//struct MagicLinkMonitorTests {
+//
+// import Foundation
+// import Testing
+// import Combine
+// import OctopusDependencyInjection
+// import OctopusRemoteClient
+// import OctopusGrpcModels
+// @testable import OctopusCore
+//
+// struct MagicLinkMonitorTests {
 //
 //    /// Object that is tested
 //    private var magicLinkMonitor: MagicLinkMonitor
@@ -133,4 +133,4 @@
 //        try await expectWithTimeout(response?.success.jwt == "abc")
 //        try await expectWithTimeout(response?.success.userID == "userId")
 //    }
-//}
+// }

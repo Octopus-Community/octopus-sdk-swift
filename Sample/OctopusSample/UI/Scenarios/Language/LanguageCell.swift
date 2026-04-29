@@ -14,13 +14,17 @@ import OctopusUI
 struct LanguageCell: View {
     var body: some View {
         NavigationLink(destination: LanguageView()) {
-            VStack(alignment: .leading) {
-                Text("Override the language of the SDK")
-                Text("Octopus SDK lets you override the language use in the UI.")
-                    .font(.caption)
+            HStack(spacing: 12) {
+                Image(systemName: "globe")
+                    .foregroundColor(.accentColor)
+                    .frame(width: 24)
+                VStack(alignment: .leading) {
+                    Text("Override the language of the SDK")
+                    Text("Octopus SDK lets you override the language use in the UI.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
         }
     }
 }
-
-

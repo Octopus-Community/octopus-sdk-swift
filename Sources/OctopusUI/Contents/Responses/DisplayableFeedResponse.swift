@@ -15,6 +15,7 @@ struct DisplayableFeedResponse: Equatable {
     let relativeDate: String
     let canBeDeleted: Bool
     let canBeModerated: Bool
+    let canBeBlockedByUser: Bool
 
     fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
     var liveMeasures: AnyPublisher<LiveMeasures, Never> {
@@ -33,7 +34,8 @@ struct DisplayableFeedResponse: Equatable {
         lhs.author == rhs.author &&
         lhs.relativeDate == rhs.relativeDate &&
         lhs.canBeDeleted == rhs.canBeDeleted &&
-        lhs.canBeModerated == rhs.canBeModerated
+        lhs.canBeModerated == rhs.canBeModerated &&
+        lhs.canBeBlockedByUser == rhs.canBeBlockedByUser
     }
 
     init(kind: ResponseKind,
@@ -44,7 +46,8 @@ struct DisplayableFeedResponse: Equatable {
          relativeDate: String,
          canBeDeleted: Bool,
          canBeModerated: Bool,
-         _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>,
+         canBeBlockedByUser: Bool,
+         _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>, // swiftlint:disable:this identifier_name
          displayEvents: CellDisplayEvents) {
         self.kind = kind
         self.uuid = uuid
@@ -54,6 +57,7 @@ struct DisplayableFeedResponse: Equatable {
         self.relativeDate = relativeDate
         self.canBeDeleted = canBeDeleted
         self.canBeModerated = canBeModerated
+        self.canBeBlockedByUser = canBeBlockedByUser
         self._liveMeasuresPublisher = _liveMeasuresPublisher
         self.displayEvents = displayEvents
     }
@@ -79,6 +83,7 @@ extension DisplayableFeedResponse {
         image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
         canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
         canBeModerated = comment.author?.uuid != thisUserProfileId
+        canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
         _liveMeasuresPublisher = liveMeasurePublisher
         displayEvents = CellDisplayEvents(onAppear: onAppearAction, onDisappear: onDisappearAction)
     }
@@ -99,6 +104,7 @@ extension DisplayableFeedResponse {
         image = ImageMedia(from: reply.medias.first(where: { $0.kind == .image }))
         canBeDeleted = reply.author != nil && reply.author?.uuid == thisUserProfileId
         canBeModerated = reply.author?.uuid != thisUserProfileId
+        canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
         _liveMeasuresPublisher = liveMeasurePublisher
         displayEvents = CellDisplayEvents(onAppear: onAppearAction, onDisappear: onDisappearAction)
     }

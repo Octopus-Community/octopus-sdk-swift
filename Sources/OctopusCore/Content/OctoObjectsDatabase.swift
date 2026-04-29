@@ -18,8 +18,9 @@ class OctoObjectsDatabase {
     func update(additionalData array: [(String, AggregatedInfo?, UserInteractions?)]) async throws {
         try await context.performAsync { [context] in
             let context = context
-            let request = OctoObjectEntity.fetchAllGenericByIds(ids: array.map(\.0))
-            let existingContents = try context.fetch(request)
+            let existingContents = try context.chunkedFetch(ids: array.map(\.0)) { chunk in
+                OctoObjectEntity.fetchAllGenericByIds(ids: chunk)
+            }
 
             for additionalData in array {
                 guard let contentEntity = existingContents.first(where: { $0.uuid == additionalData.0 }) else {
