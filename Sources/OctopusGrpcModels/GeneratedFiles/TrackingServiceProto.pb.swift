@@ -184,6 +184,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .videoPlayed(newValue)}
     }
 
+    /// Click on a Post CTA
     public var clickOnCta: Com_Octopuscommunity_TrackRequest.ClickOnCta {
       get {
         if case .clickOnCta(let v)? = eventType {return v}
@@ -198,6 +199,15 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
         return Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo()
       }
       set {eventType = .clientSetAbtestInfo(newValue)}
+    }
+
+    /// Click on a Topic CTA
+    public var clickOnTopicCta: Com_Octopuscommunity_TrackRequest.ClickOnTopicCta {
+      get {
+        if case .clickOnTopicCta(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.ClickOnTopicCta()
+      }
+      set {eventType = .clickOnTopicCta(newValue)}
     }
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -219,8 +229,11 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case searchTopicButtonHit(Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit)
       case viewTranslationButtonHit(Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit)
       case videoPlayed(Com_Octopuscommunity_TrackRequest.VideoPlayed)
+      /// Click on a Post CTA
       case clickOnCta(Com_Octopuscommunity_TrackRequest.ClickOnCta)
       case clientSetAbtestInfo(Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo)
+      /// Click on a Topic CTA
+      case clickOnTopicCta(Com_Octopuscommunity_TrackRequest.ClickOnTopicCta)
 
     }
 
@@ -626,6 +639,18 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
+  public struct ClickOnTopicCta: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var objectID: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
   public struct ClientSetABTestInfo: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -687,7 +712,7 @@ extension Com_Octopuscommunity_TrackRequest: SwiftProtobuf.Message, SwiftProtobu
 
 extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Event"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timestamp\0\u{1}appSessionId\0\u{1}octoSessionId\0\u{2}\u{9}enteringApp\0\u{1}leavingApp\0\u{1}enteringOctopus\0\u{1}leavingOctopus\0\u{1}customEvent\0\u{1}bridgePostOpened\0\u{1}openClientObjectFromBridge\0\u{1}postOpened\0\u{1}clientContentSharingStarted\0\u{1}clientContentSharingCanceled\0\u{1}viewTopic\0\u{1}viewProfile\0\u{1}searchTopicButtonHit\0\u{1}viewTranslationButtonHit\0\u{1}videoPlayed\0\u{1}clickOnCta\0\u{1}clientSetABTestInfo\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timestamp\0\u{1}appSessionId\0\u{1}octoSessionId\0\u{2}\u{9}enteringApp\0\u{1}leavingApp\0\u{1}enteringOctopus\0\u{1}leavingOctopus\0\u{1}customEvent\0\u{1}bridgePostOpened\0\u{1}openClientObjectFromBridge\0\u{1}postOpened\0\u{1}clientContentSharingStarted\0\u{1}clientContentSharingCanceled\0\u{1}viewTopic\0\u{1}viewProfile\0\u{1}searchTopicButtonHit\0\u{1}viewTranslationButtonHit\0\u{1}videoPlayed\0\u{1}clickOnCta\0\u{1}clientSetABTestInfo\0\u{1}clickOnTopicCta\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -919,6 +944,19 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .clientSetAbtestInfo(v)
         }
       }()
+      case 29: try {
+        var v: Com_Octopuscommunity_TrackRequest.ClickOnTopicCta?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .clickOnTopicCta(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .clickOnTopicCta(v)
+        }
+      }()
       default: break
       }
     }
@@ -1006,6 +1044,10 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     case .clientSetAbtestInfo?: try {
       guard case .clientSetAbtestInfo(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 28)
+    }()
+    case .clickOnTopicCta?: try {
+      guard case .clickOnTopicCta(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 29)
     }()
     case nil: break
     }
@@ -1796,6 +1838,36 @@ extension Com_Octopuscommunity_TrackRequest.ClickOnCta: SwiftProtobuf.Message, S
   }
 
   public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClickOnCta, rhs: Com_Octopuscommunity_TrackRequest.ClickOnCta) -> Bool {
+    if lhs.objectID != rhs.objectID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.ClickOnTopicCta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClickOnTopicCta"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.objectID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.objectID.isEmpty {
+      try visitor.visitSingularStringField(value: self.objectID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.ClickOnTopicCta, rhs: Com_Octopuscommunity_TrackRequest.ClickOnTopicCta) -> Bool {
     if lhs.objectID != rhs.objectID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

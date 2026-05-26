@@ -11,7 +11,7 @@ struct PostHeaderView: View {
     let context: PostViewContext
     let author: Author
     let relativeDate: String
-    let topic: String
+    let topic: String?
     let displayGroupName: Bool
     let groupTap: (() -> Void)?
     let canBeDeleted: Bool
@@ -60,10 +60,11 @@ struct PostHeaderView: View {
                     // (name, date) extend up to the card's top edge.
                     topPadding: 16,
                     displayProfile: displayProfile)
-                if displayGroupName {
+                if displayGroupName, let topic {
                     PostGroupLinkView(groupName: topic, onTap: groupTap)
                 }
             }
+            .frame(maxHeight: .infinity, alignment: .center)
 
             Spacer(minLength: 8)
 
@@ -87,6 +88,7 @@ struct PostHeaderView: View {
         // Bottom-only: the 16pt top space is baked into each interactive child's hit area so the
         // tappable zone extends up to the card's top edge.
         .padding(.bottom, 4)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -135,6 +137,31 @@ struct PostHeaderView: View {
             canBeDeleted: true,
             canBeModerated: true,
             canBeBlockedByUser: false,
+            displayProfile: { _ in },
+            onDelete: {},
+            onReport: {},
+            onBlockAuthor: {},
+            iOS13ActionSheetIsPresented: binding)
+    }
+}
+
+#Preview("No group name") {
+    StatefulPreview(initial: false) { binding in
+        PostHeaderView(
+            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            author: Author(
+                profile: MinimalProfile(
+                    uuid: "1", nickname: "Antoine",
+                    avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
+                    gamificationLevel: 1),
+                gamificationLevel: nil),
+            relativeDate: "il y a 3 min.",
+            topic: "Groupe",
+            displayGroupName: false,
+            groupTap: {},
+            canBeDeleted: true,
+            canBeModerated: true,
+            canBeBlockedByUser: true,
             displayProfile: { _ in },
             onDelete: {},
             onReport: {},

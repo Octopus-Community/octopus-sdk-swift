@@ -11,4 +11,5 @@ public enum InternalSdkEvent: Sendable {
     case contentReactionChanged(content: any OctopusContent, reaction: ReactionKind?)
     case profileUpdated
     case groupFollowingChanged
+    case entitlementsChanged
 }

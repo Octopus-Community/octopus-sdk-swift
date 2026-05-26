@@ -65,6 +65,10 @@ class EventEntity: NSManagedObject, Identifiable {
             let specializedEntity = CtaPostButtonHitEntity(context: context)
             specializedEntity.octoObjectId = objectId
             entity = specializedEntity
+        case let .ctaGroupButtonHit(groupId):
+            let specializedEntity = CtaGroupButtonHitEntity(context: context)
+            specializedEntity.octoObjectId = groupId
+            entity = specializedEntity
         case let .clientSetABTest(hasAccessToCommunity):
             let specializedEntity = ClientSetABTestEventEntity(context: context)
             specializedEntity.hasAccessToCommunity = hasAccessToCommunity

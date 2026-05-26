@@ -67,5 +67,6 @@ struct CustomEventsView: View {
                 }
             }
         }
+        .hostAppFooter()
     }
 }

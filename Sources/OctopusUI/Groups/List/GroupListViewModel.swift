@@ -42,7 +42,6 @@ class GroupListViewModel: ObservableObject {
     let octopus: OctopusSDK
 
     private var storage = [AnyCancellable]()
-    private var isFirstTopicUpdate = true
     private var topics: [OctopusCore.Topic] = []
 
     init(octopus: OctopusSDK, context: GroupListContext) {
@@ -53,19 +52,10 @@ class GroupListViewModel: ObservableObject {
             .sink { [unowned self] in
                 topics = $0
                 computeCanChangeFollowStatusAndIsFollowed(topics: $0)
-                // we do not want to update the `groups` when the user follows/unfollow groups,
-                // So we only compute the `groups` after the first value of topics
-                if isFirstTopicUpdate {
-                    isFirstTopicUpdate = false
-                    groups = .init(from: $0)
-                }
+                groups = .init(from: filtered($0))
             }.store(in: &storage)
 
         fetchTopics()
-    }
-
-    func recomputeSections() {
-        groups = .init(from: octopus.core.topicsRepository.topics)
     }
 
     func refresh() async {
@@ -73,7 +63,23 @@ class GroupListViewModel: ObservableObject {
         await refreshTopicsTask.value
     }
 
+    /// Invoked when a group row is tapped. If the group is locked (no access), invokes the
+    /// host app's ``OctopusSDK/groupAccessDeniedCallback`` and returns `true`. Otherwise
+    /// returns `false`, letting the caller proceed with navigation/selection.
+    func handleGroupTap(groupId: String) -> Bool {
+        guard let topic = topics.first(where: { $0.uuid == groupId }) else { return false }
+        if !topic.permissions.canAccess {
+            octopus.groupAccessDeniedCallback?(groupId)
+            return true
+        }
+        return false
+    }
+
     func changeFollowStatus(groupId: String, follow: Bool) {
+        if let topic = topics.first(where: { $0.uuid == groupId }), !topic.permissions.canAccess {
+            octopus.groupAccessDeniedCallback?(groupId)
+            return
+        }
         Task {
             await changeFollowStatus(groupId: groupId, follow: follow)
         }
@@ -89,7 +95,7 @@ class GroupListViewModel: ObservableObject {
         do {
             let topics = try await octopus.core.topicsRepository.fetchTopics()
             computeCanChangeFollowStatusAndIsFollowed(topics: topics)
-            groups = .init(from: topics)
+            groups = .init(from: filtered(topics))
         } catch {
             if groups == nil {
                 // set to non nil value to remove the loader
@@ -108,6 +114,19 @@ class GroupListViewModel: ObservableObject {
                                                     uniquingKeysWith: { first, _ in first })
         isFollowedByGroupId = Dictionary(topics.map { ($0.uuid, $0.isFollowed) },
                                          uniquingKeysWith: { first, _ in first })
+    }
+
+    /// Returns topics filtered for the current context.
+    /// For `.groupSelection` (the create-post topic picker), only topics where the user can
+    /// post are shown. Inaccessible topics remain selectable so the tap handler can dispatch
+    /// the access-denied callback.
+    private func filtered(_ topics: [OctopusCore.Topic]) -> [OctopusCore.Topic] {
+        switch context {
+        case .displayFeed:
+            return topics
+        case .groupSelection:
+            return topics.filter { $0.permissions.canCreateChildren }
+        }
     }
 
     private func changeFollowStatus(groupId: String, follow: Bool) async {

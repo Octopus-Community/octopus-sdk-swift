@@ -31,7 +31,6 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
     private let authCallProvider: AuthenticatedCallProvider
     private let repliesDatabase: RepliesDatabase
     private let networkMonitor: NetworkMonitor
-    private let validator: Validators.Reply
     private let gamificationRepository: GamificationRepository
     private let sdkEventsEmitter: SdkEventsEmitter
     // swiftlint:disable:next weak_delegate
@@ -42,7 +41,6 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         repliesDatabase = injector.getInjected(identifiedBy: Injected.repliesDatabase)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
-        validator = injector.getInjected(identifiedBy: Injected.validators).reply
         gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
@@ -50,7 +48,7 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
 
     @discardableResult
     public func send(_ reply: WritableReply, parentIsTranslated: Bool) async throws(SendReply.Error) -> (Reply, Data?) {
-        guard validator.validate(reply: reply) else {
+        guard Validators.Reply.validate(reply: reply) else {
             throw .serverCall(.other(InternalError.objectMalformed))
         }
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
@@ -73,6 +71,10 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
                     throw SendReply.Error.serverCall(.other(nil))
                 }
                 try await repliesDatabase.upsert(replies: [finalReply])
+                // The PutReply response doesn't carry `RequesterCtx`, so the reply lands in the
+                // DB with default-open permissions. Re-fetch immediately to persist the real
+                // entitlements before the publishers fire.
+                try? await fetchAdditionalData(ids: [finalReply.uuid], incrementViewCount: false)
                 let newReply = Reply(storableComment: finalReply)
                 _replySentPublisher.send(newReply)
                 sdkEventsEmitter.emit(.contentCreated(content: newReply))
@@ -131,11 +133,12 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
             let additionalData = batchResponse.responses
-                .compactMap { response -> (String, AggregatedInfo?, UserInteractions?)? in
+                .compactMap { response -> (String, AggregatedInfo?, UserInteractions?, UserPermissions?)? in
                     let aggregateInfo = response.hasAggregate ? AggregatedInfo(from: response.aggregate) : nil
                     let userInteractions = response.hasRequesterCtx ? UserInteractions(from: response.requesterCtx) : nil
+                    let permissions = response.hasRequesterCtx ? UserPermissions(from: response.requesterCtx) : nil
                     let id = response.octoObjectID
-                    return (id, aggregateInfo, userInteractions)
+                    return (id, aggregateInfo, userInteractions, permissions)
                 }
             try await repliesDatabase.update(additionalData: additionalData)
         } catch {

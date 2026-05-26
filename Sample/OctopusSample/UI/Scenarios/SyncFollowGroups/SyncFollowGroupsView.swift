@@ -57,6 +57,7 @@ struct SyncFollowGroupsView: View {
             }
         }
         .navigationBarTitle(Text("Sync Follow Groups"), displayMode: .inline)
+        .hostAppFooter()
     }
 
     private func binding(

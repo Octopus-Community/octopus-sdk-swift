@@ -13,6 +13,8 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
     let verticalPadding: CGFloat
     let overlayContent: () -> OverlayContent
 
+    @Environment(\.layoutDirection) private var layoutDirection
+
     @State private var buttonFrame: CGRect = .zero
     @State private var windowWidth: CGFloat = .zero
     @State private var emojiBarWidth: CGFloat = .zero
@@ -56,9 +58,15 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                             })
                             .accessibilityHidden(true)
                             .overlay(
-                                // Position the emoji bar above the button
+                                // Position the emoji bar above the button.
+                                // `emojiBarXPosition` is computed in physical (LTR) coordinates
+                                // from `windowWidth` and `buttonFrame.midX` (both physical),
+                                // so we force LTR here — `.position` and `.topLeading` otherwise
+                                // mirror their X axis under RTL, which breaks the placement.
+                                // The inner `overlayContent` restores the caller's direction.
                                 ZStack {
                                     overlayContent()
+                                        .environment(\.layoutDirection, layoutDirection)
                                         .readWidth($emojiBarWidth)
                                         .position(
                                             x: emojiBarXPosition,
@@ -70,6 +78,7 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                                 },
                                 alignment: .topLeading
                             )
+                            .environment(\.layoutDirection, .leftToRight)
                     }
                 }
             )

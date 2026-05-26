@@ -121,6 +121,7 @@ struct ResponseFeedItemView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                 aggregatedInfo: .init(reactions: [
                     .init(reactionKind: .heart, count: 10),
@@ -165,6 +166,7 @@ struct ResponseFeedItemView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                 aggregatedInfo: .init(reactions: [
                     .init(reactionKind: .heart, count: 10),
@@ -206,6 +208,7 @@ struct ResponseFeedItemView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                 aggregatedInfo: .init(reactions: [
                     .init(reactionKind: .heart, count: 10),
@@ -249,6 +252,7 @@ struct ResponseFeedItemView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             _liveMeasuresPublisher: CurrentValueSubject(LiveMeasures(
                 aggregatedInfo: .init(reactions: [
                     .init(reactionKind: .heart, count: 10),

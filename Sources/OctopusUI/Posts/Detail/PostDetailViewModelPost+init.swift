@@ -24,7 +24,7 @@ extension PostDetailViewModel.Post.Attachment {
 extension PostDetailViewModel.Post {
     init(from post: Post,
          gamificationLevels: [GamificationLevel],
-         thisUserProfileId: String?, topic: OctopusCore.Topic,
+         thisUserProfileId: String?, topic: OctopusCore.Topic?,
          dateFormatter: RelativeDateTimeFormatter) {
         uuid = post.uuid
         text = post.text
@@ -33,11 +33,12 @@ extension PostDetailViewModel.Post {
             gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
         )
         relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())
-        self.topic = topic.name
+        self.topic = topic?.name
         attachment = .init(from: post)
         canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
         canBeModerated = post.author?.uuid != thisUserProfileId
         canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
+        canCreateChildren = post.permissions.canCreateChildren
         aggregatedInfo = post.aggregatedInfo
         userInteractions = post.userInteractions
         bridgeCTA = if let bridgeInfo = post.clientObjectBridgeInfo,

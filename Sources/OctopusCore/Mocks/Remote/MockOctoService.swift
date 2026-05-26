@@ -20,6 +20,8 @@ class MockOctoService: OctoService {
     /// Fifo of the responses to `put(post:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putPostResponses = [Com_Octopuscommunity_PutPostResponse]()
+    private(set) var lastPutPostCreationSource: Com_Octopuscommunity_PutRequest.CreationSource?
+    private(set) var lastPutPostRwOctoObject: Com_Octopuscommunity_RwOctoObject?
     /// Fifo of the responses to `put(comment:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putCommentResponses = [Com_Octopuscommunity_PutCommentResponse]()
@@ -81,7 +83,11 @@ class MockOctoService: OctoService {
         return response
     }
 
-    func put(post: Com_Octopuscommunity_RwOctoObject, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse {
+    func put(post: Com_Octopuscommunity_RwOctoObject,
+             creationSource: Com_Octopuscommunity_PutRequest.CreationSource,
+             authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse {
+        lastPutPostRwOctoObject = post
+        lastPutPostCreationSource = creationSource
         guard let response = putPostResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextPutPostResponse must be called before"))
         }

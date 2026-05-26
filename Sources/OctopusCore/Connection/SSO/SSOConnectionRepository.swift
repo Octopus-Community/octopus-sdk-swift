@@ -396,6 +396,54 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         }
     }
 
+    func refreshEntitlements() async throws(RefreshEntitlementsCoreError) {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        guard let user = connectionState.user, !user.profile.isGuest else {
+            throw .notConnected
+        }
+        guard let clientUserTokenProvider,
+              let clientUserId = userDataStorage.clientUserData?.id else {
+            throw .notConnected
+        }
+        do {
+            let clientToken = try await clientUserTokenProvider()
+            let response = try await remoteClient.userService.getJwt(
+                clientToken: clientToken,
+                authenticationMethod: authenticatedCallProvider.authenticatedIfPossibleMethod()
+            )
+            switch response.result {
+            case let .success(connectionData):
+                userDataStorage.store(userData: .init(
+                    id: connectionData.userID,
+                    clientId: clientUserId,
+                    jwtToken: connectionData.jwt
+                ))
+                let frictionlessProfile = try await frictionlessProfileMigrator
+                    .migrateUserToFrictionlessUserIfNeeded(
+                        profile: connectionData.profile,
+                        userId: connectionData.userID
+                    )
+                try await userProfileDatabase.upsert(profile: frictionlessProfile)
+            case let .fail(failure):
+                let detailedErrors = failure.errors.map { ExchangeTokenError.DetailedError(from: $0) }
+                if let banned = detailedErrors.first(where: { $0.reason == .userBanned }) {
+                    throw RefreshEntitlementsCoreError.userBanned(banned.message)
+                }
+                throw RefreshEntitlementsCoreError.serverError(
+                    RefreshEntitlementsServerError(messages: detailedErrors.map(\.message))
+                )
+            case .none:
+                throw RefreshEntitlementsCoreError.serverError(InternalError.invalidArgument)
+            }
+        } catch let error as RefreshEntitlementsCoreError {
+            throw error
+        } catch let error as RemoteClientError {
+            throw .serverError(error)
+        } catch {
+            throw .serverError(error)
+        }
+    }
+
     func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError) {
         preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
     }

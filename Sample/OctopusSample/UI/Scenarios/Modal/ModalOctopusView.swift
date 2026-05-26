@@ -79,6 +79,7 @@ struct ModalOctopusView: View {
         .onReceive(NotificationManager.instance.$handleOctopusNotificationUserInfo) {
             octopusNotificationUserInfo = $0
         }
+        .hostAppFooter()
     }
 
     @ViewBuilder

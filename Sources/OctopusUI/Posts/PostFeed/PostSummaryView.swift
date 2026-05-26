@@ -29,14 +29,22 @@ struct PostSummaryView: View {
     let displayClientObject: ((String) -> Void)?
 
     @State private var groupedForAccessibility = true
+    /// Tracks whether the truncated post text has been expanded inline.
+    /// Only relevant when `post.canCreateChildren == false`: in that case tapping the card
+    /// toggles expansion rather than navigating to the detail screen.
+    @State private var isTextExpanded = false
 
     var body: some View {
         VStack(spacing: 0) {
             PostView(
-                post: PostViewData(from: post),
+                post: PostViewData(from: post, ellipsize: !isTextExpanded),
                 context: .summary(
                     onCardTap: {
-                        displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment)
+                        if post.canCreateChildren || post.hasChildren {
+                            displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment)
+                        } else {
+                            isTextExpanded.toggle()
+                        }
                     },
                     onChildrenTap: {
                         // Tapping the "XX Comments" count opens the detail scrolled to the
@@ -90,7 +98,14 @@ struct PostSummaryView: View {
             theme.colors.gray300
                 .frame(height: 2)
         }
-        .id("post-\(post.uuid)-\(groupedForAccessibility)")
+        // `canCreateChildren` is in the id to work around a SwiftUI rendering quirk: when the
+        // permission flips from `true` to `false` (e.g. just-created post in a no-comments
+        // group, after `fetchAdditionalData` persists the real permissions), the action bar's
+        // `if displayCommentButton { Button(...) }` returns a tree without the Button on
+        // re-render, but SwiftUI fails to actually remove the previously-mounted Button view.
+        // Including the value here forces a fresh identity on the flip, which tears down and
+        // rebuilds the cell so the Button is correctly absent.
+        .id("post-\(post.uuid)-\(groupedForAccessibility)-\(post.canCreateChildren)")
         .accessibilityElement(children: groupedForAccessibility ? .ignore : .contain)
         .accessibilityLabelInBundle(groupedForAccessibility ? accessibilityDescription : nil)
         .accessibilityAction(named: Text(
@@ -108,8 +123,12 @@ struct PostSummaryView: View {
                 }
             } else { $0 }
         }
-        .accessibilityAction(named: Text("Accessibility.Content.Action.OpenDetail", bundle: .module)) {
-            displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment)
+        .modify {
+            if post.canCreateChildren || post.hasChildren {
+                $0.accessibilityAction(named: Text("Accessibility.Content.Action.OpenDetail", bundle: .module)) {
+                    displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment)
+                }
+            } else { $0 }
         }
         .modify {
             if #available(iOS 14.0, *) {
@@ -120,13 +139,14 @@ struct PostSummaryView: View {
 
     var accessibilityDescription: LocalizedStringKey {
         let authorName = post.author.name.localizedString(locale: languageManager.overridenLocale)
+        let topic = post.topic ?? ""
         switch post.content {
         case let .published(postContent):
             let text = postContent.text.getText(translated: true)
             var textToRead = "\(text)\(postContent.text.getIsEllipsized(translated: true) ? "..." : "")"
             switch postContent.attachment {
-            case .image: return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
-            case .video: return "Accessibility.Post.Summary.TextAndVideo_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+            case .image: return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
+            case .video: return "Accessibility.Post.Summary.TextAndVideo_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
             case let .poll(poll):
                 let pollOptionsToRead = poll.options.enumerated()
                     .map { index, pollOption in
@@ -137,9 +157,9 @@ struct PostSummaryView: View {
                     }
                     .joined(separator: ", ")
                 textToRead = "\(textToRead), \(pollOptionsToRead)"
-                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
             case .none:
-                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(post.topic)_text:\(textToRead)"
+                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
             }
 
         case let .moderated(reasons):
@@ -171,6 +191,7 @@ struct PostSummaryView: View {
             canBeModerated: true,
             canBeBlockedByUser: true,
             canBeOpened: true,
+            canCreateChildren: true,
             content: .published(.init(
                 text: .init(
                     originalText: "Un texte",
@@ -226,6 +247,7 @@ struct PostSummaryView: View {
             canBeModerated: true,
             canBeBlockedByUser: true,
             canBeOpened: true,
+            canCreateChildren: true,
             content: .published(.init(
                 text: .init(
                     originalText: "Un texte",
@@ -283,6 +305,7 @@ struct PostSummaryView: View {
             canBeModerated: true,
             canBeBlockedByUser: true,
             canBeOpened: true,
+            canCreateChildren: true,
             content: .published(.init(
                 text: .init(
                     originalText: "Un texte\navec retour à la ligne",
@@ -349,6 +372,7 @@ struct PostSummaryView: View {
             canBeModerated: true,
             canBeBlockedByUser: true,
             canBeOpened: true,
+            canCreateChildren: true,
             content: .published(.init(
                 text: .init(
                     originalText: "Un texte\navec retour à la ligne",
@@ -409,6 +433,7 @@ struct PostSummaryView: View {
             canBeModerated: true,
             canBeBlockedByUser: true,
             canBeOpened: true,
+            canCreateChildren: true,
             content: .published(.init(
                 text: .init(
                     originalText: "Un texte",
@@ -477,6 +502,7 @@ struct PostSummaryView: View {
             canBeModerated: true,
             canBeBlockedByUser: true,
             canBeOpened: true,
+            canCreateChildren: true,
             content: .published(.init(
                 text: .init(
                     originalText: "Un texte",

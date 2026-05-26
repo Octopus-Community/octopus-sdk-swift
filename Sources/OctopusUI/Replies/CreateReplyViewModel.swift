@@ -21,10 +21,10 @@ class CreateReplyViewModel: ObservableObject {
     @Published private(set) var userHasAcceptedCgu = false
 
     var sendAvailable: Bool {
-        validator.validate(reply: WritableReply(commentId: commentId, text: text, imageData: picture?.imageData))
+        Validators.Reply.validate(reply: WritableReply(commentId: commentId, text: text, imageData: picture?.imageData))
     }
 
-    var textMaxLength: Int { validator.maxTextLength }
+    var textMaxLength: Int { Validators.Reply.maxTextLength }
 
     let communityGuidelinesUrl: URL
     let privacyPolicyUrl: URL
@@ -33,7 +33,6 @@ class CreateReplyViewModel: ObservableObject {
     let octopus: OctopusSDK
     let commentId: String
     private let translationStore: ContentTranslationPreferenceStore
-    private let validator: Validators.Reply
     private var storage = [AnyCancellable]()
     private var replyReceivedCancellable: AnyCancellable?
 
@@ -53,8 +52,6 @@ class CreateReplyViewModel: ObservableObject {
         communityGuidelinesUrl = externalLinksRepository.communityGuidelines
         privacyPolicyUrl = externalLinksRepository.privacyPolicy
         termsOfUseUrl = externalLinksRepository.termsOfUse
-
-        validator = self.octopus.core.validators.reply
 
         octopus.core.configRepository.communityConfigPublisher
             .map { $0?.forceLoginOnStrongActions }
@@ -88,7 +85,7 @@ class CreateReplyViewModel: ObservableObject {
         $text
             .removeDuplicates()
             .sink { [unowned self] text in
-                if !validator.validate(text: text) {
+                if !Validators.Reply.validate(text: text) {
                     textError = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
                 } else {
                     textError = nil
@@ -101,9 +98,9 @@ class CreateReplyViewModel: ObservableObject {
             .sink { [weak self] picture in
                 guard let self else { return }
                 if let picture {
-                    switch validator.validate(picture: picture.image) {
+                    switch Validators.Reply.validate(picture: picture.image) {
                     case .sideTooSmall, .ratioTooBig:
-                        alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(validator.maxRatioStr)_minSize:\(Int(validator.minSize))")
+                        alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(Validators.Reply.maxRatioStr)_minSize:\(Int(Validators.Reply.minSize))")
                         self.picture = nil
                     case .valid:
                         break
@@ -122,7 +119,7 @@ class CreateReplyViewModel: ObservableObject {
 
     func send() {
         let reply = WritableReply(commentId: commentId, text: text, imageData: picture?.imageData)
-        guard validator.validate(reply: reply) else { return }
+        guard Validators.Reply.validate(reply: reply) else { return }
 
         isLoading = true
 

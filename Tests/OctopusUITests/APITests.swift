@@ -84,6 +84,22 @@ class APITests {
         )
     }
 
+    @Test func testOctopusHomeScreenWithCreatePostInitialScreen() throws {
+        let sdk = try OctopusSDK(apiKey: "API_KEY")
+        let prefill = try OctopusPrefilledPost(
+            text: "hello world long enough",
+            cta: try OctopusPrefilledPost.CTA(
+                url: URL(string: "https://example.com")!, label: "Open"))
+        _ = OctopusHomeScreen(
+            octopus: sdk,
+            initialScreen: .createPost(.init(prefilledPost: prefill))
+        )
+        _ = OctopusHomeScreen(
+            octopus: sdk,
+            initialScreen: .createPost(.init())
+        )
+    }
+
 }
 
 /// Deprecated APIs (tests are still here to ensure old APIs can still be called)

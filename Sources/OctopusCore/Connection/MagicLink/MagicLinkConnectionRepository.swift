@@ -328,4 +328,8 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
     func linkClientUserToOctopusUser() async throws(ExchangeTokenError) {
         preconditionFailure("Dev error: the sdk is not configured to handle SSO")
     }
+
+    func refreshEntitlements() async throws(RefreshEntitlementsCoreError) {
+        throw .notInSSOMode
+    }
 }

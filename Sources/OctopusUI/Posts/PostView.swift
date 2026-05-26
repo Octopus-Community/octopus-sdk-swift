@@ -317,6 +317,7 @@ private struct PublishedContentView: View {
 
         PostActionBarView(
             userReaction: liveMeasures.userInteractions.reaction,
+            displayCommentButton: post.canCreateChildren,
             reactionTapped: onReaction,
             commentTapped: onOpenCreateComment)
             .padding(.horizontal, theme.sizes.horizontalPadding)
@@ -456,7 +457,7 @@ extension PostView {
             text: String = "Un texte",
             originalLanguage: String? = "fr",
             translatedText: String? = "A text",
-            topic: String = "Help",
+            topic: String? = "Help",
             attachment: DisplayablePost.PostContent.Attachment? = nil,
             reactions: [ReactionCount] = [],
             childCount: Int = 0,
@@ -492,6 +493,7 @@ extension PostView {
                 canBeModerated: canBeModerated,
                 canBeBlockedByUser: canBeBlockedByUser,
                 canBeOpened: true,
+                canCreateChildren: true,
                 content: .published(.init(
                     text: .init(originalText: text,
                                 originalLanguage: originalLanguage,

@@ -53,5 +53,6 @@ struct TrackABTestsView: View {
         .onDisappear {
             viewModel.resetSDK()
         }
+        .hostAppFooter()
     }
 }

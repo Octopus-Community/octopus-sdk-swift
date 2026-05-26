@@ -17,6 +17,7 @@ class TokenProvider {
     private struct ClientUserTokenPayload: Encodable {
         let sub: String
         let exp: Int
+        let entitlements: [String] // only needed if you want to handle permissions per user
     }
 
     private struct BridgePostPayload: Encodable {
@@ -24,7 +25,7 @@ class TokenProvider {
         let exp: Int
     }
 
-    func getClientUserToken(userId: String) async throws -> String {
+    func getClientUserToken(userId: String, entitlements: [String]) async throws -> String {
         // ⚠️ the content of this function is for the sample uniquely, in order to create a token easilly without
         // depending on a backend.
         // In your app, you should proably call a backend route that provides you this token.
@@ -40,7 +41,11 @@ class TokenProvider {
         let headerBase64String = headerJSONData.urlSafeBase64EncodedString()
 
         let payloadJSONData = try jsonEncoder.encode(
-            ClientUserTokenPayload(sub: userId, exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970))
+            ClientUserTokenPayload(
+                sub: userId,
+                exp: Int(Date().addingTimeInterval(60 * 60).timeIntervalSince1970),
+                entitlements: entitlements
+            )
         )
         let payloadBase64String = payloadJSONData.urlSafeBase64EncodedString()
 

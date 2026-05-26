@@ -76,5 +76,6 @@ struct ForceOctopusABTestsView: View {
                 $0
             }
         }
+        .hostAppFooter()
     }
 }

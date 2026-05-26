@@ -39,6 +39,13 @@
         "identifier" : "OctopusUITests",
         "name" : "OctopusUITests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "OctopusRemoteClientTests",
+        "name" : "OctopusRemoteClientTests"
+      }
     }
   ],
   "version" : 1

@@ -17,9 +17,25 @@ struct CreatePostView: View {
     @State private var showTopicPicker = false
     @State private var showChangesWillBeLostAlert = false
 
-    init(octopus: OctopusSDK, withPoll: Bool, defaultTopic: OctopusCore.Topic?) {
+    private let canClose: Bool
+
+    init(octopus: OctopusSDK,
+         withPoll: Bool,
+         defaultTopicId: String?,
+         defaultText: String? = nil,
+         defaultImage: Data? = nil,
+         cta: WritableCTA? = nil,
+         creationSource: PostsRepository.CreationSource = .user,
+         canClose: Bool = false) {
         _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(
-            octopus: octopus, withPoll: withPoll, defaultTopic: defaultTopic))
+            octopus: octopus,
+            withPoll: withPoll,
+            defaultTopicId: defaultTopicId,
+            defaultText: defaultText,
+            defaultImage: defaultImage,
+            cta: cta,
+            creationSource: creationSource))
+        self.canClose = canClose
     }
 
     var body: some View {
@@ -38,8 +54,8 @@ struct CreatePostView: View {
                     createPoll: viewModel.createPoll)
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
         .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
-        .navigationBarBackButtonHidden(viewModel.hasChanges)
-        .toolbar(leading: cancelButton, trailing: postButton,
+        .navigationBarBackButtonHidden(viewModel.hasChanges || canClose)
+        .toolbar(leading: leadingBarItem, trailing: postButton,
                  trailingSharedBackgroundVisibility: .hidden)
         .fullScreenCover(isPresented: $showTopicPicker) {
             GroupListScreen(octopus: viewModel.octopus, context: .groupSelection(
@@ -65,8 +81,12 @@ struct CreatePostView: View {
     }
 
     @ViewBuilder
-    private var cancelButton: some View {
-        if viewModel.hasChanges {
+    private var leadingBarItem: some View {
+        if canClose && viewModel.hasChanges {
+            CloseButton(action: { showChangesWillBeLostAlert = true })
+        } else if canClose && !viewModel.hasChanges {
+            CloseButton(action: { presentationMode.wrappedValue.dismiss() })
+        } else if !canClose && viewModel.hasChanges {
             BackButton(action: { showChangesWillBeLostAlert = true })
         } else {
             EmptyView()
@@ -233,6 +253,7 @@ private struct WritingPostForm: View {
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                     Button(action: {
+                                        attachment = nil
                                         selectedItems = []
                                     }) {
                                         IconImage(theme.assets.icons.content.post.creation.deletePicture)

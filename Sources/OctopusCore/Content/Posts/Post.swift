@@ -22,6 +22,8 @@ public struct Post: Equatable, Sendable {
     public let aggregatedInfo: AggregatedInfo
     public let userInteractions: UserInteractions
 
+    public let permissions: UserPermissions
+
     let innerStatus: StorableStatus
     let innerStatusReasons: [StorableStatusReason]
 
@@ -46,11 +48,6 @@ public struct Post: Equatable, Sendable {
         public let catchPhrase: TranslatableText?
         public let ctaText: TranslatableText?
     }
-
-    public struct CustomAction: Equatable, Sendable {
-        public let ctaText: TranslatableText
-        public let targetUrl: URL
-    }
 }
 
 extension Post {
@@ -73,13 +70,9 @@ extension Post {
         } else {
             clientObjectBridgeInfo = nil
         }
-        if let customActionText = storablePost.customActionText,
-           let customActionTargetLink = storablePost.customActionTargetLink,
-           let customActionUrl = URL(string: customActionTargetLink) {
-            customAction = CustomAction(ctaText: customActionText, targetUrl: customActionUrl)
-        } else {
-            customAction = nil
-        }
+        customAction = CustomAction(
+            ctaText: storablePost.customActionText,
+            targetLink: storablePost.customActionTargetLink)
         if let descCommentFeedId = storablePost.descCommentFeedId {
             newestFirstCommentsFeed = commentFeedsStore.getOrCreate(feedId: descCommentFeedId)
         } else {
@@ -95,6 +88,7 @@ extension Post {
 
         aggregatedInfo = storablePost.aggregatedInfo ?? .empty
         userInteractions = storablePost.userInteractions ?? .empty
+        permissions = storablePost.permissions
     }
 }
 

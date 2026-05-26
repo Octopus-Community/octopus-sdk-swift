@@ -7,7 +7,7 @@ import CoreData
 import os
 import OctopusDependencyInjection
 
-class ContentsDatabase<Content: FetchableContentEntity>: OctoObjectsDatabase {
+class ContentsDatabase<Content: FetchableContentEntity>: OctoObjectsDatabase, @unchecked Sendable {
     private let context: NSManagedObjectContext
 
     override init(injector: Injector) {

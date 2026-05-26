@@ -27,9 +27,11 @@ struct CommentDetailView: View {
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
     let displayGoToParentButton: Bool
+    private let mainFlowPath: MainFlowPath
 
     init(
         octopus: OctopusSDK,
+        mainFlowPath: MainFlowPath,
         translationStore: ContentTranslationPreferenceStore,
         commentUuid: String, displayGoToParentButton: Bool,
         reply: Bool = false,
@@ -39,13 +41,16 @@ struct CommentDetailView: View {
                 reply: reply, replyToScrollTo: replyToScrollTo))
             _replyTextFocused = .init(initialValue: reply)
             self.displayGoToParentButton = displayGoToParentButton
+            self.mainFlowPath = mainFlowPath
         }
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
                 ContentView(
-                    comment: viewModel.comment, replies: viewModel.replies,
+                    comment: viewModel.comment,
+                    lockedState: viewModel.lockedState,
+                    replies: viewModel.replies,
                     hasMoreReplies: viewModel.hasMoreData,
                     hideLoadMoreRepliesLoader: viewModel.hideLoadMoreRepliesLoader,
                     displayGoToParentButton: displayGoToParentButton,
@@ -72,7 +77,7 @@ struct CommentDetailView: View {
                     replyReactionTapped: viewModel.setReplyReaction(_:replyId:),
                     displayContentModeration: {
                         guard viewModel.ensureConnected(action: .moderation) else { return }
-                        navigator.push(.reportContent(contentId: $0))
+                        mainFlowPath.reportTarget = .content(contentId: $0)
                     },
                     displayParentPost: {
                         navigator.push(.postDetail(postId: $0, comment: false, commentToScrollTo: $1,
@@ -81,11 +86,13 @@ struct CommentDetailView: View {
                     })
                 .toastContainer(octopus: viewModel.octopus)
 
-                CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
-                                translationStore: translationStore,
-                                textFocused: $replyTextFocused,
-                                hasChanges: $replyHasChanges,
-                                ensureConnected: viewModel.ensureConnected)
+                if viewModel.lockedState == .unlocked {
+                    CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
+                                    translationStore: translationStore,
+                                    textFocused: $replyTextFocused,
+                                    hasChanges: $replyHasChanges,
+                                    ensureConnected: viewModel.ensureConnected)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -186,6 +193,7 @@ struct CommentDetailView: View {
 private struct ContentView: View {
     @Environment(\.octopusTheme) private var theme
     let comment: CommentDetailViewModel.CommentDetail?
+    let lockedState: LockedContentState
     let replies: [DisplayableFeedResponse]?
     let hasMoreReplies: Bool
     let hideLoadMoreRepliesLoader: Bool
@@ -222,19 +230,21 @@ private struct ContentView: View {
                                                  displayContentModeration: displayContentModeration,
                                                  displayParentPost: displayParentPost)
 
-                        if let replies {
-                            CommentDetailRepliesView(replies: replies,
-                                        hasMoreData: hasMoreReplies,
-                                        hideLoader: hideLoadMoreRepliesLoader,
-                                        zoomableImageInfo: $zoomableImageInfo,
-                                        loadPreviousReplies: loadPreviousReplies,
-                                        displayProfile: displayProfile,
-                                        deleteReply: deleteReply,
-                                        blockAuthor: blockAuthor,
-                                        reactionTapped: replyReactionTapped,
-                                        displayContentModeration: displayContentModeration)
-                        } else {
-                            Compat.ProgressView()
+                        if lockedState != .lockedOwnContent {
+                            if let replies {
+                                CommentDetailRepliesView(replies: replies,
+                                            hasMoreData: hasMoreReplies,
+                                            hideLoader: hideLoadMoreRepliesLoader,
+                                            zoomableImageInfo: $zoomableImageInfo,
+                                            loadPreviousReplies: loadPreviousReplies,
+                                            displayProfile: displayProfile,
+                                            deleteReply: deleteReply,
+                                            blockAuthor: blockAuthor,
+                                            reactionTapped: replyReactionTapped,
+                                            displayContentModeration: displayContentModeration)
+                            } else {
+                                Compat.ProgressView()
+                            }
                         }
                     } else {
                         VStack {

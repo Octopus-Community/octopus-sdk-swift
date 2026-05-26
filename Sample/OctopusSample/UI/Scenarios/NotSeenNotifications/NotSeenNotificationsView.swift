@@ -70,5 +70,6 @@ struct NotSeenNotificationsView: View {
             // update the count when the view is displayed
             viewModel.updateNotSeenNotificationsCount()
         }
+        .hostAppFooter()
     }
 }

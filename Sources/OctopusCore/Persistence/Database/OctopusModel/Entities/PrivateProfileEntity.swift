@@ -33,6 +33,29 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var hasConfirmedPictureOptional: NSNumber?
     @NSManaged public var isGuest: Bool
 
+    /// JSON-encoded `[String]` of held entitlements. `nil` for legacy stored profiles.
+    /// Read/written via the `entitlements` / `setEntitlements(_:)` helpers below.
+    @NSManaged public var entitlementsRaw: String?
+
+    var entitlements: Set<String> {
+        guard let entitlementsRaw,
+              let data = entitlementsRaw.data(using: .utf8),
+              let array = try? JSONDecoder().decode([String].self, from: data) else {
+            return []
+        }
+        return Set(array)
+    }
+
+    func setEntitlements(_ values: Set<String>) {
+        guard !values.isEmpty,
+              let data = try? JSONEncoder().encode(Array(values).sorted()),
+              let json = String(data: data, encoding: .utf8) else {
+            entitlementsRaw = nil
+            return
+        }
+        entitlementsRaw = json
+    }
+
     var hasSeenOnboarding: Bool? { hasSeenOnboardingOptional?.boolValue }
     var hasAcceptedCgu: Bool? { hasAcceptedCguOptional?.boolValue }
     var hasConfirmedNickname: Bool? { hasConfirmedNicknameOptional?.boolValue }

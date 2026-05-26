@@ -31,6 +31,7 @@ struct PostDetailView: View {
     @State private var width: CGFloat = 0
 
     private let canClose: Bool
+    private let mainFlowPath: MainFlowPath
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          postUuid: String,
@@ -49,6 +50,7 @@ struct PostDetailView: View {
             origin: origin,
             hasFeaturedComment: hasFeaturedComment))
         self.canClose = canClose
+        self.mainFlowPath = mainFlowPath
     }
 
     var body: some View {
@@ -56,6 +58,7 @@ struct PostDetailView: View {
             VStack(spacing: 0) {
                 ContentView(
                     post: viewModel.post, postNotAvailable: viewModel.postNotAvailable,
+                    lockedState: viewModel.lockedState,
                     comments: viewModel.comments,
                     hasMoreComments: viewModel.hasMoreData,
                     hideLoadMoreCommentsLoader: viewModel.hideLoadMoreCommentsLoader,
@@ -88,17 +91,19 @@ struct PostDetailView: View {
                     commentReactionTapped: viewModel.setCommentReaction(_:commentId:),
                     displayContentModeration: {
                         guard viewModel.ensureConnected(action: .moderation) else { return }
-                        navigator.push(.reportContent(contentId: $0))
+                        mainFlowPath.reportTarget = .content(contentId: $0)
                     },
                     displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId: $0) } : nil)
                 )
                 .toastContainer(octopus: viewModel.octopus)
 
-                CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
-                                  translationStore: translationStore,
-                                  textFocused: $viewModel.commentTextFocused,
-                                  hasChanges: $commentHasChanges,
-                                  ensureConnected: viewModel.ensureConnected)
+                if viewModel.lockedState == .unlocked {
+                    CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
+                                      translationStore: translationStore,
+                                      textFocused: $viewModel.commentTextFocused,
+                                      hasChanges: $commentHasChanges,
+                                      ensureConnected: viewModel.ensureConnected)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
@@ -258,7 +263,7 @@ struct PostDetailView: View {
                 if post.canBeModerated {
                     DestructiveMenuButton(action: {
                         guard viewModel.ensureConnected(action: .moderation) else { return }
-                        navigator.push(.reportContent(contentId: post.uuid))
+                        mainFlowPath.reportTarget = .content(contentId: post.uuid)
                     }) {
                         Label(title: { Text("Moderation.Content.Button", bundle: .module) },
                               icon: { Image(uiImage: theme.assets.icons.content.report) })
@@ -305,6 +310,7 @@ private struct ContentView: View {
     @Environment(\.octopusTheme) private var theme
     let post: PostDetailViewModel.Post?
     let postNotAvailable: Bool
+    let lockedState: LockedContentState
     let comments: [DisplayableFeedResponse]?
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
@@ -360,25 +366,27 @@ private struct ContentView: View {
                         theme.colors.gray300.frame(height: 2)
                         Spacer().frame(height: 10)
 
-                        if let comments {
-                            PostDetailCommentsView(comments: comments,
-                                         hasMoreData: hasMoreComments,
-                                         hideLoader: hideLoadMoreCommentsLoader,
-                                         zoomableImageInfo: $zoomableImageInfo,
-                                         loadPreviousComments: loadPreviousComments,
-                                         displayCommentDetail: displayCommentDetail,
-                                         displayProfile: displayProfile,
-                                         openCreateComment: openCreateComment,
-                                         deleteComment: deleteComment,
-                                         blockAuthor: blockAuthor,
-                                         reactionTapped: commentReactionTapped,
-                                         displayContentModeration: displayContentModeration)
-                            // No outer horizontal padding here: each row renders through
-                            // `ResponseView`, which applies `.padding(.horizontal, 16)` itself.
-                            // Adding an outer inset on top of that doubles the padding (10+16
-                            // leading, 16+16 trailing = 32 on the right).
-                        } else {
-                            Compat.ProgressView()
+                        if lockedState != .lockedOwnContent {
+                            if let comments {
+                                PostDetailCommentsView(comments: comments,
+                                             hasMoreData: hasMoreComments,
+                                             hideLoader: hideLoadMoreCommentsLoader,
+                                             zoomableImageInfo: $zoomableImageInfo,
+                                             loadPreviousComments: loadPreviousComments,
+                                             displayCommentDetail: displayCommentDetail,
+                                             displayProfile: displayProfile,
+                                             openCreateComment: openCreateComment,
+                                             deleteComment: deleteComment,
+                                             blockAuthor: blockAuthor,
+                                             reactionTapped: commentReactionTapped,
+                                             displayContentModeration: displayContentModeration)
+                                // No outer horizontal padding here: each row renders through
+                                // `ResponseView`, which applies `.padding(.horizontal, 16)` itself.
+                                // Adding an outer inset on top of that doubles the padding (10+16
+                                // leading, 16+16 trailing = 32 on the right).
+                            } else {
+                                Compat.ProgressView()
+                            }
                         }
                     } else if postNotAvailable {
                         VStack {
@@ -433,10 +441,12 @@ private struct ContentView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             catchPhrase: nil,
             bridgeCTA: nil,
             customAction: nil),
         postNotAvailable: false,
+        lockedState: .unlocked,
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
@@ -492,10 +502,12 @@ private struct ContentView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             catchPhrase: nil,
             bridgeCTA: nil,
             customAction: nil),
         postNotAvailable: false,
+        lockedState: .unlocked,
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
@@ -560,10 +572,12 @@ private struct ContentView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             catchPhrase: nil,
             bridgeCTA: nil,
             customAction: nil),
         postNotAvailable: false,
+        lockedState: .unlocked,
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
@@ -625,10 +639,12 @@ private struct ContentView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             catchPhrase: nil,
             bridgeCTA: nil,
             customAction: nil),
         postNotAvailable: false,
+        lockedState: .unlocked,
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,
@@ -684,6 +700,7 @@ private struct ContentView: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            canCreateChildren: true,
             catchPhrase: .init(
                 originalText: "Qu'en pensez vous ?",
                 originalLanguage: "fr",
@@ -692,6 +709,7 @@ private struct ContentView: View {
             customAction: nil
         ),
         postNotAvailable: false,
+        lockedState: .unlocked,
         comments: [],
         hasMoreComments: true,
         hideLoadMoreCommentsLoader: false,

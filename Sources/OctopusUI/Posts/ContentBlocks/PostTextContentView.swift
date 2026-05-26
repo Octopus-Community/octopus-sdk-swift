@@ -51,7 +51,6 @@ struct PostTextContentView: View {
                     .foregroundColor(theme.colors.gray500)
             } else {
                 RichText(text.getText(translated: displayTranslation))
-                    .lineSpacing(4)
             }
         case let .localizedKey(key):
             Text(key, bundle: .module)

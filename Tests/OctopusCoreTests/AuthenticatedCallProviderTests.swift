@@ -173,4 +173,6 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
     func disconnectUser() async throws { }
 
     func linkClientUserToOctopusUser() async throws(ExchangeTokenError) { }
+
+    func refreshEntitlements() async throws(RefreshEntitlementsCoreError) { }
 }

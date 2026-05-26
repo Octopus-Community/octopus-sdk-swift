@@ -37,7 +37,6 @@ struct ResponseTextContentView: View {
                 .foregroundColor(theme.colors.gray500)
         } else {
             RichText(text.getText(translated: displayTranslation))
-                .lineSpacing(4)
         }
     }
 }

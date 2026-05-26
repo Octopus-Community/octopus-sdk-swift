@@ -110,5 +110,9 @@ class RepliesTests: XCTestCase {
                 $0.reply = octoObject
             })
         })
+        // `RepliesRepository.send` now follows the put with a `getBatch` to hydrate permissions
+        // (the put response doesn't carry `RequesterCtx`). Empty response is fine — the
+        // repository's `try?` swallows it, but injecting one keeps the mock honest.
+        mockOctoService.injectNextGetBatchResponse(Com_Octopuscommunity_GetBatchResponse())
     }
 }

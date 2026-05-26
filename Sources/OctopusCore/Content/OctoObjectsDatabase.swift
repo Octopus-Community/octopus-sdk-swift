@@ -7,7 +7,7 @@ import CoreData
 import os
 import OctopusDependencyInjection
 
-class OctoObjectsDatabase {
+class OctoObjectsDatabase: @unchecked Sendable {
     private let context: NSManagedObjectContext
 
     init(injector: Injector) {
@@ -15,7 +15,7 @@ class OctoObjectsDatabase {
         context = coreDataStack.saveContext
     }
 
-    func update(additionalData array: [(String, AggregatedInfo?, UserInteractions?)]) async throws {
+    func update(additionalData array: [(String, AggregatedInfo?, UserInteractions?, UserPermissions?)]) async throws {
         try await context.performAsync { [context] in
             let context = context
             let existingContents = try context.chunkedFetch(ids: array.map(\.0)) { chunk in
@@ -30,7 +30,7 @@ class OctoObjectsDatabase {
                     continue
                 }
                 contentEntity.fill(aggregatedInfo: additionalData.1, userInteractions: additionalData.2,
-                                   context: context)
+                                   permissions: additionalData.3, context: context)
             }
             try context.save()
         }

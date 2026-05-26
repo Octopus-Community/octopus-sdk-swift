@@ -33,7 +33,6 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     private let networkMonitor: NetworkMonitor
     private let replyFeedsStore: ReplyFeedsStore
     private let blockedUserIdsProvider: BlockedUserIdsProvider
-    private let validator: Validators.Comment
     // swiftlint:disable:next weak_delegate
     private let userInteractionsDelegate: UserInteractionsDelegate
     private let gamificationRepository: GamificationRepository
@@ -46,7 +45,6 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         replyFeedsStore = injector.getInjected(identifiedBy: Injected.replyFeedsStore)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
-        validator = injector.getInjected(identifiedBy: Injected.validators).comment
         gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
@@ -95,7 +93,7 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
 
     @discardableResult
     public func send(_ comment: WritableComment, parentIsTranslated: Bool) async throws(SendComment.Error) -> (Comment, Data?) {
-        guard validator.validate(comment: comment) else {
+        guard Validators.Comment.validate(comment: comment) else {
             throw .serverCall(.other(InternalError.objectMalformed))
         }
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
@@ -119,6 +117,10 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
                     throw SendComment.Error.serverCall(.other(nil))
                 }
                 try await commentsDatabase.upsert(comments: [finalComment])
+                // The PutComment response doesn't carry `RequesterCtx`, so the comment lands in
+                // the DB with default-open permissions. Re-fetch immediately to persist the real
+                // entitlements before the publishers fire.
+                try? await fetchAdditionalData(ids: [finalComment.uuid], incrementViewCount: false)
                 let newComment = Comment(storableComment: finalComment, replyFeedsStore: replyFeedsStore)
                 _commentSentPublisher.send(newComment)
                 sdkEventsEmitter.emit(.contentCreated(content: newComment))
@@ -177,11 +179,12 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
             let additionalData = batchResponse.responses
-                .compactMap { response -> (String, AggregatedInfo?, UserInteractions?)? in
+                .compactMap { response -> (String, AggregatedInfo?, UserInteractions?, UserPermissions?)? in
                     let aggregateInfo = response.hasAggregate ? AggregatedInfo(from: response.aggregate) : nil
                     let userInteractions = response.hasRequesterCtx ? UserInteractions(from: response.requesterCtx) : nil
+                    let permissions = response.hasRequesterCtx ? UserPermissions(from: response.requesterCtx) : nil
                     let id = response.octoObjectID
-                    return (id, aggregateInfo, userInteractions)
+                    return (id, aggregateInfo, userInteractions, permissions)
                 }
             try await commentsDatabase.update(additionalData: additionalData)
         } catch {

@@ -13,6 +13,8 @@ class GroupDetailViewModel: ObservableObject {
     @Published var scrollToTop = false
     @Published private(set) var group: GroupDetail?
     @Published private(set) var groupNotFound = false
+    @Published private(set) var groupAccessLost = false
+    @Published private(set) var canCreateAnyPost: Bool = true
     @Published private(set) var error: DisplayableString?
 
     @Published var authenticationAction: ConnectedActionReplacement?
@@ -71,6 +73,11 @@ class GroupDetailViewModel: ObservableObject {
             .sink { [unowned self] allTopics in
                 resolveGroup(from: allTopics)
             }.store(in: &storage)
+
+        octopus.core.topicsRepository.$canCreateAnyPost
+            .removeDuplicates()
+            .sink { [weak self] in self?.canCreateAnyPost = $0 }
+            .store(in: &storage)
 
         fetchTopics(isManual: false)
     }
@@ -133,8 +140,10 @@ class GroupDetailViewModel: ObservableObject {
             return
         }
         groupNotFound = false
+        let groupAccessGained = topic.permissions.canAccess && groupAccessLost
+        groupAccessLost = !topic.permissions.canAccess
         group = GroupDetail(from: topic)
-        if let existingFeed = postFeedViewModel, existingFeed.feed.id == topic.feed.id {
+        if let existingFeed = postFeedViewModel, existingFeed.feed.id == topic.feed.id, !groupAccessGained {
             return
         }
         postFeedViewModel = PostFeedViewModel(

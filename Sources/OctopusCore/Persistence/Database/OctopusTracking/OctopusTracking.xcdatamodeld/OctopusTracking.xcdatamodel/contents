@@ -3,6 +3,9 @@
     <entity name="ClientSetABTestEvent" representedClassName="ClientSetABTestEventEntity" parentEntity="Event" syncable="YES">
         <attribute name="hasAccessToCommunity" attributeType="Boolean" usesScalarValueType="YES"/>
     </entity>
+    <entity name="CtaGroupButtonHit" representedClassName="CtaGroupButtonHitEntity" parentEntity="Event" syncable="YES">
+        <attribute name="octoObjectId" attributeType="String"/>
+    </entity>
     <entity name="CtaPostButtonHit" representedClassName="CtaPostButtonHitEntity" parentEntity="Event" syncable="YES">
         <attribute name="octoObjectId" attributeType="String"/>
     </entity>

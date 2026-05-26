@@ -20,6 +20,16 @@ public struct WritablePoll: Sendable, Equatable {
     }
 }
 
+public struct WritableCTA: Sendable, Equatable {
+    public let url: URL
+    public let label: String
+
+    public init(url: URL, label: String) {
+        self.url = url
+        self.label = label
+    }
+}
+
 public struct WritablePost: Sendable, Equatable {
     public enum Attachment: Sendable, Equatable {
         case image(Data)
@@ -28,11 +38,13 @@ public struct WritablePost: Sendable, Equatable {
     public let text: String
     public internal(set) var attachment: Attachment?
     public let parentId: String
+    public let cta: WritableCTA?
 
-    public init(topicId: String, text: String, attachment: Attachment?) {
+    public init(topicId: String, text: String, attachment: Attachment?, cta: WritableCTA? = nil) {
         self.parentId = topicId
         self.text = text
         self.attachment = attachment
+        self.cta = cta
     }
 }
 
@@ -63,6 +75,12 @@ extension WritablePost {
                             }
                         }
                     case .none: break
+                    }
+                    if let cta {
+                        $0.cta = .with {
+                            $0.text = cta.label
+                            $0.targetLink = cta.url.absoluteString
+                        }
                     }
                 }
             }

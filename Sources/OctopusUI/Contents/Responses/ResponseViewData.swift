@@ -18,6 +18,10 @@ struct ResponseViewData {
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
+    /// Whether the reply button should be shown in the action bar.
+    /// Defaults to `true` (feed cells always show it); the comment-detail screen sets this
+    /// to `false` when the group does not allow new replies on this comment.
+    let displayReplyButton: Bool
     let liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>
     let liveMeasuresValue: LiveMeasures
 }

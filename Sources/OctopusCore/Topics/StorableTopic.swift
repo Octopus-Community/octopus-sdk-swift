@@ -12,6 +12,29 @@ struct StorableTopic: Equatable, Sendable {
     let followStatus: StorableFollowStatus
     let sections: [StorableSection]
     let feedId: String
+    let permissions: UserPermissions
+    let customActionText: TranslatableText?
+    let customActionTargetLink: String?
+
+    init(uuid: String,
+         name: String,
+         description: String,
+         followStatus: StorableFollowStatus,
+         sections: [StorableSection],
+         feedId: String,
+         permissions: UserPermissions = .default,
+         customActionText: TranslatableText? = nil,
+         customActionTargetLink: String? = nil) {
+        self.uuid = uuid
+        self.name = name
+        self.description = description
+        self.followStatus = followStatus
+        self.sections = sections
+        self.feedId = feedId
+        self.permissions = permissions
+        self.customActionText = customActionText
+        self.customActionTargetLink = customActionTargetLink
+    }
 }
 
 extension StorableTopic {
@@ -22,9 +45,19 @@ extension StorableTopic {
         followStatus = .init(rawValue: entity.followStatusValue)
         sections = entity.sections.map { StorableSection(from: $0) }
         feedId = entity.descChildrenFeedId ?? ""
+        permissions = UserPermissions(
+            canAccess: entity.canAccess,
+            canCreateChildren: entity.canCreateChildren
+        )
+        customActionText = TranslatableText(originalText: entity.customActionText,
+                                            originalLanguage: nil,
+                                            translatedText: entity.customActionTranslatedText)
+        customActionTargetLink = entity.customActionTargetLink
     }
 
-    init?(from octoTopic: Com_Octopuscommunity_OctoObject, sections: [StorableSection]) {
+    init?(from octoTopic: Com_Octopuscommunity_OctoObject,
+          requesterCtx: Com_Octopuscommunity_RequesterCtx?,
+          sections: [StorableSection]) {
         guard octoTopic.hasContent && octoTopic.content.hasTopic else { return nil }
         uuid = octoTopic.id
         name = octoTopic.content.topic.name
@@ -34,13 +67,37 @@ extension StorableTopic {
             sections.first(where: { $0.uuid == sectionId })
         }
         feedId = octoTopic.descChildrenFeedID
+        permissions = UserPermissions(from: requesterCtx)
+
+        if octoTopic.content.topic.hasCta {
+            let cta = octoTopic.content.topic.cta
+            let trimmedText = cta.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedText.isEmpty, !cta.targetLink.isEmpty {
+                customActionText = TranslatableText(
+                    originalText: trimmedText,
+                    originalLanguage: nil,
+                    translatedText: cta.hasTranslatedText ? cta.translatedText : nil)
+                customActionTargetLink = cta.targetLink
+            } else {
+                customActionText = nil
+                customActionTargetLink = nil
+            }
+        } else {
+            customActionText = nil
+            customActionTargetLink = nil
+        }
     }
 }
 
 extension Array where Element == StorableTopic {
-    init(from octoTopics: [Com_Octopuscommunity_OctoObject], octoSections: [Com_Octopuscommunity_OctoObject]) {
+    init(from octoTopics: [Com_Octopuscommunity_OctoObject],
+         requesterCtxs: [Com_Octopuscommunity_RequesterCtx],
+         octoSections: [Com_Octopuscommunity_OctoObject]) {
         let sections = [StorableSection](from: octoSections)
-        self = octoTopics.compactMap { StorableTopic(from: $0, sections: sections) }
+        self = octoTopics.enumerated().compactMap { index, octoTopic in
+            let ctx = requesterCtxs.indices.contains(index) ? requesterCtxs[index] : nil
+            return StorableTopic(from: octoTopic, requesterCtx: ctx, sections: sections)
+        }
     }
 }
 

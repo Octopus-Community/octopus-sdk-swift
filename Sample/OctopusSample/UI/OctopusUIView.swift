@@ -19,6 +19,8 @@ struct OctopusUIView: View {
 
     @State private var displayAppUserLogin = false
     @State private var displayEditAppUserProfile = false
+    @State private var displayGroupAccessDenied = false
+    @State private var groupAccessDeniedGroupId: String = ""
 
     @State private var isDisplayed = false
 
@@ -51,6 +53,28 @@ struct OctopusUIView: View {
         }
         .fullScreenCover(isPresented: $displayEditAppUserProfile) {
             AppEditUserScreen()
+        }
+        .fullScreenCover(isPresented: $displayGroupAccessDenied) {
+            GroupAccessDeniedScreen(groupId: groupAccessDeniedGroupId)
+        }
+        .onReceive(GroupAccessDeniedManager.instance.$deniedGroupId) {
+            guard isDisplayed, let groupId = $0 else { return }
+            // Editing entitlements requires a connected user. If the host app's user is not
+            // logged in yet, route through the login flow first — they can pick the
+            // entitlements inline on the login screen, then connectUser will mint a JWT
+            // with those claims.
+            if AppUserManager.instance.appUser == nil,
+               case .sso = SDKConfigManager.instance.sdkConfig?.authKind {
+                displayAppUserLogin = true
+                GroupAccessDeniedManager.instance.deniedGroupId = nil
+                return
+            }
+            groupAccessDeniedGroupId = groupId
+            displayGroupAccessDenied = true
+        }
+        .onValueChanged(of: displayGroupAccessDenied) {
+            guard !$0 else { return }
+            GroupAccessDeniedManager.instance.deniedGroupId = nil
         }
         .onReceive(OctopusSDKProvider.instance.$clientLoginRequired) {
             guard isDisplayed else { return }

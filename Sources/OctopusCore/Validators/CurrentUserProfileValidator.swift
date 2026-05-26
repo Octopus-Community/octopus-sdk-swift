@@ -3,7 +3,6 @@
 //
 
 import UIKit
-import OctopusDependencyInjection
 
 public extension Validators {
     class CurrentUserProfile {
@@ -21,22 +20,19 @@ public extension Validators {
 
         public let maxBioLength = 200
 
-        public var pictureMinSize: CGFloat { pictureValidator.minSize }
-        public var pictureMaxRatio: CGFloat { pictureValidator.maxRatio }
-        public var pictureMaxRatioStr: String { pictureValidator.maxRatioStr }
+        public var pictureMinSize: CGFloat { Validators.Picture.minSize }
+        public var pictureMaxRatio: CGFloat { Validators.Picture.maxRatio }
+        public var pictureMaxRatioStr: String { Validators.Picture.maxRatioStr }
 
-        private let pictureValidator: Validators.Picture
         private let appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>
 
-        public init(pictureValidator: Validators.Picture,
-                    appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>) {
-            self.pictureValidator = pictureValidator
+        public init(appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>) {
             self.appManagedFields = appManagedFields
         }
 
         public func validate(picture: UIImage, isGuest: Bool) -> Picture.ValidationResult {
             guard !appManagedFields.contains(.picture) || isGuest else { return .valid }
-            return pictureValidator.validate(picture)
+            return Validators.Picture.validate(picture)
         }
 
         public func validate(nickname: String, isGuest: Bool) -> Result<Void, NicknameError> {

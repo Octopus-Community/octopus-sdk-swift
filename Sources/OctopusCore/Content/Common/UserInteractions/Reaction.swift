@@ -17,18 +17,16 @@ public enum Reaction {
     public typealias Error = AuthenticatedInputActionError<ValidationErrors<Field, ErrorDetail>>
 }
 
-public enum SetReactionOnBridgePostError: Error, CustomDebugStringConvertible {
+public enum SetReactionOnPostError: Error, CustomDebugStringConvertible {
     case unknownReaction
     case postNotFound
-    case postIsNotABridge
     case reactionError(Reaction.Error)
 
     public var debugDescription: String {
         switch self {
-        case .unknownReaction: "Unknown reaction not permitted (SetReactionOnBridgePostError.unknownReaction)"
-        case .postNotFound: "Post not found (SetReactionOnBridgePostError.postNotFound)"
-        case .postIsNotABridge: "Post is not a bridge (SetReactionOnBridgePostError.postIsNotABridge)"
-        case let .reactionError(error): "Set reaction failed: \(error) (SetReactionOnBridgePostError.reactionError)"
+        case .unknownReaction: "Unknown reaction not permitted (SetReactionOnPostError.unknownReaction)"
+        case .postNotFound: "Post not found (SetReactionOnPostError.postNotFound)"
+        case let .reactionError(error): "Set reaction failed: \(error) (SetReactionOnPostError.reactionError)"
         }
     }
 }

@@ -12,7 +12,7 @@ extension Injected {
     static let postsDatabase = Injector.InjectedIdentifier<PostsDatabase>()
 }
 
-class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject {
+class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject, @unchecked Sendable {
 
     static let injectedIdentifier = Injected.postsDatabase
 

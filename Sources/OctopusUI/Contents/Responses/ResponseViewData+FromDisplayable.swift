@@ -18,6 +18,7 @@ extension ResponseViewData {
         self.canBeDeleted = response.canBeDeleted
         self.canBeModerated = response.canBeModerated
         self.canBeBlockedByUser = response.canBeBlockedByUser
+        self.displayReplyButton = response.canCreateChildren
         self.liveMeasuresPublisher = response.liveMeasures
         self.liveMeasuresValue = response.liveMeasuresValue
     }
@@ -36,6 +37,7 @@ extension ResponseViewData {
         self.canBeDeleted = comment.canBeDeleted
         self.canBeModerated = comment.canBeModerated
         self.canBeBlockedByUser = comment.canBeBlockedByUser
+        self.displayReplyButton = comment.canCreateChildren
 
         let snapshot = LiveMeasures(
             aggregatedInfo: comment.aggregatedInfo,

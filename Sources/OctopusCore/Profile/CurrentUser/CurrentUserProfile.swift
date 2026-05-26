@@ -32,6 +32,8 @@ public struct CurrentUserProfile: Equatable, Sendable {
 
     public let blockedProfileIds: [String]
 
+    public let entitlements: Set<String>
+
     public let newestFirstPostsFeed: Feed<Post, Comment>
 }
 
@@ -63,6 +65,7 @@ extension CurrentUserProfile {
         isGuest = storableProfile.isGuest
         notificationBadgeCount = storableProfile.notificationBadgeCount ?? 0
         blockedProfileIds = storableProfile.blockedProfileIds
+        entitlements = storableProfile.entitlements
         newestFirstPostsFeed = postFeedsStore.getOrCreate(feedId: storableProfile.descPostFeedId)
     }
 }

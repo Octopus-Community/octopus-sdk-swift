@@ -51,7 +51,7 @@ class RecipeViewModel: ObservableObject {
         Task {
             do {
                 guard let post else { throw NSError(domain: "No post to react to", code: 1) }
-                try await octopus.set(reaction: reaction, clientObjectRelatedPostId: post.id)
+                try await octopus.set(reaction: reaction, postId: post.id)
             } catch {
                 self.error = error
             }

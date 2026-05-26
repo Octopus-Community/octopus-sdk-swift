@@ -25,6 +25,7 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     @Published var error: DisplayableString?
 
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
+    @Published private(set) var canCreatePost: Bool = true
 
     @Published private var isFetchingProfile: Bool = false
     @Published private(set) var editConfig: EditConfig = .editInOctopus
@@ -113,6 +114,11 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
                 default: break
                 }
             }.store(in: &storage)
+
+        octopus.core.topicsRepository.$canCreateAnyPost
+            .removeDuplicates()
+            .sink { [weak self] in self?.canCreatePost = $0 }
+            .store(in: &storage)
     }
 
     func refresh() async {

@@ -28,6 +28,8 @@ struct DisplayablePost: Equatable {
             case poll(DisplayablePoll)
         }
         let text: EllipsizableTranslatedText
+        /// Full (non-truncated) version of the post text. Used when the cell is expanded inline.
+        let expandedText: EllipsizableTranslatedText
         let attachment: Attachment?
         let bridgeInfo: BridgeInfo?
         let customAction: CustomAction?
@@ -46,6 +48,7 @@ struct DisplayablePost: Equatable {
              featuredComment: DisplayableFeedResponse?,
              liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
             self.text = EllipsizableTranslatedText(text: text)
+            self.expandedText = EllipsizableTranslatedText(text: text, ellipsize: false)
             self.attachment = attachment
             self.bridgeInfo = bridgeInfo
             self.customAction = customAction
@@ -58,16 +61,19 @@ struct DisplayablePost: Equatable {
             lhs.attachment == rhs.attachment &&
             lhs.bridgeInfo == rhs.bridgeInfo &&
             lhs.featuredComment == rhs.featuredComment
+            // `expandedText` is intentionally excluded: it is derived from the same
+            // underlying text as `text` and does not carry additional identity.
         }
     }
     let uuid: String
     let author: Author
     let relativeDate: String
-    let topic: String
+    let topic: String?
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
     let canBeOpened: Bool
+    let canCreateChildren: Bool
     let content: Content
     let position: Int
     let isLast: Bool
@@ -77,6 +83,13 @@ struct DisplayablePost: Equatable {
     var hasFeaturedComment: Bool {
         switch content {
         case let .published(content): content.featuredComment != nil
+        case .moderated: false
+        }
+    }
+
+    var hasChildren: Bool {
+        switch content {
+        case let .published(content): content.liveMeasuresValue.aggregatedInfo.childCount > 0
         case .moderated: false
         }
     }
@@ -98,6 +111,8 @@ extension DisplayablePost {
             profile: post.author,
             gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
         )
+        canCreateChildren = post.permissions.canCreateChildren
+
         switch post.status {
 
         case .published, .other:
@@ -148,7 +163,7 @@ extension DisplayablePost {
             canBeBlockedByUser = false
         }
         relativeDate = dateFormatter.customLocalizedStructure(for: post.creationDate, relativeTo: Date())
-        self.topic = topic?.name ?? ""
+        self.topic = topic?.name
 
         displayEvents = CellDisplayEvents(onAppear: onAppear, onDisappear: onDisappear)
     }

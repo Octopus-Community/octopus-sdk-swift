@@ -53,6 +53,12 @@
     },
     "App Version: %@" : {
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version: %@"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
@@ -160,10 +166,19 @@
     "Center the title" : {
 
     },
+    "Clear image" : {
+
+    },
     "Configuration" : {
 
     },
     "Connection Error (displayed by the app)" : {
+
+    },
+    "CTA" : {
+
+    },
+    "Current entitlements (from SDK)" : {
 
     },
     "Custom events" : {
@@ -175,6 +190,9 @@
     "Customize the theme of the Octopus UI" : {
 
     },
+    "Edit entitlements" : {
+
+    },
     "Edit user" : {
 
     },
@@ -182,6 +200,9 @@
 
     },
     "Enter a Post ID" : {
+
+    },
+    "Entitlements" : {
 
     },
     "Error" : {
@@ -202,10 +223,16 @@
     "Group" : {
 
     },
+    "Group not accessible" : {
+
+    },
     "Groups" : {
 
     },
     "Have a post directly linked to a specific object (article, product, item...) of your app" : {
+
+    },
+    "Host app screen" : {
 
     },
     "Icons" : {
@@ -217,6 +244,12 @@
     "If you are managing an AB Test to enable/disable community access to your users, inform the SDK if the user cannot access the community UI to improve the analytics data we provide." : {
 
     },
+    "Image" : {
+
+    },
+    "Image picking requires iOS 16+ in the sample app." : {
+
+    },
     "Initial Screen" : {
 
     },
@@ -224,6 +257,9 @@
 
     },
     "Interact with the SDK to see events appear here" : {
+
+    },
+    "Label" : {
 
     },
     "Login" : {
@@ -295,6 +331,9 @@
     "Open a specific post or group directly" : {
 
     },
+    "Open Octopus" : {
+
+    },
     "Open Octopus Home Screen" : {
 
     },
@@ -316,7 +355,19 @@
     "Override the language of the SDK" : {
 
     },
+    "Pick an image" : {
+
+    },
+    "Pick the entitlements you want to claim. Saving will mint a fresh JWT and refresh the SDK." : {
+
+    },
     "Picture" : {
+
+    },
+    "Post text" : {
+
+    },
+    "Prefill rejected" : {
 
     },
     "Presentation" : {
@@ -325,10 +376,22 @@
     "Random identifier" : {
 
     },
+    "Replace image" : {
+
+    },
     "Results" : {
 
     },
     "Save" : {
+
+    },
+    "Save & refresh" : {
+
+    },
+    "Save & retry" : {
+
+    },
+    "Saving…" : {
 
     },
     "Scenarios" : {
@@ -379,10 +442,16 @@
     "Testing" : {
 
     },
+    "Text" : {
+
+    },
     "The following switch simulates an A/B test.\nWhen off, the community is hidden to the user." : {
 
     },
     "The following switch will permanently override the internal cohort attribution for the current user." : {
+
+    },
+    "This group is not accessible to your current entitlements. Adjust them below to gain access." : {
 
     },
     "This is your app's content" : {
@@ -398,6 +467,9 @@
 
     },
     "Unique Identifier" : {
+
+    },
+    "URL (https:// or custom scheme)" : {
 
     },
     "Use logo on nav bar" : {

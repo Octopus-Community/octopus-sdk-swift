@@ -10,4 +10,7 @@ class MainFlowPath: ObservableObject {
 
     /// Whether the path should not be changed
     @Published var isLocked: Bool = false
+
+    /// The currently-presented report target (drives the report sheet at the navigation root).
+    @Published var reportTarget: ReportTarget?
 }

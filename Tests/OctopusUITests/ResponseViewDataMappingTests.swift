@@ -96,13 +96,30 @@ struct ResponseViewDataMappingTests {
         #expect(ResponseViewData(from: falseSource).canBeBlockedByUser == false)
     }
 
+    @Test func mapCommentDetail_displayReplyButtonReflectsCanCreateChildren() async throws {
+        let canReply = Self.makeCommentDetail(canCreateChildren: true)
+        #expect(ResponseViewData(from: canReply).displayReplyButton == true)
+
+        let cannotReply = Self.makeCommentDetail(canCreateChildren: false)
+        #expect(ResponseViewData(from: cannotReply).displayReplyButton == false)
+    }
+
+    @Test func mapDisplayable_displayReplyButtonReflectsCanCreateChildren() async throws {
+        let canReply = Self.makeDisplayableResponse(kind: .comment, canCreateChildren: true)
+        #expect(ResponseViewData(from: canReply).displayReplyButton == true)
+
+        let cannotReply = Self.makeDisplayableResponse(kind: .comment, canCreateChildren: false)
+        #expect(ResponseViewData(from: cannotReply).displayReplyButton == false)
+    }
+
     // MARK: - Fixtures
 
     static func makeDisplayableResponse(
         kind: ResponseKind,
         uuid: String = "response-uuid",
         text: String? = "Some text",
-        canBeBlockedByUser: Bool = false
+        canBeBlockedByUser: Bool = false,
+        canCreateChildren: Bool = true
     ) -> DisplayableFeedResponse {
         let author = Author(
             profile: MinimalProfile(
@@ -132,6 +149,7 @@ struct ResponseViewDataMappingTests {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: canBeBlockedByUser,
+            canCreateChildren: canCreateChildren,
             _liveMeasuresPublisher: subject,
             displayEvents: .init(onAppear: {}, onDisappear: {}))
     }
@@ -140,7 +158,8 @@ struct ResponseViewDataMappingTests {
         uuid: String = "comment-uuid",
         text: String? = "Detail text",
         aggregatedInfo: AggregatedInfo = .init(reactions: [], childCount: 0, viewCount: 0, pollResult: nil),
-        canBeBlockedByUser: Bool = false
+        canBeBlockedByUser: Bool = false,
+        canCreateChildren: Bool = true
     ) -> CommentDetailViewModel.CommentDetail {
         let author = Author(
             profile: MinimalProfile(
@@ -165,6 +184,7 @@ struct ResponseViewDataMappingTests {
             userInteractions: .empty,
             canBeDeleted: false,
             canBeModerated: true,
-            canBeBlockedByUser: canBeBlockedByUser)
+            canBeBlockedByUser: canBeBlockedByUser,
+            canCreateChildren: canCreateChildren)
     }
 }

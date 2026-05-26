@@ -27,6 +27,50 @@ struct StorablePost: StorableContent, Equatable {
 
     let aggregatedInfo: AggregatedInfo?
     let userInteractions: UserInteractions?
+
+    let permissions: UserPermissions
+
+    init(uuid: String,
+         text: TranslatableText,
+         medias: [Media],
+         poll: Poll?,
+         author: MinimalProfile?,
+         creationDate: Date,
+         updateDate: Date,
+         status: StorableStatus,
+         statusReasons: [StorableStatusReason],
+         parentId: String,
+         descCommentFeedId: String?,
+         ascCommentFeedId: String?,
+         bridgeClientObjectId: String?,
+         bridgeCatchPhrase: TranslatableText?,
+         bridgeCtaText: TranslatableText?,
+         customActionText: TranslatableText?,
+         customActionTargetLink: String?,
+         aggregatedInfo: AggregatedInfo?,
+         userInteractions: UserInteractions?,
+         permissions: UserPermissions = .default) {
+        self.uuid = uuid
+        self.text = text
+        self.medias = medias
+        self.poll = poll
+        self.author = author
+        self.creationDate = creationDate
+        self.updateDate = updateDate
+        self.status = status
+        self.statusReasons = statusReasons
+        self.parentId = parentId
+        self.descCommentFeedId = descCommentFeedId
+        self.ascCommentFeedId = ascCommentFeedId
+        self.bridgeClientObjectId = bridgeClientObjectId
+        self.bridgeCatchPhrase = bridgeCatchPhrase
+        self.bridgeCtaText = bridgeCtaText
+        self.customActionText = customActionText
+        self.customActionTargetLink = customActionTargetLink
+        self.aggregatedInfo = aggregatedInfo
+        self.userInteractions = userInteractions
+        self.permissions = permissions
+    }
 }
 
 extension StorablePost {
@@ -56,6 +100,10 @@ extension StorablePost {
         ascCommentFeedId = entity.ascChildrenFeedId
         aggregatedInfo = AggregatedInfo(from: entity)
         userInteractions = UserInteractions(from: entity)
+        permissions = UserPermissions(
+            canAccess: entity.canAccess,
+            canCreateChildren: entity.canCreateChildren
+        )
     }
 
     init?(octoPost: Com_Octopuscommunity_OctoObject, aggregate: Com_Octopuscommunity_Aggregate?,
@@ -116,6 +164,7 @@ extension StorablePost {
 
         self.aggregatedInfo = aggregate.map { .init(from: $0) }
         self.userInteractions = userInteraction.map { .init(from: $0) }
+        self.permissions = UserPermissions(from: userInteraction)
     }
 
     init(from post: Post) {
@@ -140,5 +189,6 @@ extension StorablePost {
 
         aggregatedInfo = post.aggregatedInfo
         userInteractions = post.userInteractions
+        permissions = post.permissions
     }
 }

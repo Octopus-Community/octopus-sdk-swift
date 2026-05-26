@@ -140,6 +140,7 @@ class NotificationsTests: XCTestCase {
             hasConfirmedPicture: false,
             isGuest: true,
             notificationBadgeCount: 0, blockedProfileIds: [],
+            entitlements: [],
             newestFirstPostsFeed: Feed(id: "", feedManager: postsFeedManager))
     }
 }

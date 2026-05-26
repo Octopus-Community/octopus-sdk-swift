@@ -18,6 +18,11 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
 
     @Published public private(set) var topics: [Topic] = []
 
+    /// `true` iff at least one topic in `topics` has both `canAccess` and `canCreateChildren`.
+    /// Defaults to `true` until `topics` resolves.
+    /// Used by cross-group "create post" entry points to decide whether to render the button at all.
+    @Published public private(set) var canCreateAnyPost: Bool = true
+
     private let topicsDatabase: TopicsDatabase
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
@@ -41,6 +46,13 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
                 guard let self else { return }
                 topics = $0.map { Topic(from: $0, postFeedsStore: self.postFeedsStore) }
             }.store(in: &storage)
+
+        $topics
+            .dropFirst()
+            .map { $0.contains { $0.permissions.canAccess && $0.permissions.canCreateChildren } }
+            .removeDuplicates()
+            .sink { [weak self] in self?.canCreateAnyPost = $0 }
+            .store(in: &storage)
     }
 
     @discardableResult
@@ -49,7 +61,11 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
         do {
             let response = try await remoteClient.octoService
                 .getTopics(authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
-            let topics = [StorableTopic](from: response.topics, octoSections: response.sections)
+            let topics = [StorableTopic](
+                from: response.topics,
+                requesterCtxs: response.topicsRequesterCtxs,
+                octoSections: response.sections
+            )
             try await topicsDatabase.replaceAll(topics: topics)
             return topics.map { Topic(from: $0, postFeedsStore: postFeedsStore) }
         } catch {
