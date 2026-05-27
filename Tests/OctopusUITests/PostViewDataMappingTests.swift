@@ -74,6 +74,18 @@ struct PostViewDataMappingTests {
         #expect(viewData.topic == "Help")
     }
 
+    @Test func topic_nil_preserved_feedSide() async throws {
+        let post = Self.makeDisplayable(contentKind: .textOnly, topic: nil)
+        let viewData = PostViewData(from: post)
+        #expect(viewData.topic == nil)
+    }
+
+    @Test func topic_nil_preserved_detailSide() async throws {
+        let post = Self.makeDetailPost(topic: nil)
+        let viewData = PostViewData(from: post)
+        #expect(viewData.topic == nil)
+    }
+
     // MARK: - PostDetailViewModel.Post → PostViewData (detail-side)
 
     @Test func detailMapping_preservesCoreFields() async throws {
@@ -160,6 +172,30 @@ struct PostViewDataMappingTests {
         #expect(viewData.tags.isEmpty)
     }
 
+    @Test func feedMapping_canCreateChildren_forwarded() async throws {
+        let allowed = Self.makeDisplayable(contentKind: .textOnly, canCreateChildren: true)
+        #expect(PostViewData(from: allowed).canCreateChildren == true)
+
+        let denied = Self.makeDisplayable(contentKind: .textOnly, canCreateChildren: false)
+        #expect(PostViewData(from: denied).canCreateChildren == false)
+    }
+
+    @Test func feedMapping_ellipsizeParam_false_expandsText() async throws {
+        // Build a post whose text would be truncated in normal feed rendering
+        let longText = String(repeating: "a", count: 250)
+        let post = Self.makeDisplayable(contentKind: .longText(longText))
+        let truncated = PostViewData(from: post, ellipsize: true)
+        let expanded = PostViewData(from: post, ellipsize: false)
+        guard case let .published(truncatedContent) = truncated.content,
+              case let .published(expandedContent) = expanded.content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(truncatedContent.text.getIsEllipsized(translated: false) == true)
+        #expect(expandedContent.text.getIsEllipsized(translated: false) == false)
+        #expect(expandedContent.text.getText(translated: false) == longText)
+    }
+
     // MARK: - canBeBlockedByUser forwarding
 
     @Test func test_postViewData_forwardsCanBeBlockedByUser() async throws {
@@ -174,6 +210,7 @@ struct PostViewDataMappingTests {
 
     enum ContentKind {
         case textOnly
+        case longText(String)
         case bridgeWithCTA
         case customAction(url: URL)
         case moderated
@@ -181,8 +218,9 @@ struct PostViewDataMappingTests {
 
     static func makeDisplayable(
         contentKind: ContentKind,
-        topic: String = "Help",
-        canBeBlockedByUser: Bool = false
+        topic: String? = "Help",
+        canBeBlockedByUser: Bool = false,
+        canCreateChildren: Bool = true
     ) -> DisplayablePost {
         let author = Author(
             profile: MinimalProfile(
@@ -205,6 +243,11 @@ struct PostViewDataMappingTests {
         case .textOnly:
             content = .published(.init(
                 text: .init(originalText: "Un texte", originalLanguage: nil),
+                attachment: nil, bridgeInfo: nil, customAction: nil, featuredComment: nil,
+                liveMeasuresPublisher: emptyMeasures))
+        case let .longText(text):
+            content = .published(.init(
+                text: .init(originalText: text, originalLanguage: nil),
                 attachment: nil, bridgeInfo: nil, customAction: nil, featuredComment: nil,
                 liveMeasuresPublisher: emptyMeasures))
         case .bridgeWithCTA:
@@ -240,6 +283,7 @@ struct PostViewDataMappingTests {
             canBeModerated: true,
             canBeBlockedByUser: canBeBlockedByUser,
             canBeOpened: true,
+            canCreateChildren: canCreateChildren,
             content: content,
             position: 1,
             isLast: false,
@@ -249,12 +293,13 @@ struct PostViewDataMappingTests {
     static func makeDetailPost(
         uuid: String = "post-uuid",
         text: String = "Some detail text",
-        topic: String = "Help",
+        topic: String? = "Help",
         attachment: PostDetailViewModel.Post.Attachment? = nil,
         bridgeCTA: PostDetailViewModel.Post.BridgeCTA? = nil,
         customAction: PostDetailViewModel.Post.CustomAction? = nil,
         aggregatedInfo: AggregatedInfo = .init(
-            reactions: [], childCount: 0, viewCount: 0, pollResult: nil)
+            reactions: [], childCount: 0, viewCount: 0, pollResult: nil),
+        canCreateChildren: Bool = true
     ) -> PostDetailViewModel.Post {
         let author = Author(
             profile: MinimalProfile(
@@ -275,6 +320,7 @@ struct PostViewDataMappingTests {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: false,
+            canCreateChildren: canCreateChildren,
             catchPhrase: nil,
             bridgeCTA: bridgeCTA,
             customAction: customAction)

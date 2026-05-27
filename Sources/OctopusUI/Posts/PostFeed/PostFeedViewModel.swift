@@ -93,7 +93,19 @@ class PostFeedViewModel: ObservableObject {
             let postCount = posts.count
             let newPosts = posts.enumerated().compactMap { idx, post -> DisplayablePost? in
                 guard post.canBeDisplayed || displayModeratedPosts else { return nil }
-                guard let topic = topics.first(where: { $0.uuid == post.parentId }) else { return nil }
+                // Drop posts the current user can't access — except their own (mirrors
+                // PostDetailView's `.lockedOwnContent`: own content stays reachable so the
+                // detail view can render the body with children/compose hidden).
+                let isOwnPost: Bool
+                if let authorId = post.author?.uuid, let currentUserId = profile?.id {
+                    isOwnPost = authorId == currentUserId
+                } else {
+                    isOwnPost = false
+                }
+                let lockedState = LockedContentState(
+                    permissions: post.permissions, isOwnContent: isOwnPost)
+                guard lockedState != .lockedOther else { return nil }
+                let topic = topics.first(where: { $0.uuid == post.parentId })
                 let onAppear: () -> Void
                 if idx == max(postCount - 10, 0), feed.hasMoreData {
                     onAppear = { [weak self] in

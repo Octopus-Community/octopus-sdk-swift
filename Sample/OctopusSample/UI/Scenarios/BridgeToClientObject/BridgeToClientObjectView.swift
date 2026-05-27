@@ -101,6 +101,7 @@ struct BridgeToClientObjectView: View {
         .onAppear {
             viewModel.configureSDK()
         }
+        .hostAppFooter()
     }
 }
 
@@ -254,6 +255,7 @@ private struct RecipeView: View {
                 }
             }
         }
+        .hostAppFooter()
     }
 }
 

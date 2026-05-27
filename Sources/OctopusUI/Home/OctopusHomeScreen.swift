@@ -6,6 +6,7 @@ import Foundation
 import SwiftUI
 import os
 import Octopus
+import OctopusCore
 import Combine
 import UserNotifications
 
@@ -128,6 +129,16 @@ public struct OctopusHomeScreen: View {
                                     translationStore: translationStore,
                                     canClose: presentationMode.wrappedValue.isPresented,
                                     origin: .clientApp)
+                            case let .createPost(info):
+                                CreatePostView(
+                                    octopus: octopus,
+                                    withPoll: false,
+                                    defaultTopicId: info.prefilledPost?.topicId,
+                                    defaultText: info.prefilledPost?.text,
+                                    defaultImage: info.prefilledPost?.image,
+                                    cta: info.prefilledPost?.cta.map { WritableCTA(url: $0.url, label: $0.label) },
+                                    creationSource: info.prefilledPost == nil ? .user : .prefilledFromClient,
+                                    canClose: presentationMode.wrappedValue.isPresented)
                             }
                         }
                     }

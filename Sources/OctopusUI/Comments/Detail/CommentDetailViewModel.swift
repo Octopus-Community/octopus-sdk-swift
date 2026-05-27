@@ -25,6 +25,7 @@ class CommentDetailViewModel: ObservableObject {
         let canBeDeleted: Bool
         let canBeModerated: Bool
         let canBeBlockedByUser: Bool
+        let canCreateChildren: Bool
     }
 
     enum CommentDeletion {
@@ -54,6 +55,7 @@ class CommentDetailViewModel: ObservableObject {
     @Published var replyDeleted = false
 
     @Published var commentNotAvailable = false
+    @Published var lockedState: LockedContentState = .unlocked
 
     private var shouldFetchLatestReplies = CurrentValueSubject<Bool, Never>(false)
     private var liveMeasures: [String: CurrentValueSubject<LiveMeasures, Never>] = [:]
@@ -116,6 +118,7 @@ class CommentDetailViewModel: ObservableObject {
                 let commentWontBeAvailable = self.comment != nil
                 self.comment = nil
                 self.replies = nil
+                self.lockedState = .unlocked
 
                 if commentWontBeAvailable {
                     commentNotAvailable = true
@@ -124,6 +127,24 @@ class CommentDetailViewModel: ObservableObject {
             }
 
             guard comment.canBeDisplayed else {
+                self.comment = nil
+                self.replies = nil
+                self.lockedState = .unlocked
+                commentNotAvailable = true
+                return
+            }
+
+            let isOwnComment: Bool
+            if let authorId = comment.author?.uuid, let currentUserId = profile?.id {
+                isOwnComment = authorId == currentUserId
+            } else {
+                isOwnComment = false
+            }
+            let resolvedLockedState = LockedContentState(
+                permissions: comment.permissions, isOwnContent: isOwnComment)
+            self.lockedState = resolvedLockedState
+
+            if resolvedLockedState == .lockedOther {
                 self.comment = nil
                 self.replies = nil
                 commentNotAvailable = true

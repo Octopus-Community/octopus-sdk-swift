@@ -121,6 +121,10 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         track(content: .ctaPostButtonHit(objectId: postId))
     }
 
+    public func trackCtaGroupButtonHit(groupId: String) {
+        track(content: .ctaGroupButtonHit(groupId: groupId))
+    }
+
     public func track(customEvent: CustomEvent) async throws {
         try await database.upsert(event: Event(
             date: Date(),

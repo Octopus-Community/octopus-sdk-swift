@@ -19,6 +19,7 @@ struct GroupListScreen: View {
             GroupListView(octopus: octopus, context: context)
                 .toolbar(leading: closeButton, trailing: EmptyView())
         }
+        .accentColor(theme.colors.primary)
     }
 
     var closeButton: some View {
@@ -27,7 +28,6 @@ struct GroupListScreen: View {
                 .font(theme.fonts.navBarItem)
                 .contentShape(Rectangle())
                 .accessibilityLabelInBundle("Common.Close")
-                .accentColor(theme.colors.primary)
         }
     }
 }
@@ -49,12 +49,15 @@ struct GroupListView: View {
             canChangeFollowStatusByGroupId: viewModel.canChangeFollowStatusByGroupId,
             isFollowedByGroupId: viewModel.isFollowedByGroupId,
             refresh: viewModel.refresh,
-            selectGroup: {
+            selectGroup: { group in
+                if viewModel.handleGroupTap(groupId: group.id) {
+                    return
+                }
                 switch viewModel.context {
                 case let .groupSelection(_, setSelectedGroup):
-                    setSelectedGroup($0.id)
+                    setSelectedGroup(group.id)
                 case .displayFeed:
-                    navigator.push(.groupDetail(groupId: $0.id))
+                    navigator.push(.groupDetail(groupId: group.id))
                 }
             },
             changeFollowStatus: viewModel.changeFollowStatus(groupId:follow:),
@@ -68,9 +71,6 @@ struct GroupListView: View {
             case .groupSelection:
                 $0
             }
-        }
-        .onAppear {
-            viewModel.recomputeSections()
         }
         .errorAlert(viewModel.$error)
     }
@@ -166,13 +166,18 @@ private struct SectionView: View {
     let horizontalPadding: CGFloat
 
     var body: some View {
-        section.displayableString.textView
-            .font(theme.fonts.body2)
-            .fontWeight(.semibold)
-            .foregroundColor(theme.colors.gray500)
-            .padding(.top, 24)
-            .padding(.bottom, 4)
-            .padding(.horizontal, horizontalPadding)
+        switch section {
+        case .noSectionGroups:
+            EmptyView()
+        case let .clientSection(name):
+            Text(name)
+                .font(theme.fonts.body2)
+                .fontWeight(.semibold)
+                .foregroundColor(theme.colors.gray500)
+                .padding(.top, 24)
+                .padding(.bottom, 4)
+                .padding(.horizontal, horizontalPadding)
+        }
     }
 }
 
@@ -196,6 +201,10 @@ private struct GroupView: View {
             case .displayFeed:
                 selectGroup(group)
             case .groupSelection:
+                if !group.canAccess {
+                    selectGroup(group)
+                    return
+                }
                 selectedGroupId = group.id
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     selectGroup(group)
@@ -255,15 +264,5 @@ private struct CellStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background(configuration.isPressed ? theme.colors.gray200 : .clear)
-    }
-}
-
-extension GroupList.Section {
-    var displayableString: DisplayableString {
-        switch self {
-        case .followedGroups: .localizationKey("Groups.Section.Followed")
-        case .otherGroups: .localizationKey("Groups.Section.OtherGroups")
-        case let .clientSection(name): .localizedString(name)
-        }
     }
 }

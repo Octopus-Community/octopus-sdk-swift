@@ -22,6 +22,12 @@ public final class OctopusSDK: ObservableObject {
     /// Even if you do not call `fetchGroups()`, the update might be done internally by the SDK at any time.
     @Published public private(set) var groups: [OctopusGroup] = []
 
+    /// The connected user's profile, or `nil` if not connected.
+    ///
+    /// Emits updates when the profile changes — including when entitlements are refreshed via
+    /// ``refreshEntitlements()``.
+    @Published public private(set) var profile: OctopusProfile?
+
     /// List of topics.
     @available(*, deprecated, renamed: "groups")
     public var topics: [OctopusGroup] { groups }
@@ -51,6 +57,13 @@ public final class OctopusSDK: ObservableObject {
 
     /// The block that will be called when a user taps on the bridge post button to display the client object
     public private(set) var displayClientObjectCallback: ((String) throws -> Void)?
+
+    /// Invoked when the user attempts to interact with a group they do not have access to.
+    ///
+    /// Set via ``set(groupAccessDeniedCallback:)``. The callback receives the `groupId` of the
+    /// group the user tried to interact with; the host app decides what to do (e.g., open an
+    /// upsell screen).
+    public private(set) var groupAccessDeniedCallback: ((_ groupId: String) -> Void)?
 
     /// The block that will be called when a user tries to open a link inside the community.
     /// This link can come from a Post/Comment/Reply or when tapping on a Post with CTA button.
@@ -109,6 +122,13 @@ public final class OctopusSDK: ObservableObject {
         core.topicsRepository.$topics
             .sink { [unowned self] in
                 groups = $0.map { OctopusGroup(from: $0) }
+            }
+            .store(in: &storage)
+
+        core.profileRepository.profilePublisher
+            .map { $0.map { OctopusProfile(from: $0) } }
+            .sink { [unowned self] in
+                profile = $0
             }
             .store(in: &storage)
 
@@ -399,11 +419,95 @@ extension OctopusSDK {
     ///   - no network
     ///   - you pass an `unknown` reaction
     ///   - the post id does not match with an existing post
-    ///   - the post is not a client object related post (i.e. a bridge post)
     ///   - other internal errors
+    ///
+    /// - Important: As of this release this function no longer rejects non-bridge posts —
+    ///   it succeeds on any post the current user can see, matching the new
+    ///   ``set(reaction:postId:)``. The function is deprecated; migrate to
+    ///   ``set(reaction:postId:)``.
+    @available(*, deprecated, renamed: "set(reaction:postId:)",
+               message: "Use set(reaction:postId:) which works for any post.")
     public func set(reaction: OctopusReactionKind?, clientObjectRelatedPostId: String) async throws {
         try await core.postsRepository.set(reaction: reaction?.coreValue,
-                                           clientObjectRelatedPostId: clientObjectRelatedPostId)
+                                           postId: clientObjectRelatedPostId)
+    }
+
+    /// Gets the Octopus post id related to the given object id.
+    ///
+    /// If the Octopus post does not exist yet, it will be created. The content will only be used if the post does not
+    /// exist yet.
+    ///
+    /// This function is asynchrounous and may take some time, if it is called after a user interaction, you should
+    /// display a loader.
+    /// - Parameter content: the content of the post
+    /// - Returns: the Octopus post id
+    /// - Note: You can use the returned id to display the post using `OctopusHomeScreen(octopus:postId:)`
+    @available(*, deprecated, message: "Use instead fetchOrCreateClientObjectRelatedPost(content: ClientPost). The new function returns more than just an id.")
+    public func getOrCreateClientObjectRelatedPostId(content: ClientPost) async throws(ClientPostError) -> String {
+        do {
+            return try await core.postsRepository.getOrCreateClientObjectRelatedPostId(content: content.coreValue)
+        } catch {
+            throw ClientPostError(from: error)
+        }
+    }
+
+    /// Gets the Octopus post related to the given object id.
+    ///
+    /// If the Octopus post does not exist yet, it will be created. The content will only be used if the post does not
+    /// exist yet.
+    ///
+    /// This function is asynchrounous and may take some time, if it is called after a user interaction, you should
+    /// display a loader.
+    /// - Parameter content: the content of the post
+    /// - Returns: the Octopus post
+    /// - Note: You can use the returned post id to display the post using `OctopusHomeScreen(octopus:postId:)`
+    @available(*, deprecated, message: "Use instead fetchOrCreateClientObjectRelatedPost(content: ClientPost, tokenProvider: (String) async -> String?). The new function has en enhanced security.")
+    public func fetchOrCreateClientObjectRelatedPost(content: ClientPost) async throws(ClientPostError)
+    -> any OctopusPost {
+        do {
+            return try await core.postsRepository.getOrCreateClientObjectRelatedPost(content: content.coreValue)
+        } catch {
+            throw ClientPostError(from: error)
+        }
+    }
+}
+
+// MARK: - Content
+extension OctopusSDK {
+    /// Sets a reaction on the user's behalf on a post identified by `postId`.
+    ///
+    /// Works on any post the current user can see — bridge posts or community posts.
+    ///
+    /// - Parameters:
+    ///   - reaction: the reaction to set. Nil if the reaction should be removed.
+    ///               `OctopusReactionKind.unknown(...)` is not supported and yields
+    ///               ``OctopusSetReactionError/unknownReaction``.
+    ///   - postId: the post id.
+    ///
+    /// - Throws: ``OctopusSetReactionError``.
+    ///
+    /// - Important: If `reaction` is `nil` and the user has no current reaction on the post,
+    ///   this currently throws ``OctopusSetReactionError/other(_:)`` rather than being a no-op.
+    public func set(reaction: OctopusReactionKind?, postId: String)
+    async throws(OctopusSetReactionError) {
+        do {
+            try await core.postsRepository.set(reaction: reaction?.coreValue, postId: postId)
+        } catch {
+            throw OctopusSetReactionError(from: error)
+        }
+    }
+}
+
+// MARK: - Groups
+extension OctopusSDK {
+    /// Sets the callback invoked when the user taps a visible-but-locked group, attempts to
+    /// follow such a group, or selects one in the create-post picker.
+    ///
+    /// - Parameter groupAccessDeniedCallback: receives the `groupId` of the locked group. The
+    ///   host app decides what to do (open an upsell screen, present a paywall, navigate
+    ///   internally, etc.). The SDK does not navigate on the user's behalf.
+    public func set(groupAccessDeniedCallback: @escaping (_ groupId: String) -> Void) {
+        self.groupAccessDeniedCallback = groupAccessDeniedCallback
     }
 
     /// Fetches the groups from the backend values
@@ -446,43 +550,35 @@ extension OctopusSDK {
             throw OctopusSyncFollowGroup.Error(from: error)
         }
     }
+}
 
-    /// Gets the Octopus post id related to the given object id.
+// MARK: - Entitlements
+extension OctopusSDK {
+    /// Refresh the connected user's entitlements with the backend.
     ///
-    /// If the Octopus post does not exist yet, it will be created. The content will only be used if the post does not
-    /// exist yet.
+    /// In `.sso` connection mode, the SDK fetches a fresh client-signed JWT from the
+    /// previously registered `tokenProvider`, exchanges it with the backend for a new Octopus
+    /// JWT, and re-fetches the profile. Any change in the entitlements set automatically
+    /// triggers a topics refetch (via the internal `EntitlementMonitor`); observing views
+    /// recompose accordingly.
     ///
-    /// This function is asynchrounous and may take some time, if it is called after a user interaction, you should
-    /// display a loader.
-    /// - Parameter content: the content of the post
-    /// - Returns: the Octopus post id
-    /// - Note: You can use the returned id to display the post using `OctopusHomeScreen(octopus:postId:)`
-    @available(*, deprecated, message: "Use instead fetchOrCreateClientObjectRelatedPost(content: ClientPost). The new function returns more than just an id.")
-    public func getOrCreateClientObjectRelatedPostId(content: ClientPost) async throws(ClientPostError) -> String {
+    /// - Throws: ``OctopusRefreshEntitlementsError``.
+    public func refreshEntitlements() async throws(OctopusRefreshEntitlementsError) {
         do {
-            return try await core.postsRepository.getOrCreateClientObjectRelatedPostId(content: content.coreValue)
+            try await core.connectionRepository.refreshEntitlements()
         } catch {
-            throw ClientPostError(from: error)
-        }
-    }
-
-    /// Gets the Octopus post related to the given object id.
-    ///
-    /// If the Octopus post does not exist yet, it will be created. The content will only be used if the post does not
-    /// exist yet.
-    ///
-    /// This function is asynchrounous and may take some time, if it is called after a user interaction, you should
-    /// display a loader.
-    /// - Parameter content: the content of the post
-    /// - Returns: the Octopus post
-    /// - Note: You can use the returned post id to display the post using `OctopusHomeScreen(octopus:postId:)`
-    @available(*, deprecated, message: "Use instead fetchOrCreateClientObjectRelatedPost(content: ClientPost, tokenProvider: (String) async -> String?). The new function has en enhanced security.")
-    public func fetchOrCreateClientObjectRelatedPost(content: ClientPost) async throws(ClientPostError)
-    -> any OctopusPost {
-        do {
-            return try await core.postsRepository.getOrCreateClientObjectRelatedPost(content: content.coreValue)
-        } catch {
-            throw ClientPostError(from: error)
+            switch error {
+            case .notInSSOMode:
+                throw .noClientTokenProvider
+            case .notConnected:
+                throw .userNotConnected
+            case .noNetwork:
+                throw .noNetwork
+            case .userBanned(let message):
+                throw .userBanned(message)
+            case .serverError(let underlying):
+                throw .serverError(underlying)
+            }
         }
     }
 }

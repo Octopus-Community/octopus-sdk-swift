@@ -90,6 +90,10 @@ let package = Package(
         .testTarget(
             name: "OctopusDependencyInjectionTests",
             dependencies: ["OctopusDependencyInjection"]
+        ),
+        .testTarget(
+            name: "OctopusRemoteClientTests",
+            dependencies: ["OctopusRemoteClient"]
         )
     ]
 )

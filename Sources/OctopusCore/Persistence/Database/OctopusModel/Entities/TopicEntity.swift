@@ -13,6 +13,9 @@ class TopicEntity: OctoObjectEntity {
     @NSManaged public var position: Int
     @NSManaged public var followStatusValue: Int
     @NSManaged public var sectionRelationship: NSSet?
+    @NSManaged public var customActionText: String?
+    @NSManaged public var customActionTranslatedText: String?
+    @NSManaged public var customActionTargetLink: String?
 
     var sections: [SectionEntity] {
         let sectionSet = sectionRelationship as? Set<SectionEntity> ?? []
@@ -25,6 +28,11 @@ class TopicEntity: OctoObjectEntity {
         desc = topic.description
         descChildrenFeedId = topic.feedId
         followStatusValue = topic.followStatus.rawValue
+        canAccessOptional = NSNumber(value: topic.permissions.canAccess)
+        canCreateChildrenOptional = NSNumber(value: topic.permissions.canCreateChildren)
+        customActionText = topic.customActionText?.originalText
+        customActionTranslatedText = topic.customActionText?.translatedText
+        customActionTargetLink = topic.customActionTargetLink
         self.position = position
         sectionRelationship = NSSet(array: try topic.sections.map {
             let sectionEntity: SectionEntity

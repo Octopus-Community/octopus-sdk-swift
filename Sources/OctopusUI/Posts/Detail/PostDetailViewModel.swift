@@ -32,12 +32,13 @@ class PostDetailViewModel: ObservableObject {
         let attachment: Attachment?
         let author: Author
         let relativeDate: String
-        let topic: String
+        let topic: String?
         let aggregatedInfo: AggregatedInfo
         let userInteractions: UserInteractions
         let canBeDeleted: Bool
         let canBeModerated: Bool
         let canBeBlockedByUser: Bool
+        let canCreateChildren: Bool
         let catchPhrase: TranslatableText?
         let bridgeCTA: BridgeCTA?
         let customAction: CustomAction?
@@ -72,6 +73,7 @@ class PostDetailViewModel: ObservableObject {
 
     @Published var postNotAvailable = false
     @Published var postDisappeared = false
+    @Published var lockedState: LockedContentState = .unlocked
 
     var canDisplayClientObject: Bool { octopus.displayClientObjectCallback != nil }
 
@@ -163,6 +165,7 @@ class PostDetailViewModel: ObservableObject {
                 let postWontBeAvailable = self.post != nil
                 self.post = nil
                 self.comments = nil
+                self.lockedState = .unlocked
 
                 if postWontBeAvailable {
                     postNotAvailable = true
@@ -174,16 +177,31 @@ class PostDetailViewModel: ObservableObject {
             guard post.canBeDisplayed else {
                 self.post = nil
                 self.comments = nil
+                self.lockedState = .unlocked
                 postNotAvailable = true
                 postDisappeared = true
                 return
             }
 
-            guard let topic = topics.first(where: { $0.uuid == post.parentId }) else {
+            let topic = topics.first(where: { $0.uuid == post.parentId })
+
+            let isOwnPost: Bool
+            if let authorId = post.author?.uuid, let currentUserId = profile?.id {
+                isOwnPost = authorId == currentUserId
+            } else {
+                isOwnPost = false
+            }
+            let resolvedLockedState = LockedContentState(
+                permissions: post.permissions, isOwnContent: isOwnPost)
+            self.lockedState = resolvedLockedState
+
+            if resolvedLockedState == .lockedOther {
                 self.post = nil
                 self.comments = nil
+                postNotAvailable = true
                 return
             }
+
             self.post = Post(from: post,
                              gamificationLevels: gamificationLevels ?? [],
                              thisUserProfileId: profile?.id, topic: topic,

@@ -7,7 +7,9 @@ import Foundation
 import OctopusCore
 
 extension PostViewData {
-    init(from post: DisplayablePost) {
+    /// - Parameter ellipsize: When `false`, the text is rendered in full (no "Read more" truncation).
+    ///   Pass `false` when the user has tapped to expand the cell inline.
+    init(from post: DisplayablePost, ellipsize: Bool = true) {
         self.uuid = post.uuid
         self.author = post.author
         self.relativeDate = post.relativeDate
@@ -15,6 +17,7 @@ extension PostViewData {
         self.canBeDeleted = post.canBeDeleted
         self.canBeModerated = post.canBeModerated
         self.canBeBlockedByUser = post.canBeBlockedByUser
+        self.canCreateChildren = post.canCreateChildren
         self.visiblePost = post.toVisiblePost
 
         switch post.content {
@@ -22,7 +25,7 @@ extension PostViewData {
             self.tags = []
             self.content = .published(PostPublishedContent(
                 catchPhrase: published.bridgeInfo?.catchPhrase,
-                text: published.text,
+                text: ellipsize ? published.text : published.expandedText,
                 attachment: Self.mapAttachment(published.attachment),
                 cta: Self.mapCTA(bridgeInfo: published.bridgeInfo, customAction: published.customAction),
                 liveMeasuresPublisher: published.liveMeasures,
@@ -69,6 +72,7 @@ extension PostViewData {
         self.canBeDeleted = post.canBeDeleted
         self.canBeModerated = post.canBeModerated
         self.canBeBlockedByUser = post.canBeBlockedByUser
+        self.canCreateChildren = post.canCreateChildren
         self.visiblePost = post.toVisiblePost
 
         let liveMeasures = LiveMeasures(

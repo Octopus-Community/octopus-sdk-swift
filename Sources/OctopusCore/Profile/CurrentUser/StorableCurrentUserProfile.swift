@@ -35,6 +35,44 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
     let ascPostFeedId: String
 
     let blockedProfileIds: [String]
+
+    let entitlements: Set<String>
+
+    // swiftlint:disable:next function_default_parameter_at_end
+    init(id: String, userId: String, nickname: String, originalNickname: String?, email: String?, bio: String?,
+         pictureUrl: URL?, tags: ProfileTags,
+         totalMessages: Int?, accountCreationDate: Date?,
+         gamificationLevel: Int?, gamificationScore: Int?,
+         hasSeenOnboarding: Bool?, hasAcceptedCgu: Bool?, hasConfirmedNickname: Bool?,
+         hasConfirmedBio: Bool?, hasConfirmedPicture: Bool?,
+         isGuest: Bool, notificationBadgeCount: Int?,
+         descPostFeedId: String, ascPostFeedId: String,
+         blockedProfileIds: [String],
+         entitlements: Set<String> = []) {
+        self.id = id
+        self.userId = userId
+        self.nickname = nickname
+        self.originalNickname = originalNickname
+        self.email = email
+        self.bio = bio
+        self.pictureUrl = pictureUrl
+        self.tags = tags
+        self.totalMessages = totalMessages
+        self.accountCreationDate = accountCreationDate
+        self.gamificationLevel = gamificationLevel
+        self.gamificationScore = gamificationScore
+        self.hasSeenOnboarding = hasSeenOnboarding
+        self.hasAcceptedCgu = hasAcceptedCgu
+        self.hasConfirmedNickname = hasConfirmedNickname
+        self.hasConfirmedBio = hasConfirmedBio
+        self.hasConfirmedPicture = hasConfirmedPicture
+        self.isGuest = isGuest
+        self.notificationBadgeCount = notificationBadgeCount
+        self.descPostFeedId = descPostFeedId
+        self.ascPostFeedId = ascPostFeedId
+        self.blockedProfileIds = blockedProfileIds
+        self.entitlements = entitlements
+    }
 }
 
 extension StorableCurrentUserProfile {
@@ -61,6 +99,7 @@ extension StorableCurrentUserProfile {
         descPostFeedId = entity.descPostFeedId
         ascPostFeedId = entity.ascPostFeedId
         blockedProfileIds = entity.blockedProfileIds
+        entitlements = entity.entitlements
     }
 
     init(from profile: Com_Octopuscommunity_PrivateProfile, userId: String) {
@@ -99,5 +138,6 @@ extension StorableCurrentUserProfile {
         descPostFeedId = profile.descPostFeedID
         ascPostFeedId = profile.ascPostFeedID
         blockedProfileIds = profile.usersBlockList
+        entitlements = Set(profile.entitlements)
     }
 }

@@ -12,6 +12,7 @@ struct InitialScreenView: View {
     enum Tab: String, CaseIterable {
         case post = "Post"
         case group = "Group"
+        case prefilledPost = "Prefilled post"
     }
 
     @State private var selectedTab: Tab = .post
@@ -20,6 +21,7 @@ struct InitialScreenView: View {
 
     @State private var groups: [OctopusGroup] = []
     @State private var groupsCancellable: AnyCancellable?
+    @StateObjectCompat private var prefilledPostState = PrefilledPostFormState()
 
     private var octopus: OctopusSDK { OctopusSDKProvider.instance.octopus }
 
@@ -38,6 +40,8 @@ struct InitialScreenView: View {
                 postContent
             case .group:
                 groupContent
+            case .prefilledPost:
+                prefilledPostContent
             }
         }
         .navigationBarTitle("Initial Screen", displayMode: .inline)
@@ -48,6 +52,7 @@ struct InitialScreenView: View {
             groupsCancellable = octopus.$groups.sink { self.groups = $0 }
             Task { try? await octopus.fetchGroups() }
         }
+        .hostAppFooter()
     }
 
     private var postContent: some View {
@@ -128,6 +133,16 @@ struct InitialScreenView: View {
         }
         .listStyle(.grouped)
     }
+
+    private var prefilledPostContent: some View {
+        PrefilledPostForm(
+            state: prefilledPostState,
+            groups: groups,
+            onOpen: { prefill in
+                initialScreenToDisplay = .createPost(.init(prefilledPost: prefill))
+            }
+        )
+    }
 }
 
 // MARK: - OctopusInitialScreen + Identifiable
@@ -136,8 +151,9 @@ extension OctopusInitialScreen: @retroactive Identifiable {
     public var id: String {
         switch self {
         case .mainFeed: "mainFeed"
-        case .post(let info): "post-\(info.postId)"
-        case .group(let info): "group-\(info.groupId)"
+        case .post: "post"
+        case .group: "group"
+        case .createPost: "createPost"
         }
     }
 }

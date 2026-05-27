@@ -21,10 +21,10 @@ class CreateCommentViewModel: ObservableObject {
     @Published private(set) var userHasAcceptedCgu = false
 
     var sendAvailable: Bool {
-        validator.validate(comment: WritableComment(postId: postId, text: text, imageData: picture?.imageData))
+        Validators.Comment.validate(comment: WritableComment(postId: postId, text: text, imageData: picture?.imageData))
     }
 
-    var textMaxLength: Int { validator.maxTextLength }
+    var textMaxLength: Int { Validators.Comment.maxTextLength }
 
     let communityGuidelinesUrl: URL
     let privacyPolicyUrl: URL
@@ -33,7 +33,6 @@ class CreateCommentViewModel: ObservableObject {
     let octopus: OctopusSDK
     let postId: String
     private let translationStore: ContentTranslationPreferenceStore
-    private let validator: Validators.Comment
     private var storage = [AnyCancellable]()
     private var commentReceivedCancellable: AnyCancellable?
     private let ensureConnected: (UserAction) -> Bool
@@ -52,8 +51,6 @@ class CreateCommentViewModel: ObservableObject {
         communityGuidelinesUrl = externalLinksRepository.communityGuidelines
         privacyPolicyUrl = externalLinksRepository.privacyPolicy
         termsOfUseUrl = externalLinksRepository.termsOfUse
-
-        validator = self.octopus.core.validators.comment
 
         octopus.core.configRepository.communityConfigPublisher
             .map { $0?.forceLoginOnStrongActions }
@@ -87,7 +84,7 @@ class CreateCommentViewModel: ObservableObject {
         $text
             .removeDuplicates()
             .sink { [unowned self] text in
-                if !validator.validate(text: text) {
+                if !Validators.Comment.validate(text: text) {
                     textError = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
                 } else {
                     textError = nil
@@ -100,9 +97,9 @@ class CreateCommentViewModel: ObservableObject {
             .sink { [weak self] picture in
                 guard let self else { return }
                 if let picture {
-                    switch validator.validate(picture: picture.image) {
+                    switch Validators.Comment.validate(picture: picture.image) {
                     case .sideTooSmall, .ratioTooBig:
-                        alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(validator.maxRatioStr)_minSize:\(Int(validator.minSize))")
+                        alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(Validators.Comment.maxRatioStr)_minSize:\(Int(Validators.Comment.minSize))")
                         self.picture = nil
                     case .valid:
                         break
@@ -121,7 +118,7 @@ class CreateCommentViewModel: ObservableObject {
 
     func send() {
         let comment = WritableComment(postId: postId, text: text, imageData: picture?.imageData)
-        guard validator.validate(comment: comment) else { return }
+        guard Validators.Comment.validate(comment: comment) else { return }
 
         isLoading = true
 

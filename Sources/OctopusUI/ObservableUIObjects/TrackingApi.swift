@@ -16,6 +16,7 @@ import OctopusCore
 protocol TrackingApi: Sendable {
     func trackTranslationButtonHit(translationDisplayed: Bool)
     func trackPostCustomActionButtonHit(postId: String)
+    func trackGroupCustomActionButtonHit(groupId: String)
     func emit(event: SdkEvent)
 }
 
@@ -38,6 +39,10 @@ final class DefaultTrackingApi: TrackingApi, @unchecked Sendable {
         octopus.core.trackingRepository.trackCtaPostButtonHit(postId: postId)
     }
 
+    func trackGroupCustomActionButtonHit(groupId: String) {
+        octopus.core.trackingRepository.trackCtaGroupButtonHit(groupId: groupId)
+    }
+
     func emit(event: SdkEvent) {
         octopus.core.sdkEventsEmitter.emit(event)
     }
@@ -47,5 +52,6 @@ final class DefaultTrackingApi: TrackingApi, @unchecked Sendable {
 struct NoopTrackingApi: TrackingApi, Sendable {
     func trackTranslationButtonHit(translationDisplayed: Bool) {}
     func trackPostCustomActionButtonHit(postId: String) {}
+    func trackGroupCustomActionButtonHit(groupId: String) {}
     func emit(event: SdkEvent) {}
 }

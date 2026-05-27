@@ -19,12 +19,15 @@ struct PostListView: View {
 
     @State private var lastScreenFeedIdSent: String?
 
+    private let mainFlowPath: MainFlowPath
+
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          selectedRootFeed: Binding<RootFeed?>, zoomableImageInfo: Binding<ZoomableImageInfo?>) {
         _viewModel = Compat.StateObject(wrappedValue: PostListViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore))
         _selectedRootFeed = selectedRootFeed
         _zoomableImageInfo = zoomableImageInfo
+        self.mainFlowPath = mainFlowPath
     }
 
     var body: some View {
@@ -57,7 +60,7 @@ struct PostListView: View {
                                 }
                             },
                             displayContentModeration: {
-                                navigator.push(.reportContent(contentId: $0))
+                                mainFlowPath.reportTarget = .content(contentId: $0)
                             }) {
                                 DefaultEmptyPostsView()
                             }
@@ -75,26 +78,28 @@ struct PostListView: View {
                 $0.safeAreaInset(edge: .bottom, content: {
                     AuthorActionView(
                         octopus: viewModel.octopus, actionKind: .post,
+                        displayCreateButton: viewModel.canCreatePost,
                         userProfileTapped: {
                             if viewModel.ensureConnected(action: .viewOwnProfile) {
                                 navigator.push(.currentUserProfile)
                             }
                         },
                         actionTapped: {
-                            navigator.push(.createPost(withPoll: false, defaultTopic: nil))
+                            navigator.push(.createPost(withPoll: false, defaultTopicId: nil))
                         })
                     .accessibilitySortPriority(1)
                 })
             } else {
                 $0.overlay(
                     AuthorActionView(octopus: viewModel.octopus, actionKind: .post,
+                                     displayCreateButton: viewModel.canCreatePost,
                                      userProfileTapped: {
                                          if viewModel.ensureConnected(action: .viewOwnProfile) {
                                              navigator.push(.currentUserProfile)
                                          }
                                      },
                                      actionTapped: {
-                                         navigator.push(.createPost(withPoll: false, defaultTopic: nil))
+                                         navigator.push(.createPost(withPoll: false, defaultTopicId: nil))
                                      }),
                     alignment: .bottomTrailing)
             }

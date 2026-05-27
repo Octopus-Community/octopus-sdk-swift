@@ -209,6 +209,7 @@ private struct ResponseContentView: View {
 
                 ResponseActionBarView(
                     kind: response.kind,
+                    displayReplyButton: response.displayReplyButton,
                     liveMeasuresPublisher: response.liveMeasuresPublisher,
                     initialLiveMeasures: response.liveMeasuresValue,
                     reactionTapped: reactionTapped,
@@ -331,6 +332,7 @@ extension ResponseView {
                 canBeDeleted: true,
                 canBeModerated: true,
                 canBeBlockedByUser: canBeBlockedByUser,
+                canCreateChildren: true,
                 _liveMeasuresPublisher: subject,
                 displayEvents: .init(onAppear: {}, onDisappear: {}))
         }

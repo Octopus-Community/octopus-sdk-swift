@@ -18,6 +18,34 @@ struct StorableReply: StorableResponse, Equatable, Sendable {
 
     let aggregatedInfo: AggregatedInfo?
     let userInteractions: UserInteractions?
+
+    let permissions: UserPermissions
+
+    init(uuid: String,
+         text: TranslatableText?,
+         medias: [Media],
+         author: MinimalProfile?,
+         creationDate: Date,
+         updateDate: Date,
+         status: StorableStatus,
+         statusReasons: [StorableStatusReason],
+         parentId: String,
+         aggregatedInfo: AggregatedInfo?,
+         userInteractions: UserInteractions?,
+         permissions: UserPermissions = .default) {
+        self.uuid = uuid
+        self.text = text
+        self.medias = medias
+        self.author = author
+        self.creationDate = creationDate
+        self.updateDate = updateDate
+        self.status = status
+        self.statusReasons = statusReasons
+        self.parentId = parentId
+        self.aggregatedInfo = aggregatedInfo
+        self.userInteractions = userInteractions
+        self.permissions = permissions
+    }
 }
 
 extension StorableReply {
@@ -35,6 +63,10 @@ extension StorableReply {
         parentId = entity.parentId
         aggregatedInfo = AggregatedInfo(from: entity)
         userInteractions = UserInteractions(from: entity)
+        permissions = UserPermissions(
+            canAccess: entity.canAccess,
+            canCreateChildren: entity.canCreateChildren
+        )
     }
 
     init?(octoReply: Com_Octopuscommunity_OctoObject, aggregate: Com_Octopuscommunity_Aggregate?,
@@ -68,6 +100,7 @@ extension StorableReply {
 
         self.aggregatedInfo = aggregate.map { .init(from: $0) }
         self.userInteractions = userInteraction.map { .init(from: $0) }
+        self.permissions = UserPermissions(from: userInteraction)
     }
 
     init(from reply: Reply) {
@@ -83,5 +116,6 @@ extension StorableReply {
 
         aggregatedInfo = reply.aggregatedInfo
         userInteractions = reply.userInteractions
+        permissions = reply.permissions
     }
 }

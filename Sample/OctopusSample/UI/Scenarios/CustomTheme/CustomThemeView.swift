@@ -132,6 +132,7 @@ struct CustomThemeView: View {
             }
             .padding()
         }
+        .hostAppFooter()
     }
 }
 

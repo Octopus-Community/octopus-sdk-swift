@@ -39,9 +39,10 @@ struct MainFlowNavigationStack<RootView: View>: View {
                                 gamificationRulesViewManager: gamificationRulesViewManager)
                         case let .publicProfile(profileId):
                             ProfileSummaryView(
-                                octopus: octopus, translationStore: translationStore, profileId: profileId)
-                        case let .createPost(withPoll, defaultTopic):
-                            CreatePostView(octopus: octopus, withPoll: withPoll, defaultTopic: defaultTopic)
+                                octopus: octopus, mainFlowPath: mainFlowPath,
+                                translationStore: translationStore, profileId: profileId)
+                        case let .createPost(withPoll, defaultTopicId):
+                            CreatePostView(octopus: octopus, withPoll: withPoll, defaultTopicId: defaultTopicId)
                         case let .groupList(context):
                             GroupListView(octopus: octopus, context: context)
                         case let .groupDetail(groupId):
@@ -57,14 +58,11 @@ struct MainFlowNavigationStack<RootView: View>: View {
                                 origin: origin,
                                 hasFeaturedComment: hasFeaturedComment)
                         case let .commentDetail(commentId, displayGoToParentButton, reply, replyToScrollTo):
-                            CommentDetailView(octopus: octopus, translationStore: translationStore,
+                            CommentDetailView(octopus: octopus, mainFlowPath: mainFlowPath,
+                                              translationStore: translationStore,
                                               commentUuid: commentId,
                                               displayGoToParentButton: displayGoToParentButton,
                                               reply: reply, replyToScrollTo: replyToScrollTo)
-                        case let .reportContent(contentId):
-                            ReportView(octopus: octopus, context: .content(contentId: contentId))
-                        case let .reportProfile(profileId):
-                            ReportView(octopus: octopus, context: .profile(profileId: profileId))
                         case let .editProfile(bioFocused, pictureFocused):
                             EditProfileView(octopus: octopus, bioFocused: bioFocused, photoPickerFocused: pictureFocused)
                         case .settingsList:
@@ -83,6 +81,20 @@ struct MainFlowNavigationStack<RootView: View>: View {
                     .hideBackButtonTitle()
                 }
 
+        }
+        .sheet(item: $mainFlowPath.reportTarget) { target in
+            ReportScreen(octopus: octopus, target: target)
+                .modify {
+                    if #available(iOS 16.0, *) {
+                        $0.presentationDragIndicator(.visible)
+                    } else { $0 }
+                }
+                .modify {
+                    // do not use presentationBackground on iOS 17 because it breaks the layout when the view is presented
+                    if #available(iOS 18.0, *) {
+                        $0.presentationBackground(Color(.systemBackground))
+                    } else { $0 }
+                }
         }
         // TODO Djavan remove this as it forces to use navigationView instead of navigationStack. It has been set
         // because of a bug impacting the CreatePostView that was re-created when put in background.

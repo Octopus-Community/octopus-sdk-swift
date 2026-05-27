@@ -214,36 +214,35 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
 
   }
 
-  public struct Success: Sendable {
+  public struct Success: @unchecked Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     public var reaction: Com_Octopuscommunity_OctoObject {
-      get {_reaction ?? Com_Octopuscommunity_OctoObject()}
-      set {_reaction = newValue}
+      get {_storage._reaction ?? Com_Octopuscommunity_OctoObject()}
+      set {_uniqueStorage()._reaction = newValue}
     }
     /// Returns true if `reaction` has been explicitly set.
-    public var hasReaction: Bool {self._reaction != nil}
+    public var hasReaction: Bool {_storage._reaction != nil}
     /// Clears the value of `reaction`. Subsequent reads from it will return its default value.
-    public mutating func clearReaction() {self._reaction = nil}
+    public mutating func clearReaction() {_uniqueStorage()._reaction = nil}
 
     ///For analytics
     public var hasTargetVideoContent_p: Bool {
-      get {_hasTargetVideoContent_p ?? false}
-      set {_hasTargetVideoContent_p = newValue}
+      get {_storage._hasTargetVideoContent_p ?? false}
+      set {_uniqueStorage()._hasTargetVideoContent_p = newValue}
     }
     /// Returns true if `hasTargetVideoContent_p` has been explicitly set.
-    public var hasHasTargetVideoContent_p: Bool {self._hasTargetVideoContent_p != nil}
+    public var hasHasTargetVideoContent_p: Bool {_storage._hasTargetVideoContent_p != nil}
     /// Clears the value of `hasTargetVideoContent_p`. Subsequent reads from it will return its default value.
-    public mutating func clearHasTargetVideoContent_p() {self._hasTargetVideoContent_p = nil}
+    public mutating func clearHasTargetVideoContent_p() {_uniqueStorage()._hasTargetVideoContent_p = nil}
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
 
-    fileprivate var _reaction: Com_Octopuscommunity_OctoObject? = nil
-    fileprivate var _hasTargetVideoContent_p: Bool? = nil
+    fileprivate var _storage = _StorageClass.defaultInstance
   }
 
   public struct Fail: Sendable {
@@ -672,36 +671,74 @@ extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Messag
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reaction\0\u{1}hasTargetVideoContent\0")
 
+  fileprivate class _StorageClass {
+    var _reaction: Com_Octopuscommunity_OctoObject? = nil
+    var _hasTargetVideoContent_p: Bool? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _reaction = source._reaction
+      _hasTargetVideoContent_p = source._hasTargetVideoContent_p
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._reaction) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self._hasTargetVideoContent_p) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._reaction) }()
+        case 2: try { try decoder.decodeSingularBoolField(value: &_storage._hasTargetVideoContent_p) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._reaction {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    try { if let v = self._hasTargetVideoContent_p {
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
-    } }()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._reaction {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._hasTargetVideoContent_p {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+      } }()
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PutReactionResponse.Success, rhs: Com_Octopuscommunity_PutReactionResponse.Success) -> Bool {
-    if lhs._reaction != rhs._reaction {return false}
-    if lhs._hasTargetVideoContent_p != rhs._hasTargetVideoContent_p {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._reaction != rhs_storage._reaction {return false}
+        if _storage._hasTargetVideoContent_p != rhs_storage._hasTargetVideoContent_p {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

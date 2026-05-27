@@ -20,6 +20,38 @@ struct StorableComment: StorableResponse, Equatable, Sendable {
 
     let aggregatedInfo: AggregatedInfo?
     let userInteractions: UserInteractions?
+
+    let permissions: UserPermissions
+
+    init(uuid: String,
+         text: TranslatableText?,
+         medias: [Media],
+         author: MinimalProfile?,
+         creationDate: Date,
+         updateDate: Date,
+         status: StorableStatus,
+         statusReasons: [StorableStatusReason],
+         parentId: String,
+         descReplyFeedId: String?,
+         ascReplyFeedId: String?,
+         aggregatedInfo: AggregatedInfo?,
+         userInteractions: UserInteractions?,
+         permissions: UserPermissions = .default) {
+        self.uuid = uuid
+        self.text = text
+        self.medias = medias
+        self.author = author
+        self.creationDate = creationDate
+        self.updateDate = updateDate
+        self.status = status
+        self.statusReasons = statusReasons
+        self.parentId = parentId
+        self.descReplyFeedId = descReplyFeedId
+        self.ascReplyFeedId = ascReplyFeedId
+        self.aggregatedInfo = aggregatedInfo
+        self.userInteractions = userInteractions
+        self.permissions = permissions
+    }
 }
 
 extension StorableComment {
@@ -39,6 +71,10 @@ extension StorableComment {
         ascReplyFeedId = entity.ascChildrenFeedId
         aggregatedInfo = AggregatedInfo(from: entity)
         userInteractions = UserInteractions(from: entity)
+        permissions = UserPermissions(
+            canAccess: entity.canAccess,
+            canCreateChildren: entity.canCreateChildren
+        )
     }
 
     init?(octoComment: Com_Octopuscommunity_OctoObject, aggregate: Com_Octopuscommunity_Aggregate?,
@@ -75,6 +111,7 @@ extension StorableComment {
 
         self.aggregatedInfo = aggregate.map { .init(from: $0) }
         self.userInteractions = userInteraction.map { .init(from: $0) }
+        self.permissions = UserPermissions(from: userInteraction)
     }
 
     init(from comment: Comment) {
@@ -92,5 +129,6 @@ extension StorableComment {
 
         aggregatedInfo = comment.aggregatedInfo
         userInteractions = comment.userInteractions
+        permissions = comment.permissions
     }
 }

@@ -2,7 +2,9 @@
 //  Copyright © 2026 Octopus Community. All rights reserved.
 //
 
-public struct Topic: Sendable, Equatable, Hashable {
+import Foundation
+
+public struct Topic: Sendable, Equatable {
     public let uuid: String
     public let name: String
     public let description: String
@@ -10,6 +12,8 @@ public struct Topic: Sendable, Equatable, Hashable {
     public let isFollowed: Bool
     public let sections: [Section]
     public let feedId: String
+    public let permissions: UserPermissions
+    public let customAction: CustomAction?
 
     public let feed: Feed<Post, Comment>
 }
@@ -31,6 +35,11 @@ extension Topic {
         case .UNRECOGNIZED, .unknown: false
         }
         sections = topic.sections.map { .init(from: $0) }
+        permissions = topic.permissions
+
+        customAction = CustomAction(
+            ctaText: topic.customActionText,
+            targetLink: topic.customActionTargetLink)
 
         feed = postFeedsStore.getOrCreate(feedId: feedId)
     }

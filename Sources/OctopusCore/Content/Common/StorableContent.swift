@@ -14,4 +14,5 @@ protocol StorableContent {
     var parentId: String { get }
     var aggregatedInfo: AggregatedInfo? { get }
     var userInteractions: UserInteractions? { get }
+    var permissions: UserPermissions { get }
 }

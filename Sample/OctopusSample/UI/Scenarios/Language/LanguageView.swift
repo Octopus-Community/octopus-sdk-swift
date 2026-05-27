@@ -56,5 +56,6 @@ struct LanguageView: View {
                 .padding(.horizontal)
             }
         }
+        .hostAppFooter()
     }
 }

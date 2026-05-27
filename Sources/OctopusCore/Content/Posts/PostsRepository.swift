@@ -23,7 +23,6 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let networkMonitor: NetworkMonitor
     private let commentFeedsStore: CommentFeedsStore
     private let blockedUserIdsProvider: BlockedUserIdsProvider
-    private let validator: Validators.Post
     // swiftlint:disable:next weak_delegate
     private let userInteractionsDelegate: UserInteractionsDelegate
     private let gamificationRepository: GamificationRepository
@@ -46,7 +45,6 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         blockedUserIdsProvider = injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider)
-        validator = injector.getInjected(identifiedBy: Injected.validators).post
         gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
@@ -131,11 +129,12 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 incrementViewCount: incrementViewCount,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
             let additionalData = batchResponse.responses
-                .compactMap { response -> (String, AggregatedInfo?, UserInteractions?)? in
+                .compactMap { response -> (String, AggregatedInfo?, UserInteractions?, UserPermissions?)? in
                     let aggregateInfo = response.hasAggregate ? AggregatedInfo(from: response.aggregate) : nil
                     let userInteractions = response.hasRequesterCtx ? UserInteractions(from: response.requesterCtx) : nil
+                    let permissions = response.hasRequesterCtx ? UserPermissions(from: response.requesterCtx) : nil
                     let id = response.octoObjectID
-                    return (id, aggregateInfo, userInteractions)
+                    return (id, aggregateInfo, userInteractions, permissions)
                 }
             try await postsDatabase.update(additionalData: additionalData)
         } catch {
@@ -148,8 +147,9 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     }
 
     @discardableResult
-    public func send(_ post: WritablePost) async throws(SendPost.Error) -> (Post, Data?) {
-        guard validator.validate(post: post) else {
+    public func send(_ post: WritablePost,
+                     creationSource: CreationSource = .user) async throws(SendPost.Error) -> (Post, Data?) {
+        guard Validators.Post.validate(post: post) else {
             throw .serverCall(.other(InternalError.objectMalformed))
         }
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
@@ -164,6 +164,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
             }
             let response = try await remoteClient.octoService.put(
                 post: post.rwOctoObject(imageIsCompressed: imageIsCompressed),
+                creationSource: creationSource.proto,
                 authenticationMethod: try authCallProvider.authenticatedMethod())
 
             switch response.result {
@@ -172,6 +173,12 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                     throw SendComment.Error.serverCall(.other(nil))
                 }
                 try await postsDatabase.upsert(posts: [finalPost])
+                // The PutPost response doesn't carry `RequesterCtx`, so the post lands in the DB
+                // with default-open permissions. Re-fetch immediately to persist the real
+                // entitlements before the publishers fire — this saves observers the brief
+                // flash they'd otherwise see between creation and the cell's `onAppear` fetch.
+                let hasVideo = finalPost.medias.contains { $0.kind == .video }
+                try? await fetchAdditionalData(ids: [(finalPost.uuid, hasVideo)], incrementViewCount: false)
                 _postSentPublisher.send()
                 let imageData: Data? = if case let .image(imageData) = post.attachment { imageData } else { nil }
                 let createdPost = Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
@@ -222,40 +229,53 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
-    /// Sets a reaction on the user's behalf on a given post
+    /// Sets a reaction on the user's behalf on a post identified by `postId`.
+    /// Works on any post (bridge or community).
     /// - Parameters:
     ///   - reaction: the reaction to set. Nil if the reaction should be removed.
-    ///   - clientObjectRelatedPostId: the post id
-    public func set(reaction: ReactionKind?, clientObjectRelatedPostId: String)
-    async throws(SetReactionOnBridgePostError) {
+    ///   - postId: the post id.
+    public func set(reaction: ReactionKind?, postId: String)
+    async throws(SetReactionOnPostError) {
         do {
             if case .unknown = reaction {
-                throw SetReactionOnBridgePostError.unknownReaction
+                throw SetReactionOnPostError.unknownReaction
             }
             // first try to get the post locally
-            var storablePost = try await postsDatabase.getPosts(ids: [clientObjectRelatedPostId]).first
+            var storablePost = try await postsDatabase.getPosts(ids: [postId]).first
             if storablePost == nil {
                 // If not found, fetch the post
-                try await fetchPost(uuid: clientObjectRelatedPostId, hasVideo: false)
-                storablePost = try await postsDatabase.getPosts(ids: [clientObjectRelatedPostId]).first
+                try await fetchPost(uuid: postId, hasVideo: false)
+                storablePost = try await postsDatabase.getPosts(ids: [postId]).first
             }
             guard let storablePost else {
                 if #available(iOS 14, *) { Logger.posts.debug("Post not found when trying to set reaction") }
-                throw SetReactionOnBridgePostError.postNotFound
+                throw SetReactionOnPostError.postNotFound
             }
             let post = Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
-            guard post.clientObjectBridgeInfo != nil else {
-                if #available(iOS 14, *) { Logger.posts.debug("Post is not a client object related post (i.e. bridge post)") }
-                throw SetReactionOnBridgePostError.postIsNotABridge
-            }
+            // No bridge precondition. parentIsTranslated stays nil — matches today's behavior.
             try await userInteractionsDelegate.set(reaction: reaction, content: post,
                                                    parentIsTranslated: nil)
         } catch {
-            if let error = error as? SetReactionOnBridgePostError {
+            if let error = error as? SetReactionOnPostError {
                 throw error
             }
             if let error = error as? Reaction.Error {
                 throw .reactionError(error)
+            } else if let error = error as? ServerCallError {
+                // fetchPost throws ServerCallError; map each case to the closest Reaction.Error
+                // variant so the public OctopusSetReactionError mapper can surface .noNetwork /
+                // .postNotFound / .serverError instead of collapsing everything into .other.
+                switch error {
+                case .noNetwork:
+                    throw .reactionError(.serverCall(.noNetwork))
+                case let .serverError(serverError):
+                    if case .notFound = serverError {
+                        throw .postNotFound
+                    }
+                    throw .reactionError(.serverCall(.serverError(serverError)))
+                case let .other(other):
+                    throw .reactionError(.serverCall(.other(other)))
+                }
             } else if let error = error as? RemoteClientError {
                 throw .reactionError(.serverCall(.serverError(ServerError(remoteClientError: error))))
             } else {

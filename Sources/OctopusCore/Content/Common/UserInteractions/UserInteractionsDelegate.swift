@@ -105,6 +105,11 @@ class UserInteractionsDelegate {
         } catch {
             if let error = error as? Reaction.Error {
                 throw error
+            } else if let error = error as? AuthenticatedActionError {
+                // authCallProvider.authenticatedMethod() throws bare AuthenticatedActionError
+                // (e.g. .userNotAuthenticated). Wrap it directly so callers see the typed
+                // case (e.g. .notConnected) rather than .other.
+                throw .serverCall(error)
             } else if let error = error as? RemoteClientError {
                 throw .serverCall(.serverError(ServerError(remoteClientError: error)))
             } else {

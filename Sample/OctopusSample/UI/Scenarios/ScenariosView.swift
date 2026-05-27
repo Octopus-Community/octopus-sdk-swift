@@ -42,6 +42,7 @@ struct ScenariosView: View {
             }
             .listStyle(.grouped)
             .navigationBarTitle(Text("Scenarios"), displayMode: .inline)
+            .hostAppFooter()
         }
     }
 }

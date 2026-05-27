@@ -5,6 +5,11 @@
 import Foundation
 import OctopusCore
 
+struct GroupCTAViewData: Equatable {
+    let ctaText: TranslatableText
+    let targetUrl: URL
+}
+
 struct GroupDetail {
     let id: String
     let name: String
@@ -12,6 +17,7 @@ struct GroupDetail {
     let feedId: String
     let canChangeFollowStatus: Bool
     let isFollowed: Bool
+    let customAction: GroupCTAViewData?
     let coreTopic: OctopusCore.Topic
 }
 
@@ -23,6 +29,9 @@ extension GroupDetail {
         feedId = topic.feedId
         canChangeFollowStatus = topic.canChangeFollowStatus
         isFollowed = topic.isFollowed
+        customAction = topic.customAction.map {
+            GroupCTAViewData(ctaText: $0.ctaText, targetUrl: $0.targetUrl)
+        }
         coreTopic = topic
     }
 }

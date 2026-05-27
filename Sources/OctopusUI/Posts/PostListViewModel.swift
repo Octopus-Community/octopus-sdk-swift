@@ -22,6 +22,7 @@ class PostListViewModel: ObservableObject {
     }
 
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
+    @Published private(set) var canCreatePost: Bool = true
     var thisUserProfileId: String? {
         octopus.core.profileRepository.profile?.id
     }
@@ -65,12 +66,17 @@ class PostListViewModel: ObservableObject {
         octopus.core.sdkEventsEmitter.internalEvents
             .sink { [unowned self] internalEvent in
                 switch internalEvent {
-                case .groupFollowingChanged:
+                case .groupFollowingChanged, .entitlementsChanged:
                     refreshFeed(isManual: false)
                     scrollToTop = true
                 default: break
                 }
             }.store(in: &storage)
+
+        octopus.core.topicsRepository.$canCreateAnyPost
+            .removeDuplicates()
+            .sink { [weak self] in self?.canCreatePost = $0 }
+            .store(in: &storage)
     }
 
     func set(feed: Feed<Post, Comment>) {

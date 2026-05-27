@@ -10,6 +10,7 @@ struct ResponseActionBarView: View {
     @Environment(\.octopusTheme) private var theme
 
     let kind: ResponseKind
+    let displayReplyButton: Bool
     let liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>
     let initialLiveMeasures: LiveMeasures
     let reactionTapped: (ReactionKind?) -> Void
@@ -18,11 +19,13 @@ struct ResponseActionBarView: View {
     @State private var liveMeasures: LiveMeasures
 
     init(kind: ResponseKind,
+         displayReplyButton: Bool,
          liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>,
          initialLiveMeasures: LiveMeasures,
          reactionTapped: @escaping (ReactionKind?) -> Void,
          openCreateReply: @escaping () -> Void) {
         self.kind = kind
+        self.displayReplyButton = displayReplyButton
         self.liveMeasuresPublisher = liveMeasuresPublisher
         self.initialLiveMeasures = initialLiveMeasures
         self.reactionTapped = reactionTapped
@@ -44,7 +47,7 @@ struct ResponseActionBarView: View {
                 userReaction: liveMeasures.userInteractions.reaction,
                 reactionTapped: reactionTapped)
 
-            if kind == .comment {
+            if kind == .comment && displayReplyButton {
                 Button(action: openCreateReply) {
                     CreateChildInteractionView(
                         image: theme.assets.icons.content.reply.creation.open,

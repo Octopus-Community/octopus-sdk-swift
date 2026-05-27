@@ -15,6 +15,7 @@ class AccountViewModel: ObservableObject {
 
     @Published var appUser: AppUser?
     @Published var octopus: OctopusSDK?
+    @Published var entitlementsDisplay: String = "—"
 
     private let appUserManager: AppUserManager
     private var storage = [AnyCancellable]()
@@ -32,6 +33,17 @@ class AccountViewModel: ObservableObject {
             .removeDuplicates()
             .sink {
                 AppUserManager.instance.set(appUser: $0)
+            }.store(in: &storage)
+
+        OctopusSDKProvider.instance.octopus?.$profile
+            .map { profile -> String in
+                let entitlements = profile?.entitlements ?? []
+                guard !entitlements.isEmpty else { return "—" }
+                return entitlements.sorted().joined(separator: ", ")
+            }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                entitlementsDisplay = $0
             }.store(in: &storage)
     }
 }

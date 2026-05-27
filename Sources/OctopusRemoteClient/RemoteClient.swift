@@ -9,13 +9,11 @@ import GRPC
 import GRPCSwift
 #endif
 import OctopusGrpcModels
-import Logging
 import NIOCore
 import NIOPosix
 import NIOHPACK
 
 public protocol OctopusRemoteClient {
-    var magicLinkStreamService: MagicLinkStreamService { get }
     var magicLinkService: MagicLinkService { get }
     var octoService: OctoService { get }
     var userService: UserService { get }
@@ -33,7 +31,6 @@ public protocol OctopusRemoteClient {
 public class GrpcClient: OctopusRemoteClient {
     public var octoService: OctoService { _octoService }
     public var magicLinkService: MagicLinkService { _magicLinkService }
-    public var magicLinkStreamService: MagicLinkStreamService { _magicLinkStreamService }
     public var userService: UserService { _userService }
     public var feedService: FeedService { _feedService }
     public var trackingService: TrackingService { _trackingService }
@@ -42,7 +39,6 @@ public class GrpcClient: OctopusRemoteClient {
 
     private let _octoService: OctoServiceClient
     private let _magicLinkService: MagicLinkServiceClient
-    private let _magicLinkStreamService: MagicLinkStreamingServiceClient
     private let _userService: UserServiceClient
     private let _feedService: FeedServiceClient
     private let _trackingService: TrackingServiceClient
@@ -50,29 +46,24 @@ public class GrpcClient: OctopusRemoteClient {
     private let _apiKeyService: ApiKeyServiceClient
 
     private let unaryChannel: GRPCChannel
-    private let streamingChannel: GRPCChannel
     private let group = PlatformSupport.makeEventLoopGroup(loopCount: 1, networkPreference: .best)
 
     private let serviceClients: [ServiceClient]
 
     public init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
+                serverHost: String? = nil,
+                serverPort: Int? = nil,
                 getUserIdBlock: @escaping () -> String?,
                 updateTokenBlock: @escaping (String) -> Void) throws {
-        // base URL can be overriden by env vars. This is used for the internal demo app for example
-        let baseUrl: String = if let customBaseUrl = Bundle.main.infoDictionary?["OCTOPUS_REMOTE_BASE_URL"] as? String,
-                                 !customBaseUrl.isEmpty {
-            customBaseUrl
-        } else { "api.8pus.io" }
+        let resolved = GrpcClient.resolveBaseURL(
+            override: serverHost.map { (host: $0, port: serverPort ?? 443) },
+            infoDictionary: Bundle.main.infoDictionary
+        )
+        let unaryHost = GrpcClient.stripIPv6Brackets(resolved.host)
 
         unaryChannel = try GRPCChannelPool.with(
             configuration: GRPCChannelPool.Configuration.with(
-                target: .host(baseUrl, port: 443),
-                transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()),
-                eventLoopGroup: group))
-
-        streamingChannel = try GRPCChannelPool.with(
-            configuration: GRPCChannelPool.Configuration.with(
-                target: .host("realtime-\(baseUrl)", port: 443),
+                target: .host(unaryHost, port: resolved.port),
                 transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()),
                 eventLoopGroup: group))
 
@@ -84,9 +75,6 @@ public class GrpcClient: OctopusRemoteClient {
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
             localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
-        _magicLinkStreamService = MagicLinkStreamingServiceClient(
-            streamingChannel: streamingChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier)
         _userService = UserServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
             localeIdentifier: localeIdentifier,
@@ -108,8 +96,31 @@ public class GrpcClient: OctopusRemoteClient {
             localeIdentifier: localeIdentifier,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
 
-        serviceClients = [_octoService, _magicLinkService, _magicLinkStreamService, _userService, _feedService,
+        serviceClients = [_octoService, _magicLinkService, _userService, _feedService,
                           _trackingService, _notificationService, _apiKeyService]
+    }
+
+    /// Resolves the base URL for the unary channel.
+    ///
+    /// Resolution order: explicit override → Info.plist `OCTOPUS_REMOTE_BASE_URL` (internal) → default.
+    static func resolveBaseURL(
+        override: (host: String, port: Int)?,
+        infoDictionary: [String: Any]?
+    ) -> (host: String, port: Int) {
+        if let override {
+            return override
+        }
+        if let plistValue = infoDictionary?["OCTOPUS_REMOTE_BASE_URL"] as? String,
+           !plistValue.isEmpty {
+            return (host: plistValue, port: 443)
+        }
+        return (host: "api.8pus.io", port: 443)
+    }
+
+    /// Strips a surrounding `[...]` pair if present.
+    static func stripIPv6Brackets(_ host: String) -> String {
+        guard host.count >= 2, host.first == "[", host.last == "]" else { return host }
+        return String(host.dropFirst().dropLast())
     }
 
     public func set(appSessionId: String?) {

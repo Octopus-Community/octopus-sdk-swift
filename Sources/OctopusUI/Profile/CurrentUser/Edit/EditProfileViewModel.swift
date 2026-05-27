@@ -202,10 +202,10 @@ class EditProfileViewModel: ObservableObject {
                 guard let self else { return }
                 switch picture {
                 case let .changed(_, image):
-                    let validator = octopus.core.validators.picture
-                    switch validator.validate(image) {
+                    switch Validators.Picture.validate(image) {
                     case .sideTooSmall, .ratioTooBig:
-                        alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(validator.maxRatioStr)_minSize:\(Int(validator.minSize))")
+                        alertError = .localizationKey(
+                            "Picture.Selection.Error_maxRatio:\(Validators.Picture.maxRatioStr)_minSize:\(Int(Validators.Picture.minSize))")
                         self.picture = .unchanged(savedProfile?.pictureUrl)
                     case .valid:
                         break

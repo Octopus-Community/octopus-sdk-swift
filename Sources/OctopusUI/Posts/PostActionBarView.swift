@@ -9,6 +9,7 @@ struct PostActionBarView: View {
     @Environment(\.octopusTheme) private var theme
 
     let userReaction: UserReaction?
+    let displayCommentButton: Bool
     let reactionTapped: (ReactionKind?) -> Void
     let commentTapped: () -> Void
 
@@ -23,19 +24,21 @@ struct PostActionBarView: View {
                 reactionTapped: reactionTapped)
             .frame(maxWidth: .infinity)
 
-            Button(action: {
-                HapticFeedback.play()
-                commentTapped()
-            }) {
-                CreateChildInteractionView(
-                    image: theme.assets.icons.content.comment.creation.open,
-                    text: "Content.AggregatedInfo.Comment",
-                    kind: .comment)
-                .frame(minHeight: 44)
-                .contentShape(Rectangle())
+            if displayCommentButton {
+                Button(action: {
+                    HapticFeedback.play()
+                    commentTapped()
+                }) {
+                    CreateChildInteractionView(
+                        image: theme.assets.icons.content.comment.creation.open,
+                        text: "Content.AggregatedInfo.Comment",
+                        kind: .comment)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity)
         }
     }
 }

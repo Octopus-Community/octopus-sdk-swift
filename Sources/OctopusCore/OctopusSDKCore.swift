@@ -57,6 +57,8 @@ public class OctopusSDKCore: ObservableObject {
         let remoteClient = try GrpcClient(
             apiKey: apiKey, sdkVersion: version, installId: installIdProvider.installId,
             localeIdentifier: languageRepository.localeIdentifier,
+            serverHost: sdkConfig.apiServer?.host,
+            serverPort: sdkConfig.apiServer?.port,
             getUserIdBlock: { [userDataStorage] in
                 userDataStorage.userData?.id
             },
@@ -72,6 +74,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { _ in AppStateMonitorDefault() }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { UserProfileFetchMonitorDefault(injector: $0) }
+        injector.register { EntitlementMonitor(injector: $0) }
         injector.register { PostChildChangeMonitor(injector: $0) }
         injector.register { LanguageChangedMonitor(injector: $0) }
         injector.register { BlockedUserIdsProviderDefault(injector: $0) }
@@ -158,6 +161,7 @@ public class OctopusSDKCore: ObservableObject {
             break
         }
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).start()
+        injector.getInjected(identifiedBy: Injected.entitlementMonitor).start()
         injector.getInjected(identifiedBy: Injected.languageChangedMonitor).start()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).start()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).start()
@@ -247,6 +251,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).stop()
         injector.getInjected(identifiedBy: Injected.languageChangedMonitor).stop()
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.entitlementMonitor).stop()
         switch connectionMode {
         case .octopus:
             injector.getInjected(identifiedBy: Injected.magicLinkMonitor).stop()

@@ -14,6 +14,11 @@ class AppUserManager {
     @Published var appUser: AppUser?
     @Published var connectionError: OctopusConnectUserError?
 
+    /// Test-harness entitlements that get embedded in the next client-signed JWT minted by
+    /// `TokenProvider`. In a real client app these are sourced from the backend session;
+    /// here we let the tester edit them directly via the entitlements editor screens.
+    var currentEntitlements: Set<Entitlement> = []
+
     private let appUserStore = AppUserStore()
     private let tokenProvider = TokenProvider()
     private var storage = [AnyCancellable]()
@@ -47,7 +52,10 @@ class AppUserManager {
                             clientUser,
                             tokenProvider: { [weak self] in
                                 guard let self else { throw NSError(domain: "", code: 0, userInfo: nil) }
-                                return try await self.tokenProvider.getClientUserToken(userId: appUser.userId)
+                                return try await self.tokenProvider.getClientUserToken(
+                                    userId: appUser.userId,
+                                    entitlements: self.currentEntitlements.map(\.rawValue).sorted()
+                                )
                             })
                         await MainActor.run { self.connectionError = nil }
                     } catch {

@@ -18,9 +18,11 @@ struct AppEditUserScreen: View {
 
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Identifier: \(viewModel.appUser?.userId ?? "")")
-                AppEditUserView(nickname: $nickname, bio: $bio, picture: $picture)
+            ScrollView {
+                VStack {
+                    Text("Identifier: \(viewModel.appUser?.userId ?? "")")
+                    AppEditUserView(nickname: $nickname, bio: $bio, picture: $picture)
+                }
             }
             .navigationBarTitle("Edit your profile")
             .navigationBarItems(
@@ -45,6 +47,7 @@ struct AppEditUserScreen: View {
                 picture = viewModel.appUser?.picture
             }
             .presentationBackground(Color(.systemBackground))
+            .hostAppFooter()
         }
     }
 }

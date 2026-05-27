@@ -14,6 +14,7 @@ struct SDKConfigScreen: View {
             SDKConfigView(afterSaveAction: {
                 presentationMode.wrappedValue.dismiss()
             })
+            .hostAppFooter()
         }
     }
 }

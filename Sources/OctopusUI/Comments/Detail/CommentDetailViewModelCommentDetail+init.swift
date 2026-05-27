@@ -21,6 +21,7 @@ extension CommentDetailViewModel.CommentDetail {
         canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
         canBeModerated = comment.author?.uuid != thisUserProfileId
         canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
+        canCreateChildren = comment.permissions.canCreateChildren
         aggregatedInfo = comment.aggregatedInfo
         userInteractions = comment.userInteractions
     }

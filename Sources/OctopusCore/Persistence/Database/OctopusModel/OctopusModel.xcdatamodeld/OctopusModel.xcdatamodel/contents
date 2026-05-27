@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="25C56" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24900" systemVersion="25E253" minimumToolsVersion="Xcode 13.0" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="BlockedUser" representedClassName="BlockedUserEntity" syncable="YES">
         <attribute name="profileId" optional="YES" attributeType="String"/>
         <relationship name="blockedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PrivateProfile" inverseName="blocking" inverseEntity="PrivateProfile"/>
@@ -72,6 +72,8 @@
         <attribute name="authorAvatarUrl" optional="YES" attributeType="URI"/>
         <attribute name="authorId" optional="YES" attributeType="String"/>
         <attribute name="authorNickname" optional="YES" attributeType="String"/>
+        <attribute name="canAccessOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
+        <attribute name="canCreateChildrenOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
         <attribute name="childCount" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="creationTimestamp" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="descChildrenFeedId" optional="YES" attributeType="String"/>
@@ -128,6 +130,7 @@
         <attribute name="bio" optional="YES" attributeType="String"/>
         <attribute name="descPostFeedId" attributeType="String"/>
         <attribute name="email" optional="YES" attributeType="String"/>
+        <attribute name="entitlementsRaw" optional="YES" attributeType="String"/>
         <attribute name="gamificationLevelOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
         <attribute name="gamificationScoreOptional" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="NO"/>
         <attribute name="hasAcceptedCguOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
@@ -179,6 +182,9 @@
         <relationship name="topicRelationship" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Topic" inverseName="sectionRelationship" inverseEntity="Topic"/>
     </entity>
     <entity name="Topic" representedClassName="TopicEntity" parentEntity="OctoObject" syncable="YES">
+        <attribute name="customActionTargetLink" optional="YES" attributeType="String"/>
+        <attribute name="customActionText" optional="YES" attributeType="String"/>
+        <attribute name="customActionTranslatedText" optional="YES" attributeType="String"/>
         <attribute name="desc" attributeType="String"/>
         <attribute name="followStatusValue" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" attributeType="String"/>

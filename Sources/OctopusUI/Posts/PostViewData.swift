@@ -11,12 +11,15 @@ struct PostViewData {
     let uuid: String
     let author: Author
     let relativeDate: String
-    let topic: String
+    let topic: String?
     let tags: [PostTag]
     let content: PostContent
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
+    /// Whether the current user can create comments on this post.
+    /// Used in the feed cell to intercept the card tap when `false`.
+    let canCreateChildren: Bool
     /// Visibility payload emitted via `VisibleItemsPreference` on the video view so that the
     /// enclosing scroll modifier (`postsVisibilityScrollView`) can auto-play the centered video.
     let visiblePost: VisiblePost

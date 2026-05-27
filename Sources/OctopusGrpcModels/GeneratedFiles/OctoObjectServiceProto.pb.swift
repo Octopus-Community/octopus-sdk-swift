@@ -134,6 +134,24 @@ public struct Com_Octopuscommunity_UpdatePostRequest: Sendable {
     /// Clears the value of `shadowBanned`. Subsequent reads from it will return its default value.
     public mutating func clearShadowBanned() {self._shadowBanned = nil}
 
+    public var createCommentsRepliesOverride: Com_Octopuscommunity_EntitlementList {
+      get {_createCommentsRepliesOverride ?? Com_Octopuscommunity_EntitlementList()}
+      set {_createCommentsRepliesOverride = newValue}
+    }
+    /// Returns true if `createCommentsRepliesOverride` has been explicitly set.
+    public var hasCreateCommentsRepliesOverride: Bool {self._createCommentsRepliesOverride != nil}
+    /// Clears the value of `createCommentsRepliesOverride`. Subsequent reads from it will return its default value.
+    public mutating func clearCreateCommentsRepliesOverride() {self._createCommentsRepliesOverride = nil}
+
+    public var clearCreateCommentsRepliesOverride_p: Bool {
+      get {_clearCreateCommentsRepliesOverride_p ?? false}
+      set {_clearCreateCommentsRepliesOverride_p = newValue}
+    }
+    /// Returns true if `clearCreateCommentsRepliesOverride_p` has been explicitly set.
+    public var hasClearCreateCommentsRepliesOverride_p: Bool {self._clearCreateCommentsRepliesOverride_p != nil}
+    /// Clears the value of `clearCreateCommentsRepliesOverride_p`. Subsequent reads from it will return its default value.
+    public mutating func clearClearCreateCommentsRepliesOverride_p() {self._clearCreateCommentsRepliesOverride_p = nil}
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
@@ -145,6 +163,8 @@ public struct Com_Octopuscommunity_UpdatePostRequest: Sendable {
     fileprivate var _minActivityScore: UInt64? = nil
     fileprivate var _deleteMinActivityScore: Bool? = nil
     fileprivate var _shadowBanned: Bool? = nil
+    fileprivate var _createCommentsRepliesOverride: Com_Octopuscommunity_EntitlementList? = nil
+    fileprivate var _clearCreateCommentsRepliesOverride_p: Bool? = nil
   }
 
   public init() {}
@@ -393,47 +413,48 @@ public struct Com_Octopuscommunity_GetRequest: Sendable {
   fileprivate var _hasVideo_p: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_GetResponse: Sendable {
+public struct Com_Octopuscommunity_GetResponse: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var octoObjectID: String = String()
+  public var octoObjectID: String {
+    get {_storage._octoObjectID}
+    set {_uniqueStorage()._octoObjectID = newValue}
+  }
 
   public var octoObject: Com_Octopuscommunity_OctoObject {
-    get {_octoObject ?? Com_Octopuscommunity_OctoObject()}
-    set {_octoObject = newValue}
+    get {_storage._octoObject ?? Com_Octopuscommunity_OctoObject()}
+    set {_uniqueStorage()._octoObject = newValue}
   }
   /// Returns true if `octoObject` has been explicitly set.
-  public var hasOctoObject: Bool {self._octoObject != nil}
+  public var hasOctoObject: Bool {_storage._octoObject != nil}
   /// Clears the value of `octoObject`. Subsequent reads from it will return its default value.
-  public mutating func clearOctoObject() {self._octoObject = nil}
+  public mutating func clearOctoObject() {_uniqueStorage()._octoObject = nil}
 
   public var aggregate: Com_Octopuscommunity_Aggregate {
-    get {_aggregate ?? Com_Octopuscommunity_Aggregate()}
-    set {_aggregate = newValue}
+    get {_storage._aggregate ?? Com_Octopuscommunity_Aggregate()}
+    set {_uniqueStorage()._aggregate = newValue}
   }
   /// Returns true if `aggregate` has been explicitly set.
-  public var hasAggregate: Bool {self._aggregate != nil}
+  public var hasAggregate: Bool {_storage._aggregate != nil}
   /// Clears the value of `aggregate`. Subsequent reads from it will return its default value.
-  public mutating func clearAggregate() {self._aggregate = nil}
+  public mutating func clearAggregate() {_uniqueStorage()._aggregate = nil}
 
   public var requesterCtx: Com_Octopuscommunity_RequesterCtx {
-    get {_requesterCtx ?? Com_Octopuscommunity_RequesterCtx()}
-    set {_requesterCtx = newValue}
+    get {_storage._requesterCtx ?? Com_Octopuscommunity_RequesterCtx()}
+    set {_uniqueStorage()._requesterCtx = newValue}
   }
   /// Returns true if `requesterCtx` has been explicitly set.
-  public var hasRequesterCtx: Bool {self._requesterCtx != nil}
+  public var hasRequesterCtx: Bool {_storage._requesterCtx != nil}
   /// Clears the value of `requesterCtx`. Subsequent reads from it will return its default value.
-  public mutating func clearRequesterCtx() {self._requesterCtx = nil}
+  public mutating func clearRequesterCtx() {_uniqueStorage()._requesterCtx = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _octoObject: Com_Octopuscommunity_OctoObject? = nil
-  fileprivate var _aggregate: Com_Octopuscommunity_Aggregate? = nil
-  fileprivate var _requesterCtx: Com_Octopuscommunity_RequesterCtx? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct Com_Octopuscommunity_GetBatchRequest: Sendable {
@@ -460,35 +481,89 @@ public struct Com_Octopuscommunity_GetBatchResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_PutRequest: @unchecked Sendable {
+public struct Com_Octopuscommunity_PutRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   public var octoObject: Com_Octopuscommunity_RwOctoObject {
-    get {_storage._octoObject ?? Com_Octopuscommunity_RwOctoObject()}
-    set {_uniqueStorage()._octoObject = newValue}
+    get {_octoObject ?? Com_Octopuscommunity_RwOctoObject()}
+    set {_octoObject = newValue}
   }
   /// Returns true if `octoObject` has been explicitly set.
-  public var hasOctoObject: Bool {_storage._octoObject != nil}
+  public var hasOctoObject: Bool {self._octoObject != nil}
   /// Clears the value of `octoObject`. Subsequent reads from it will return its default value.
-  public mutating func clearOctoObject() {_uniqueStorage()._octoObject = nil}
+  public mutating func clearOctoObject() {self._octoObject = nil}
 
   /// Whether the interaction happened on a translated or original content. Default false
   public var translatedContent: Bool {
-    get {_storage._translatedContent ?? false}
-    set {_uniqueStorage()._translatedContent = newValue}
+    get {_translatedContent ?? false}
+    set {_translatedContent = newValue}
   }
   /// Returns true if `translatedContent` has been explicitly set.
-  public var hasTranslatedContent: Bool {_storage._translatedContent != nil}
+  public var hasTranslatedContent: Bool {self._translatedContent != nil}
   /// Clears the value of `translatedContent`. Subsequent reads from it will return its default value.
-  public mutating func clearTranslatedContent() {_uniqueStorage()._translatedContent = nil}
+  public mutating func clearTranslatedContent() {self._translatedContent = nil}
+
+  /// PutPost-only. Ignored by other Put* handlers.
+  public var creationSource: Com_Octopuscommunity_PutRequest.CreationSource {
+    get {_creationSource ?? .unspecified}
+    set {_creationSource = newValue}
+  }
+  /// Returns true if `creationSource` has been explicitly set.
+  public var hasCreationSource: Bool {self._creationSource != nil}
+  /// Clears the value of `creationSource`. Subsequent reads from it will return its default value.
+  public mutating func clearCreationSource() {self._creationSource = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
+  public enum CreationSource: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+    case unspecified // = 0
+
+    /// Editor opened with a payload prefilled by the host app
+    case prefilledFromClient // = 1
+
+    /// User opened the editor on their own
+    case user // = 2
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unspecified
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unspecified
+      case 1: self = .prefilledFromClient
+      case 2: self = .user
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unspecified: return 0
+      case .prefilledFromClient: return 1
+      case .user: return 2
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [Com_Octopuscommunity_PutRequest.CreationSource] = [
+      .unspecified,
+      .prefilledFromClient,
+      .user,
+    ]
+
+  }
+
   public init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _octoObject: Com_Octopuscommunity_RwOctoObject? = nil
+  fileprivate var _translatedContent: Bool? = nil
+  fileprivate var _creationSource: Com_Octopuscommunity_PutRequest.CreationSource? = nil
 }
 
 public struct Com_Octopuscommunity_PutCommentResponse: Sendable {
@@ -522,36 +597,35 @@ public struct Com_Octopuscommunity_PutCommentResponse: Sendable {
 
   }
 
-  public struct Success: Sendable {
+  public struct Success: @unchecked Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     public var comment: Com_Octopuscommunity_OctoObject {
-      get {_comment ?? Com_Octopuscommunity_OctoObject()}
-      set {_comment = newValue}
+      get {_storage._comment ?? Com_Octopuscommunity_OctoObject()}
+      set {_uniqueStorage()._comment = newValue}
     }
     /// Returns true if `comment` has been explicitly set.
-    public var hasComment: Bool {self._comment != nil}
+    public var hasComment: Bool {_storage._comment != nil}
     /// Clears the value of `comment`. Subsequent reads from it will return its default value.
-    public mutating func clearComment() {self._comment = nil}
+    public mutating func clearComment() {_uniqueStorage()._comment = nil}
 
     ///For analytics
     public var hasTargetVideoContent_p: Bool {
-      get {_hasTargetVideoContent_p ?? false}
-      set {_hasTargetVideoContent_p = newValue}
+      get {_storage._hasTargetVideoContent_p ?? false}
+      set {_uniqueStorage()._hasTargetVideoContent_p = newValue}
     }
     /// Returns true if `hasTargetVideoContent_p` has been explicitly set.
-    public var hasHasTargetVideoContent_p: Bool {self._hasTargetVideoContent_p != nil}
+    public var hasHasTargetVideoContent_p: Bool {_storage._hasTargetVideoContent_p != nil}
     /// Clears the value of `hasTargetVideoContent_p`. Subsequent reads from it will return its default value.
-    public mutating func clearHasTargetVideoContent_p() {self._hasTargetVideoContent_p = nil}
+    public mutating func clearHasTargetVideoContent_p() {_uniqueStorage()._hasTargetVideoContent_p = nil}
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
 
-    fileprivate var _comment: Com_Octopuscommunity_OctoObject? = nil
-    fileprivate var _hasTargetVideoContent_p: Bool? = nil
+    fileprivate var _storage = _StorageClass.defaultInstance
   }
 
   public struct Fail: Sendable {
@@ -1429,8 +1503,11 @@ public struct Com_Octopuscommunity_GetTopicsResponse: Sendable {
 
   public var topics: [Com_Octopuscommunity_OctoObject] = []
 
-  ///Alphabetical order
+  ///Sorted by client-defined order ascending when set; sections without an order come last. Alphabetical fallback for ties and unset sections.
   public var sections: [Com_Octopuscommunity_OctoObject] = []
+
+  ///Same order than topics. Empty when caller does not need it
+  public var topicsRequesterCtxs: [Com_Octopuscommunity_RequesterCtx] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1817,40 +1894,40 @@ public struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Sendable {
 
   }
 
-  public struct Success: Sendable {
+  public struct Success: @unchecked Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
 
     /// The created post
     public var postBridge: Com_Octopuscommunity_OctoObject {
-      get {_postBridge ?? Com_Octopuscommunity_OctoObject()}
-      set {_postBridge = newValue}
+      get {_storage._postBridge ?? Com_Octopuscommunity_OctoObject()}
+      set {_uniqueStorage()._postBridge = newValue}
     }
     /// Returns true if `postBridge` has been explicitly set.
-    public var hasPostBridge: Bool {self._postBridge != nil}
+    public var hasPostBridge: Bool {_storage._postBridge != nil}
     /// Clears the value of `postBridge`. Subsequent reads from it will return its default value.
-    public mutating func clearPostBridge() {self._postBridge = nil}
+    public mutating func clearPostBridge() {_uniqueStorage()._postBridge = nil}
 
     /// The aggregate for the created post
     public var aggregate: Com_Octopuscommunity_Aggregate {
-      get {_aggregate ?? Com_Octopuscommunity_Aggregate()}
-      set {_aggregate = newValue}
+      get {_storage._aggregate ?? Com_Octopuscommunity_Aggregate()}
+      set {_uniqueStorage()._aggregate = newValue}
     }
     /// Returns true if `aggregate` has been explicitly set.
-    public var hasAggregate: Bool {self._aggregate != nil}
+    public var hasAggregate: Bool {_storage._aggregate != nil}
     /// Clears the value of `aggregate`. Subsequent reads from it will return its default value.
-    public mutating func clearAggregate() {self._aggregate = nil}
+    public mutating func clearAggregate() {_uniqueStorage()._aggregate = nil}
 
     /// Used for analytics only
     public var status: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus {
-      get {_status ?? .unknown}
-      set {_status = newValue}
+      get {_storage._status ?? .unknown}
+      set {_uniqueStorage()._status = newValue}
     }
     /// Returns true if `status` has been explicitly set.
-    public var hasStatus: Bool {self._status != nil}
+    public var hasStatus: Bool {_storage._status != nil}
     /// Clears the value of `status`. Subsequent reads from it will return its default value.
-    public mutating func clearStatus() {self._status = nil}
+    public mutating func clearStatus() {_uniqueStorage()._status = nil}
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1898,9 +1975,7 @@ public struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Sendable {
 
     public init() {}
 
-    fileprivate var _postBridge: Com_Octopuscommunity_OctoObject? = nil
-    fileprivate var _aggregate: Com_Octopuscommunity_Aggregate? = nil
-    fileprivate var _status: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus? = nil
+    fileprivate var _storage = _StorageClass.defaultInstance
   }
 
   public struct Fail: Sendable {
@@ -2343,7 +2418,7 @@ extension Com_Octopuscommunity_UpdatePostRequest: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdatePostRequest.protoMessageName + ".Update"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0\u{1}postContent\0\u{1}maxActivityScore\0\u{1}minActivityScore\0\u{1}shadowBanned\0\u{2}\u{1a}deleteMaxActivityScore\0\u{2}\u{a}deleteMinActivityScore\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0\u{1}postContent\0\u{1}maxActivityScore\0\u{1}minActivityScore\0\u{1}shadowBanned\0\u{1}createCommentsRepliesOverride\0\u{2}\u{19}deleteMaxActivityScore\0\u{2}\u{a}deleteMinActivityScore\0\u{2}\u{14}clearCreateCommentsRepliesOverride\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2356,8 +2431,10 @@ extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, 
       case 3: try { try decoder.decodeSingularUInt64Field(value: &self._maxActivityScore) }()
       case 4: try { try decoder.decodeSingularUInt64Field(value: &self._minActivityScore) }()
       case 5: try { try decoder.decodeSingularBoolField(value: &self._shadowBanned) }()
+      case 6: try { try decoder.decodeSingularMessageField(value: &self._createCommentsRepliesOverride) }()
       case 31: try { try decoder.decodeSingularBoolField(value: &self._deleteMaxActivityScore) }()
       case 41: try { try decoder.decodeSingularBoolField(value: &self._deleteMinActivityScore) }()
+      case 61: try { try decoder.decodeSingularBoolField(value: &self._clearCreateCommentsRepliesOverride_p) }()
       default: break
       }
     }
@@ -2383,11 +2460,17 @@ extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, 
     try { if let v = self._shadowBanned {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
     } }()
+    try { if let v = self._createCommentsRepliesOverride {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    } }()
     try { if let v = self._deleteMaxActivityScore {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 31)
     } }()
     try { if let v = self._deleteMinActivityScore {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 41)
+    } }()
+    try { if let v = self._clearCreateCommentsRepliesOverride_p {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 61)
     } }()
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2400,6 +2483,8 @@ extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, 
     if lhs._minActivityScore != rhs._minActivityScore {return false}
     if lhs._deleteMinActivityScore != rhs._deleteMinActivityScore {return false}
     if lhs._shadowBanned != rhs._shadowBanned {return false}
+    if lhs._createCommentsRepliesOverride != rhs._createCommentsRepliesOverride {return false}
+    if lhs._clearCreateCommentsRepliesOverride_p != rhs._clearCreateCommentsRepliesOverride_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2765,46 +2850,88 @@ extension Com_Octopuscommunity_GetResponse: SwiftProtobuf.Message, SwiftProtobuf
   public static let protoMessageName: String = _protobuf_package + ".GetResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}octoObject\0\u{1}aggregate\0\u{1}requesterCtx\0")
 
+  fileprivate class _StorageClass {
+    var _octoObjectID: String = String()
+    var _octoObject: Com_Octopuscommunity_OctoObject? = nil
+    var _aggregate: Com_Octopuscommunity_Aggregate? = nil
+    var _requesterCtx: Com_Octopuscommunity_RequesterCtx? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _octoObjectID = source._octoObjectID
+      _octoObject = source._octoObject
+      _aggregate = source._aggregate
+      _requesterCtx = source._requesterCtx
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.octoObjectID) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._octoObject) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._aggregate) }()
-      case 4: try { try decoder.decodeSingularMessageField(value: &self._requesterCtx) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._octoObjectID) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._octoObject) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._aggregate) }()
+        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._requesterCtx) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.octoObjectID.isEmpty {
-      try visitor.visitSingularStringField(value: self.octoObjectID, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._octoObjectID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._octoObjectID, fieldNumber: 1)
+      }
+      try { if let v = _storage._octoObject {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._aggregate {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._requesterCtx {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      } }()
     }
-    try { if let v = self._octoObject {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._aggregate {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    try { if let v = self._requesterCtx {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetResponse, rhs: Com_Octopuscommunity_GetResponse) -> Bool {
-    if lhs.octoObjectID != rhs.octoObjectID {return false}
-    if lhs._octoObject != rhs._octoObject {return false}
-    if lhs._aggregate != rhs._aggregate {return false}
-    if lhs._requesterCtx != rhs._requesterCtx {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._octoObjectID != rhs_storage._octoObjectID {return false}
+        if _storage._octoObject != rhs_storage._octoObject {return false}
+        if _storage._aggregate != rhs_storage._aggregate {return false}
+        if _storage._requesterCtx != rhs_storage._requesterCtx {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2872,79 +2999,50 @@ extension Com_Octopuscommunity_GetBatchResponse: SwiftProtobuf.Message, SwiftPro
 
 extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObject\0\u{2}\u{9}translatedContent\0")
-
-  fileprivate class _StorageClass {
-    var _octoObject: Com_Octopuscommunity_RwOctoObject? = nil
-    var _translatedContent: Bool? = nil
-
-      // This property is used as the initial default value for new instances of the type.
-      // The type itself is protecting the reference to its storage via CoW semantics.
-      // This will force a copy to be made of this reference when the first mutation occurs;
-      // hence, it is safe to mark this as `nonisolated(unsafe)`.
-      static nonisolated(unsafe) let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _octoObject = source._octoObject
-      _translatedContent = source._translatedContent
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObject\0\u{2}\u{9}translatedContent\0\u{1}creationSource\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._octoObject) }()
-        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._translatedContent) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._octoObject) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self._translatedContent) }()
+      case 11: try { try decoder.decodeSingularEnumField(value: &self._creationSource) }()
+      default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      try { if let v = _storage._octoObject {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      } }()
-      try { if let v = _storage._translatedContent {
-        try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
-      } }()
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._octoObject {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._translatedContent {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 10)
+    } }()
+    try { if let v = self._creationSource {
+      try visitor.visitSingularEnumField(value: v, fieldNumber: 11)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PutRequest, rhs: Com_Octopuscommunity_PutRequest) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._octoObject != rhs_storage._octoObject {return false}
-        if _storage._translatedContent != rhs_storage._translatedContent {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs._octoObject != rhs._octoObject {return false}
+    if lhs._translatedContent != rhs._translatedContent {return false}
+    if lhs._creationSource != rhs._creationSource {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension Com_Octopuscommunity_PutRequest.CreationSource: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CREATION_SOURCE_UNSPECIFIED\0\u{1}PREFILLED_FROM_CLIENT\0\u{1}USER\0")
 }
 
 extension Com_Octopuscommunity_PutCommentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -3018,36 +3116,74 @@ extension Com_Octopuscommunity_PutCommentResponse.Success: SwiftProtobuf.Message
   public static let protoMessageName: String = Com_Octopuscommunity_PutCommentResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}comment\0\u{1}hasTargetVideoContent\0")
 
+  fileprivate class _StorageClass {
+    var _comment: Com_Octopuscommunity_OctoObject? = nil
+    var _hasTargetVideoContent_p: Bool? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _comment = source._comment
+      _hasTargetVideoContent_p = source._hasTargetVideoContent_p
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._comment) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self._hasTargetVideoContent_p) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._comment) }()
+        case 2: try { try decoder.decodeSingularBoolField(value: &_storage._hasTargetVideoContent_p) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._comment {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    try { if let v = self._hasTargetVideoContent_p {
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
-    } }()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._comment {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._hasTargetVideoContent_p {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+      } }()
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PutCommentResponse.Success, rhs: Com_Octopuscommunity_PutCommentResponse.Success) -> Bool {
-    if lhs._comment != rhs._comment {return false}
-    if lhs._hasTargetVideoContent_p != rhs._hasTargetVideoContent_p {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._comment != rhs_storage._comment {return false}
+        if _storage._hasTargetVideoContent_p != rhs_storage._hasTargetVideoContent_p {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4280,7 +4416,7 @@ extension Com_Octopuscommunity_GetTopicsRequest: SwiftProtobuf.Message, SwiftPro
 
 extension Com_Octopuscommunity_GetTopicsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetTopicsResponse"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topics\0\u{1}sections\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topics\0\u{1}sections\0\u{1}topicsRequesterCtxs\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4290,6 +4426,7 @@ extension Com_Octopuscommunity_GetTopicsResponse: SwiftProtobuf.Message, SwiftPr
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.topics) }()
       case 2: try { try decoder.decodeRepeatedMessageField(value: &self.sections) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.topicsRequesterCtxs) }()
       default: break
       }
     }
@@ -4302,12 +4439,16 @@ extension Com_Octopuscommunity_GetTopicsResponse: SwiftProtobuf.Message, SwiftPr
     if !self.sections.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.sections, fieldNumber: 2)
     }
+    if !self.topicsRequesterCtxs.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.topicsRequesterCtxs, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetTopicsResponse, rhs: Com_Octopuscommunity_GetTopicsResponse) -> Bool {
     if lhs.topics != rhs.topics {return false}
     if lhs.sections != rhs.sections {return false}
+    if lhs.topicsRequesterCtxs != rhs.topicsRequesterCtxs {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -5094,41 +5235,81 @@ extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success: SwiftProto
   public static let protoMessageName: String = Com_Octopuscommunity_GetOrCreateBridgePostResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}postBridge\0\u{1}status\0\u{1}aggregate\0")
 
+  fileprivate class _StorageClass {
+    var _postBridge: Com_Octopuscommunity_OctoObject? = nil
+    var _aggregate: Com_Octopuscommunity_Aggregate? = nil
+    var _status: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success.ResponseStatus? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _postBridge = source._postBridge
+      _aggregate = source._aggregate
+      _status = source._status
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._postBridge) }()
-      case 2: try { try decoder.decodeSingularEnumField(value: &self._status) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._aggregate) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._postBridge) }()
+        case 2: try { try decoder.decodeSingularEnumField(value: &_storage._status) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._aggregate) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._postBridge {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    try { if let v = self._status {
-      try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._aggregate {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._postBridge {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      try { if let v = _storage._status {
+        try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._aggregate {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success, rhs: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Success) -> Bool {
-    if lhs._postBridge != rhs._postBridge {return false}
-    if lhs._aggregate != rhs._aggregate {return false}
-    if lhs._status != rhs._status {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._postBridge != rhs_storage._postBridge {return false}
+        if _storage._aggregate != rhs_storage._aggregate {return false}
+        if _storage._status != rhs_storage._status {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -9,14 +9,26 @@ import OctopusCore
 
 @MainActor
 class ReportViewModel: ObservableObject {
+    enum Context {
+        case content(contentId: String)
+        case profile(profileId: String)
+
+        var isContent: Bool {
+            switch self {
+            case .content: true
+            case .profile: false
+            }
+        }
+    }
+
     @Published private(set) var moderationInProgress = false
     @Published private(set) var error: DisplayableString?
     @Published var moderationSent = false
 
     let octopus: OctopusSDK
-    let context: ReportView.Context
+    let context: Context
 
-    init(octopus: OctopusSDK, context: ReportView.Context) {
+    init(octopus: OctopusSDK, context: Context) {
         self.octopus = octopus
         self.context = context
     }

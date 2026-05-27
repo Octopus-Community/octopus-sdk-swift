@@ -16,6 +16,7 @@ struct DisplayableFeedResponse: Equatable {
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
+    let canCreateChildren: Bool
 
     fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
     var liveMeasures: AnyPublisher<LiveMeasures, Never> {
@@ -35,7 +36,8 @@ struct DisplayableFeedResponse: Equatable {
         lhs.relativeDate == rhs.relativeDate &&
         lhs.canBeDeleted == rhs.canBeDeleted &&
         lhs.canBeModerated == rhs.canBeModerated &&
-        lhs.canBeBlockedByUser == rhs.canBeBlockedByUser
+        lhs.canBeBlockedByUser == rhs.canBeBlockedByUser &&
+        lhs.canCreateChildren == rhs.canCreateChildren
     }
 
     init(kind: ResponseKind,
@@ -47,6 +49,7 @@ struct DisplayableFeedResponse: Equatable {
          canBeDeleted: Bool,
          canBeModerated: Bool,
          canBeBlockedByUser: Bool,
+         canCreateChildren: Bool,
          _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>, // swiftlint:disable:this identifier_name
          displayEvents: CellDisplayEvents) {
         self.kind = kind
@@ -58,6 +61,7 @@ struct DisplayableFeedResponse: Equatable {
         self.canBeDeleted = canBeDeleted
         self.canBeModerated = canBeModerated
         self.canBeBlockedByUser = canBeBlockedByUser
+        self.canCreateChildren = canCreateChildren
         self._liveMeasuresPublisher = _liveMeasuresPublisher
         self.displayEvents = displayEvents
     }
@@ -84,6 +88,7 @@ extension DisplayableFeedResponse {
         canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
         canBeModerated = comment.author?.uuid != thisUserProfileId
         canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
+        canCreateChildren = comment.permissions.canCreateChildren
         _liveMeasuresPublisher = liveMeasurePublisher
         displayEvents = CellDisplayEvents(onAppear: onAppearAction, onDisappear: onDisappearAction)
     }
@@ -105,6 +110,9 @@ extension DisplayableFeedResponse {
         canBeDeleted = reply.author != nil && reply.author?.uuid == thisUserProfileId
         canBeModerated = reply.author?.uuid != thisUserProfileId
         canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
+        // Replies have no children — `ResponseActionBarView` already gates the reply button on
+        // `kind == .comment`, so this value is dead data for replies but kept for type symmetry.
+        canCreateChildren = false
         _liveMeasuresPublisher = liveMeasurePublisher
         displayEvents = CellDisplayEvents(onAppear: onAppearAction, onDisappear: onDisappearAction)
     }

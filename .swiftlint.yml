@@ -4,6 +4,7 @@ excluded:
   - Sources/OctopusGrpcModels/GeneratedFiles
   - Sources/OctopusGrpcModels/ProtoFiles
   - .build
+  - build
   - DerivedData
   - CocoaPodsValidationApp
   - Sources/OctopusUI/NavigationBackport

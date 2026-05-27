@@ -231,6 +231,10 @@ private extension Event {
                     .clickOnCta(.with {
                         $0.objectID = objectId
                     })
+            case let .ctaGroupButtonHit(groupId):
+                    .clickOnTopicCta(.with {
+                        $0.objectID = groupId
+                    })
             case let .clientSetABTest(hasAccessToCommunity):
                     .clientSetAbtestInfo(.with {
                         $0.hasAccessToCommunity_p = hasAccessToCommunity

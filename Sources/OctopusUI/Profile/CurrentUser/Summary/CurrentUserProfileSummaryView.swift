@@ -27,11 +27,14 @@ struct CurrentUserProfileSummaryView: View {
 
     @State private var isDisplayed = false
 
+    private let mainFlowPath: MainFlowPath
+
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          gamificationRulesViewManager: GamificationRulesViewManager) {
         _viewModel = Compat.StateObject(wrappedValue: CurrentUserProfileSummaryViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
             gamificationRulesViewManager: gamificationRulesViewManager))
+        self.mainFlowPath = mainFlowPath
     }
 
     var body: some View {
@@ -69,9 +72,14 @@ struct CurrentUserProfileSummaryView: View {
                         },
                         displayProfile: { _ in },
                         displayContentModeration: {
-                            navigator.push(.reportContent(contentId: $0))
+                            mainFlowPath.reportTarget = .content(contentId: $0)
                         }) {
-                            CreatePostEmptyPostView(createPost: { navigator.push(.createPost(withPoll: $0, defaultTopic: nil)) })
+                            if viewModel.canCreatePost {
+                                CreatePostEmptyPostView(
+                                    createPost: { navigator.push(.createPost(withPoll: $0, defaultTopicId: nil)) })
+                            } else {
+                                DefaultEmptyPostsView()
+                            }
                         }
                 } else {
                     EmptyView()

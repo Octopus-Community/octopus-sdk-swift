@@ -23,9 +23,13 @@ struct ProfileSummaryView: View {
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
-    init(octopus: OctopusSDK, translationStore: ContentTranslationPreferenceStore, profileId: String) {
+    private let mainFlowPath: MainFlowPath
+
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
+         profileId: String) {
         _viewModel = Compat.StateObject(wrappedValue: ProfileSummaryViewModel(
             octopus: octopus, translationStore: translationStore, profileId: profileId))
+        self.mainFlowPath = mainFlowPath
     }
 
     var body: some View {
@@ -51,7 +55,7 @@ struct ProfileSummaryView: View {
                         },
                         displayProfile: { _ in },
                         displayContentModeration: {
-                            navigator.push(.reportContent(contentId: $0))
+                            mainFlowPath.reportTarget = .content(contentId: $0)
                         }) {
                             OtherUserEmptyPostView()
                         }
@@ -104,7 +108,7 @@ struct ProfileSummaryView: View {
         var buttons: [ActionSheet.Button] = []
         buttons.append(.destructive(Text("Moderation.Profile.Button", bundle: .module)) {
             guard viewModel.ensureConnected(action: .moderation) else { return }
-            navigator.push(.reportProfile(profileId: viewModel.profileId))
+            mainFlowPath.reportTarget = .profile(profileId: viewModel.profileId)
         })
         if viewModel.profile?.canBeBlocked == true {
             buttons.append(.destructive(Text("Block.Profile.Button", bundle: .module)) {
@@ -122,7 +126,7 @@ struct ProfileSummaryView: View {
             Menu(content: {
                 DestructiveMenuButton(action: {
                     guard viewModel.ensureConnected(action: .moderation) else { return }
-                    navigator.push(.reportProfile(profileId: viewModel.profileId))
+                    mainFlowPath.reportTarget = .profile(profileId: viewModel.profileId)
                 }) {
                     Label(title: { Text("Moderation.Profile.Button", bundle: .module) },
                           icon: { Image(uiImage: theme.assets.icons.profile.report) })

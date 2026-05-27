@@ -1443,6 +1443,12 @@ public struct Com_Octopuscommunity_PrivateProfile: @unchecked Sendable {
     set {_uniqueStorage()._tags = newValue}
   }
 
+  /// Held entitlements (display only, not gating).
+  public var entitlements: [String] {
+    get {_storage._entitlements}
+    set {_uniqueStorage()._entitlements = newValue}
+  }
+
   public var gamificationScore: Com_Octopuscommunity_PrivateGamificationScore {
     get {_storage._gamificationScore ?? Com_Octopuscommunity_PrivateGamificationScore()}
     set {_uniqueStorage()._gamificationScore = newValue}
@@ -4094,7 +4100,7 @@ extension Com_Octopuscommunity_GetPrivateProfileResponse: SwiftProtobuf.Message,
 
 extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PrivateProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}email\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{1}hasSeenOnboarding\0\u{1}hasAcceptedCgu\0\u{2}\u{2}isGuest\0\u{1}descPostFeedId\0\u{1}ascPostFeedId\0\u{1}originalNickname\0\u{2}\u{8}notSeenNotificationsCount\0\u{2}\u{a}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}1usersBlockList\0\u{2}\u{d}hasConfirmedNickname\0\u{1}hasConfirmedPicture\0\u{1}hasConfirmedBio\0\u{2}t\u{d}metadata\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}email\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{1}hasSeenOnboarding\0\u{1}hasAcceptedCgu\0\u{2}\u{2}isGuest\0\u{1}descPostFeedId\0\u{1}ascPostFeedId\0\u{1}originalNickname\0\u{2}\u{8}notSeenNotificationsCount\0\u{2}\u{a}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}\u{9}entitlements\0\u{2}(usersBlockList\0\u{2}\u{d}hasConfirmedNickname\0\u{1}hasConfirmedPicture\0\u{1}hasConfirmedBio\0\u{2}t\u{d}metadata\0")
 
   fileprivate class _StorageClass {
     var _id: String = String()
@@ -4113,6 +4119,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
     var _originalNickname: String? = nil
     var _notSeenNotificationsCount: UInt32? = nil
     var _tags: [Com_Octopuscommunity_ProfileTag] = []
+    var _entitlements: [String] = []
     var _gamificationScore: Com_Octopuscommunity_PrivateGamificationScore? = nil
     var _totalMessages: Int32? = nil
     var _accountCreatedAt: UInt64? = nil
@@ -4144,6 +4151,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
       _originalNickname = source._originalNickname
       _notSeenNotificationsCount = source._notSeenNotificationsCount
       _tags = source._tags
+      _entitlements = source._entitlements
       _gamificationScore = source._gamificationScore
       _totalMessages = source._totalMessages
       _accountCreatedAt = source._accountCreatedAt
@@ -4183,6 +4191,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
         case 40: try { try decoder.decodeSingularMessageField(value: &_storage._gamificationScore) }()
         case 50: try { try decoder.decodeSingularInt32Field(value: &_storage._totalMessages) }()
         case 51: try { try decoder.decodeSingularUInt64Field(value: &_storage._accountCreatedAt) }()
+        case 60: try { try decoder.decodeRepeatedStringField(value: &_storage._entitlements) }()
         case 100: try { try decoder.decodeRepeatedStringField(value: &_storage._usersBlockList) }()
         case 113: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedNickname_p) }()
         case 114: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedPicture_p) }()
@@ -4248,6 +4257,9 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
       try { if let v = _storage._accountCreatedAt {
         try visitor.visitSingularUInt64Field(value: v, fieldNumber: 51)
       } }()
+      if !_storage._entitlements.isEmpty {
+        try visitor.visitRepeatedStringField(value: _storage._entitlements, fieldNumber: 60)
+      }
       if !_storage._usersBlockList.isEmpty {
         try visitor.visitRepeatedStringField(value: _storage._usersBlockList, fieldNumber: 100)
       }
@@ -4288,6 +4300,7 @@ extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProto
         if _storage._originalNickname != rhs_storage._originalNickname {return false}
         if _storage._notSeenNotificationsCount != rhs_storage._notSeenNotificationsCount {return false}
         if _storage._tags != rhs_storage._tags {return false}
+        if _storage._entitlements != rhs_storage._entitlements {return false}
         if _storage._gamificationScore != rhs_storage._gamificationScore {return false}
         if _storage._totalMessages != rhs_storage._totalMessages {return false}
         if _storage._accountCreatedAt != rhs_storage._accountCreatedAt {return false}

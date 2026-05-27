@@ -22,6 +22,15 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
     @NSManaged public var parentId: String
     @NSManaged public var uuid: String
 
+    // Per-user permissions (set by BE on Topic OctoObjects in v1; reserved for Post/Comment/Reply).
+    // Stored as NSNumber? so that proto's "field absent" maps to nil, which the model layer
+    // flattens to `true` (open default — PRD Rule 10).
+    @NSManaged public var canAccessOptional: NSNumber?
+    @NSManaged public var canCreateChildrenOptional: NSNumber?
+
+    var canAccess: Bool? { canAccessOptional?.boolValue }
+    var canCreateChildren: Bool? { canCreateChildrenOptional?.boolValue }
+
     @NSManaged public var reactionsRelationship: NSOrderedSet?
     @NSManaged public var childCount: Int
     @NSManaged public var viewCount: Int
@@ -91,10 +100,14 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
         statusReasonMessages = content.statusReasons.storableMessages
         parentId = content.parentId
 
+        canAccessOptional = NSNumber(value: content.permissions.canAccess)
+        canCreateChildrenOptional = NSNumber(value: content.permissions.canCreateChildren)
+
         fill(aggregatedInfo: content.aggregatedInfo, userInteractions: content.userInteractions, context: context)
     }
 
-    func fill(aggregatedInfo: AggregatedInfo?, userInteractions: UserInteractions?, context: NSManagedObjectContext) {
+    func fill(aggregatedInfo: AggregatedInfo?, userInteractions: UserInteractions?,
+              permissions: UserPermissions? = nil, context: NSManagedObjectContext) {
         if let aggregatedInfo {
             viewCount = aggregatedInfo.viewCount
             reactionsRelationship = NSOrderedSet(array: aggregatedInfo.reactions.map {
@@ -122,6 +135,11 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
             userPollVoteId = userInteractions.pollVoteId
             userReactionId = userInteractions.reaction?.id
             userReactionKind = userInteractions.reaction?.kind.unicode
+        }
+
+        if let permissions {
+            canAccessOptional = NSNumber(value: permissions.canAccess)
+            canCreateChildrenOptional = NSNumber(value: permissions.canCreateChildren)
         }
     }
 }

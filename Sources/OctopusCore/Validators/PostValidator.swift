@@ -3,53 +3,43 @@
 //
 
 import UIKit
-import OctopusDependencyInjection
 
 public extension Validators {
-    class Post {
+    enum Post {
         public enum TextError: Error {
             case empty
             case tooShort
             case tooLong
         }
 
-        public let minTextLength = 10
-        public let maxTextLength = 5000
+        public static let minTextLength = 10
+        public static let maxTextLength = 5000
 
-        public var minSize: CGFloat { pictureValidator.minSize }
-        public var maxRatio: CGFloat { pictureValidator.maxRatio }
-        public var maxRatioStr: String { pictureValidator.maxRatioStr }
+        public static var minSize: CGFloat { Picture.minSize }
+        public static var maxRatio: CGFloat { Picture.maxRatio }
+        public static var maxRatioStr: String { Picture.maxRatioStr }
 
-        private let pictureValidator: Validators.Picture
-        private let pollValidator: Validators.Poll
-
-        public init(pictureValidator: Validators.Picture, pollValidator: Validators.Poll) {
-            self.pictureValidator = pictureValidator
-            self.pollValidator = pollValidator
+        public static func validate(picture: UIImage) -> Picture.ValidationResult {
+            return Picture.validate(picture)
         }
 
-        public func validate(picture: UIImage) -> Picture.ValidationResult {
-            return pictureValidator.validate(picture)
-        }
-
-        public func validate(attachment: WritablePost.Attachment?) -> Bool {
+        public static func validate(attachment: WritablePost.Attachment?) -> Bool {
             switch attachment {
             case .image:
-                // We can't check picture because we only have the data here
                 return true
             case let .poll(poll):
-                return pollValidator.validate(poll)
+                return Poll.validate(poll)
             case .none:
                 return true
             }
         }
 
-        public func validate(text: String, attachment: WritablePost.Attachment?,
-                             ignoreTooShort: Bool = false) -> Result<Void, TextError> {
+        public static func validate(text: String, attachment: WritablePost.Attachment?,
+                                    ignoreTooShort: Bool = false) -> Result<Void, TextError> {
             guard !text.isEmpty else { return .failure(.empty) }
             if !ignoreTooShort {
                 switch attachment {
-                case .poll: break // do not force min text length when a poll is attached
+                case .poll: break
                 default:
                     guard text.count >= minTextLength else { return .failure(.tooShort) }
                 }
@@ -58,8 +48,7 @@ public extension Validators {
             return .success(Void())
         }
 
-        public func validate(post: WritablePost) -> Bool {
-            // Note that we can't check picture because we only have the data here
+        public static func validate(post: WritablePost) -> Bool {
             return validate(text: post.text, attachment: post.attachment).isSuccess &&
                 validate(attachment: post.attachment) &&
                 !post.parentId.isEmpty

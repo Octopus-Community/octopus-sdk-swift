@@ -13,6 +13,11 @@ public enum OctopusInitialScreen {
     /// A specific group detail screen (bridge mode)
     case group(GroupScreenInfo)
 
+    /// The post editor, optionally prefilled with content supplied by
+    /// the host app. Use this entry point to let a user share an
+    /// in-app object into the community.
+    case createPost(CreatePostScreenInfo)
+
     /// Info needed to display a post screen
     public struct PostScreenInfo {
         /// The id of the post to display
@@ -34,6 +39,24 @@ public enum OctopusInitialScreen {
         /// - Parameter groupId: The id of the group to display
         public init(groupId: String) {
             self.groupId = groupId
+        }
+    }
+
+    /// Info needed to display the post editor as the initial screen.
+    ///
+    /// When `prefilledPost` is `nil`, the editor opens empty —
+    /// equivalent to a regular in-SDK new-post flow. When non-nil, the
+    /// editor opens prefilled with the provided text / image / topic /
+    /// CTA.
+    public struct CreatePostScreenInfo {
+        /// The prefill payload, or `nil` for an empty editor.
+        public let prefilledPost: OctopusPrefilledPost?
+
+        /// Constructor
+        /// - Parameter prefilledPost: The prefill payload, or `nil`
+        ///   for an empty editor.
+        public init(prefilledPost: OctopusPrefilledPost? = nil) {
+            self.prefilledPost = prefilledPost
         }
     }
 }

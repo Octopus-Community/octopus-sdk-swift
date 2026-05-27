@@ -12,7 +12,7 @@ extension Injected {
     static let commentsDatabase = Injector.InjectedIdentifier<CommentsDatabase>()
 }
 
-class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject {
+class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject, @unchecked Sendable {
     static let injectedIdentifier = Injected.commentsDatabase
 
     private let context: NSManagedObjectContext

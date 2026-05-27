@@ -71,6 +71,7 @@ class CurrentUserProfileDatabase: InjectableObject {
             })
             profileEntity.descPostFeedId = profile.descPostFeedId
             profileEntity.ascPostFeedId = profile.ascPostFeedId
+            profileEntity.setEntitlements(profile.entitlements)
 
             try context.save()
         }

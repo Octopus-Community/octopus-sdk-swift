@@ -70,6 +70,69 @@ class PostsTests: XCTestCase {
         await fulfillment(of: [sendExpectation], timeout: 5)
     }
 
+    func testSendDefaultsCreationSourceToUser() async throws {
+        injectPutPost(StorablePost(
+            uuid: "newPost", text: .init(originalText: "My Post with long text", originalLanguage: nil, translatedText: nil),
+            medias: [], poll: nil,
+            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
+            creationDate: Date(), updateDate: Date(),
+            status: .published, statusReasons: [],
+            parentId: "topicId",
+            descCommentFeedId: nil, ascCommentFeedId: nil,
+            bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+            customActionText: nil, customActionTargetLink: nil,
+            aggregatedInfo: .empty, userInteractions: .empty))
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
+        try await postsRepository.send(post)
+        XCTAssertEqual(mockOctoService.lastPutPostCreationSource, .user)
+    }
+
+    func testSendCreationSourcePrefilledFromClientIsForwarded() async throws {
+        injectPutPost(StorablePost(
+            uuid: "newPost", text: .init(originalText: "My Post with long text", originalLanguage: nil, translatedText: nil),
+            medias: [], poll: nil,
+            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
+            creationDate: Date(), updateDate: Date(),
+            status: .published, statusReasons: [],
+            parentId: "topicId",
+            descCommentFeedId: nil, ascCommentFeedId: nil,
+            bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+            customActionText: nil, customActionTargetLink: nil,
+            aggregatedInfo: .empty, userInteractions: .empty))
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
+        try await postsRepository.send(post, creationSource: .prefilledFromClient)
+        XCTAssertEqual(mockOctoService.lastPutPostCreationSource, .prefilledFromClient)
+    }
+
+    func testCreatePostThatDisallowsComments() async throws {
+        let sendExpectation = XCTestExpectation(description: "Comment DB updated")
+
+        postsDatabase.postPublisher(uuid: "newPost")
+            .replaceError(with: nil)
+            .sink { post in
+                if let post, !post.permissions.canCreateChildren {
+                    sendExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        injectPutPost(StorablePost(
+            uuid: "newPost", text: .init(originalText: "My Post with long text", originalLanguage: nil, translatedText: nil),
+            medias: [], poll: nil,
+            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
+            creationDate: Date(), updateDate: Date(),
+            status: .published, statusReasons: [],
+            parentId: "topicId",
+            descCommentFeedId: nil, ascCommentFeedId: nil,
+            bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+            customActionText: nil, customActionTargetLink: nil,
+            aggregatedInfo: .empty, userInteractions: .empty),
+                      canCreateChildren: false)
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
+        try await postsRepository.send(post)
+
+        await fulfillment(of: [sendExpectation], timeout: 5)
+    }
+
     func testGetLocalAndRemotePost() async throws {
         let localExpectation = XCTestExpectation(description: "DB updated")
 
@@ -448,7 +511,7 @@ class PostsTests: XCTestCase {
             })
         })
 
-        _ = try await postsRepository.set(reaction: .heart, clientObjectRelatedPostId: "1")
+        _ = try await postsRepository.set(reaction: .heart, postId: "1")
 
         postsRepository.getPost(uuid: "1")
             .replaceError(with: nil)
@@ -512,9 +575,70 @@ class PostsTests: XCTestCase {
             })
         })
 
-        _ = try await postsRepository.set(reaction: .heart, clientObjectRelatedPostId: "1")
+        _ = try await postsRepository.set(reaction: .heart, postId: "1")
 
         postsRepository.getPost(uuid: "1")
+            .replaceError(with: nil)
+            .sink { post in
+                if let post, post.userInteractions.reaction == UserReaction(kind: .heart, id: "REACT_ID") {
+                    reactionSetExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [reactionSetExpectation], timeout: 5)
+    }
+
+    func testSetReactionOnCommunityPostWhenPostAlreadyKnown() async throws {
+        // precondition: a community (non-bridge) post is in the db
+        try await postsDatabase.upsert(posts: [
+            .init(uuid: "2", text: .init(originalText: "Community Post", originalLanguage: nil, translatedText: nil),
+                  medias: [], poll: nil,
+                  author: .init(uuid: "authorId", nickname: "Nick", avatarUrl: nil, gamificationLevel: nil),
+                  creationDate: Date(), updateDate: Date(),
+                  status: .published, statusReasons: [],
+                  parentId: "Sport",
+                  descCommentFeedId: "", ascCommentFeedId: "",
+                  bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                  customActionText: nil, customActionTargetLink: nil,
+                  aggregatedInfo: .init(
+                    reactions: [],
+                    childCount: 0, viewCount: 0, pollResult: nil),
+                  userInteractions: .init(reaction: nil, pollVoteId: nil))
+        ])
+
+        let postPresentExpectation = XCTestExpectation(description: "Community post is present, no reaction")
+
+        postsRepository.getPost(uuid: "2")
+            .replaceError(with: nil)
+            .sink { post in
+                if post != nil && post?.userInteractions.reaction == nil {
+                    postPresentExpectation.fulfill()
+                }
+            }.store(in: &storage)
+
+        await fulfillment(of: [postPresentExpectation], timeout: 5)
+        storage = []
+
+        let reactionSetExpectation = XCTestExpectation(description: "Reaction is set on community post")
+
+        mockOctoService.injectNextPutReactionResponse(.with {
+            $0.result = .success(.with {
+                $0.reaction = .with {
+                    $0.parentID = "2"
+                    $0.id = "REACT_ID"
+                    $0.content = .with {
+                        $0.reaction = .with {
+                            $0.unicode = "❤️"
+                        }
+                    }
+                }
+            })
+        })
+
+        // This call would previously have thrown .postIsNotABridge — it must now succeed.
+        _ = try await postsRepository.set(reaction: .heart, postId: "2")
+
+        postsRepository.getPost(uuid: "2")
             .replaceError(with: nil)
             .sink { post in
                 if let post, post.userInteractions.reaction == UserReaction(kind: .heart, id: "REACT_ID") {
@@ -550,7 +674,7 @@ class PostsTests: XCTestCase {
         })
     }
 
-    func injectPutPost(_ post: StorablePost) {
+    func injectPutPost(_ post: StorablePost, canCreateChildren: Bool = true) {
         let octoObject = octoPost(from: post)
 
         mockOctoService.injectNextPutPostResponse(.with {
@@ -558,7 +682,23 @@ class PostsTests: XCTestCase {
                 $0.post = octoObject
             })
         })
+        // `PostsRepository.send` now follows the put with a `getBatch` to hydrate permissions
+        // (the put response doesn't carry `RequesterCtx`). Inject a matching response so the
+        // repository can persist the real entitlements.
+        mockOctoService.injectNextGetBatchResponse(.with {
+            $0.responses = [
+                .with {
+                    $0.octoObjectID = octoObject.id
+                    $0.requesterCtx = .with {
+                        $0.canAccess = true
+                        $0.canCreateChildren = canCreateChildren
+                    }
+                }
+            ]
+        })
     }
+
+    // MARK: - Helpers
 
     private func octoPost(from item: StorablePost) -> Com_Octopuscommunity_OctoObject {
         Com_Octopuscommunity_OctoObject.with {

@@ -36,6 +36,7 @@ public protocol OctoService {
     func getTopics(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_GetTopicsResponse
 
     func put(post: Com_Octopuscommunity_RwOctoObject,
+             creationSource: Com_Octopuscommunity_PutRequest.CreationSource,
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse
 
     func put(comment: Com_Octopuscommunity_RwOctoObject,
@@ -150,9 +151,12 @@ class OctoServiceClient: ServiceClient, OctoService {
     }
 
     public func put(post: Com_Octopuscommunity_RwOctoObject,
-                    authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse {
+                    creationSource: Com_Octopuscommunity_PutRequest.CreationSource,
+                    authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse {
         let request = Com_Octopuscommunity_PutRequest.with {
             $0.octoObject = post
+            $0.creationSource = creationSource
         }
         return try await callRemote(authenticationMethod) {
             try await client.putPost(

@@ -15,11 +15,11 @@ struct EditablePoll: Equatable {
         var text: String {
             didSet {
                 guard text != oldValue else { return }
-                switch validator.validate(pollOptionText: text) {
+                switch Validators.Poll.validate(pollOptionText: text) {
                 case .tooShort:
                     error = .localizationKey("Error.Text.Empty")
                 case .tooLong:
-                    let maxLength = validator.optionTextMaxLength
+                    let maxLength = Validators.Poll.optionTextMaxLength
                     error = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(maxLength)")
                 case .none:
                     error = nil
@@ -28,10 +28,7 @@ struct EditablePoll: Equatable {
         }
         private(set) var error: DisplayableString?
 
-        private let validator: Validators.Poll
-
-        fileprivate init(validator: Validators.Poll) {
-            self.validator = validator
+        fileprivate init() {
             text = ""
             error = nil
         }
@@ -43,14 +40,11 @@ struct EditablePoll: Equatable {
 
     var options: [Option]
 
-    var canAddOptions: Bool { options.count < validator.maxOptions }
-    var canRemoveOptions: Bool { options.count > validator.minOptions }
+    var canAddOptions: Bool { options.count < Validators.Poll.maxOptions }
+    var canRemoveOptions: Bool { options.count > Validators.Poll.minOptions }
 
-    private let validator: Validators.Poll
-
-    init(validator: Validators.Poll) {
-        self.validator = validator
-        options = (0..<validator.minOptions).map { _ in Option(validator: validator) }
+    init() {
+        options = (0..<Validators.Poll.minOptions).map { _ in Option() }
     }
 
     mutating func removeOption(at index: Int) {
@@ -62,7 +56,7 @@ struct EditablePoll: Equatable {
     /// - Returns: returns the UUID of the newly added option. Nil if the option has not been added
     mutating func addOption() -> UUID? {
         guard canAddOptions else { return nil }
-        let newOption = Option(validator: validator)
+        let newOption = Option()
         options.append(newOption)
         return newOption.id
     }

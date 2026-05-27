@@ -17,6 +17,8 @@ public struct Reply: Equatable, Sendable {
     public let aggregatedInfo: AggregatedInfo
     public let userInteractions: UserInteractions
 
+    public let permissions: UserPermissions
+
     let innerStatus: StorableStatus
     let innerStatusReasons: [StorableStatusReason]
 
@@ -46,5 +48,6 @@ extension Reply {
 
         aggregatedInfo = storableComment.aggregatedInfo ?? .empty
         userInteractions = storableComment.userInteractions ?? .empty
+        permissions = storableComment.permissions
     }
 }

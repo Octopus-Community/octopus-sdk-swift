@@ -36,6 +36,10 @@ struct GroupDetailView: View {
         ContentView(
             group: viewModel.group,
             groupNotFound: viewModel.groupNotFound,
+            groupAccessLost: viewModel.groupAccessLost,
+            onAccessDeniedTap: {
+                viewModel.octopus.groupAccessDeniedCallback?(viewModel.groupId)
+            },
             scrollToTop: $viewModel.scrollToTop,
             refresh: viewModel.refresh) {
                 postFeedView
@@ -45,30 +49,38 @@ struct GroupDetailView: View {
             .modify {
                 if #available(iOS 15.0, *) {
                     $0.safeAreaInset(edge: .bottom, content: {
-                        AuthorActionView(
-                            octopus: viewModel.octopus, actionKind: .post,
-                            userProfileTapped: {
-                                if viewModel.ensureConnected(action: .viewOwnProfile) {
-                                    navigator.push(.currentUserProfile)
-                                }
-                            },
-                            actionTapped: {
-                                navigator.push(.createPost(withPoll: false, defaultTopic: viewModel.group?.coreTopic))
-                            })
-                        .accessibilitySortPriority(1)
+                        if !viewModel.groupAccessLost {
+                            AuthorActionView(
+                                octopus: viewModel.octopus, actionKind: .post,
+                                displayCreateButton: viewModel.canCreateAnyPost,
+                                userProfileTapped: {
+                                    if viewModel.ensureConnected(action: .viewOwnProfile) {
+                                        navigator.push(.currentUserProfile)
+                                    }
+                                },
+                                actionTapped: {
+                                    navigator.push(.createPost(withPoll: false, defaultTopicId: viewModel.group?.id))
+                                })
+                            .accessibilitySortPriority(1)
+                        }
                     })
                 } else {
                     $0.overlay(
-                        AuthorActionView(
-                            octopus: viewModel.octopus, actionKind: .post,
-                            userProfileTapped: {
-                                if viewModel.ensureConnected(action: .viewOwnProfile) {
-                                    navigator.push(.currentUserProfile)
-                                }
-                            },
-                            actionTapped: {
-                                navigator.push(.createPost(withPoll: false, defaultTopic: viewModel.group?.coreTopic))
-                            }),
+                        Group {
+                            if !viewModel.groupAccessLost {
+                                AuthorActionView(
+                                    octopus: viewModel.octopus, actionKind: .post,
+                                    displayCreateButton: viewModel.canCreateAnyPost,
+                                    userProfileTapped: {
+                                        if viewModel.ensureConnected(action: .viewOwnProfile) {
+                                            navigator.push(.currentUserProfile)
+                                        }
+                                    },
+                                    actionTapped: {
+                                        navigator.push(.createPost(withPoll: false, defaultTopicId: viewModel.group?.id))
+                                    })
+                            }
+                        },
                         alignment: .bottomTrailing)
                 }
             }
@@ -112,7 +124,7 @@ struct GroupDetailView: View {
                     }
                 },
                 displayContentModeration: {
-                    navigator.push(.reportContent(contentId: $0))
+                    mainFlowPath.reportTarget = .content(contentId: $0)
                 }) {
                     DefaultEmptyPostsView()
                 }
@@ -132,7 +144,7 @@ struct GroupDetailView: View {
 
     @ViewBuilder
     private func trailingBarItem(group: GroupDetail?) -> some View {
-        if let group {
+        if let group, !viewModel.groupAccessLost {
             FollowGroupButton(canChangeFollowStatus: group.canChangeFollowStatus, isFollowed: group.isFollowed,
                               toggleFollow: viewModel.toggleFollowGroup)
         }
@@ -144,6 +156,8 @@ private struct ContentView<PostsView: View>: View {
     @Environment(\.octopusTheme) private var theme
     let group: GroupDetail?
     let groupNotFound: Bool
+    let groupAccessLost: Bool
+    let onAccessDeniedTap: () -> Void
     @Binding var scrollToTop: Bool
     let refresh: @Sendable () async -> Void
 
@@ -166,12 +180,15 @@ private struct ContentView<PostsView: View>: View {
                 refreshAction: refresh) {
                     Compat.LazyVStack(spacing: 0) {
                         if let group {
-                            if group.description.fullText.nilIfEmpty != nil {
-                                GroupDetailContentView(group: group)
-                                theme.colors.gray300.frame(height: 1)
-                            }
+                            GroupDetailHeaderView(group: group)
 
-                            postsView
+                            if groupAccessLost {
+                                GroupAccessLostView(onTap: onAccessDeniedTap)
+                                    .padding(.top, 80)
+                            } else {
+                                theme.colors.gray300.frame(height: 1)
+                                postsView
+                            }
                         } else if groupNotFound {
                             VStack {
                                 Image(uiImage: theme.assets.icons.content.post.notAvailable)
@@ -200,7 +217,30 @@ private struct ContentView<PostsView: View>: View {
     }
 }
 
-private struct GroupDetailContentView: View {
+private struct GroupAccessLostView: View {
+    @Environment(\.octopusTheme) private var theme
+    let onTap: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Spacer()
+            Text("Group.Permissions.AccessDenied.Text", bundle: .module)
+                .font(theme.fonts.body1)
+                .foregroundColor(theme.colors.gray700)
+                .multilineTextAlignment(.center)
+            Button(action: onTap) {
+                Text("Group.Permissions.AccessDenied.Button", bundle: .module)
+            }
+            .buttonStyle(OctopusButtonStyle(.mid, style: .outline,
+                                            externalTopPadding: 8, externalBottomPadding: 8))
+            Spacer()
+        }
+        .padding(.horizontal, 32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+private struct GroupDetailHeaderView: View {
     @Environment(\.octopusTheme) private var theme
     let group: GroupDetail
 
@@ -209,28 +249,38 @@ private struct GroupDetailContentView: View {
     private var description: EllipsizableText { group.description }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            if description.isEllipsized {
-                Text(verbatim: "\(description.getText(ellipsized: !displayFullDesc))\(!displayFullDesc ? "... " : " ")")
-                +
-                Text(displayFullDesc ? "Common.ReadLess" : "Common.ReadMore", bundle: .module)
-                    .fontWeight(.medium)
-                    .foregroundColor(theme.colors.gray500)
-            } else {
-                Text(description.fullText)
+        if group.description.fullText.nilIfEmpty != nil || group.customAction != nil {
+            VStack(alignment: .leading, spacing: 0) {
+                if description.fullText.nilIfEmpty != nil {
+                    Group {
+                        if description.isEllipsized {
+                            Text(verbatim: "\(description.getText(ellipsized: !displayFullDesc))\(!displayFullDesc ? "... " : " ")")
+                            +
+                            Text(displayFullDesc ? "Common.ReadLess" : "Common.ReadMore", bundle: .module)
+                                .fontWeight(.medium)
+                                .foregroundColor(theme.colors.gray500)
+                        } else {
+                            Text(description.fullText)
+                        }
+                    }
+                    .font(theme.fonts.body2)
+                    .foregroundColor(theme.colors.gray900)
+                    .multilineTextAlignment(.leading)
+                    .onTapGesture {
+                        withAnimation {
+                            displayFullDesc.toggle()
+                        }
+                    }
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if let customAction = group.customAction {
+                    GroupCTAContentView(groupId: group.id, cta: customAction, topPadding: 16)
+                }
             }
+            .padding(.bottom, 16)
         }
-        .font(theme.fonts.body2)
-        .foregroundColor(theme.colors.gray900)
-        .multilineTextAlignment(.leading)
-        .onTapGesture {
-            withAnimation {
-                displayFullDesc.toggle()
-            }
-        }
-        .padding(.top, 8)
-        .padding(.bottom, 24)
-        .padding(.horizontal, 16)
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

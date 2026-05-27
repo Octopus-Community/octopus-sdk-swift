@@ -52,6 +52,7 @@ struct SwitchCommunityView: View {
         .alert(isPresented: $displayError) {
             Alert(title: Text(error?.localizedDescription ?? "Unknown"))
         }
+        .hostAppFooter()
     }
 }
 

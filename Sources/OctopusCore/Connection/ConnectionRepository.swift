@@ -55,6 +55,33 @@ public protocol ConnectionRepository: Sendable {
     /// This function does not normally have to be called since it is automatically called. However, if an error
     /// occured, during the automatic call, you might have to call it again when a user needs to be authenticated.
     func linkClientUserToOctopusUser() async throws(ExchangeTokenError)
+    /// Refresh the connected user's entitlements via the backend.
+    /// SSO-only — non-SSO repositories throw `.notInSSOMode`.
+    func refreshEntitlements() async throws(RefreshEntitlementsCoreError)
+}
+
+/// Internal error type for `refreshEntitlements`. Translated to `OctopusRefreshEntitlementsError`
+/// at the public SDK boundary.
+public enum RefreshEntitlementsCoreError: Error {
+    case notInSSOMode
+    case notConnected
+    case noNetwork
+    /// The user has been banned from the community — message is BE-provided.
+    case userBanned(String)
+    case serverError(Error)
+}
+
+/// Backend-failure carrier used when the BE reports one or more non-banned errors during a
+/// refreshEntitlements exchange. Wraps the joined messages so the public layer can surface
+/// a meaningful description without resorting to `NSError`.
+public struct RefreshEntitlementsServerError: Error, Sendable, CustomStringConvertible {
+    public let messages: [String]
+
+    public init(messages: [String]) {
+        self.messages = messages
+    }
+
+    public var description: String { messages.joined(separator: ", ") }
 }
 
 /// All errors that can be thrown during authentication with magic link

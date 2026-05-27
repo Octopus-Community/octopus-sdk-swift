@@ -56,16 +56,14 @@ class CreatePostViewModel: ObservableObject {
 
     var sendButtonAvailable: Bool {
         !isLoading &&
-        validator.validate(text: text, attachment: .init(from: attachment), ignoreTooShort: true).isSuccess &&
-        validator.validate(attachment: .init(from: attachment))
+        Validators.Post.validate(text: text, attachment: .init(from: attachment), ignoreTooShort: true).isSuccess &&
+        Validators.Post.validate(attachment: .init(from: attachment))
     }
 
-    var textMaxLength: Int { validator.maxTextLength }
-    var textMinLength: Int { validator.minTextLength }
+    var textMaxLength: Int { Validators.Post.maxTextLength }
+    var textMinLength: Int { Validators.Post.minTextLength }
 
     let octopus: OctopusSDK
-    private let validator: Validators.Post
-    private let pollValidator: Validators.Poll
     private var storage = [AnyCancellable]()
     private var sendingCancellable: AnyCancellable?
 
@@ -78,13 +76,31 @@ class CreatePostViewModel: ObservableObject {
     }
 
     private var isWaitingToSendPost = false
+    private let defaultTopicId: String?
+    private let cta: WritableCTA?
+    private let creationSource: PostsRepository.CreationSource
 
-    init(octopus: OctopusSDK, withPoll: Bool, defaultTopic: OctopusCore.Topic?) {
+    init(octopus: OctopusSDK,
+         withPoll: Bool,
+         defaultTopicId: String?,
+         defaultText: String? = nil,
+         defaultImage: Data? = nil,
+         cta: WritableCTA? = nil,
+         creationSource: PostsRepository.CreationSource = .user) {
         self.octopus = octopus
-        validator = octopus.core.validators.post
-        pollValidator = octopus.core.validators.poll
+        self.defaultTopicId = defaultTopicId
+        self.cta = cta
+        self.creationSource = creationSource
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
-        selectedTopic = defaultTopic.map { .init(topicId: $0.uuid, name: $0.name) }
+        selectedTopic = Self.resolveDefaultTopic(
+            topicId: defaultTopicId,
+            in: octopus.core.topicsRepository.topics
+        )
+
+        if let defaultText { self.text = defaultText }
+        if let defaultImage, let image = UIImage(data: defaultImage) {
+            self.attachment = .image(ImageAndData(imageData: defaultImage, image: image))
+        }
 
         let externalLinksRepository = octopus.core.externalLinksRepository
         communityGuidelinesUrl = externalLinksRepository.communityGuidelines
@@ -132,8 +148,13 @@ class CreatePostViewModel: ObservableObject {
             }
         }.store(in: &storage)
 
-        octopus.core.topicsRepository.$topics.sink { [unowned self] in
-            topics = $0.map { DisplayableTopic(topicId: $0.uuid, name: $0.name) }
+        octopus.core.topicsRepository.$topics.sink { [unowned self] newTopics in
+            topics = newTopics
+                .filter { $0.permissions.canAccess && $0.permissions.canCreateChildren }
+                .map { DisplayableTopic(topicId: $0.uuid, name: $0.name) }
+            if selectedTopic == nil {
+                selectedTopic = Self.resolveDefaultTopic(topicId: defaultTopicId, in: newTopics)
+            }
         }.store(in: &storage)
 
         Publishers.CombineLatest3(
@@ -141,7 +162,7 @@ class CreatePostViewModel: ObservableObject {
             $attachment,
             $selectedTopic)
             .sink { [unowned self] text, _, selectedTopic in
-                hasChanges = !text.isEmpty || attachment != nil || selectedTopic?.topicId != defaultTopic?.uuid
+                hasChanges = !text.isEmpty || attachment != nil || selectedTopic?.topicId != defaultTopicId
             }.store(in: &storage)
 
         $text
@@ -161,10 +182,10 @@ class CreatePostViewModel: ObservableObject {
                 guard let self else { return }
                 switch attachment {
                 case let .image(imageAndData):
-                    let validator = octopus.core.validators.picture
-                    switch validator.validate(imageAndData.image) {
+                    switch Validators.Picture.validate(imageAndData.image) {
                     case .sideTooSmall, .ratioTooBig:
-                        alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(validator.maxRatioStr)_minSize:\(Int(validator.minSize))")
+                        alertError = .localizationKey(
+                            "Picture.Selection.Error_maxRatio:\(Validators.Picture.maxRatioStr)_minSize:\(Int(Validators.Picture.minSize))")
                         self.attachment = nil
                     case .valid:
                         pictureError = nil
@@ -181,15 +202,20 @@ class CreatePostViewModel: ObservableObject {
 
     func send() {
         guard let topic = selectedTopic else { return }
-        let post = WritablePost(topicId: topic.topicId, text: text, attachment: .init(from: attachment))
-        switch validator.validate(text: post.text, attachment: post.attachment) {
+        let post = WritablePost(
+            topicId: topic.topicId,
+            text: text,
+            attachment: .init(from: attachment),
+            cta: cta
+        )
+        switch Validators.Post.validate(text: post.text, attachment: post.attachment) {
         case let .failure(error):
             if error == .tooShort {
                 textError = .localizationKey("Error.Text.TooShort_minLength:\(textMinLength)")
             }
         default: break
         }
-        guard validator.validate(post: post) else { return }
+        guard Validators.Post.validate(post: post) else { return }
 
         guard connectedActionChecker.ensureConnected(action: .post, actionWhenNotConnected: authenticationActionBinding) else {
             isWaitingToSendPost = true
@@ -228,7 +254,7 @@ class CreatePostViewModel: ObservableObject {
             return
         }
         do {
-            let (createdPost, imageData) = try await octopus.core.postsRepository.send(post)
+            let (createdPost, imageData) = try await octopus.core.postsRepository.send(post, creationSource: creationSource)
             if let imageData, let image = UIImage(data: imageData), let imageUrl = createdPost.medias.first?.url {
                 try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: imageUrl)
             }
@@ -262,7 +288,19 @@ class CreatePostViewModel: ObservableObject {
     }
 
     func createPoll() {
-        attachment = .poll(EditablePoll(validator: pollValidator))
+        attachment = .poll(EditablePoll())
+    }
+
+    private static func resolveDefaultTopic(
+        topicId: String?,
+        in topics: [OctopusCore.Topic]
+    ) -> DisplayableTopic? {
+        guard let topicId,
+              let match = topics.first(where: { $0.uuid == topicId }),
+              match.permissions.canAccess,
+              match.permissions.canCreateChildren
+        else { return nil }
+        return DisplayableTopic(topicId: match.uuid, name: match.name)
     }
 
     private func topicValid() -> Bool {
