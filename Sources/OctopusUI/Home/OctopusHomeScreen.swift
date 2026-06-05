@@ -170,12 +170,14 @@ public struct OctopusHomeScreen: View {
             octopus.core.trackingRepository.octopusUISessionStarted()
             displayScreenAfterNotificationTapped(notificationUserInfo: notificationUserInfo)
             if !viewModel.displayCommunityAccessDenied {
+                gamificationRulesViewManager.setHomeScreenVisible(true)
                 gamificationRulesViewManager.incrementViewCountIfNeeded()
             }
         }
         .onDisappear {
             octopus.core.toastsRepository.resetDisplayedToasts()
             octopus.core.trackingRepository.octopusUISessionEnded()
+            gamificationRulesViewManager.setHomeScreenVisible(false)
         }
         .onValueChanged(of: notificationUserInfo != nil) { hasValue in
             guard hasValue else { return }

@@ -21,6 +21,11 @@ final class GamificationRulesViewManager: ObservableObject {
     private var viewCount: Int!
 
     private var gamificationEnabled: Bool { gamificationConfig != nil }
+    /// Whether the home screen is currently on screen. The rules sheet must only ever be presented
+    /// while the home screen is visible: otherwise it can be triggered (e.g. by the config arriving)
+    /// while the SDK is preloaded in a background SwiftUI `TabView` tab, presenting the sheet over —
+    /// and corrupting the layout of — the host app's currently visible screen.
+    private var isHomeScreenVisible = false
     private var storage = [AnyCancellable]()
 
     /// Designated init. Accepts the gamification-config publisher directly so previews/tests can
@@ -51,6 +56,16 @@ final class GamificationRulesViewManager: ObservableObject {
         rulesDisplayedOnce = true
     }
 
+    /// Called by the home screen when its visibility changes (`onAppear` / `onDisappear`).
+    /// Becoming visible re-evaluates the conditions so a sheet whose conditions were met while
+    /// the screen was off screen is presented as soon as the user actually opens the community.
+    func setHomeScreenVisible(_ visible: Bool) {
+        isHomeScreenVisible = visible
+        if visible {
+            updateShouldDisplayGamificationRules()
+        }
+    }
+
     func incrementViewCountIfNeeded() {
         if gamificationEnabled {
             viewCount += 1
@@ -59,7 +74,7 @@ final class GamificationRulesViewManager: ObservableObject {
     }
 
     private func updateShouldDisplayGamificationRules() {
-        if viewCount >= 3, !rulesDisplayedOnce, gamificationEnabled {
+        if viewCount >= 3, !rulesDisplayedOnce, gamificationEnabled, isHomeScreenVisible {
             shouldDisplayGamificationRules = true
         }
     }
