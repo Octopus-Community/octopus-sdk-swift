@@ -21,6 +21,15 @@ class APITests {
         _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .mainFeed)
         _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .post(.init(postId: "POST_ID")))
         _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .group(.init(groupId: "GROUP_ID")))
+        _ = OctopusHomeScreen(octopus: octopusSdk, navigationMode: .automatic)
+        _ = OctopusHomeScreen(octopus: octopusSdk, navigationMode: .navigationStack)
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingAction: .close(onTap: {}))
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingAction: .back(onTap: {}))
+        _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingAction: nil)
+        _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .post(.init(postId: "P")),
+                              navBarLeadingAction: .back(onTap: {}))
+        _ = OctopusHomeScreen(octopus: octopusSdk, navigationMode: .navigationStack,
+                              navBarLeadingAction: .close(onTap: {}))
         _ = OctopusHomeScreen(octopus: octopusSdk, notificationUserInfo: .constant(nil))
         _ = OctopusHomeScreen(octopus: octopusSdk, notificationUserInfo: .constant(["k": "v"]))
     }

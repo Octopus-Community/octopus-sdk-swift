@@ -12,16 +12,20 @@ struct CommunityAccessDeniedView: View {
 
     @Compat.StateObject private var viewModel: CommunityAccessDeniedViewModel
     private let canClose: Bool
+    private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
-    init(octopus: OctopusSDK, canClose: Bool) {
+    init(octopus: OctopusSDK, canClose: Bool, navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: CommunityAccessDeniedViewModel(octopus: octopus))
         self.canClose = canClose
+        self.navBarLeadingAction = navBarLeadingAction
     }
 
     var body: some View {
         ContentView(accessDeniedMessage: viewModel.accessDeniedMessage)
             .modify {
-                if canClose {
+                if let navBarLeadingAction {
+                    $0.navigationBarItems(leading: NavBarLeadingActionButton(navBarLeadingAction))
+                } else if canClose {
                     $0.navigationBarItems(
                         leading:
                             Button(action: { presentationMode.wrappedValue.dismiss() }) {

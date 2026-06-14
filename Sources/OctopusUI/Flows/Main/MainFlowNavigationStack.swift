@@ -12,18 +12,31 @@ struct MainFlowNavigationStack<RootView: View>: View {
 
     let octopus: OctopusSDK
     let bottomSafeAreaInset: CGFloat
+    let navigationMode: OctopusNavigationMode
     @Compat.StateObject private var mainFlowPath: MainFlowPath
     @ViewBuilder let rootView: RootView
 
     @State private var bottomInset: CGFloat
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, bottomSafeAreaInset: CGFloat = 0,
+         navigationMode: OctopusNavigationMode = .automatic,
          @ViewBuilder _ rootView: () -> RootView) {
         self.octopus = octopus
         _mainFlowPath = Compat.StateObject(wrappedValue: mainFlowPath)
         self.bottomSafeAreaInset = bottomSafeAreaInset
+        self.navigationMode = navigationMode
         self.rootView = rootView()
         self._bottomInset = .init(initialValue: bottomSafeAreaInset)
+    }
+
+    /// Maps the public navigation mode onto the `NavigationBackport` policy.
+    /// `.automatic` keeps the legacy `NavigationView` (see the `TODO Djavan` note below), while
+    /// `.navigationStack` opts into a real `NavigationStack` on iOS 16+ (legacy fallback below).
+    private var navigationStackPolicy: UseNavigationStackPolicy {
+        switch navigationMode {
+        case .automatic: return .never
+        case .navigationStack: return .whenAvailable
+        }
     }
 
     var body: some View {
@@ -98,6 +111,8 @@ struct MainFlowNavigationStack<RootView: View>: View {
         }
         // TODO Djavan remove this as it forces to use navigationView instead of navigationStack. It has been set
         // because of a bug impacting the CreatePostView that was re-created when put in background.
-        .nbUseNavigationStack(.never)
+        // The policy can now be overridden via `OctopusHomeScreen`'s `navigationMode` (`.navigationStack`)
+        // for hosts that present the SDK in a modal, where the legacy NavigationView drops pushes.
+        .nbUseNavigationStack(navigationStackPolicy)
     }
 }

@@ -18,6 +18,7 @@ struct CreatePostView: View {
     @State private var showChangesWillBeLostAlert = false
 
     private let canClose: Bool
+    private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     init(octopus: OctopusSDK,
          withPoll: Bool,
@@ -26,7 +27,8 @@ struct CreatePostView: View {
          defaultImage: Data? = nil,
          cta: WritableCTA? = nil,
          creationSource: PostsRepository.CreationSource = .user,
-         canClose: Bool = false) {
+         canClose: Bool = false,
+         navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(
             octopus: octopus,
             withPoll: withPoll,
@@ -36,6 +38,17 @@ struct CreatePostView: View {
             cta: cta,
             creationSource: creationSource))
         self.canClose = canClose
+        self.navBarLeadingAction = navBarLeadingAction
+    }
+
+    /// Leaves the composer: runs the host leading action when provided, otherwise dismisses the SwiftUI
+    /// presentation (which pops it when pushed, or dismisses it when presented modally).
+    private func leaveScreen() {
+        if let navBarLeadingAction {
+            navBarLeadingAction.onTap()
+        } else {
+            presentationMode.wrappedValue.dismiss()
+        }
     }
 
     var body: some View {
@@ -54,7 +67,7 @@ struct CreatePostView: View {
                     createPoll: viewModel.createPoll)
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
         .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
-        .navigationBarBackButtonHidden(viewModel.hasChanges || canClose)
+        .navigationBarBackButtonHidden(viewModel.hasChanges || canClose || navBarLeadingAction != nil)
         .toolbar(leading: leadingBarItem, trailing: postButton,
                  trailingSharedBackgroundVisibility: .hidden)
         .fullScreenCover(isPresented: $showTopicPicker) {
@@ -72,7 +85,7 @@ struct CreatePostView: View {
             isPresented: $showChangesWillBeLostAlert,
             cancelLabel: "Common.No",
             destructiveLabel: "Common.Yes",
-            action: { presentationMode.wrappedValue.dismiss() })
+            action: { leaveScreen() })
         .emitScreenDisplayed(.createPost, trackingApi: trackingApi)
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
@@ -82,7 +95,15 @@ struct CreatePostView: View {
 
     @ViewBuilder
     private var leadingBarItem: some View {
-        if canClose && viewModel.hasChanges {
+        if let navBarLeadingAction {
+            NavBarLeadingActionButton(navBarLeadingAction, onTap: {
+                if viewModel.hasChanges {
+                    showChangesWillBeLostAlert = true
+                } else {
+                    navBarLeadingAction.onTap()
+                }
+            })
+        } else if canClose && viewModel.hasChanges {
             CloseButton(action: { showChangesWillBeLostAlert = true })
         } else if canClose && !viewModel.hasChanges {
             CloseButton(action: { presentationMode.wrappedValue.dismiss() })
