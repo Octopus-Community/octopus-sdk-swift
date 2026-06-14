@@ -18,6 +18,7 @@ struct MainRootFeedView: View {
     private let mainFlowPath: MainFlowPath
     private let navBarTitle: OctopusMainFeedTitle?
     private let coloredNavBar: Bool
+    private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
@@ -25,11 +26,13 @@ struct MainRootFeedView: View {
          mainFlowPath: MainFlowPath,
          navBarTitle: OctopusMainFeedTitle?,
          coloredNavBar: Bool,
+         navBarLeadingAction: OctopusNavBarLeadingAction? = nil
     ) {
         _viewModel = Compat.StateObject(wrappedValue: MainRootFeedViewModel(octopus: octopus))
         self.mainFlowPath = mainFlowPath
         self.navBarTitle = navBarTitle
         self.coloredNavBar = coloredNavBar
+        self.navBarLeadingAction = navBarLeadingAction
     }
 
     var body: some View {
@@ -64,7 +67,11 @@ struct MainRootFeedView: View {
 
     @ViewBuilder
     private var leadingBarItem: some View {
-        if let navBarTitle, navBarTitle.placement == .leading {
+        if let navBarLeadingAction {
+            // The host provided a leading item (close/back). It takes the leading slot; the feed title is
+            // relocated to the centered slot (see `centeredBarItem`) so it is not lost.
+            NavBarLeadingActionButton(navBarLeadingAction)
+        } else if let navBarTitle, navBarTitle.placement == .leading {
             switch navBarTitle.content {
             case .logo:
                 if theme.assets.logoIsCustomized {
@@ -107,6 +114,40 @@ struct MainRootFeedView: View {
         return false
     }
 
+    /// The feed title rendered in the centered slot when a host `navBarLeadingAction` occupies the leading
+    /// slot. Mirrors the leading title resolution (logo if customized, else the provided text, else the
+    /// default "Community") but with the inline nav-bar title styling used in the centered slot.
+    @ViewBuilder
+    private var relocatedCenteredTitle: some View {
+        switch navBarTitle?.content {
+        case .logo:
+            if theme.assets.logoIsCustomized {
+                Image(uiImage: theme.assets.logo)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 33)
+                    .fixedSize()
+                    .accessibilityHidden(true)
+            } else {
+                defaultCenteredTitle
+            }
+        case let .text(title):
+            Text(title.text)
+                .inlineNavigationBarTitleFont()
+                .foregroundColor(coloredNavBar ? theme.colors.onPrimary : theme.colors.gray900)
+                .fixedSize()
+        case nil:
+            defaultCenteredTitle
+        }
+    }
+
+    private var defaultCenteredTitle: some View {
+        Text("Community.Default.Title", bundle: .module)
+            .inlineNavigationBarTitleFont()
+            .foregroundColor(coloredNavBar ? theme.colors.onPrimary : theme.colors.gray900)
+            .fixedSize()
+    }
+
     @ViewBuilder
     private var trailingBarItem: some View {
         if presentationMode.wrappedValue.isPresented {
@@ -133,7 +174,10 @@ struct MainRootFeedView: View {
 
     @ViewBuilder
     private var centeredBarItem: some View {
-        if let navBarTitle, navBarTitle.placement == .center {
+        if navBarLeadingAction != nil {
+            // The leading slot is taken by the host item, so the feed title is shown centered here.
+            relocatedCenteredTitle
+        } else if let navBarTitle, navBarTitle.placement == .center {
             switch navBarTitle.content {
             case .logo:
                 if theme.assets.logoIsCustomized {
@@ -161,7 +205,10 @@ struct MainRootFeedView: View {
     }
 
     private var centeredItemVisibility: Compat.Visibility {
-        if let navBarTitle, navBarTitle.placement == .center {
+        if navBarLeadingAction != nil {
+            // Title relocated to center (see `relocatedCenteredTitle`): always resolves to visible content.
+            return .visible
+        } else if let navBarTitle, navBarTitle.placement == .center {
             switch navBarTitle.content {
             case .logo:
                 if theme.assets.logoIsCustomized {

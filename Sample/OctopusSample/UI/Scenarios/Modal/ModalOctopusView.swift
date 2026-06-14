@@ -10,6 +10,7 @@ import OctopusUI
 /// A view that displays the Octopus UI in a full screen modal
 struct ModalOctopusView: View {
     @StateObjectCompat private var viewModel = OctopusAuthSDKViewModel()
+    @ObservedObject private var navigationModeManager = NavigationModeManager.instance
     @Binding var openOctopusAsModal: Bool
 
     @Environment(\.sizeCategory) var sizeCategory // make it recompute the theme when the size category changes
@@ -27,6 +28,10 @@ struct ModalOctopusView: View {
 
                 Text("This is your app's content")
                     .font(.headline)
+
+                if DefaultValuesProvider.internalDemoMode {
+                    navigationModePicker
+                }
 
                 Button(action: { openOctopusAsModal = true }) {
                     HStack {
@@ -65,6 +70,7 @@ struct ModalOctopusView: View {
         .fullScreenCover(isPresented: $openOctopusAsModal) {
             OctopusUIView(
                 octopus: viewModel.octopus,
+                navigationMode: navigationModeManager.mode.octopusNavigationMode,
                 octopusNotificationUserInfo: $octopusNotificationUserInfo
             )
             // only for used for internal purpose, you can ignore this for the easiest way to use Octopus
@@ -80,6 +86,22 @@ struct ModalOctopusView: View {
             octopusNotificationUserInfo = $0
         }
         .hostAppFooter()
+    }
+
+    // Internal-demo control: pick the navigation mode used when the Octopus UI is opened in this modal.
+    // Flip it then tap "Open the Octopus Community" to compare `.automatic` vs `.navigationStack`.
+    private var navigationModePicker: some View {
+        VStack(spacing: 4) {
+            Text("Navigation mode (internal)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Picker("", selection: $navigationModeManager.mode) {
+                ForEach(SampleNavigationMode.allCases) { mode in
+                    Text(mode.displayableString).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
     }
 
     @ViewBuilder

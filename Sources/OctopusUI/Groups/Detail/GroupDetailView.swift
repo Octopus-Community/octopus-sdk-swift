@@ -19,17 +19,20 @@ struct GroupDetailView: View {
 
     private let mainFlowPath: MainFlowPath
     private let canClose: Bool
+    private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
     init(octopus: OctopusSDK, groupId: String, mainFlowPath: MainFlowPath,
          translationStore: ContentTranslationPreferenceStore,
-         canClose: Bool = false, origin: GroupDetailNavigationOrigin = .sdk) {
+         canClose: Bool = false, origin: GroupDetailNavigationOrigin = .sdk,
+         navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: GroupDetailViewModel(
             octopus: octopus, groupId: groupId, mainFlowPath: mainFlowPath,
             translationStore: translationStore, origin: origin))
         self.mainFlowPath = mainFlowPath
         self.canClose = canClose
+        self.navBarLeadingAction = navBarLeadingAction
     }
 
     var body: some View {
@@ -135,7 +138,9 @@ struct GroupDetailView: View {
 
     @ViewBuilder
     private func leadingBarItem(group: GroupDetail?) -> some View {
-        if canClose {
+        if let navBarLeadingAction {
+            NavBarLeadingActionButton(navBarLeadingAction)
+        } else if canClose {
             CloseButton(action: { presentationMode.wrappedValue.dismiss() })
         } else {
             EmptyView()

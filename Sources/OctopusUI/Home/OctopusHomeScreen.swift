@@ -16,6 +16,12 @@ import UserNotifications
 /// content.
 ///
 /// This SwiftUI view contains a NavigationView, hence it should be not embedded in another Navigation object.
+///
+/// ⚠️ Modal hosting: by default `OctopusHomeScreen` uses a legacy `NavigationView`, which can silently drop
+/// in-app navigation pushes when the screen is presented inside a modal that reparents its hosting controller
+/// (SwiftUI `.sheet` / `.fullScreenCover`, or a Flutter / React Native modal route). If you host the SDK that
+/// way, pass `navigationMode: .navigationStack` to use a `NavigationStack` (iOS 16+) instead. See
+/// ``OctopusNavigationMode``.
 public struct OctopusHomeScreen: View {
 
     @Environment(\.octopusTheme) private var theme
@@ -28,6 +34,8 @@ public struct OctopusHomeScreen: View {
     private let mainFeedNavBarTitle: OctopusMainFeedTitle?
     private let mainFeedColoredNavBar: Bool
     private let initialScreen: OctopusInitialScreen
+    private let navigationMode: OctopusNavigationMode
+    private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     @Compat.StateObject private var viewModel: OctopusHomeScreenViewModel
     @Compat.StateObject private var translationStore: ContentTranslationPreferenceStore
@@ -55,6 +63,18 @@ public struct OctopusHomeScreen: View {
     ///                             If false, default nav bar color will be used. Default is false.
     ///    - initialScreen: the initial screen to display. Default is `.mainFeed` which shows the feed with the feed
     ///                     selector. Use `.post` or `.group` to open a specific post or group in bridge mode.
+    ///    - navigationMode: which navigation container the screen uses internally. Default is `.automatic`
+    ///                      (legacy `NavigationView`). Pass `.navigationStack` when hosting `OctopusHomeScreen`
+    ///                      inside a modal presentation (SwiftUI `.sheet` / `.fullScreenCover`, or a Flutter /
+    ///                      React Native modal route), where the legacy navigation can silently drop in-app
+    ///                      pushes. See `OctopusNavigationMode`.
+    ///    - navBarLeadingAction: an optional host-driven leading nav-bar item displayed on the root screen (the one
+    ///                           selected by `initialScreen`). Use it when you host `OctopusHomeScreen` somewhere the
+    ///                           SDK cannot dismiss itself (pushed on your own navigation stack, or mounted by a
+    ///                           Flutter / React Native plugin): the SDK's built-in close button only appears when the
+    ///                           view is presented natively (`.sheet` / `.fullScreenCover`). Pass `.close(onTap:)` or
+    ///                           `.back(onTap:)` to show the corresponding item and be told when it is tapped — the
+    ///                           closure runs instead of dismissing a SwiftUI presentation. Default is nil.
     ///    - notificationUserInfo: a binding on the `userInfo` dictionary of a push notification (i.e. the
     ///                            `request.content.userInfo` of a `UNNotification`, or the raw payload received
     ///                            from cross-platform push plugins like Firebase Messaging).
@@ -74,6 +94,8 @@ public struct OctopusHomeScreen: View {
                 mainFeedNavBarTitle: OctopusMainFeedTitle? = nil,
                 mainFeedColoredNavBar: Bool = false,
                 initialScreen: OctopusInitialScreen = .mainFeed,
+                navigationMode: OctopusNavigationMode = .automatic,
+                navBarLeadingAction: OctopusNavBarLeadingAction? = nil,
                 notificationUserInfo: Binding<[AnyHashable: Any]?> = .constant(nil)) {
         _viewModel = Compat.StateObject(wrappedValue: OctopusHomeScreenViewModel(octopus: octopus))
         _translationStore = Compat.StateObject(wrappedValue: ContentTranslationPreferenceStore(
@@ -93,15 +115,20 @@ public struct OctopusHomeScreen: View {
             self.mainFeedColoredNavBar = false
         }
         self.initialScreen = initialScreen
+        self.navigationMode = navigationMode
+        self.navBarLeadingAction = navBarLeadingAction
         self._notificationUserInfo = notificationUserInfo
     }
 
     public var body: some View {
-        MainFlowNavigationStack(octopus: octopus, mainFlowPath: viewModel.mainFlowPath, bottomSafeAreaInset: bottomSafeAreaInset) {
+        MainFlowNavigationStack(octopus: octopus, mainFlowPath: viewModel.mainFlowPath,
+                                bottomSafeAreaInset: bottomSafeAreaInset, navigationMode: navigationMode) {
             if #available(iOS 14.0, *) {
                 Group {
                     if viewModel.displayCommunityAccessDenied {
-                        CommunityAccessDeniedView(octopus: octopus, canClose: presentationMode.wrappedValue.isPresented)
+                        CommunityAccessDeniedView(octopus: octopus,
+                                                  canClose: presentationMode.wrappedValue.isPresented,
+                                                  navBarLeadingAction: navBarLeadingAction)
                     } else {
                         Group {
                             switch initialScreen {
@@ -110,7 +137,8 @@ public struct OctopusHomeScreen: View {
                                     octopus: octopus,
                                     mainFlowPath: viewModel.mainFlowPath,
                                     navBarTitle: mainFeedNavBarTitle,
-                                    coloredNavBar: mainFeedColoredNavBar)
+                                    coloredNavBar: mainFeedColoredNavBar,
+                                    navBarLeadingAction: navBarLeadingAction)
                             case let .post(info):
                                 PostDetailView(
                                     octopus: octopus, mainFlowPath: viewModel.mainFlowPath,
@@ -121,14 +149,16 @@ public struct OctopusHomeScreen: View {
                                     scrollToMostRecentComment: false,
                                     origin: .clientApp,
                                     hasFeaturedComment: false,
-                                    canClose: presentationMode.wrappedValue.isPresented)
+                                    canClose: presentationMode.wrappedValue.isPresented,
+                                    navBarLeadingAction: navBarLeadingAction)
                             case let .group(info):
                                 GroupDetailView(
                                     octopus: octopus, groupId: info.groupId,
                                     mainFlowPath: viewModel.mainFlowPath,
                                     translationStore: translationStore,
                                     canClose: presentationMode.wrappedValue.isPresented,
-                                    origin: .clientApp)
+                                    origin: .clientApp,
+                                    navBarLeadingAction: navBarLeadingAction)
                             case let .createPost(info):
                                 CreatePostView(
                                     octopus: octopus,
@@ -138,7 +168,8 @@ public struct OctopusHomeScreen: View {
                                     defaultImage: info.prefilledPost?.image,
                                     cta: info.prefilledPost?.cta.map { WritableCTA(url: $0.url, label: $0.label) },
                                     creationSource: info.prefilledPost == nil ? .user : .prefilledFromClient,
-                                    canClose: presentationMode.wrappedValue.isPresented)
+                                    canClose: presentationMode.wrappedValue.isPresented,
+                                    navBarLeadingAction: navBarLeadingAction)
                             }
                         }
                     }

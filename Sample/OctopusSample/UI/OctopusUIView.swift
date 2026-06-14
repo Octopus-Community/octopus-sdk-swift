@@ -14,6 +14,7 @@ struct OctopusUIView: View {
     let mainFeedNavBarTitle: OctopusMainFeedTitle?
     let mainFeedColoredNavBar: Bool
     let initialScreen: OctopusInitialScreen
+    let navigationMode: OctopusNavigationMode
 
     @Binding var octopusNotificationUserInfo: [AnyHashable: Any]?
 
@@ -30,12 +31,14 @@ struct OctopusUIView: View {
         mainFeedNavBarTitle: OctopusMainFeedTitle? = nil,
         mainFeedColoredNavBar: Bool = false,
         initialScreen: OctopusInitialScreen = .mainFeed,
+        navigationMode: OctopusNavigationMode = .automatic,
         octopusNotificationUserInfo: Binding<[AnyHashable: Any]?> = .constant(nil)) {
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
         self.mainFeedNavBarTitle = mainFeedNavBarTitle
         self.mainFeedColoredNavBar = mainFeedColoredNavBar
         self.initialScreen = initialScreen
+        self.navigationMode = navigationMode
         self._octopusNotificationUserInfo = octopusNotificationUserInfo
     }
 
@@ -46,6 +49,7 @@ struct OctopusUIView: View {
             mainFeedNavBarTitle: mainFeedNavBarTitle,
             mainFeedColoredNavBar: mainFeedColoredNavBar,
             initialScreen: initialScreen,
+            navigationMode: navigationMode,
             notificationUserInfo: $octopusNotificationUserInfo
         )
         .fullScreenCover(isPresented: $displayAppUserLogin) {

@@ -32,6 +32,7 @@ struct PostDetailView: View {
 
     private let canClose: Bool
     private let mainFlowPath: MainFlowPath
+    private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          postUuid: String,
@@ -40,7 +41,8 @@ struct PostDetailView: View {
          scrollToMostRecentComment: Bool = false,
          origin: PostDetailNavigationOrigin,
          hasFeaturedComment: Bool,
-         canClose: Bool = false) {
+         canClose: Bool = false,
+         navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: PostDetailViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
             postUuid: postUuid,
@@ -51,6 +53,19 @@ struct PostDetailView: View {
             hasFeaturedComment: hasFeaturedComment))
         self.canClose = canClose
         self.mainFlowPath = mainFlowPath
+        self.navBarLeadingAction = navBarLeadingAction
+    }
+
+    /// Leaves the post detail: runs the host leading action when provided, otherwise dismisses a native
+    /// presentation (`canClose`) or pops the SDK navigation stack.
+    private func leaveScreen() {
+        if let navBarLeadingAction {
+            navBarLeadingAction.onTap()
+        } else if canClose {
+            presentationMode.wrappedValue.dismiss()
+        } else {
+            navigator.pop()
+        }
     }
 
     var body: some View {
@@ -136,13 +151,7 @@ struct PostDetailView: View {
             isPresented: $showChangesWillBeLostAlert,
             cancelLabel: "Common.No",
             destructiveLabel: "Common.Yes",
-            action: {
-                if canClose {
-                    presentationMode.wrappedValue.dismiss()
-                } else {
-                    navigator.pop()
-                }
-            })
+            action: { leaveScreen() })
         .destructiveConfirmationAlert(
             "Block.Profile.Alert.Title",
             isPresented: $displayWillBlockAlert,
@@ -163,26 +172,14 @@ struct PostDetailView: View {
                 $0.alert(
                     Text("Post.Delete.Done", bundle: .module),
                     isPresented: $displayPostDeletedAlert, actions: {
-                        Button(action: {
-                            if canClose {
-                                presentationMode.wrappedValue.dismiss()
-                            } else {
-                                navigator.pop()
-                            }
-                        }) {
+                        Button(action: { leaveScreen() }) {
                             Text("Common.Ok", bundle: .module)
                         }
                     })
             } else {
                 $0.alert(isPresented: $displayPostDeletedAlert) {
                     Alert(title: Text("Post.Delete.Done", bundle: .module),
-                          dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        if canClose {
-                            presentationMode.wrappedValue.dismiss()
-                        } else {
-                            navigator.pop()
-                        }
-                    }))
+                          dismissButton: .default(Text("Common.Ok", bundle: .module), action: { leaveScreen() }))
                 }
             }
         }
@@ -202,26 +199,14 @@ struct PostDetailView: View {
                 $0.alert(
                     Text("Content.Detail.NotAvailable", bundle: .module),
                     isPresented: $viewModel.postDisappeared, actions: {
-                        Button(action: {
-                            if canClose {
-                                presentationMode.wrappedValue.dismiss()
-                            } else {
-                                navigator.pop()
-                            }
-                        }) {
+                        Button(action: { leaveScreen() }) {
                             Text("Common.Ok", bundle: .module)
                         }
                     })
             } else {
                 $0.alert(isPresented: $viewModel.postDisappeared) {
                     Alert(title: Text("Content.Detail.NotAvailable", bundle: .module),
-                          dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        if canClose {
-                            presentationMode.wrappedValue.dismiss()
-                        } else {
-                            navigator.pop()
-                        }
-                    }))
+                          dismissButton: .default(Text("Common.Ok", bundle: .module), action: { leaveScreen() }))
                 }
             }
         }
@@ -229,7 +214,15 @@ struct PostDetailView: View {
 
     @ViewBuilder
     private var leadingBarItem: some View {
-        if canClose {
+        if let navBarLeadingAction {
+            NavBarLeadingActionButton(navBarLeadingAction, onTap: {
+                if commentHasChanges {
+                    showChangesWillBeLostAlert = true
+                } else {
+                    navBarLeadingAction.onTap()
+                }
+            })
+        } else if canClose {
             CloseButton(action: {
                 if commentHasChanges {
                     showChangesWillBeLostAlert = true
