@@ -49,6 +49,10 @@ class CreatePostViewModel: ObservableObject {
     @Published private(set) var hasChanges = false
     @Published var authenticationAction: ConnectedActionReplacement?
     @Published private(set) var userHasAcceptedCgu = false
+    /// Per-content-type creation options for posts (OCT-1426). Default `true` until the community
+    /// config is loaded, so behaviour is unchanged unless the community disables a capability.
+    @Published private(set) var picturesEnabled = true
+    @Published private(set) var pollsEnabled = true
 
     let communityGuidelinesUrl: URL
     let privacyPolicyUrl: URL
@@ -79,6 +83,8 @@ class CreatePostViewModel: ObservableObject {
     private let defaultTopicId: String?
     private let cta: WritableCTA?
     private let creationSource: PostsRepository.CreationSource
+    /// Host signing closure for a prefilled-share image (OCT-1426). `nil` for member-initiated posts.
+    private let bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)?
 
     init(octopus: OctopusSDK,
          withPoll: Bool,
@@ -86,11 +92,13 @@ class CreatePostViewModel: ObservableObject {
          defaultText: String? = nil,
          defaultImage: Data? = nil,
          cta: WritableCTA? = nil,
-         creationSource: PostsRepository.CreationSource = .user) {
+         creationSource: PostsRepository.CreationSource = .user,
+         bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)? = nil) {
         self.octopus = octopus
         self.defaultTopicId = defaultTopicId
         self.cta = cta
         self.creationSource = creationSource
+        self.bridgeShareSignature = bridgeShareSignature
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
         selectedTopic = Self.resolveDefaultTopic(
             topicId: defaultTopicId,
@@ -123,6 +131,19 @@ class CreatePostViewModel: ObservableObject {
                     DispatchQueue.main.async { [weak self] in
                         self?.send()
                     }
+                }
+            }.store(in: &storage)
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { ($0?.contentOptions ?? .allEnabled).post }
+            .removeDuplicates()
+            .sink { [unowned self] postOptions in
+                picturesEnabled = postOptions.enablePictures
+                pollsEnabled = postOptions.enablePolls
+                // Safety net (not bypassable): if polls are disabled, never leave a poll editor open.
+                // Pictures don't clear an existing/prefilled attachment — bridge images are unaffected.
+                if !postOptions.enablePolls, attachment?.hasPoll == true {
+                    attachment = nil
                 }
             }.store(in: &storage)
 
@@ -254,7 +275,8 @@ class CreatePostViewModel: ObservableObject {
             return
         }
         do {
-            let (createdPost, imageData) = try await octopus.core.postsRepository.send(post, creationSource: creationSource)
+            let (createdPost, imageData) = try await octopus.core.postsRepository.send(
+                post, creationSource: creationSource, bridgeShareSignature: bridgeShareSignature)
             if let imageData, let image = UIImage(data: imageData), let imageUrl = createdPost.medias.first?.url {
                 try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: imageUrl)
             }

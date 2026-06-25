@@ -19,6 +19,8 @@ class CreateReplyViewModel: ObservableObject {
     @Published private(set) var pictureError: DisplayableString?
     @Published private(set) var hasChanges = false
     @Published private(set) var userHasAcceptedCgu = false
+    /// Whether reply pictures are enabled for this community (OCT-1426). Default `true`.
+    @Published private(set) var picturesEnabled = true
 
     var sendAvailable: Bool {
         Validators.Reply.validate(reply: WritableReply(commentId: commentId, text: text, imageData: picture?.imageData))
@@ -67,6 +69,12 @@ class CreateReplyViewModel: ObservableObject {
                     }
                 }
             }.store(in: &storage)
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { ($0?.contentOptions ?? .allEnabled).reply.enablePictures }
+            .removeDuplicates()
+            .sink { [unowned self] in picturesEnabled = $0 }
+            .store(in: &storage)
 
         octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] profile in

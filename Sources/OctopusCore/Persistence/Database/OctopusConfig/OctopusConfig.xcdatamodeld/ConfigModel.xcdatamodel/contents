@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="25C56" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="CommunityConfig" representedClassName="CommunityConfigEntity" syncable="YES">
+        <attribute name="avatarLock" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="bioLock" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="commentEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="displayAccountAge" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="forceLoginOnStrongActions" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="nicknameLock" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="postEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="postEnablePolls" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="replyEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <relationship name="displayConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="DisplayConfig" inverseName="belongsTo" inverseEntity="DisplayConfig"/>
         <relationship name="gamificationConfig" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="GamificationConfig" inverseName="belongsTo" inverseEntity="GamificationConfig"/>
     </entity>

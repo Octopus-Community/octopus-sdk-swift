@@ -21,6 +21,9 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     @Published var profile: DisplayableCurrentUserProfile?
     @Published var gamificationConfig: GamificationConfig?
     @Published var displayAccountAge = false
+    @Published private(set) var editability = ProfileFieldsEditability(lock: .allEditable)
+    /// Whether the community allows poll creation (OCT-1426). Default `true`.
+    @Published private(set) var pollsEnabled = true
     @Published private(set) var dismiss = false
     @Published var error: DisplayableString?
 
@@ -74,6 +77,22 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             .removeDuplicates()
             .sink { [unowned self] in
                 displayAccountAge = $0
+            }.store(in: &storage)
+
+        octopus.core.configRepository
+            .communityConfigPublisher
+            .map { ProfileFieldsEditability(lock: $0?.profileFieldsLock ?? .allEditable) }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                editability = $0
+            }.store(in: &storage)
+
+        octopus.core.configRepository
+            .communityConfigPublisher
+            .map { ($0?.contentOptions ?? .allEnabled).post.enablePolls }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                pollsEnabled = $0
             }.store(in: &storage)
 
         Publishers.CombineLatest4(

@@ -32,4 +32,14 @@ class MockConfigRepository: ConfigRepository, InjectableObject, @unchecked Senda
     public func refreshCommunityAccess() async throws(ServerCallError) {
 
     }
+
+    public func debugOverrideProfileFieldsLock(_ lock: ProfileFieldsLock?) {
+        guard let communityConfig, let lock else { return }
+        self.communityConfig = communityConfig.withProfileFieldsLock(lock)
+    }
+
+    public func debugOverrideContentOptions(_ options: ContentOptions?) {
+        guard let communityConfig, let options else { return }
+        self.communityConfig = communityConfig.withContentOptions(options)
+    }
 }

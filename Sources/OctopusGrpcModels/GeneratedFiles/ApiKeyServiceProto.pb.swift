@@ -20,6 +20,80 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+/// nickname + avatar
+public enum Com_Octopuscommunity_FieldLock: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case editable // = 0
+  case readOnly // = 1
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .editable
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .editable
+    case 1: self = .readOnly
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .editable: return 0
+    case .readOnly: return 1
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Com_Octopuscommunity_FieldLock] = [
+    .editable,
+    .readOnly,
+  ]
+
+}
+
+/// bio only carries HIDDEN
+public enum Com_Octopuscommunity_BioFieldLock: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case editable // = 0
+  case readOnly // = 1
+  case hidden // = 2
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .editable
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .editable
+    case 1: self = .readOnly
+    case 2: self = .hidden
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .editable: return 0
+    case .readOnly: return 1
+    case .hidden: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Com_Octopuscommunity_BioFieldLock] = [
+    .editable,
+    .readOnly,
+    .hidden,
+  ]
+
+}
+
 public struct Com_Octopuscommunity_GetConfigResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -80,11 +154,146 @@ public struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable {
   /// Clears the value of `displayConfig`. Subsequent reads from it will return its default value.
   public mutating func clearDisplayConfig() {_uniqueStorage()._displayConfig = nil}
 
+  /// absent / all EDITABLE => no-op
+  public var profileFieldsLock: Com_Octopuscommunity_ProfileFieldsLock {
+    get {_storage._profileFieldsLock ?? Com_Octopuscommunity_ProfileFieldsLock()}
+    set {_uniqueStorage()._profileFieldsLock = newValue}
+  }
+  /// Returns true if `profileFieldsLock` has been explicitly set.
+  public var hasProfileFieldsLock: Bool {_storage._profileFieldsLock != nil}
+  /// Clears the value of `profileFieldsLock`. Subsequent reads from it will return its default value.
+  public mutating func clearProfileFieldsLock() {_uniqueStorage()._profileFieldsLock = nil}
+
+  /// Only enforced for client (SDK) keys, not BO keys
+  public var contentOptions: Com_Octopuscommunity_ContentOptions {
+    get {_storage._contentOptions ?? Com_Octopuscommunity_ContentOptions()}
+    set {_uniqueStorage()._contentOptions = newValue}
+  }
+  /// Returns true if `contentOptions` has been explicitly set.
+  public var hasContentOptions: Bool {_storage._contentOptions != nil}
+  /// Clears the value of `contentOptions`. Subsequent reads from it will return its default value.
+  public mutating func clearContentOptions() {_uniqueStorage()._contentOptions = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+/// Per-content-type publishing options; each flag absent => enabled (true).
+public struct Com_Octopuscommunity_ContentOptions: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var post: Com_Octopuscommunity_ContentOptions.PostConfig {
+    get {_post ?? Com_Octopuscommunity_ContentOptions.PostConfig()}
+    set {_post = newValue}
+  }
+  /// Returns true if `post` has been explicitly set.
+  public var hasPost: Bool {self._post != nil}
+  /// Clears the value of `post`. Subsequent reads from it will return its default value.
+  public mutating func clearPost() {self._post = nil}
+
+  public var comment: Com_Octopuscommunity_ContentOptions.CommentConfig {
+    get {_comment ?? Com_Octopuscommunity_ContentOptions.CommentConfig()}
+    set {_comment = newValue}
+  }
+  /// Returns true if `comment` has been explicitly set.
+  public var hasComment: Bool {self._comment != nil}
+  /// Clears the value of `comment`. Subsequent reads from it will return its default value.
+  public mutating func clearComment() {self._comment = nil}
+
+  public var reply: Com_Octopuscommunity_ContentOptions.ReplyConfig {
+    get {_reply ?? Com_Octopuscommunity_ContentOptions.ReplyConfig()}
+    set {_reply = newValue}
+  }
+  /// Returns true if `reply` has been explicitly set.
+  public var hasReply: Bool {self._reply != nil}
+  /// Clears the value of `reply`. Subsequent reads from it will return its default value.
+  public mutating func clearReply() {self._reply = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public struct PostConfig: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var enablePictures: Bool {
+      get {_enablePictures ?? false}
+      set {_enablePictures = newValue}
+    }
+    /// Returns true if `enablePictures` has been explicitly set.
+    public var hasEnablePictures: Bool {self._enablePictures != nil}
+    /// Clears the value of `enablePictures`. Subsequent reads from it will return its default value.
+    public mutating func clearEnablePictures() {self._enablePictures = nil}
+
+    public var enablePolls: Bool {
+      get {_enablePolls ?? false}
+      set {_enablePolls = newValue}
+    }
+    /// Returns true if `enablePolls` has been explicitly set.
+    public var hasEnablePolls: Bool {self._enablePolls != nil}
+    /// Clears the value of `enablePolls`. Subsequent reads from it will return its default value.
+    public mutating func clearEnablePolls() {self._enablePolls = nil}
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _enablePictures: Bool? = nil
+    fileprivate var _enablePolls: Bool? = nil
+  }
+
+  public struct CommentConfig: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var enablePictures: Bool {
+      get {_enablePictures ?? false}
+      set {_enablePictures = newValue}
+    }
+    /// Returns true if `enablePictures` has been explicitly set.
+    public var hasEnablePictures: Bool {self._enablePictures != nil}
+    /// Clears the value of `enablePictures`. Subsequent reads from it will return its default value.
+    public mutating func clearEnablePictures() {self._enablePictures = nil}
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _enablePictures: Bool? = nil
+  }
+
+  public struct ReplyConfig: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var enablePictures: Bool {
+      get {_enablePictures ?? false}
+      set {_enablePictures = newValue}
+    }
+    /// Returns true if `enablePictures` has been explicitly set.
+    public var hasEnablePictures: Bool {self._enablePictures != nil}
+    /// Clears the value of `enablePictures`. Subsequent reads from it will return its default value.
+    public mutating func clearEnablePictures() {self._enablePictures = nil}
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _enablePictures: Bool? = nil
+  }
+
+  public init() {}
+
+  fileprivate var _post: Com_Octopuscommunity_ContentOptions.PostConfig? = nil
+  fileprivate var _comment: Com_Octopuscommunity_ContentOptions.CommentConfig? = nil
+  fileprivate var _reply: Com_Octopuscommunity_ContentOptions.ReplyConfig? = nil
 }
 
 public struct Com_Octopuscommunity_GamificationConfig: Sendable {
@@ -353,9 +562,33 @@ public struct Com_Octopuscommunity_PoweredByOctopus: Sendable {
   public init() {}
 }
 
+public struct Com_Octopuscommunity_ProfileFieldsLock: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var nickname: Com_Octopuscommunity_FieldLock = .editable
+
+  public var bio: Com_Octopuscommunity_BioFieldLock = .editable
+
+  public var avatar: Com_Octopuscommunity_FieldLock = .editable
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate let _protobuf_package = "com.octopuscommunity"
+
+extension Com_Octopuscommunity_FieldLock: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FIELD_LOCK_EDITABLE\0\u{1}FIELD_LOCK_READ_ONLY\0")
+}
+
+extension Com_Octopuscommunity_BioFieldLock: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0BIO_FIELD_LOCK_EDITABLE\0\u{1}BIO_FIELD_LOCK_READ_ONLY\0\u{1}BIO_FIELD_LOCK_HIDDEN\0")
+}
 
 extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetConfigResponse"
@@ -393,7 +626,7 @@ extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Message, SwiftPr
 
 extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ApiKeyConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0")
 
   fileprivate class _StorageClass {
     var _clientLoginMandatory: Bool = false
@@ -401,6 +634,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
     var _displayAccountAge: Bool = false
     var _languages: [String] = []
     var _displayConfig: Com_Octopuscommunity_DisplayConfig? = nil
+    var _profileFieldsLock: Com_Octopuscommunity_ProfileFieldsLock? = nil
+    var _contentOptions: Com_Octopuscommunity_ContentOptions? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -416,6 +651,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
       _displayAccountAge = source._displayAccountAge
       _languages = source._languages
       _displayConfig = source._displayConfig
+      _profileFieldsLock = source._profileFieldsLock
+      _contentOptions = source._contentOptions
     }
   }
 
@@ -439,6 +676,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
         case 3: try { try decoder.decodeSingularBoolField(value: &_storage._displayAccountAge) }()
         case 4: try { try decoder.decodeRepeatedStringField(value: &_storage._languages) }()
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._displayConfig) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._profileFieldsLock) }()
+        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._contentOptions) }()
         default: break
         }
       }
@@ -466,6 +705,12 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
       try { if let v = _storage._displayConfig {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
       } }()
+      try { if let v = _storage._profileFieldsLock {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      } }()
+      try { if let v = _storage._contentOptions {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -480,10 +725,163 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
         if _storage._displayAccountAge != rhs_storage._displayAccountAge {return false}
         if _storage._languages != rhs_storage._languages {return false}
         if _storage._displayConfig != rhs_storage._displayConfig {return false}
+        if _storage._profileFieldsLock != rhs_storage._profileFieldsLock {return false}
+        if _storage._contentOptions != rhs_storage._contentOptions {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ContentOptions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ContentOptions"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}post\0\u{1}comment\0\u{1}reply\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._post) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._comment) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._reply) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._post {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._comment {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._reply {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ContentOptions, rhs: Com_Octopuscommunity_ContentOptions) -> Bool {
+    if lhs._post != rhs._post {return false}
+    if lhs._comment != rhs._comment {return false}
+    if lhs._reply != rhs._reply {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".PostConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0\u{1}enablePolls\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self._enablePictures) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self._enablePolls) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._enablePictures {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._enablePolls {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ContentOptions.PostConfig, rhs: Com_Octopuscommunity_ContentOptions.PostConfig) -> Bool {
+    if lhs._enablePictures != rhs._enablePictures {return false}
+    if lhs._enablePolls != rhs._enablePolls {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ContentOptions.CommentConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".CommentConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self._enablePictures) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._enablePictures {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ContentOptions.CommentConfig, rhs: Com_Octopuscommunity_ContentOptions.CommentConfig) -> Bool {
+    if lhs._enablePictures != rhs._enablePictures {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ContentOptions.ReplyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".ReplyConfig"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self._enablePictures) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._enablePictures {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ContentOptions.ReplyConfig, rhs: Com_Octopuscommunity_ContentOptions.ReplyConfig) -> Bool {
+    if lhs._enablePictures != rhs._enablePictures {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -828,6 +1226,46 @@ extension Com_Octopuscommunity_PoweredByOctopus.Hidden: SwiftProtobuf.Message, S
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PoweredByOctopus.Hidden, rhs: Com_Octopuscommunity_PoweredByOctopus.Hidden) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_ProfileFieldsLock: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ProfileFieldsLock"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nickname\0\u{1}bio\0\u{1}avatar\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.nickname) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.bio) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.avatar) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.nickname != .editable {
+      try visitor.visitSingularEnumField(value: self.nickname, fieldNumber: 1)
+    }
+    if self.bio != .editable {
+      try visitor.visitSingularEnumField(value: self.bio, fieldNumber: 2)
+    }
+    if self.avatar != .editable {
+      try visitor.visitSingularEnumField(value: self.avatar, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ProfileFieldsLock, rhs: Com_Octopuscommunity_ProfileFieldsLock) -> Bool {
+    if lhs.nickname != rhs.nickname {return false}
+    if lhs.bio != rhs.bio {return false}
+    if lhs.avatar != rhs.avatar {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

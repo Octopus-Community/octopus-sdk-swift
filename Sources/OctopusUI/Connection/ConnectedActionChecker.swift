@@ -5,6 +5,7 @@
 import Foundation
 import SwiftUI
 import Octopus
+import OctopusCore
 
 enum UserAction {
     case post
@@ -51,6 +52,18 @@ class ConnectedActionChecker {
         self.octopus = octopus
     }
 
+    /// Whether an action must route through the first-post nickname-confirmation screen.
+    ///
+    /// A community-locked nickname (`read only` / `disabled`) is treated as already-confirmed
+    /// (OCT-1487, Q5): the confirmation screen is skipped for a field the user cannot edit, so the
+    /// user posts directly with the auto-generated, non-editable nickname. Editable nicknames keep
+    /// today's behaviour, so this is a strict no-op for every other community.
+    nonisolated static func needsNicknameValidation(for action: UserAction,
+                                                    hasConfirmedNickname: Bool,
+                                                    nicknameLock: ProfileFieldLockState) -> Bool {
+        action.needNicknameValidation && !hasConfirmedNickname && nicknameLock == .editable
+    }
+
     func ensureConnected(action: UserAction, actionWhenNotConnected: Binding<ConnectedActionReplacement?>) -> Bool {
         guard octopus.core.connectionRepository.magicLinkRequest == nil else {
             actionWhenNotConnected.wrappedValue = .login
@@ -86,7 +99,10 @@ class ConnectedActionChecker {
                 } else {
                     actionWhenNotConnected.wrappedValue = .login
                 }
-            } else if action.needNicknameValidation && !profile.hasConfirmedNickname {
+            } else if Self.needsNicknameValidation(
+                for: action,
+                hasConfirmedNickname: profile.hasConfirmedNickname,
+                nicknameLock: communityConfig.profileFieldsLock.nickname) {
                 actionWhenNotConnected.wrappedValue = .validateNickname
             } else {
                 if error != nil {

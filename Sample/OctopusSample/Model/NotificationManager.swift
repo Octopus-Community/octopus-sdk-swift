@@ -15,7 +15,7 @@ import Octopus
 /// It is here because, due to the multiple way of initializing the SDK, it is not created in the AppDelegate as you
 /// should do it. If you create the SDK in your AppDelegate, you can directly call the function
 /// `octopus.set(notificationDeviceToken:)` when receiving the device token.
-class NotificationManager {
+class NotificationManager: ObservableObject {
 
     static let instance = NotificationManager()
 

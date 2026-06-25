@@ -11,6 +11,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
     let profile: DisplayableCurrentUserProfile
     let gamificationConfig: GamificationConfig?
     let displayAccountAge: Bool
+    let editability: ProfileFieldsEditability
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
     let openEdition: () -> Void
@@ -30,6 +31,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
     init(profile: DisplayableCurrentUserProfile,
          gamificationConfig: GamificationConfig?,
          displayAccountAge: Bool,
+         editability: ProfileFieldsEditability,
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
          hasInitialNotSeenNotifications: Bool,
          refresh: @escaping @Sendable () async -> Void,
@@ -42,6 +44,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
         self.profile = profile
         self.gamificationConfig = gamificationConfig
         self.displayAccountAge = displayAccountAge
+        self.editability = editability
         self._zoomableImageInfo = zoomableImageInfo
         self.refresh = refresh
         self.openEdition = openEdition
@@ -59,7 +62,12 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                 VStack(spacing: 0) {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 16) {
-                            if case .defaultImage = avatar {
+                            if !editability.avatarEditable {
+                                // Read-only picture (OCT-1487, Q4): shown bare — no add/edit "+" overlay,
+                                // and the tap is disabled.
+                                AuthorAvatarView(avatar: avatar)
+                                    .frame(width: 71, height: 71)
+                            } else if case .defaultImage = avatar {
                                 Button(action: openEditionWithPhotoPicker) {
                                     AuthorAvatarView(avatar: avatar)
                                         .frame(width: 71, height: 71)
@@ -150,7 +158,10 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                         ProfileCounterView(totalMessages: profile.totalMessages,
                                            accountCreationDate: displayAccountAge ? profile.accountCreationDate : nil)
 
-                        if let bio = profile.bio {
+                        // OCT-1487: a `disabled` bio is removed entirely (no display even of an
+                        // existing value); "Add a bio" shows only if the bio is editable; the "Edit
+                        // profile" button shows as soon as any of the three fields is editable (Q2).
+                        if !editability.bioHidden, let bio = profile.bio {
                             Group {
                                 if bio.isEllipsized {
                                     Text(verbatim: "\(bio.getText(ellipsized: !displayFullBio))\(!displayFullBio ? "... " : " ")")
@@ -176,44 +187,50 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                                 }
                             }
 
-                            Spacer().frame(height: 12)
+                            if editability.showEditButton {
+                                Spacer().frame(height: 12)
 
-                            Button(action: openEdition) {
-                                HStack(spacing: 4) {
-                                    Text("Profile.Edit.Button", bundle: .module)
-                                        .font(theme.fonts.body2)
-                                        .fontWeight(.medium)
+                                Button(action: openEdition) {
+                                    HStack(spacing: 4) {
+                                        Text("Profile.Edit.Button", bundle: .module)
+                                            .font(theme.fonts.body2)
+                                            .fontWeight(.medium)
+                                    }
+                                    .foregroundColor(theme.colors.gray900)
                                 }
-                                .foregroundColor(theme.colors.gray900)
+                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 5))
                             }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, externalVerticalPadding: 5))
-                        } else {
+                        } else if canAddBio || editability.showEditButton {
                             AdaptiveAccessibleStack(
                                 hStackSpacing: 8,
                                 vStackAlignment: .leading,
                                 vStackSpacing: 4) {
-                                    Button(action: openEditionWithBioFocused) {
-                                        HStack(spacing: 4) {
-                                            IconImage(theme.assets.icons.profile.addBio)
-                                            Text("Profile.Detail.EmptyBio.Button", bundle: .module)
-                                                .fontWeight(.medium)
+                                    if canAddBio {
+                                        Button(action: openEditionWithBioFocused) {
+                                            HStack(spacing: 4) {
+                                                IconImage(theme.assets.icons.profile.addBio)
+                                                Text("Profile.Detail.EmptyBio.Button", bundle: .module)
+                                                    .fontWeight(.medium)
+                                            }
+                                            .font(theme.fonts.body2)
+                                            .foregroundColor(theme.colors.gray900)
                                         }
-                                        .font(theme.fonts.body2)
-                                        .foregroundColor(theme.colors.gray900)
+                                        .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
+                                                                        externalVerticalPadding: 5))
                                     }
-                                    .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
-                                                                    externalVerticalPadding: 5))
 
-                                    Button(action: openEdition) {
-                                        HStack(spacing: 4) {
-                                            Text("Profile.Edit.Button", bundle: .module)
-                                                .font(theme.fonts.body2)
-                                                .fontWeight(.medium)
+                                    if editability.showEditButton {
+                                        Button(action: openEdition) {
+                                            HStack(spacing: 4) {
+                                                Text("Profile.Edit.Button", bundle: .module)
+                                                    .font(theme.fonts.body2)
+                                                    .fontWeight(.medium)
+                                            }
+                                            .foregroundColor(theme.colors.gray900)
                                         }
-                                        .foregroundColor(theme.colors.gray900)
+                                        .buttonStyle(OctopusButtonStyle(.mid, style: .outline,
+                                                                        externalVerticalPadding: 5))
                                     }
-                                    .buttonStyle(OctopusButtonStyle(.mid, style: .outline,
-                                                                    externalVerticalPadding: 5))
                                 }
                         }
                     }
@@ -251,6 +268,11 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                 .background(Color(UIColor.systemBackground))
             }
         }
+    }
+
+    /// "Add a bio" is offered only when the bio is editable and there is no bio yet (OCT-1487).
+    private var canAddBio: Bool {
+        editability.bioEditable && !editability.bioHidden && profile.bio == nil
     }
 
     private var avatar: Author.Avatar {

@@ -168,6 +168,7 @@ public struct OctopusHomeScreen: View {
                                     defaultImage: info.prefilledPost?.image,
                                     cta: info.prefilledPost?.cta.map { WritableCTA(url: $0.url, label: $0.label) },
                                     creationSource: info.prefilledPost == nil ? .user : .prefilledFromClient,
+                                    bridgeShareSignature: info.prefilledPost?.sign,
                                     canClose: presentationMode.wrappedValue.isPresented,
                                     navBarLeadingAction: navBarLeadingAction)
                             }

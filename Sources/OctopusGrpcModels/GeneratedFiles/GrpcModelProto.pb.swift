@@ -244,7 +244,7 @@ public enum Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf.Enum, Swift.Cas
   ///Suicide and self-harm
   case reportSsh // = 5
 
-  ///Fake profiles and impersonation
+  ///Deprecated. Fake profiles and impersonation — fake profiles now belong to REPORT_SPM. Kept for old SDKs.
   case reportImp // = 6
 
   ///Child exploitation or abuse
@@ -252,6 +252,9 @@ public enum Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf.Enum, Swift.Cas
 
   ///Intellectual property violation
   case reportIpv // = 8
+
+  ///Illegal activities or products
+  case reportIll // = 9
 
   ///Other
   case reportOth // = 9999
@@ -272,6 +275,7 @@ public enum Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf.Enum, Swift.Cas
     case 6: self = .reportImp
     case 7: self = .reportCex
     case 8: self = .reportIpv
+    case 9: self = .reportIll
     case 9999: self = .reportOth
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -288,6 +292,7 @@ public enum Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf.Enum, Swift.Cas
     case .reportImp: return 6
     case .reportCex: return 7
     case .reportIpv: return 8
+    case .reportIll: return 9
     case .reportOth: return 9999
     case .UNRECOGNIZED(let i): return i
     }
@@ -304,6 +309,7 @@ public enum Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf.Enum, Swift.Cas
     .reportImp,
     .reportCex,
     .reportIpv,
+    .reportIll,
     .reportOth,
   ]
 
@@ -1688,7 +1694,7 @@ extension Com_Octopuscommunity_StatusReasonCode: SwiftProtobuf._ProtoNameProvidi
 }
 
 extension Com_Octopuscommunity_ReportReasonCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0REPORT_UNSPECIFIED_REASON\0\u{1}REPORT_HTE_HRS\0\u{1}REPORT_SXC\0\u{1}REPORT_VLC_TER\0\u{1}REPORT_SPM\0\u{1}REPORT_SSH\0\u{1}REPORT_IMP\0\u{1}REPORT_CEX\0\u{1}REPORT_IPV\0\u{2}G\\\u{2}REPORT_OTH\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0REPORT_UNSPECIFIED_REASON\0\u{1}REPORT_HTE_HRS\0\u{1}REPORT_SXC\0\u{1}REPORT_VLC_TER\0\u{1}REPORT_SPM\0\u{1}REPORT_SSH\0\u{1}REPORT_IMP\0\u{1}REPORT_CEX\0\u{1}REPORT_IPV\0\u{1}REPORT_ILL\0\u{2}F\\\u{2}REPORT_OTH\0")
 }
 
 extension Com_Octopuscommunity_ProfileTag: SwiftProtobuf._ProtoNameProviding {

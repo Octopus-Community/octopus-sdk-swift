@@ -11,6 +11,9 @@ struct CreateResponseView: View {
     let isLoading: Bool
     let sendAvailable: Bool
     let displayCguText: Bool
+    /// Whether the picture-add affordance is shown (OCT-1426). The caller resolves it from the
+    /// community config for the relevant content type (comment vs reply) so the two gate independently.
+    let picturesEnabled: Bool
     @Binding var text: String
     @Binding var picture: ImageAndData?
     @Binding var textFocused: Bool
@@ -32,6 +35,7 @@ struct CreateResponseView: View {
         ContentView(
             responseKind: responseKind, isLoading: isLoading, sendAvailable: sendAvailable,
             displayCguText: displayCguText,
+            picturesEnabled: picturesEnabled,
             text: $text, picture: $picture, textFocused: $textFocused,
             textError: textError, pictureError: pictureError,
             termsOfUseUrl: termsOfUseUrl,
@@ -73,6 +77,7 @@ private struct ContentView: View {
     let isLoading: Bool
     let sendAvailable: Bool
     let displayCguText: Bool
+    let picturesEnabled: Bool
     @Binding var text: String
     @Binding var picture: ImageAndData?
     @Binding var textFocused: Bool
@@ -100,18 +105,22 @@ private struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .bottom, spacing: 6) {
-                Button(action: {
-                    removeFocus()
-                    openPhotosPicker = true
-                }) {
-                    Image(uiImage: responseKind == .comment ? theme.assets.icons.content.comment.creation.addPicture : theme.assets.icons.content.reply.creation.addPicture)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                        .accessibilityLabelInBundle("Accessibility.Content.AddPicture")
+                // OCT-1426: hide the picture-add entry when the community disables pictures for this
+                // content type (comment / reply gate independently via `picturesEnabled`).
+                if picturesEnabled {
+                    Button(action: {
+                        removeFocus()
+                        openPhotosPicker = true
+                    }) {
+                        Image(uiImage: responseKind == .comment ? theme.assets.icons.content.comment.creation.addPicture : theme.assets.icons.content.reply.creation.addPicture)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 24, height: 24)
+                            .accessibilityLabelInBundle("Accessibility.Content.AddPicture")
+                    }
+                    .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true,
+                                                    hasTrailingIcon: true, externalAllPadding: 2))
                 }
-                .buttonStyle(OctopusButtonStyle(.small, style: .outline, hasLeadingIcon: true, hasTrailingIcon: true,
-                                               externalAllPadding: 2))
 
                 OctopusInput(error: pictureError ?? textError, isFocused: textFocused) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -250,6 +259,7 @@ private extension ResponseKind {
         isLoading: false,
         sendAvailable: true,
         displayCguText: false,
+        picturesEnabled: true,
         text: .constant(""),
         picture: .constant(nil),
         textFocused: .constant(false),

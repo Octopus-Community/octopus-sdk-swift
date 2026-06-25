@@ -431,6 +431,16 @@ class APITests {
         )
         _ = OctopusInitialScreen.createPost(.init(prefilledPost: prefill))
 
+        // Prefilled share with a bridge-image signing closure (OCT-1426 Q5)
+        let signedPrefill = try OctopusPrefilledPost(
+            text: "hello world long enough",
+            image: nil,
+            topicId: "topic-id",
+            cta: cta,
+            sign: { fingerprint in "jwt-for-\(fingerprint)" }
+        )
+        _ = OctopusInitialScreen.createPost(.init(prefilledPost: signedPrefill))
+
         // Surface every ValidationError case so removing one becomes a compile error
         func handle(_ error: OctopusPrefilledPost.ValidationError) {
             switch error {

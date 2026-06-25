@@ -32,7 +32,10 @@ final class PrefilledPostFormState: ObservableObject {
             text: text.isEmpty ? nil : text,
             image: imageData,
             topicId: selectedGroupId.isEmpty ? nil : selectedGroupId,
-            cta: cta
+            cta: cta,
+            // OCT-1426: sign the share so an image is accepted even in a pictures-off community.
+            // In a real app this calls your backend; here the sample signs locally with its test secret.
+            sign: { fingerprint in try TokenProvider().getBridgeSignature(bridgeFingerprint: fingerprint) }
         )
     }
 }
