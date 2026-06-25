@@ -29,6 +29,8 @@ struct CreatePostEmptyPostView: View {
     @Environment(\.octopusTheme) private var theme
 
     let createPost: (_ withPoll: Bool) -> Void
+    /// Whether the community allows poll creation (OCT-1426). Hides the poll incentive button when off.
+    var pollsEnabled: Bool = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -48,11 +50,11 @@ struct CreatePostEmptyPostView: View {
             Spacer().frame(height: 24)
             if #available(iOS 16.0, *) {
                 FreeGridLayout {
-                    CurrentUserIncentiveButtons(createPost: createPost)
+                    CurrentUserIncentiveButtons(pollsEnabled: pollsEnabled, createPost: createPost)
                 }
             } else {
                 VStack {
-                    CurrentUserIncentiveButtons(createPost: createPost)
+                    CurrentUserIncentiveButtons(pollsEnabled: pollsEnabled, createPost: createPost)
                 }
             }
         }
@@ -61,6 +63,7 @@ struct CreatePostEmptyPostView: View {
 }
 
 private struct CurrentUserIncentiveButtons: View {
+    let pollsEnabled: Bool
     let createPost: (_ withPoll: Bool) -> Void
 
     var body: some View {
@@ -68,7 +71,10 @@ private struct CurrentUserIncentiveButtons: View {
         CurrentUserIncentiveButton("Post.Create.Incentive.Button2", createPost: createPost)
         CurrentUserIncentiveButton("Post.Create.Incentive.Button3", createPost: createPost)
         CurrentUserIncentiveButton("Post.Create.Incentive.Button4", createPost: createPost)
-        CurrentUserIncentiveButton("Post.Create.Incentive.Button5", openPoll: true, createPost: createPost)
+        // OCT-1426: hide the poll incentive (a poll-creation entry point) when polls are disabled.
+        if pollsEnabled {
+            CurrentUserIncentiveButton("Post.Create.Incentive.Button5", openPoll: true, createPost: createPost)
+        }
         CurrentUserIncentiveButton("Post.Create.Incentive.Button6", createPost: createPost)
     }
 }

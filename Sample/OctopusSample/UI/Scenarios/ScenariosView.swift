@@ -20,6 +20,7 @@ struct ScenariosView: View {
                 }
                 Section(header: Text("Notifications")) {
                     NotSeenNotificationsCell(showFullScreen: showFullScreen)
+                    PushTokenCell()
                 }
                 Section(header: Text("Groups")) {
                     SyncFollowGroupsCell()
@@ -30,6 +31,12 @@ struct ScenariosView: View {
                 }
                 Section(header: Text("Bridge")) {
                     BridgeToClientObjectCell(showFullScreen: showFullScreen)
+                }
+                Section(header: Text("Profile")) {
+                    ProfileFieldsLockCell()
+                }
+                Section(header: Text("Content")) {
+                    ContentOptionsCell()
                 }
                 Section(header: Text("Analytics")) {
                     CustomEventsCell()

@@ -148,7 +148,9 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
 
     @discardableResult
     public func send(_ post: WritablePost,
-                     creationSource: CreationSource = .user) async throws(SendPost.Error) -> (Post, Data?) {
+                     creationSource: CreationSource = .user,
+                     bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)? = nil)
+    async throws(SendPost.Error) -> (Post, Data?) {
         guard Validators.Post.validate(post: post) else {
             throw .serverCall(.other(InternalError.objectMalformed))
         }
@@ -162,9 +164,24 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 post.attachment = .image(resizedImgData)
                 imageIsCompressed = isCompressed
             }
+
+            // OCT-1426: for a prefilled (bridge) share carrying an image, sign the content so the
+            // server accepts the image even in a pictures-off community. The fingerprint is computed on
+            // the RESIZED/uploaded bytes (must match the backend PrefilledShareVerifier — doc #60).
+            var clientToken: String?
+            if let bridgeShareSignature, case let .image(resizedImgData) = post.attachment {
+                let fingerprint = BridgeShareFingerprint.compute(
+                    text: post.text,
+                    ctaText: post.cta?.label,
+                    ctaTargetLink: post.cta?.url.absoluteString,
+                    images: [.bytes(resizedImgData)])
+                clientToken = try await bridgeShareSignature(fingerprint)
+            }
+
             let response = try await remoteClient.octoService.put(
                 post: post.rwOctoObject(imageIsCompressed: imageIsCompressed),
                 creationSource: creationSource.proto,
+                clientToken: clientToken,
                 authenticationMethod: try authCallProvider.authenticatedMethod())
 
             switch response.result {

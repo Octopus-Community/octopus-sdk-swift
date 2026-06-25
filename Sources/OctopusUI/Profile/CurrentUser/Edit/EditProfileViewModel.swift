@@ -19,19 +19,54 @@ class EditProfileViewModel: ObservableObject {
     enum FieldEditConfig {
         case editInOctopus
         case editInApp(() -> Void)
+        /// Community-locked (read-only / disabled): the field is not shown in the edit screen (OCT-1487).
+        case hidden
 
         var fieldIsEditable: Bool {
             switch self {
-            case .editInApp: return false
+            case .editInApp, .hidden: return false
             case .editInOctopus: return true
             }
+        }
+
+        var isHidden: Bool {
+            if case .hidden = self { return true } else { return false }
         }
 
         var callback: (() -> Void)? {
             switch self {
             case .editInApp(let callback): return callback
-            case .editInOctopus: return nil
+            case .editInOctopus, .hidden: return nil
             }
+        }
+    }
+
+    /// Pure per-field edit decision combining the SSO app-managed redirect with the community lock.
+    /// `appManagedFields` wins for that field (PRD Q4); otherwise a non-editable lock hides the field.
+    enum FieldEditMode: Equatable {
+        case editInOctopus
+        case editInApp
+        case hidden
+    }
+
+    nonisolated static func fieldEditMode(isAppManaged: Bool, lock: ProfileFieldLockState) -> FieldEditMode {
+        if isAppManaged { return .editInApp }
+        return lock == .editable ? .editInOctopus : .hidden
+    }
+
+    typealias CoreProfileField = OctopusCore.ConnectionMode.SSOConfiguration.ProfileField
+
+    private static func editConfig(for field: CoreProfileField, isAppManaged: Bool,
+                                   lock: ProfileFieldLockState,
+                                   modifyUser: ((CoreProfileField) -> Void)?) -> FieldEditConfig {
+        switch fieldEditMode(isAppManaged: isAppManaged, lock: lock) {
+        case .editInApp:
+            if let modifyUser { return .editInApp({ modifyUser(field) }) }
+            return .editInOctopus
+        case .editInOctopus:
+            return .editInOctopus
+        case .hidden:
+            return .hidden
         }
     }
 
@@ -110,38 +145,43 @@ class EditProfileViewModel: ObservableObject {
         validator = octopus.core.validators.currentUserProfile
         self.preventDismissAfterUpdate = preventDismissAfterUpdate
 
-        octopus.core.profileRepository.profilePublisher
-            .compactMap { $0 }
-            .sink { [unowned self] profile in
-                if !profile.isGuest, case let .sso(configuration) = octopus.core.connectionRepository.connectionMode {
-                    nicknameEditConfig = configuration.appManagedFields.contains(.nickname) ?
-                        .editInApp({ configuration.modifyUser(.nickname) }) :
-                        .editInOctopus
-                    bioEditConfig = configuration.appManagedFields.contains(.bio) ?
-                        .editInApp({ configuration.modifyUser(.bio) }) :
-                        .editInOctopus
-                    pictureEditConfig = configuration.appManagedFields.contains(.picture) ?
-                        .editInApp({ configuration.modifyUser(.picture) }) :
-                        .editInOctopus
+        Publishers.CombineLatest(
+            octopus.core.profileRepository.profilePublisher.compactMap { $0 },
+            octopus.core.configRepository.communityConfigPublisher
+        )
+        .sink { [unowned self] profile, communityConfig in
+            let lock = communityConfig?.profileFieldsLock ?? .allEditable
+            var appManagedFields: Set<CoreProfileField> = []
+            var modifyUser: ((CoreProfileField) -> Void)?
 
-                    // update app managed fields
-                    savedProfile = profile
-                    if configuration.appManagedFields.contains(.nickname) {
-                        nickname = profile.nickname
-                        nicknameForAvatar = profile.nickname
-                    }
-                    if configuration.appManagedFields.contains(.bio) {
-                        bio = profile.bio ?? ""
-                    }
-                    if configuration.appManagedFields.contains(.picture) {
-                        picture = .unchanged(profile.pictureUrl)
-                    }
-                } else {
-                    nicknameEditConfig = .editInOctopus
-                    bioEditConfig = .editInOctopus
-                    pictureEditConfig = .editInOctopus
+            if !profile.isGuest, case let .sso(configuration) = octopus.core.connectionRepository.connectionMode {
+                appManagedFields = configuration.appManagedFields
+                modifyUser = configuration.modifyUser
+
+                // update app managed fields
+                savedProfile = profile
+                if appManagedFields.contains(.nickname) {
+                    nickname = profile.nickname
+                    nicknameForAvatar = profile.nickname
                 }
-            }.store(in: &storage)
+                if appManagedFields.contains(.bio) {
+                    bio = profile.bio ?? ""
+                }
+                if appManagedFields.contains(.picture) {
+                    picture = .unchanged(profile.pictureUrl)
+                }
+            }
+
+            nicknameEditConfig = Self.editConfig(
+                for: .nickname, isAppManaged: appManagedFields.contains(.nickname),
+                lock: lock.nickname, modifyUser: modifyUser)
+            bioEditConfig = Self.editConfig(
+                for: .bio, isAppManaged: appManagedFields.contains(.bio),
+                lock: lock.bio, modifyUser: modifyUser)
+            pictureEditConfig = Self.editConfig(
+                for: .picture, isAppManaged: appManagedFields.contains(.picture),
+                lock: lock.avatar, modifyUser: modifyUser)
+        }.store(in: &storage)
 
         // feed the values with the first profile we get
         octopus.core.profileRepository.profilePublisher

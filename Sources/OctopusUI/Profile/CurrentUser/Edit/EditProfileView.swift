@@ -177,6 +177,7 @@ private struct EditProfileFormView: View {
         Compat.ScrollView(scrollToId: $scrollToBottomOfId, idAnchor: .top) {
             VStack(alignment: .leading, spacing: 0) {
                 Spacer().frame(height: 6)
+                if !pictureEditConfig.isHidden {
                 HStack {
                     Spacer()
                     PictureView(picture: $picture, nickname: nicknameForAvatar, openPhotosPicker: photoPickerFocused,
@@ -204,6 +205,8 @@ private struct EditProfileFormView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Spacer().frame(height: 30)
+                }
+                if !nicknameEditConfig.isHidden {
                 OctopusTextInput(
                     text: $nickname, label: "Profile.Edit.Nickname.Description",
                     placeholder: "Profile.Nickname.Placeholder",
@@ -232,6 +235,8 @@ private struct EditProfileFormView: View {
                     }
                 )
                 Spacer().frame(height: 24)
+                }
+                if !bioEditConfig.isHidden {
                 OctopusTextInput(
                     text: $bio,
                     label: "Profile.Edit.Bio.Description",
@@ -276,6 +281,7 @@ private struct EditProfileFormView: View {
                         .font(theme.fonts.caption2)
                         .foregroundColor(bio.count <= bioMaxLength ? theme.colors.gray700 : theme.colors.error)
                         .frame(maxWidth: .infinity, alignment: .trailing)
+                }
                 }
                 Color.clear.frame(height: 1)
                     .id("bioBlockBottom")

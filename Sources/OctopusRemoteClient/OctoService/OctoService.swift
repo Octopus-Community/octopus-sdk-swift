@@ -37,6 +37,7 @@ public protocol OctoService {
 
     func put(post: Com_Octopuscommunity_RwOctoObject,
              creationSource: Com_Octopuscommunity_PutRequest.CreationSource,
+             clientToken: String?,
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse
 
     func put(comment: Com_Octopuscommunity_RwOctoObject,
@@ -152,11 +153,16 @@ class OctoServiceClient: ServiceClient, OctoService {
 
     public func put(post: Com_Octopuscommunity_RwOctoObject,
                     creationSource: Com_Octopuscommunity_PutRequest.CreationSource,
+                    clientToken: String?,
                     authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse {
         let request = Com_Octopuscommunity_PutRequest.with {
             $0.octoObject = post
             $0.creationSource = creationSource
+            // OCT-1426: signed token authorising a prefilled-share image in a pictures-off community.
+            if let clientToken {
+                $0.clientToken = clientToken
+            }
         }
         return try await callRemote(authenticationMethod) {
             try await client.putPost(

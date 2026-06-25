@@ -20,6 +20,16 @@ public protocol ConfigRepository: Sendable {
 
     func refreshCommunityAccess() async throws(ServerCallError)
     func overrideCommunityAccess(_ access: Bool) async throws
+
+    /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the
+    /// per-field profile lock of the published community config, without a backend-driven config.
+    /// Pass `nil` to clear and fall back to the backend value. Used by the sample app (OCT-1487).
+    func debugOverrideProfileFieldsLock(_ lock: ProfileFieldsLock?)
+
+    /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the
+    /// per-content-type content options of the published community config, without a backend-driven
+    /// config. Pass `nil` to clear and fall back to the backend value. Used by the sample app (OCT-1426).
+    func debugOverrideContentOptions(_ options: ContentOptions?)
 }
 
 extension Injected {
@@ -31,6 +41,11 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
 
     @Published private(set) var communityConfig: CommunityConfig?
     var communityConfigPublisher: AnyPublisher<CommunityConfig?, Never> { $communityConfig.eraseToAnyPublisher() }
+
+    /// Latest config as delivered by the storage layer (before any test override is applied).
+    private var storedCommunityConfig: CommunityConfig?
+    private var profileFieldsLockOverride: ProfileFieldsLock?
+    private var contentOptionsOverride: ContentOptions?
 
     @Published private(set) var userConfig: UserConfig?
     var userConfigPublisher: AnyPublisher<UserConfig?, Never> { $userConfig.eraseToAnyPublisher() }
@@ -73,7 +88,8 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
             .configPublisher()
             .replaceError(with: nil)
             .sink { [unowned self] config in
-                communityConfig = config
+                storedCommunityConfig = config
+                publishCommunityConfig()
             }.store(in: &storage)
 
         userConfigDatabase
@@ -96,6 +112,27 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
                 try await refreshCommunityConfig()
             }
         }.store(in: &storage)
+    }
+
+    private func publishCommunityConfig() {
+        var config = storedCommunityConfig
+        if let profileFieldsLockOverride, let current = config {
+            config = current.withProfileFieldsLock(profileFieldsLockOverride)
+        }
+        if let contentOptionsOverride, let current = config {
+            config = current.withContentOptions(contentOptionsOverride)
+        }
+        communityConfig = config
+    }
+
+    func debugOverrideProfileFieldsLock(_ lock: ProfileFieldsLock?) {
+        profileFieldsLockOverride = lock
+        publishCommunityConfig()
+    }
+
+    func debugOverrideContentOptions(_ options: ContentOptions?) {
+        contentOptionsOverride = options
+        publishCommunityConfig()
     }
 
     func refreshCommunityConfig() async throws(ServerCallError) {

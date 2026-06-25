@@ -339,6 +339,35 @@ extension OctopusSDK {
     public func overrideCommunityAccess(_ access: Bool) async throws {
         try await core.configRepository.overrideCommunityAccess(access)
     }
+
+    /// Internal test affordance: locally override the per-field profile lock of the community config,
+    /// without a backend-driven config. Pass `nil` to clear the override and fall back to the backend
+    /// value. Used by the sample app to exercise the per-field profile lock (OCT-1487).
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it; a normal
+    /// `import Octopus` does not expose it.
+    ///
+    /// - Parameter lock: the lock to apply, or `nil` to restore the backend-provided config.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideProfileFieldsLock(_ lock: ProfileFieldsLock?) {
+        core.configRepository.debugOverrideProfileFieldsLock(lock)
+    }
+
+    /// Internal test affordance: locally override the per-content-type content options of the
+    /// community config, without a backend-driven config. Pass `nil` to clear the override and fall
+    /// back to the backend value. Used by the sample app to exercise content options (OCT-1426).
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter options: the options to apply, or `nil` to restore the backend-provided config.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideContentOptions(_ options: ContentOptions?) {
+        core.configRepository.debugOverrideContentOptions(options)
+    }
 }
 
 // MARK: - Analytics

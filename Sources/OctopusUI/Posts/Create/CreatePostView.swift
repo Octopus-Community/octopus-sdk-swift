@@ -27,6 +27,7 @@ struct CreatePostView: View {
          defaultImage: Data? = nil,
          cta: WritableCTA? = nil,
          creationSource: PostsRepository.CreationSource = .user,
+         bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)? = nil,
          canClose: Bool = false,
          navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(
@@ -36,7 +37,8 @@ struct CreatePostView: View {
             defaultText: defaultText,
             defaultImage: defaultImage,
             cta: cta,
-            creationSource: creationSource))
+            creationSource: creationSource,
+            bridgeShareSignature: bridgeShareSignature))
         self.canClose = canClose
         self.navBarLeadingAction = navBarLeadingAction
     }
@@ -64,6 +66,8 @@ struct CreatePostView: View {
                     userAvatar: viewModel.userAvatar ?? .defaultImage(name: "?"),
                     selectedTopic: viewModel.selectedTopic,
                     showTopicPicker: $showTopicPicker,
+                    picturesEnabled: viewModel.picturesEnabled,
+                    pollsEnabled: viewModel.pollsEnabled,
                     createPoll: viewModel.createPoll)
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
         .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
@@ -163,6 +167,8 @@ private struct ContentView: View {
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
 
     @Binding var showTopicPicker: Bool
+    let picturesEnabled: Bool
+    let pollsEnabled: Bool
     let createPoll: () -> Void
 
     var body: some View {
@@ -172,6 +178,8 @@ private struct ContentView: View {
                         communityGuidelinesUrl: communityGuidelinesUrl,
                         userAvatar: userAvatar, selectedTopic: selectedTopic,
                         showTopicPicker: $showTopicPicker,
+                        picturesEnabled: picturesEnabled,
+                        pollsEnabled: pollsEnabled,
                         createPoll: createPoll)
         .disabled(isLoading)
     }
@@ -196,6 +204,8 @@ private struct WritingPostForm: View {
     let userAvatar: Author.Avatar
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
     @Binding var showTopicPicker: Bool
+    let picturesEnabled: Bool
+    let pollsEnabled: Bool
     let createPoll: () -> Void
 
     @State private var selectedItems: [ImageAndData] = []
@@ -362,7 +372,8 @@ private struct WritingPostForm: View {
                 VStack(spacing: 0) {
                     if !(attachment?.hasPoll ?? false) {
                         HStack(spacing: 8) {
-                            if !(attachment?.hasPoll ?? false) {
+                            // OCT-1426: hide the picture-add entry when the community disables post pictures.
+                            if picturesEnabled, !(attachment?.hasPoll ?? false) {
                                 Button(action: { openPhotosPicker = true }) {
                                     HStack(spacing: 4) {
                                         IconImage(theme.assets.icons.content.post.creation.addPicture)
@@ -372,7 +383,8 @@ private struct WritingPostForm: View {
                                 .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
                                                                 externalVerticalPadding: 16))
                             }
-                            if attachment == nil {
+                            // OCT-1426: hide the poll-creation entry when the community disables polls.
+                            if pollsEnabled, attachment == nil {
                                 Button(action: {
                                     withAnimation {
                                         createPoll()
@@ -436,5 +448,6 @@ private struct WritingPostForm: View {
                 privacyPolicyUrl: URL(string: "www.google.com")!,
                 communityGuidelinesUrl: URL(string: "www.google.com")!,
                 userAvatar: .defaultImage(name: "toto"),
-                selectedTopic: nil, showTopicPicker: .constant(false), createPoll: { })
+                selectedTopic: nil, showTopicPicker: .constant(false),
+                picturesEnabled: true, pollsEnabled: true, createPoll: { })
 }

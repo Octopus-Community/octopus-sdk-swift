@@ -13,4 +13,15 @@ extension View {
     func modify<Content: View>(@ViewBuilder _ transform: (Self) -> Content) -> some View {
         transform(self)
     }
+
+    /// Sets an accessibility identifier (used as a QA test id), gated for iOS 13 where the modifier
+    /// is unavailable.
+    @ViewBuilder
+    func accessibilityId(_ identifier: String) -> some View {
+        if #available(iOS 14.0, *) {
+            self.accessibilityIdentifier(identifier)
+        } else {
+            self
+        }
+    }
 }

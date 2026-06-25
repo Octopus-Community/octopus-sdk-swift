@@ -37,6 +37,17 @@ public struct OctopusPrefilledPost: Sendable {
     /// remove the CTA.
     public let cta: CTA?
 
+    /// Optional signing closure that authorises a prefilled-share **image** in a community that
+    /// forbids member pictures. The SDK computes a content fingerprint (SHA-256 of the post text,
+    /// CTA and image) and calls this closure; your closure must return a **compact JWS (JWT) signed
+    /// HS256 with your shared secret**, carrying the `bridge_fingerprint` claim equal to the value
+    /// the SDK passes in. Sign **on your backend** — the secret must never live in the app.
+    ///
+    /// Only needed when the target community disables pictures and the prefilled post carries an
+    /// image; harmless otherwise. When `nil`, no token is attached (a prefilled image will then be
+    /// rejected by such a community).
+    public let sign: (@Sendable (_ bridgeFingerprint: String) async throws -> String)?
+
     /// Construct a prefilled-post payload.
     ///
     /// - Parameters:
@@ -54,7 +65,8 @@ public struct OctopusPrefilledPost: Sendable {
     public init(text: String? = nil,
                 image: Data? = nil,
                 topicId: String? = nil,
-                cta: CTA? = nil) throws {
+                cta: CTA? = nil,
+                sign: (@Sendable (_ bridgeFingerprint: String) async throws -> String)? = nil) throws {
         let normalizedText: String? = (text?.isEmpty == true) ? nil : text
         let normalizedImage: Data? = (image?.isEmpty == true) ? nil : image
 
@@ -104,6 +116,7 @@ public struct OctopusPrefilledPost: Sendable {
         self.image = normalizedImage
         self.topicId = topicId
         self.cta = cta
+        self.sign = sign
     }
 
     /// A call-to-action button attached to the published post.

@@ -19,6 +19,8 @@ class CreateCommentViewModel: ObservableObject {
     @Published private(set) var pictureError: DisplayableString?
     @Published private(set) var hasChanges = false
     @Published private(set) var userHasAcceptedCgu = false
+    /// Whether comment pictures are enabled for this community (OCT-1426). Default `true`.
+    @Published private(set) var picturesEnabled = true
 
     var sendAvailable: Bool {
         Validators.Comment.validate(comment: WritableComment(postId: postId, text: text, imageData: picture?.imageData))
@@ -66,6 +68,12 @@ class CreateCommentViewModel: ObservableObject {
                     }
                 }
             }.store(in: &storage)
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { ($0?.contentOptions ?? .allEnabled).comment.enablePictures }
+            .removeDuplicates()
+            .sink { [unowned self] in picturesEnabled = $0 }
+            .store(in: &storage)
 
         octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] profile in

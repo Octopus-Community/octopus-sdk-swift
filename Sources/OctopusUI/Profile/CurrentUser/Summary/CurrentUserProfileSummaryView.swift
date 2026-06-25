@@ -42,6 +42,7 @@ struct CurrentUserProfileSummaryView: View {
             profile: viewModel.profile,
             gamificationConfig: viewModel.gamificationConfig,
             displayAccountAge: viewModel.displayAccountAge,
+            editability: viewModel.editability,
             zoomableImageInfo: $zoomableImageInfo,
             hasInitialNotSeenNotifications: viewModel.hasInitialNotSeenNotifications,
             refresh: viewModel.refresh,
@@ -76,7 +77,8 @@ struct CurrentUserProfileSummaryView: View {
                         }) {
                             if viewModel.canCreatePost {
                                 CreatePostEmptyPostView(
-                                    createPost: { navigator.push(.createPost(withPoll: $0, defaultTopicId: nil)) })
+                                    createPost: { navigator.push(.createPost(withPoll: $0, defaultTopicId: nil)) },
+                                    pollsEnabled: viewModel.pollsEnabled)
                             } else {
                                 DefaultEmptyPostsView()
                             }
@@ -196,6 +198,7 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
     let profile: DisplayableCurrentUserProfile?
     let gamificationConfig: GamificationConfig?
     let displayAccountAge: Bool
+    let editability: ProfileFieldsEditability
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let hasInitialNotSeenNotifications: Bool
     let refresh: @Sendable () async -> Void
@@ -222,6 +225,7 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
                 CurrentUserProfileContentView(profile: profile,
                                    gamificationConfig: gamificationConfig,
                                    displayAccountAge: displayAccountAge,
+                                   editability: editability,
                                    zoomableImageInfo: $zoomableImageInfo,
                                    hasInitialNotSeenNotifications: hasInitialNotSeenNotifications,
                                    refresh: refresh, openEdition: openEdition,

@@ -515,6 +515,16 @@ public struct Com_Octopuscommunity_PutRequest: Sendable {
   /// Clears the value of `creationSource`. Subsequent reads from it will return its default value.
   public mutating func clearCreationSource() {self._creationSource = nil}
 
+  /// PutPost-only. Signed client token authorising a prefilled share; checked only when pictures are disabled and the post has an image.
+  public var clientToken: String {
+    get {_clientToken ?? String()}
+    set {_clientToken = newValue}
+  }
+  /// Returns true if `clientToken` has been explicitly set.
+  public var hasClientToken: Bool {self._clientToken != nil}
+  /// Clears the value of `clientToken`. Subsequent reads from it will return its default value.
+  public mutating func clearClientToken() {self._clientToken = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum CreationSource: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -564,6 +574,7 @@ public struct Com_Octopuscommunity_PutRequest: Sendable {
   fileprivate var _octoObject: Com_Octopuscommunity_RwOctoObject? = nil
   fileprivate var _translatedContent: Bool? = nil
   fileprivate var _creationSource: Com_Octopuscommunity_PutRequest.CreationSource? = nil
+  fileprivate var _clientToken: String? = nil
 }
 
 public struct Com_Octopuscommunity_PutCommentResponse: Sendable {
@@ -2999,7 +3010,7 @@ extension Com_Octopuscommunity_GetBatchResponse: SwiftProtobuf.Message, SwiftPro
 
 extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObject\0\u{2}\u{9}translatedContent\0\u{1}creationSource\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObject\0\u{2}\u{9}translatedContent\0\u{1}creationSource\0\u{1}clientToken\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3010,6 +3021,7 @@ extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf.
       case 1: try { try decoder.decodeSingularMessageField(value: &self._octoObject) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self._translatedContent) }()
       case 11: try { try decoder.decodeSingularEnumField(value: &self._creationSource) }()
+      case 12: try { try decoder.decodeSingularStringField(value: &self._clientToken) }()
       default: break
       }
     }
@@ -3029,6 +3041,9 @@ extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf.
     try { if let v = self._creationSource {
       try visitor.visitSingularEnumField(value: v, fieldNumber: 11)
     } }()
+    try { if let v = self._clientToken {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 12)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3036,6 +3051,7 @@ extension Com_Octopuscommunity_PutRequest: SwiftProtobuf.Message, SwiftProtobuf.
     if lhs._octoObject != rhs._octoObject {return false}
     if lhs._translatedContent != rhs._translatedContent {return false}
     if lhs._creationSource != rhs._creationSource {return false}
+    if lhs._clientToken != rhs._clientToken {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

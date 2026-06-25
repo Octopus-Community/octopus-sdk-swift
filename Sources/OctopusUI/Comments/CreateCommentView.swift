@@ -37,6 +37,7 @@ struct CreateCommentView: View {
             isLoading: viewModel.isLoading,
             sendAvailable: viewModel.sendAvailable,
             displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendAvailable,
+            picturesEnabled: viewModel.picturesEnabled,
             text: $viewModel.text,
             picture: $viewModel.picture,
             textFocused: $textFocused,
