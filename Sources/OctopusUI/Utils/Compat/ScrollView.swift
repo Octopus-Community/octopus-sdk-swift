@@ -38,7 +38,7 @@ extension Compat {
             self.preventScrollIfContentFits = preventScrollIfContentFits
             self.canScrollToExtremities = canScrollToExtremities
             if let refreshAction {
-                self._refreshAction = State(initialValue: {
+                self._refreshAction = State(initialValue: { @Sendable in
                     let refreshTask = Task { await refreshAction() }
                     let durationTask = Task {
                         try? await Task.sleep(nanoseconds: UInt64(minTime * 1_000_000_000))
