@@ -64,59 +64,105 @@ class ConnectedActionChecker {
         action.needNicknameValidation && !hasConfirmedNickname && nicknameLock == .editable
     }
 
-    func ensureConnected(action: UserAction, actionWhenNotConnected: Binding<ConnectedActionReplacement?>) -> Bool {
-        guard octopus.core.connectionRepository.magicLinkRequest == nil else {
-            actionWhenNotConnected.wrappedValue = .login
-            return false
-        }
-        switch octopus.core.connectionRepository.connectionState {
+    /// Resolved connection facts fed to ``decision(magicLinkRequestActive:state:isSSO:clientUserConnected:action:)``.
+    /// Keeping the decision inputs as plain values (instead of reading `octopus.core` inline) makes the
+    /// full guest / SSO / error matrix unit-testable without a live SDK.
+    enum ConnectionDecisionState: Equatable {
+        case notConnected
+        case connected(communityConfigAvailable: Bool,
+                       forceLoginOnStrongActions: Bool,
+                       profileIsGuest: Bool,
+                       profileHasConfirmedNickname: Bool,
+                       nicknameLock: ProfileFieldLockState,
+                       hasError: Bool)
+    }
+
+    /// What ``ensureConnected(action:actionWhenNotConnected:)`` should do. The caller performs the
+    /// side effects (setting the replacement binding, or calling `config.loginRequired()` in SSO).
+    enum Decision: Equatable {
+        /// The action is allowed to proceed (`ensureConnected` returns `true`).
+        case proceed
+        /// The action is blocked and replaced by the given UI (`ensureConnected` returns `false`).
+        case block(ConnectedActionReplacement)
+        /// The action is blocked and the host's SSO login must be requested (`ensureConnected` returns `false`).
+        case requireSSOLogin
+    }
+
+    /// Pure, side-effect-free decision for ``ensureConnected(action:actionWhenNotConnected:)``.
+    ///
+    /// Notably, on the *proceed* path (connected, config loaded, past the strong-action guest gate and
+    /// the nickname screen) it returns ``Decision/proceed`` regardless of a lingering connection error:
+    /// previously this branch raised `Connection.SSO.Error.Unknown` while still allowing the action,
+    /// which surfaced a spurious "retrieve your data" popup on the first post even though the post
+    /// succeeded (the stored `lastConnectionError` self-heals via the retry the alert itself triggers).
+    /// This aligns iOS with Android, whose connected state carries no error field (issue #307).
+    nonisolated static func decision(magicLinkRequestActive: Bool,
+                                     state: ConnectionDecisionState,
+                                     isSSO: Bool,
+                                     clientUserConnected: Bool,
+                                     action: UserAction) -> Decision {
+        guard !magicLinkRequestActive else { return .block(.login) }
+
+        switch state {
         case .notConnected:
-            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                if octopus.core.connectionRepository.clientUserConnected {
-                    actionWhenNotConnected.wrappedValue = .error(.localizationKey("Connection.SSO.Error.Unknown"))
-                } else {
-                    config.loginRequired()
-                }
-            } else {
-                actionWhenNotConnected.wrappedValue = .login
+            guard isSSO else { return .block(.login) }
+            return clientUserConnected
+                ? .block(.error(.localizationKey("Connection.SSO.Error.Unknown")))
+                : .requireSSOLogin
+        case let .connected(communityConfigAvailable, forceLoginOnStrongActions, profileIsGuest,
+                            profileHasConfirmedNickname, nicknameLock, _):
+            guard communityConfigAvailable else { return .block(.loadConfig) }
+            if action.isStrong, profileIsGuest, forceLoginOnStrongActions {
+                guard isSSO else { return .block(.login) }
+                return clientUserConnected
+                    ? .block(.error(.localizationKey("Connection.SSO.Error.Unknown")))
+                    : .requireSSOLogin
             }
+            if needsNicknameValidation(for: action,
+                                       hasConfirmedNickname: profileHasConfirmedNickname,
+                                       nicknameLock: nicknameLock) {
+                return .block(.validateNickname)
+            }
+            return .proceed
+        }
+    }
+
+    func ensureConnected(action: UserAction, actionWhenNotConnected: Binding<ConnectedActionReplacement?>) -> Bool {
+        let connectionRepository = octopus.core.connectionRepository
+        let isSSO: Bool = if case .sso = connectionRepository.connectionMode { true } else { false }
+
+        let state: ConnectionDecisionState
+        switch connectionRepository.connectionState {
+        case .notConnected:
+            state = .notConnected
         case let .connected(user, error):
             // use the profile from profileRepository because it is updated quicker than the profile in the User
             let profile = octopus.core.profileRepository.profile ?? user.profile
-
-            guard let communityConfig = octopus.core.configRepository.communityConfig else {
-                actionWhenNotConnected.wrappedValue = .loadConfig
-                return false
-            }
-            let forceLoginOnStrongActions = communityConfig.forceLoginOnStrongActions
-            if action.isStrong, profile.isGuest, forceLoginOnStrongActions {
-                if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-                    if octopus.core.connectionRepository.clientUserConnected {
-                        actionWhenNotConnected.wrappedValue = .error(.localizationKey("Connection.SSO.Error.Unknown"))
-                    } else {
-                        config.loginRequired()
-                    }
-                } else {
-                    actionWhenNotConnected.wrappedValue = .login
-                }
-            } else if Self.needsNicknameValidation(
-                for: action,
-                hasConfirmedNickname: profile.hasConfirmedNickname,
-                nicknameLock: communityConfig.profileFieldsLock.nickname) {
-                actionWhenNotConnected.wrappedValue = .validateNickname
-            } else {
-                if error != nil {
-                    if case .sso = octopus.core.connectionRepository.connectionMode,
-                       octopus.core.connectionRepository.clientUserConnected {
-                        actionWhenNotConnected.wrappedValue = .error(.localizationKey("Connection.SSO.Error.Unknown"))
-                    } else {
-                        actionWhenNotConnected.wrappedValue = .error(.localizationKey("Error.Unknown"))
-                    }
-                }
-                return true
-            }
+            let communityConfig = octopus.core.configRepository.communityConfig
+            state = .connected(
+                communityConfigAvailable: communityConfig != nil,
+                forceLoginOnStrongActions: communityConfig?.forceLoginOnStrongActions ?? false,
+                profileIsGuest: profile.isGuest,
+                profileHasConfirmedNickname: profile.hasConfirmedNickname,
+                nicknameLock: communityConfig?.profileFieldsLock.nickname ?? .editable,
+                hasError: error != nil)
         }
-        return false
+
+        switch Self.decision(magicLinkRequestActive: connectionRepository.magicLinkRequest != nil,
+                             state: state, isSSO: isSSO,
+                             clientUserConnected: connectionRepository.clientUserConnected,
+                             action: action) {
+        case .proceed:
+            return true
+        case let .block(replacement):
+            actionWhenNotConnected.wrappedValue = replacement
+            return false
+        case .requireSSOLogin:
+            if case let .sso(config) = connectionRepository.connectionMode {
+                config.loginRequired()
+            }
+            return false
+        }
     }
 
 //    func ensureConnected(actionWhenNotConnected: Binding<ConnectedActionReplacement?>) -> Bool {
