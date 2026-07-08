@@ -561,6 +561,7 @@ extension APITests {
     @Test func testOctopusProfile() async throws {
         func check(profile: OctopusProfile) {
             let _: Set<String> = profile.entitlements
+            let _: Bool = profile.isGuest
         }
         _ = check
     }
