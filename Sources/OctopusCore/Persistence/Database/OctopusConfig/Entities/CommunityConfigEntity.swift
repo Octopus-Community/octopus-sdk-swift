@@ -9,6 +9,7 @@ import CoreData
 class CommunityConfigEntity: NSManagedObject, Identifiable {
     @NSManaged public var forceLoginOnStrongActions: Bool
     @NSManaged public var displayAccountAge: Bool
+    @NSManaged public var exposeClientUserId: Bool
     @NSManaged public var nicknameLock: Int16
     @NSManaged public var avatarLock: Int16
     @NSManaged public var bioLock: Int16
@@ -16,12 +17,14 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
     @NSManaged public var postEnablePolls: Bool
     @NSManaged public var commentEnablePictures: Bool
     @NSManaged public var replyEnablePictures: Bool
+    @NSManaged public var termsAcceptanceMode: Int16
     @NSManaged public var gamificationConfig: GamificationConfigEntity?
     @NSManaged public var displayConfig: DisplayConfigEntity?
 
     func fill(with config: CommunityConfig, context: NSManagedObjectContext) {
         forceLoginOnStrongActions = config.forceLoginOnStrongActions
         displayAccountAge = config.displayAccountAge
+        exposeClientUserId = config.exposeClientUserId
         nicknameLock = config.profileFieldsLock.nickname.storageValue
         avatarLock = config.profileFieldsLock.avatar.storageValue
         bioLock = config.profileFieldsLock.bio.storageValue
@@ -29,6 +32,7 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
         postEnablePolls = config.contentOptions.post.enablePolls
         commentEnablePictures = config.contentOptions.comment.enablePictures
         replyEnablePictures = config.contentOptions.reply.enablePictures
+        termsAcceptanceMode = config.termsAcceptanceMode.storageValue
         gamificationConfig = config.gamificationConfig.map { gamificationConfig in
             let entity = GamificationConfigEntity(context: context)
             entity.fill(with: gamificationConfig, context: context)

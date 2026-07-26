@@ -14,7 +14,7 @@ struct ResponseHeaderView: View {
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
 
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let onDelete: () -> Void
     let onReport: () -> Void
     let onBlockAuthor: () -> Void

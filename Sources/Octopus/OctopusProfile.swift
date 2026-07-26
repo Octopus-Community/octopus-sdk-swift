@@ -17,6 +17,13 @@ public struct OctopusProfile: Sendable {
     /// ``OctopusGroup/canAccess``.
     public let entitlements: Set<String>
 
+    /// The connected user's id in your own app's system — the id you passed to `connectUser` in SSO
+    /// mode (Unified Profile).
+    ///
+    /// `nil` for guests and for users authenticated by Octopus (magic-link) mode, which have no host
+    /// identity.
+    public let clientUserId: String?
+
     /// Whether this profile belongs to an anonymous guest rather than a real, authenticated user.
     ///
     /// In forced-login communities a guest session is re-established right after
@@ -27,6 +34,7 @@ public struct OctopusProfile: Sendable {
 
     init(from profile: OctopusCore.CurrentUserProfile) {
         self.entitlements = profile.entitlements
+        self.clientUserId = profile.clientUserId
         self.isGuest = profile.isGuest
     }
 }

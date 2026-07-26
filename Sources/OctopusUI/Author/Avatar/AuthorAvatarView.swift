@@ -15,6 +15,9 @@ struct Author: Equatable {
         case notConnected
     }
     let profileId: String?
+    /// The author's id in the host app's own system (Unified Profile), when the community exposes it.
+    /// `nil` for deleted authors, Octopus-auth users, guests and BO/admin-created profiles.
+    let clientUserId: String?
     let avatar: Avatar
     let name: DisplayableString
     let tags: ProfileTags
@@ -23,6 +26,7 @@ struct Author: Equatable {
     init(profile: MinimalProfile?, gamificationLevel: GamificationLevel?) {
         guard let profile else {
             profileId = nil
+            clientUserId = nil
             name = .localizationKey("Author.Deleted")
             avatar = .notConnected
             tags = []
@@ -30,6 +34,7 @@ struct Author: Equatable {
             return
         }
         profileId = profile.uuid
+        clientUserId = profile.clientUserId
         name = .localizedString(profile.nickname)
         if let avatarUrl = profile.avatarUrl {
             avatar = .image(url: avatarUrl, name: profile.nickname)
@@ -43,11 +48,13 @@ struct Author: Equatable {
 
 extension Author {
     init(profileId: String?,
+         clientUserId: String? = nil,
          avatar: Avatar,
          name: DisplayableString,
          tags: ProfileTags,
          gamificationLevel: GamificationLevel?) {
         self.profileId = profileId
+        self.clientUserId = clientUserId
         self.avatar = avatar
         self.name = name
         self.tags = tags

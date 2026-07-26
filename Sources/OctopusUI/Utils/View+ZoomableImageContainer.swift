@@ -6,6 +6,7 @@ import SwiftUI
 
 struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, TrailingBarItem: View, PreTrailingView: View>: ViewModifier {
     @Environment(\.octopusTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let defaultLeadingBarItem: LeadingBarItem
@@ -19,6 +20,14 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
     let navBarTitle: Text
     let defaultNavigationBarBackButtonHidden: Bool
     let defaultNavigationBarPrimaryColor: Bool
+    /// Suppresses the iOS 26 transparent (`.hidden`) nav bar background so an opaque
+    /// `UINavigationBarAppearance` (see `opaqueNavigationBar`) can take over. Used by screens
+    /// whose content scrolls under the bar and must stay legible.
+    let defaultNavigationBarOpaque: Bool
+    /// Forces the system navigation title to `.inline` independently of `defaultNavigationBarOpaque`.
+    /// Needed by a navigation *root* (e.g. the main feed) that wants a translucent/glass bar but must
+    /// avoid the default `.automatic` large-title block.
+    let forceInlineTitle: Bool
 
     @State private var usableZoomableImageInfo: ZoomableImageInfo?
     private let zoomAnimationDuration = 0.2
@@ -76,11 +85,22 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
             preTrailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultPreTrailingSharedBackgroundVisibility,
             trailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultTrailingSharedBackgroundVisibility,
             centeredVisibility: usableZoomableImageInfo != nil ? .hidden : defaultCenteredBarItemVisibility)
-        .navigationBarTitle(navBarTitle)
+        // Opaque bars force `.inline`: otherwise the (default `.automatic`) large title at a
+        // navigation root renders as a tall opaque block. The visible title is a principal item.
+        .navigationBarTitle(navBarTitle,
+                            displayMode: (defaultNavigationBarOpaque || forceInlineTitle) ? .inline : .automatic)
         .navigationBarBackButtonHidden(defaultNavigationBarBackButtonHidden || usableZoomableImageInfo != nil)
         .modify {
 #if compiler(>=6.2)
-            if #available(iOS 26.0, *), !defaultNavigationBarPrimaryColor {
+            if #available(iOS 16.0, *), defaultNavigationBarOpaque {
+                // Opacity is enforced by an opaque `UINavigationBarAppearance` (see
+                // `opaqueNavigationBar`); don't let SwiftUI hide the bar on iOS 26. Locking the
+                // bar's color scheme stops the iOS 26 content-adaptive vibrancy from flipping the
+                // title/buttons to white over dark (e.g. video) content scrolling underneath.
+                $0.toolbarColorScheme(colorScheme, for: .navigationBar)
+            } else if defaultNavigationBarOpaque {
+                $0
+            } else if #available(iOS 26.0, *), !defaultNavigationBarPrimaryColor {
                 $0
                     .toolbarBackground(.hidden, for: .navigationBar)
             } else if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
@@ -174,7 +194,9 @@ extension View {
         defaultNavigationBarTitle: Text = Text(verbatim: ""),
         defaultNavigationBarTitleVisibility: Compat.Visibility = .automatic,
         defaultNavigationBarBackButtonHidden: Bool = false,
-        defaultNavigationBarPrimaryColor: Bool = false) -> some View {
+        defaultNavigationBarPrimaryColor: Bool = false,
+        defaultNavigationBarOpaque: Bool = false,
+        forceInlineTitle: Bool = false) -> some View {
         self.modifier(
             ZoomableImageContainer(
                 zoomableImageInfo: zoomableImageInfo,
@@ -197,7 +219,9 @@ extension View {
                 defaultCenteredBarItemVisibility: defaultNavigationBarTitleVisibility,
                 navBarTitle: defaultNavigationBarTitle,
                 defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
-                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor
+                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor,
+                defaultNavigationBarOpaque: defaultNavigationBarOpaque,
+                forceInlineTitle: forceInlineTitle
             )
         )
     }
@@ -216,7 +240,9 @@ extension View {
         defaultCenteredBarItemVisibility: Compat.Visibility = .automatic,
         navBarTitle: Text = Text(verbatim: ""),
         defaultNavigationBarBackButtonHidden: Bool = false,
-        defaultNavigationBarPrimaryColor: Bool = false) -> some View {
+        defaultNavigationBarPrimaryColor: Bool = false,
+        defaultNavigationBarOpaque: Bool = false,
+        forceInlineTitle: Bool = false) -> some View {
         self.modifier(
             ZoomableImageContainer(
                 zoomableImageInfo: zoomableImageInfo,
@@ -230,7 +256,9 @@ extension View {
                 defaultCenteredBarItemVisibility: defaultCenteredBarItemVisibility,
                 navBarTitle: navBarTitle,
                 defaultNavigationBarBackButtonHidden: defaultNavigationBarBackButtonHidden,
-                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor
+                defaultNavigationBarPrimaryColor: defaultNavigationBarPrimaryColor,
+                defaultNavigationBarOpaque: defaultNavigationBarOpaque,
+                forceInlineTitle: forceInlineTitle
             )
         )
     }

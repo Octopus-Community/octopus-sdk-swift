@@ -24,12 +24,16 @@ struct ProfileSummaryView: View {
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
     private let mainFlowPath: MainFlowPath
+    private let canClose: Bool
+    private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
-         profileId: String) {
+         profileId: String, canClose: Bool = false, navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: ProfileSummaryViewModel(
             octopus: octopus, translationStore: translationStore, profileId: profileId))
         self.mainFlowPath = mainFlowPath
+        self.canClose = canClose
+        self.navBarLeadingAction = navBarLeadingAction
     }
 
     var body: some View {
@@ -53,7 +57,8 @@ struct ProfileSummaryView: View {
                             navigator.push(.commentDetail(
                                 commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
                         },
-                        displayProfile: { _ in },
+                        displayProfile: { _, _ in },
+                        openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                         displayContentModeration: {
                             mainFlowPath.reportTarget = .content(contentId: $0)
                         }) {
@@ -65,6 +70,7 @@ struct ProfileSummaryView: View {
             }
         }
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
+                                defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarTitle: Text("Profile.Title", bundle: .module))
         .toastContainer(octopus: viewModel.octopus)
@@ -118,6 +124,17 @@ struct ProfileSummaryView: View {
         }
         buttons.append(.cancel())
         return buttons
+    }
+
+    @ViewBuilder
+    private var leadingBarItem: some View {
+        if let navBarLeadingAction {
+            NavBarLeadingActionButton(navBarLeadingAction)
+        } else if canClose {
+            CloseButton(action: { presentationMode.wrappedValue.dismiss() })
+        } else {
+            EmptyView()
+        }
     }
 
     @ViewBuilder
@@ -177,23 +194,16 @@ private struct ContentView<PostsView: View>: View {
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
-#if compiler(>=6.2)
-                // Disable nav bar opacity on iOS 26 to have the same behavior as before.
-                // TODO: See with product team if we need to keep it.
-                if #available(iOS 26.0, *) {
-                    Color.white.opacity(0.0001)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 1)
-                }
-#endif
+                // On iOS 26 the navigation bar uses its default translucent (glass) behavior (OCT-1532).
                 ProfileContentView(
                     profile: profile,
                     displayAccountAge: displayAccountAge,
                     zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
                         postsView
-                }.padding(.top, 8)
+                }
                 PoweredByOctopusView()
             }
+            .largeScreenMarginBackground()
         } else {
             Compat.ProgressView()
         }
@@ -211,6 +221,9 @@ private struct ProfileContentView<PostsView: View>: View {
     @State private var selectedTab = 0
 
     @State private var displayFullBio = false
+    @State private var displayStickyHeader = false
+
+    private let scrollViewCoordinateSpace = "otherUserProfileScrollViewCoordinateSpace"
 
     var body: some View {
         Compat.ScrollView(refreshAction: refresh) {
@@ -277,11 +290,44 @@ private struct ProfileContentView<PostsView: View>: View {
                 .padding(.horizontal, 20)
 
                 CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onValueChanged(of: geometry.frame(in: .named(scrollViewCoordinateSpace))) { frame in
+                                    if frame.minY <= 0, !displayStickyHeader {
+                                        displayStickyHeader = true
+                                    } else if frame.minY > 0, displayStickyHeader {
+                                        displayStickyHeader = false
+                                    }
+                                }
+                        }
+                    )
                 theme.colors.gray300.frame(height: 1)
                 postsView
             }
+            // Top gap moved inside the scroll content (was `.padding(.top, 8)` wrapping the whole
+            // scroll view, which pinned it below the safe area and blocked the under-bar bleed).
+            .padding(.top, 8)
+            .constrainedContentColumn()
         }
+        // Match the feed/group scroll views so the scroll owns the full region, including the space
+        // behind the nav bar — the content then bleeds under the iOS 26 translucent (glass) bar.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .coordinateSpace(name: scrollViewCoordinateSpace)
         .postsVisibilityScrollView()
+        // Pinned tab header as an overlay (not a ZStack sibling): an overlay renders inside the base
+        // view's safe area, so it stays below the nav bar while the scroll view bleeds under it —
+        // mirroring the feed's explore-bar overlay in MainRootFeedView.
+        .overlay(stickyTabHeader, alignment: .top)
+    }
+
+    // Pinned tab header (mirrors CurrentUserProfileContentView): Instagram-style glass "pills" that
+    // float over the blurred content scrolling under the translucent nav bar.
+    @ViewBuilder
+    private var stickyTabHeader: some View {
+        if displayStickyHeader {
+            ProfileStickyTabsHeader(tabs: ["Profile.Tabs.Posts"], selectedTab: $selectedTab)
+        }
     }
 
     private var avatar: Author.Avatar {

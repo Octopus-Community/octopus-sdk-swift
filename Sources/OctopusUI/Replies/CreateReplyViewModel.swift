@@ -21,6 +21,12 @@ class CreateReplyViewModel: ObservableObject {
     @Published private(set) var userHasAcceptedCgu = false
     /// Whether reply pictures are enabled for this community (OCT-1426). Default `true`.
     @Published private(set) var picturesEnabled = true
+    /// How the community requires legal acceptance. Default `.implicit` until the config loads.
+    @Published private(set) var termsAcceptanceMode: TermsAcceptanceMode = .implicit
+    /// Drives the explicit terms-acceptance bottom sheet (explicit modes only).
+    @Published var displayConsentSheet = false
+    /// Set once the user accepts in the consent sheet, so the re-entered `send()` bypasses the gate.
+    private var explicitConsentGivenThisSession = false
 
     var sendAvailable: Bool {
         Validators.Reply.validate(reply: WritableReply(commentId: commentId, text: text, imageData: picture?.imageData))
@@ -76,6 +82,12 @@ class CreateReplyViewModel: ObservableObject {
             .sink { [unowned self] in picturesEnabled = $0 }
             .store(in: &storage)
 
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.termsAcceptanceMode ?? .implicit }
+            .removeDuplicates()
+            .sink { [unowned self] in termsAcceptanceMode = $0 }
+            .store(in: &storage)
+
         octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] profile in
                 guard let profile else { return }
@@ -125,14 +137,47 @@ class CreateReplyViewModel: ObservableObject {
             }.store(in: &storage)
     }
 
+    /// Whether the connected user's only remaining blocker before publishing is the first-contribution
+    /// nickname-confirmation ("congrats") screen — so the consent sheet can be presented *before* it.
+    /// Returns `false` when the user is not connected or still owes a (forced) login (those come first).
+    private var isBlockedOnlyByFirstContributionNicknameValidation: Bool {
+        guard case .connected = octopus.core.connectionRepository.connectionState,
+              let config = octopus.core.configRepository.communityConfig else { return false }
+        let profile = octopus.core.profileRepository.profile
+        if profile?.isGuest ?? true, config.forceLoginOnStrongActions { return false }
+        return ConnectedActionChecker.needsNicknameValidation(
+            for: .reply,
+            hasConfirmedNickname: profile?.hasConfirmedNickname ?? false,
+            nicknameLock: config.profileFieldsLock.nickname)
+    }
+
     func send() {
         let reply = WritableReply(commentId: commentId, text: text, imageData: picture?.imageData)
         guard Validators.Reply.validate(reply: reply) else { return }
 
         isLoading = true
 
+        // The first-contribution nickname-confirmation ("congrats") screen must not appear before the
+        // user has accepted the legal documents. When the connected user's only remaining blocker is
+        // that screen and explicit consent is still pending, present the consent sheet first; the
+        // nickname screen then follows once consent is accepted (on the re-entered `send()`).
+        if isBlockedOnlyByFirstContributionNicknameValidation,
+           termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            displayConsentSheet = true
+            isLoading = false
+            return
+        }
+
         guard ensureConnected(.reply) else {
             isWaitingToSendReply = true
+            isLoading = false
+            return
+        }
+
+        // Explicit consent gate at the first contribution (acceptance recorded in `send(reply:)`).
+        // Reached when the user is not blocked by the nickname screen above (confirmed / locked nickname).
+        if termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            displayConsentSheet = true
             isLoading = false
             return
         }
@@ -141,6 +186,12 @@ class CreateReplyViewModel: ObservableObject {
             try? await Task.sleep(nanoseconds: UInt64(0.25 * 1_000_000_000))
             await send(reply: reply)
         }
+    }
+
+    /// Called when the user accepts in the consent sheet: re-enters `send()`, bypassing the gate.
+    func acceptConsentAndSend() {
+        explicitConsentGivenThisSession = true
+        send()
     }
 
     private func send(reply: WritableReply) async {

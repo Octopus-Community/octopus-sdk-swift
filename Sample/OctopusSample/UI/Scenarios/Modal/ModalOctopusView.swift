@@ -149,6 +149,13 @@ struct ModalOctopusView: View {
             primarySet: OctopusTheme.Colors.ColorSet(
                 main: .InternalDemo.primary,
                 lowContrast: .InternalDemo.primaryLow,
-                highContrast: .InternalDemo.primaryHigh)))
+                highContrast: .InternalDemo.primaryHigh),
+            // Showcase the customizable community background color on the full demo flow. Warm,
+            // brand-flavored, and light/dark-adaptive (the recommended `Color(UIColor { ... })` pattern).
+            background: Color(UIColor { traits in
+                traits.userInterfaceStyle == .dark
+                    ? UIColor(red: 0.14, green: 0.11, blue: 0.07, alpha: 1)  // warm dark
+                    : UIColor(red: 0.98, green: 0.95, blue: 0.89, alpha: 1)  // warm cream
+            })))
     }
 }

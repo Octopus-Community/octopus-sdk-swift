@@ -10,6 +10,9 @@ struct PostMoreMenuButton: View {
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
+    /// "View group" navigation action. `nil` hides the entry (e.g. on the group feed itself).
+    /// Non-destructive, so it renders first — above Report / Block / Delete.
+    let onViewGroup: (() -> Void)?
     let onDelete: () -> Void
     let onReport: () -> Void
     let onBlockAuthor: () -> Void
@@ -21,6 +24,13 @@ struct PostMoreMenuButton: View {
     var body: some View {
         if #available(iOS 14.0, *) {
             Menu(content: {
+                if let onViewGroup {
+                    Button(action: onViewGroup) {
+                        Label(
+                            title: { Text("Post.Menu.ViewGroup.Button", bundle: .module) },
+                            icon: { Image(uiImage: theme.assets.icons.groups.viewGroup) })
+                    }
+                }
                 if canBeDeleted {
                     Button(action: onDelete) {
                         Label(
@@ -86,6 +96,7 @@ struct PostMoreMenuButton: View {
             canBeDeleted: true,
             canBeModerated: true,
             canBeBlockedByUser: true,
+            onViewGroup: {},
             onDelete: {},
             onReport: {},
             onBlockAuthor: {},
@@ -99,6 +110,7 @@ struct PostMoreMenuButton: View {
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: false,
+            onViewGroup: nil,
             onDelete: {},
             onReport: {},
             onBlockAuthor: {},

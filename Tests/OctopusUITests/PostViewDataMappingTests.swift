@@ -86,6 +86,24 @@ struct PostViewDataMappingTests {
         #expect(viewData.topic == nil)
     }
 
+    @Test func groupId_preserved_feedSide() async throws {
+        let post = Self.makeDisplayable(contentKind: .textOnly, groupId: "group-42")
+        let viewData = PostViewData(from: post)
+        #expect(viewData.groupId == "group-42")
+    }
+
+    @Test func groupId_nil_preserved_feedSide() async throws {
+        let post = Self.makeDisplayable(contentKind: .textOnly, groupId: nil)
+        let viewData = PostViewData(from: post)
+        #expect(viewData.groupId == nil)
+    }
+
+    @Test func groupId_preserved_detailSide() async throws {
+        let post = Self.makeDetailPost(groupId: "group-42")
+        let viewData = PostViewData(from: post)
+        #expect(viewData.groupId == "group-42")
+    }
+
     // MARK: - PostDetailViewModel.Post → PostViewData (detail-side)
 
     @Test func detailMapping_preservesCoreFields() async throws {
@@ -219,6 +237,7 @@ struct PostViewDataMappingTests {
     static func makeDisplayable(
         contentKind: ContentKind,
         topic: String? = "Help",
+        groupId: String? = "group-uuid",
         canBeBlockedByUser: Bool = false,
         canCreateChildren: Bool = true
     ) -> DisplayablePost {
@@ -279,6 +298,7 @@ struct PostViewDataMappingTests {
             author: author,
             relativeDate: "3d ago",
             topic: topic,
+            groupId: groupId,
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: canBeBlockedByUser,
@@ -294,6 +314,7 @@ struct PostViewDataMappingTests {
         uuid: String = "post-uuid",
         text: String = "Some detail text",
         topic: String? = "Help",
+        groupId: String? = "group-uuid",
         attachment: PostDetailViewModel.Post.Attachment? = nil,
         bridgeCTA: PostDetailViewModel.Post.BridgeCTA? = nil,
         customAction: PostDetailViewModel.Post.CustomAction? = nil,
@@ -315,6 +336,7 @@ struct PostViewDataMappingTests {
             author: author,
             relativeDate: "3d ago",
             topic: topic,
+            groupId: groupId,
             aggregatedInfo: aggregatedInfo,
             userInteractions: .empty,
             canBeDeleted: false,

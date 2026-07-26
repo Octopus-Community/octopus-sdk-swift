@@ -11,30 +11,37 @@ import OctopusCore
 struct PostListView: View {
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.trackingApi) var trackingApi
-    @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: PostListViewModel
 
     @Binding var selectedRootFeed: RootFeed?
     @Binding private var zoomableImageInfo: ZoomableImageInfo?
+    @Binding private var isScrollingDown: Bool
 
     @State private var lastScreenFeedIdSent: String?
 
     private let mainFlowPath: MainFlowPath
+    private let topContentInset: CGFloat
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
-         selectedRootFeed: Binding<RootFeed?>, zoomableImageInfo: Binding<ZoomableImageInfo?>) {
+         selectedRootFeed: Binding<RootFeed?>, zoomableImageInfo: Binding<ZoomableImageInfo?>,
+         isScrollingDown: Binding<Bool> = .constant(false),
+         topContentInset: CGFloat = 0) {
         _viewModel = Compat.StateObject(wrappedValue: PostListViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore))
         _selectedRootFeed = selectedRootFeed
         _zoomableImageInfo = zoomableImageInfo
+        _isScrollingDown = isScrollingDown
         self.mainFlowPath = mainFlowPath
+        self.topContentInset = topContentInset
     }
 
     var body: some View {
         ZStack {
             ContentView(
                 scrollToTop: $viewModel.scrollToTop,
-                refresh: viewModel.refresh) {
+                refresh: viewModel.refresh,
+                isScrollingDown: $isScrollingDown,
+                topContentInset: topContentInset) {
                     if let postFeedViewModel = viewModel.postFeedViewModel {
                         PostFeedView(
                             viewModel: postFeedViewModel,
@@ -51,14 +58,12 @@ struct PostListView: View {
                                 navigator.push(.commentDetail(
                                     commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
                             },
-                            displayProfile: { profileId in
+                            displayProfile: { profileId, clientUserId in
                                 if #available(iOS 14, *) { Logger.profile.trace("Display profile \(profileId)") }
-                                if profileId == viewModel.thisUserProfileId {
-                                    navigator.push(.currentUserProfile)
-                                } else {
-                                    navigator.push(.publicProfile(profileId: profileId))
-                                }
+                                dispatchProfileTap(octopus: viewModel.octopus, navigator: navigator,
+                                                   profileId: profileId, clientUserId: clientUserId)
                             },
+                            openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                             displayContentModeration: {
                                 mainFlowPath.reportTarget = .content(contentId: $0)
                             }) {
@@ -79,9 +84,10 @@ struct PostListView: View {
                     AuthorActionView(
                         octopus: viewModel.octopus, actionKind: .post,
                         displayCreateButton: viewModel.canCreatePost,
+                        isScrollingDown: isScrollingDown,
                         userProfileTapped: {
                             if viewModel.ensureConnected(action: .viewOwnProfile) {
-                                navigator.push(.currentUserProfile)
+                                dispatchCurrentUserActivityTap(octopus: viewModel.octopus, navigator: navigator)
                             }
                         },
                         actionTapped: {
@@ -93,9 +99,11 @@ struct PostListView: View {
                 $0.overlay(
                     AuthorActionView(octopus: viewModel.octopus, actionKind: .post,
                                      displayCreateButton: viewModel.canCreatePost,
+                                     isScrollingDown: isScrollingDown,
                                      userProfileTapped: {
                                          if viewModel.ensureConnected(action: .viewOwnProfile) {
-                                             navigator.push(.currentUserProfile)
+                                             dispatchCurrentUserActivityTap(octopus: viewModel.octopus,
+                                                                           navigator: navigator)
                                          }
                                      },
                                      actionTapped: {
@@ -104,6 +112,7 @@ struct PostListView: View {
                     alignment: .bottomTrailing)
             }
         }
+        .largeScreenMarginBackground()
         .onValueChanged(of: selectedRootFeed) {
             guard let selectedRootFeed = $0 else { return }
             viewModel.set(feed: selectedRootFeed.feed)
@@ -127,6 +136,8 @@ struct PostListView: View {
 private struct ContentView<PostsView: View>: View {
     @Binding var scrollToTop: Bool
     let refresh: @Sendable () async -> Void
+    @Binding var isScrollingDown: Bool
+    let topContentInset: CGFloat
 
     @ViewBuilder let postsView: PostsView
 
@@ -136,8 +147,12 @@ private struct ContentView<PostsView: View>: View {
             scrollToTop: $scrollToTop,
             refreshAction: refresh) {
                 postsView
+                    .padding(.top, topContentInset)
+                    .scrollDirectionAnchor()
+                    .constrainedContentColumn()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .postsVisibilityScrollView()
+            .onScrollDirectionChange(isScrollingDown: $isScrollingDown)
     }
 }

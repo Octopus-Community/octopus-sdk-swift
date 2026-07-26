@@ -12,6 +12,9 @@ struct PeekToViewContainer<Item, Content: View>: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
+            // Neutral backdrop for the full-screen media viewer — intentionally NOT the themeable
+            // community background. Under the forced dark color scheme this reads as black, keeping
+            // the photo/video letterbox area neutral regardless of a custom community background color.
             Color(UIColor.systemBackground)
                 .edgesIgnoringSafeArea(.all)
             content()

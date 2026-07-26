@@ -15,13 +15,51 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
+public nonisolated enum Com_Octopuscommunity_TermsAcceptanceMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case implicit // = 0
+  case explicitMultiCheckbox // = 1
+  case explicitSingleCheckbox // = 2
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .implicit
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .implicit
+    case 1: self = .explicitMultiCheckbox
+    case 2: self = .explicitSingleCheckbox
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .implicit: return 0
+    case .explicitMultiCheckbox: return 1
+    case .explicitSingleCheckbox: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [Com_Octopuscommunity_TermsAcceptanceMode] = [
+    .implicit,
+    .explicitMultiCheckbox,
+    .explicitSingleCheckbox,
+  ]
+
+}
+
 /// nickname + avatar
-public enum Com_Octopuscommunity_FieldLock: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Com_Octopuscommunity_FieldLock: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case editable // = 0
   case readOnly // = 1
@@ -56,7 +94,7 @@ public enum Com_Octopuscommunity_FieldLock: SwiftProtobuf.Enum, Swift.CaseIterab
 }
 
 /// bio only carries HIDDEN
-public enum Com_Octopuscommunity_BioFieldLock: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Com_Octopuscommunity_BioFieldLock: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case editable // = 0
   case readOnly // = 1
@@ -94,7 +132,7 @@ public enum Com_Octopuscommunity_BioFieldLock: SwiftProtobuf.Enum, Swift.CaseIte
 
 }
 
-public struct Com_Octopuscommunity_GetConfigResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetConfigResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -115,7 +153,7 @@ public struct Com_Octopuscommunity_GetConfigResponse: Sendable {
   fileprivate var _apiKeyConfig: Com_Octopuscommunity_ApiKeyConfig? = nil
 }
 
-public struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable {
+public nonisolated struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -174,6 +212,17 @@ public struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable {
   /// Clears the value of `contentOptions`. Subsequent reads from it will return its default value.
   public mutating func clearContentOptions() {_uniqueStorage()._contentOptions = nil}
 
+  /// false when unset
+  public var exposeClientUserID: Bool {
+    get {_storage._exposeClientUserID}
+    set {_uniqueStorage()._exposeClientUserID = newValue}
+  }
+
+  public var termsAcceptanceMode: Com_Octopuscommunity_TermsAcceptanceMode {
+    get {_storage._termsAcceptanceMode}
+    set {_uniqueStorage()._termsAcceptanceMode = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -182,7 +231,7 @@ public struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable {
 }
 
 /// Per-content-type publishing options; each flag absent => enabled (true).
-public struct Com_Octopuscommunity_ContentOptions: Sendable {
+public nonisolated struct Com_Octopuscommunity_ContentOptions: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -216,7 +265,7 @@ public struct Com_Octopuscommunity_ContentOptions: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public struct PostConfig: Sendable {
+  public nonisolated struct PostConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -247,7 +296,7 @@ public struct Com_Octopuscommunity_ContentOptions: Sendable {
     fileprivate var _enablePolls: Bool? = nil
   }
 
-  public struct CommentConfig: Sendable {
+  public nonisolated struct CommentConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -268,7 +317,7 @@ public struct Com_Octopuscommunity_ContentOptions: Sendable {
     fileprivate var _enablePictures: Bool? = nil
   }
 
-  public struct ReplyConfig: Sendable {
+  public nonisolated struct ReplyConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -296,7 +345,7 @@ public struct Com_Octopuscommunity_ContentOptions: Sendable {
   fileprivate var _reply: Com_Octopuscommunity_ContentOptions.ReplyConfig? = nil
 }
 
-public struct Com_Octopuscommunity_GamificationConfig: Sendable {
+public nonisolated struct Com_Octopuscommunity_GamificationConfig: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -395,7 +444,7 @@ public struct Com_Octopuscommunity_GamificationConfig: Sendable {
   fileprivate var _completeProfilePts: Int32? = nil
 }
 
-public struct Com_Octopuscommunity_GamificationLevel: Sendable {
+public nonisolated struct Com_Octopuscommunity_GamificationLevel: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -464,7 +513,7 @@ public struct Com_Octopuscommunity_GamificationLevel: Sendable {
   fileprivate var _badgeTextDarkColorHex: String? = nil
 }
 
-public struct Com_Octopuscommunity_DisplayConfig: Sendable {
+public nonisolated struct Com_Octopuscommunity_DisplayConfig: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -485,7 +534,7 @@ public struct Com_Octopuscommunity_DisplayConfig: Sendable {
   fileprivate var _poweredByOctopus: Com_Octopuscommunity_PoweredByOctopus? = nil
 }
 
-public struct Com_Octopuscommunity_PoweredByOctopus: Sendable {
+public nonisolated struct Com_Octopuscommunity_PoweredByOctopus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -518,14 +567,14 @@ public struct Com_Octopuscommunity_PoweredByOctopus: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Logo: Equatable, Sendable {
+  public nonisolated enum OneOf_Logo: Equatable, Sendable {
     case `default`(Com_Octopuscommunity_PoweredByOctopus.Default)
     case custom(Com_Octopuscommunity_PoweredByOctopus.Custom)
     case hidden(Com_Octopuscommunity_PoweredByOctopus.Hidden)
 
   }
 
-  public struct Default: Sendable {
+  public nonisolated struct Default: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -535,7 +584,7 @@ public struct Com_Octopuscommunity_PoweredByOctopus: Sendable {
     public init() {}
   }
 
-  public struct Custom: Sendable {
+  public nonisolated struct Custom: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -549,7 +598,7 @@ public struct Com_Octopuscommunity_PoweredByOctopus: Sendable {
     public init() {}
   }
 
-  public struct Hidden: Sendable {
+  public nonisolated struct Hidden: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -562,7 +611,7 @@ public struct Com_Octopuscommunity_PoweredByOctopus: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_ProfileFieldsLock: Sendable {
+public nonisolated struct Com_Octopuscommunity_ProfileFieldsLock: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -580,17 +629,21 @@ public struct Com_Octopuscommunity_ProfileFieldsLock: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_FieldLock: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TermsAcceptanceMode: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0TERMS_ACCEPTANCE_MODE_IMPLICIT\0\u{1}TERMS_ACCEPTANCE_MODE_EXPLICIT_MULTI_CHECKBOX\0\u{1}TERMS_ACCEPTANCE_MODE_EXPLICIT_SINGLE_CHECKBOX\0")
+}
+
+nonisolated extension Com_Octopuscommunity_FieldLock: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FIELD_LOCK_EDITABLE\0\u{1}FIELD_LOCK_READ_ONLY\0")
 }
 
-extension Com_Octopuscommunity_BioFieldLock: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_BioFieldLock: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0BIO_FIELD_LOCK_EDITABLE\0\u{1}BIO_FIELD_LOCK_READ_ONLY\0\u{1}BIO_FIELD_LOCK_HIDDEN\0")
 }
 
-extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetConfigResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}apiKeyConfig\0")
 
@@ -624,9 +677,9 @@ extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Message, SwiftPr
   }
 }
 
-extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ApiKeyConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0\u{1}exposeClientUserId\0\u{1}termsAcceptanceMode\0")
 
   fileprivate class _StorageClass {
     var _clientLoginMandatory: Bool = false
@@ -636,6 +689,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
     var _displayConfig: Com_Octopuscommunity_DisplayConfig? = nil
     var _profileFieldsLock: Com_Octopuscommunity_ProfileFieldsLock? = nil
     var _contentOptions: Com_Octopuscommunity_ContentOptions? = nil
+    var _exposeClientUserID: Bool = false
+    var _termsAcceptanceMode: Com_Octopuscommunity_TermsAcceptanceMode = .implicit
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -653,6 +708,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
       _displayConfig = source._displayConfig
       _profileFieldsLock = source._profileFieldsLock
       _contentOptions = source._contentOptions
+      _exposeClientUserID = source._exposeClientUserID
+      _termsAcceptanceMode = source._termsAcceptanceMode
     }
   }
 
@@ -678,6 +735,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
         case 5: try { try decoder.decodeSingularMessageField(value: &_storage._displayConfig) }()
         case 6: try { try decoder.decodeSingularMessageField(value: &_storage._profileFieldsLock) }()
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._contentOptions) }()
+        case 8: try { try decoder.decodeSingularBoolField(value: &_storage._exposeClientUserID) }()
+        case 9: try { try decoder.decodeSingularEnumField(value: &_storage._termsAcceptanceMode) }()
         default: break
         }
       }
@@ -711,6 +770,12 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
       try { if let v = _storage._contentOptions {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
       } }()
+      if _storage._exposeClientUserID != false {
+        try visitor.visitSingularBoolField(value: _storage._exposeClientUserID, fieldNumber: 8)
+      }
+      if _storage._termsAcceptanceMode != .implicit {
+        try visitor.visitSingularEnumField(value: _storage._termsAcceptanceMode, fieldNumber: 9)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -727,6 +792,8 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
         if _storage._displayConfig != rhs_storage._displayConfig {return false}
         if _storage._profileFieldsLock != rhs_storage._profileFieldsLock {return false}
         if _storage._contentOptions != rhs_storage._contentOptions {return false}
+        if _storage._exposeClientUserID != rhs_storage._exposeClientUserID {return false}
+        if _storage._termsAcceptanceMode != rhs_storage._termsAcceptanceMode {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -736,7 +803,7 @@ extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobu
   }
 }
 
-extension Com_Octopuscommunity_ContentOptions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentOptions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ContentOptions"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}post\0\u{1}comment\0\u{1}reply\0")
 
@@ -780,7 +847,7 @@ extension Com_Octopuscommunity_ContentOptions: SwiftProtobuf.Message, SwiftProto
   }
 }
 
-extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".PostConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0\u{1}enablePolls\0")
 
@@ -819,7 +886,7 @@ extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProtobuf.Message,
   }
 }
 
-extension Com_Octopuscommunity_ContentOptions.CommentConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentOptions.CommentConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".CommentConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0")
 
@@ -853,7 +920,7 @@ extension Com_Octopuscommunity_ContentOptions.CommentConfig: SwiftProtobuf.Messa
   }
 }
 
-extension Com_Octopuscommunity_ContentOptions.ReplyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentOptions.ReplyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".ReplyConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0")
 
@@ -887,7 +954,7 @@ extension Com_Octopuscommunity_ContentOptions.ReplyConfig: SwiftProtobuf.Message
   }
 }
 
-extension Com_Octopuscommunity_GamificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GamificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GamificationConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pointsName\0\u{1}shortenPointSingular\0\u{1}shortenPointPlural\0\u{1}reactPts\0\u{1}votePts\0\u{1}commentPts\0\u{1}replyPts\0\u{1}postPts\0\u{1}commentOnYourPostPts\0\u{1}loginPts\0\u{1}completeProfilePts\0\u{2}Y\u{1}gamificationLevels\0")
 
@@ -976,7 +1043,7 @@ extension Com_Octopuscommunity_GamificationConfig: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension Com_Octopuscommunity_GamificationLevel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GamificationLevel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GamificationLevel"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}level\0\u{1}name\0\u{1}nextLevelAt\0\u{1}badgeLightColorHex\0\u{1}badgeDarkColorHex\0\u{1}badgeTextLightColorHex\0\u{1}badgeTextDarkColorHex\0")
 
@@ -1040,7 +1107,7 @@ extension Com_Octopuscommunity_GamificationLevel: SwiftProtobuf.Message, SwiftPr
   }
 }
 
-extension Com_Octopuscommunity_DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DisplayConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}poweredByOctopus\0")
 
@@ -1074,7 +1141,7 @@ extension Com_Octopuscommunity_DisplayConfig: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
-extension Com_Octopuscommunity_PoweredByOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PoweredByOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PoweredByOctopus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}default\0\u{1}custom\0\u{1}hidden\0")
 
@@ -1158,7 +1225,7 @@ extension Com_Octopuscommunity_PoweredByOctopus: SwiftProtobuf.Message, SwiftPro
   }
 }
 
-extension Com_Octopuscommunity_PoweredByOctopus.Default: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PoweredByOctopus.Default: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PoweredByOctopus.protoMessageName + ".Default"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1177,7 +1244,7 @@ extension Com_Octopuscommunity_PoweredByOctopus.Default: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_PoweredByOctopus.Custom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PoweredByOctopus.Custom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PoweredByOctopus.protoMessageName + ".Custom"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}lightLogoUrl\0\u{1}darkLogoUrl\0")
 
@@ -1212,7 +1279,7 @@ extension Com_Octopuscommunity_PoweredByOctopus.Custom: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_PoweredByOctopus.Hidden: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PoweredByOctopus.Hidden: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PoweredByOctopus.protoMessageName + ".Hidden"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1231,7 +1298,7 @@ extension Com_Octopuscommunity_PoweredByOctopus.Hidden: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_ProfileFieldsLock: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ProfileFieldsLock: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ProfileFieldsLock"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nickname\0\u{1}bio\0\u{1}avatar\0")
 

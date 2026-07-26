@@ -47,6 +47,9 @@ struct Event {
         case clientSetABTest(hasAccessToCommunity: Bool)
         /// Custom event, set by the client
         case custom(CustomEvent)
+        /// Login attributed to Octopus: the user hit a login-gated action in the SDK and then logged in
+        /// during the same app run. `action` is the triggering action.
+        case octopusDrivenLogin(action: OctopusDrivenLoginAction)
     }
 
     enum PostOpenedOrigin {
@@ -125,6 +128,9 @@ extension Event.Content: CustomStringConvertible {
             name = "custom"
             extra = "        name: \(customEvent.name)\n" +
                     "        properties: \(customEvent.properties.mapValues { $0.value })"
+        case let .octopusDrivenLogin(action):
+            name = "octopusDrivenLogin"
+            extra = "        action: \(action.rawValue)"
         }
         let kind = "        kind:\(name)"
         if let extra = extra {
@@ -183,6 +189,12 @@ extension Event {
                     properties: Dictionary(evt.properties.map { ($0.name, CustomEvent.PropertyValue(value: $0.value)) },
                                            uniquingKeysWith: { first, _ in first }))
                 )
+        case let evt as OctopusDrivenLoginEventEntity:
+            if let action = OctopusDrivenLoginAction(rawValue: evt.action) {
+                .octopusDrivenLogin(action: action)
+            } else {
+                nil
+            }
         default: nil
         }
         guard let optionalContent else {

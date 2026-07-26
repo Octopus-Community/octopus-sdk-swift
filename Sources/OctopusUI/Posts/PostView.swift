@@ -22,7 +22,8 @@ struct PostView: View {
 
     let reactionTapped: (ReactionKind?) -> Void
     let voteOnPoll: (String) -> Bool
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
+    let openGroup: (String) -> Void
     let deletePost: () -> Void
     let blockAuthor: (String) -> Void
     let displayContentModeration: (String) -> Void
@@ -47,6 +48,7 @@ struct PostView: View {
             onVote: voteOnPoll,
             onOpenCreateComment: openCreateComment,
             displayProfile: displayProfile,
+            openGroup: openGroup,
             displayClientObject: displayClientObject)
         .destructiveConfirmationAlert(
             "Post.Delete.Confirmation.Title",
@@ -72,6 +74,13 @@ struct PostView: View {
 
     private var iOS13ActionSheetButtons: [ActionSheet.Button] {
         var buttons: [ActionSheet.Button] = []
+        // "View group" is a non-destructive navigation action, so it comes first. Shown on every
+        // surface except the group feed (where `displayGroupName` is false).
+        if case let .summary(_, _, displayGroupName) = context, displayGroupName, let groupId = post.groupId {
+            buttons.append(.default(Text("Post.Menu.ViewGroup.Button", bundle: .module)) {
+                openGroup(groupId)
+            })
+        }
         if post.canBeDeleted {
             buttons.append(.destructive(Text("Post.Delete.Button", bundle: .module)) {
                 displayDeleteAlert = true
@@ -110,7 +119,8 @@ private struct PostContentView: View {
     let onReaction: (ReactionKind?) -> Void
     let onVote: (String) -> Bool
     let onOpenCreateComment: () -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
+    let openGroup: (String) -> Void
     let displayClientObject: ((String) -> Void)?
 
     var body: some View {
@@ -125,6 +135,7 @@ private struct PostContentView: View {
                 canBeDeleted: post.canBeDeleted,
                 canBeModerated: post.canBeModerated,
                 canBeBlockedByUser: post.canBeBlockedByUser,
+                onViewGroup: onViewGroup,
                 displayProfile: displayProfile,
                 onDelete: onDelete,
                 onReport: onReport,
@@ -179,6 +190,14 @@ private struct PostContentView: View {
     private var displayGroupName: Bool {
         if case let .summary(_, _, show) = context { return show }
         return true
+    }
+
+    /// The "View group" menu action, or `nil` to hide the entry. Shown wherever the group name is
+    /// shown (i.e. every surface except the group feed, which sets `displayGroupName == false`),
+    /// as long as the post carries a group id.
+    private var onViewGroup: (() -> Void)? {
+        guard displayGroupName, let groupId = post.groupId else { return nil }
+        return { openGroup(groupId) }
     }
 
     private var groupTap: (() -> Void)? {
@@ -353,7 +372,8 @@ private struct PublishedContentView: View {
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
             voteOnPoll: { _ in false },
-            displayProfile: { _ in },
+            displayProfile: { _, _ in },
+            openGroup: { _ in },
             deletePost: {},
             blockAuthor: { _ in },
             displayContentModeration: { _ in },
@@ -378,7 +398,8 @@ private struct PublishedContentView: View {
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
             voteOnPoll: { _ in false },
-            displayProfile: { _ in },
+            displayProfile: { _, _ in },
+            openGroup: { _ in },
             deletePost: {},
             blockAuthor: { _ in },
             displayContentModeration: { _ in },
@@ -407,7 +428,8 @@ private struct PublishedContentView: View {
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
             voteOnPoll: { _ in false },
-            displayProfile: { _ in },
+            displayProfile: { _, _ in },
+            openGroup: { _ in },
             deletePost: {},
             blockAuthor: { _ in },
             displayContentModeration: { _ in },
@@ -435,7 +457,8 @@ private struct PublishedContentView: View {
                 zoomableImageInfo: zoomable,
                 reactionTapped: { _ in },
                 voteOnPoll: { _ in false },
-                displayProfile: { _ in },
+                displayProfile: { _, _ in },
+                openGroup: { _ in },
                 deletePost: {},
                 blockAuthor: { _ in },
                 displayContentModeration: { _ in },
@@ -489,6 +512,7 @@ extension PostView {
                 author: author,
                 relativeDate: "3d ago",
                 topic: topic,
+                groupId: "groupUuid",
                 canBeDeleted: canBeDeleted,
                 canBeModerated: canBeModerated,
                 canBeBlockedByUser: canBeBlockedByUser,

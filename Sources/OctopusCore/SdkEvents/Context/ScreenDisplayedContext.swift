@@ -16,13 +16,13 @@ extension SdkEvent {
         case createPost
         case profile
         case otherUserProfile(OtherUserProfileContext)
+        case otherUserPosts(OtherUserPostsContext)
         case editProfile
         case reportContent
         case reportProfile
         case validateNickname
         case settingsList
         case settingsAccount
-        case settingsAbout
         case reportExplanation
         case deleteAccount
     }
@@ -38,6 +38,17 @@ extension SdkEvent.ScreenDisplayedContext {
             self.profileId = profileId
         }
 
+    }
+
+    /// Context of the otherUserPosts Screen (Unified Profile, OCT-1374): the posts-only member
+    /// activity screen, iOS's counterpart of Android's `ScreenDisplayed.OtherUserPosts`.
+    public struct OtherUserPostsContext: Sendable {
+        /// The id of the profile whose posts are displayed
+        public let profileId: String
+
+        public init(profileId: String) {
+            self.profileId = profileId
+        }
     }
 
     /// Context of the mainFeed Screen

@@ -12,6 +12,7 @@ class MinimalProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var avatarUrl: URL?
     @NSManaged public var tagsRawValue: Int
     @NSManaged public var gamificationLevel: Int
+    @NSManaged public var clientUserId: String?
 
     var tags: ProfileTags { ProfileTags(rawValue: tagsRawValue) }
 
@@ -28,6 +29,11 @@ class MinimalProfileEntity: NSManagedObject, Identifiable {
         } else if replaceSecondaryInfosIfNil {
             gamificationLevel = -1
         } // else we do not change gamification level
+        if let newClientUserId = profile.clientUserId {
+            clientUserId = newClientUserId
+        } else if replaceSecondaryInfosIfNil {
+            clientUserId = nil
+        } // else we do not change clientUserId
     }
 }
 

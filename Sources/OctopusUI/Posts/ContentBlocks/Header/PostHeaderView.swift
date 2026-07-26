@@ -17,8 +17,10 @@ struct PostHeaderView: View {
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
+    /// "View group" navigation action, or `nil` to hide the entry (e.g. on the group feed).
+    let onViewGroup: (() -> Void)?
 
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let onDelete: () -> Void
     let onReport: () -> Void
     let onBlockAuthor: () -> Void
@@ -34,7 +36,7 @@ struct PostHeaderView: View {
     /// trailing item — showing it twice on the same screen would be redundant.
     private var showsMoreMenu: Bool {
         if case .detail = context { return false }
-        return canBeDeleted || canBeModerated || canBeBlockedByUser
+        return canBeDeleted || canBeModerated || canBeBlockedByUser || onViewGroup != nil
     }
 
     var body: some View {
@@ -73,6 +75,7 @@ struct PostHeaderView: View {
                     canBeDeleted: canBeDeleted,
                     canBeModerated: canBeModerated,
                     canBeBlockedByUser: canBeBlockedByUser,
+                    onViewGroup: onViewGroup,
                     onDelete: onDelete,
                     onReport: onReport,
                     onBlockAuthor: onBlockAuthor,
@@ -109,7 +112,8 @@ struct PostHeaderView: View {
             canBeDeleted: true,
             canBeModerated: true,
             canBeBlockedByUser: true,
-            displayProfile: { _ in },
+            onViewGroup: {},
+            displayProfile: { _, _ in },
             onDelete: {},
             onReport: {},
             onBlockAuthor: {},
@@ -137,7 +141,8 @@ struct PostHeaderView: View {
             canBeDeleted: true,
             canBeModerated: true,
             canBeBlockedByUser: false,
-            displayProfile: { _ in },
+            onViewGroup: nil,
+            displayProfile: { _, _ in },
             onDelete: {},
             onReport: {},
             onBlockAuthor: {},
@@ -162,7 +167,8 @@ struct PostHeaderView: View {
             canBeDeleted: true,
             canBeModerated: true,
             canBeBlockedByUser: true,
-            displayProfile: { _ in },
+            onViewGroup: {},
+            displayProfile: { _, _ in },
             onDelete: {},
             onReport: {},
             onBlockAuthor: {},

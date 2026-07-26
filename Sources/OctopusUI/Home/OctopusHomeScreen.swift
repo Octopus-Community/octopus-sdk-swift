@@ -62,7 +62,8 @@ public struct OctopusHomeScreen: View {
     ///                             specifying a postId).
     ///                             If false, default nav bar color will be used. Default is false.
     ///    - initialScreen: the initial screen to display. Default is `.mainFeed` which shows the feed with the feed
-    ///                     selector. Use `.post` or `.group` to open a specific post or group in bridge mode.
+    ///                     selector. Use `.post` or `.group` to open a specific post or group in bridge mode, or
+    ///                     `.activity` to open a member's posts by your app's own client user id (Unified Profile).
     ///    - navigationMode: which navigation container the screen uses internally. Default is `.automatic`
     ///                      (legacy `NavigationView`). Pass `.navigationStack` when hosting `OctopusHomeScreen`
     ///                      inside a modal presentation (SwiftUI `.sheet` / `.fullScreenCover`, or a Flutter /
@@ -159,6 +160,14 @@ public struct OctopusHomeScreen: View {
                                     canClose: presentationMode.wrappedValue.isPresented,
                                     origin: .clientApp,
                                     navBarLeadingAction: navBarLeadingAction)
+                            case let .activity(info):
+                                ActivityView(
+                                    octopus: octopus,
+                                    mainFlowPath: viewModel.mainFlowPath,
+                                    translationStore: translationStore,
+                                    source: ActivitySource(info.source),
+                                    canClose: presentationMode.wrappedValue.isPresented,
+                                    navBarLeadingAction: navBarLeadingAction)
                             case let .createPost(info):
                                 CreatePostView(
                                     octopus: octopus,
@@ -190,7 +199,7 @@ public struct OctopusHomeScreen: View {
         .modify {
             // do not use presentationBackground on iOS 17 because it breaks the layout when the view is presented
             if #available(iOS 18.0, *) {
-                $0.presentationBackground(Color(.systemBackground))
+                $0.presentationBackground(theme.colors.background)
             } else {
                 $0
             }

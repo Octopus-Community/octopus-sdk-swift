@@ -11,7 +11,7 @@ struct CommentDetailContentView: View {
     let comment: CommentDetailViewModel.CommentDetail
     let displayGoToParentButton: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openCreateReply: () -> Void
     let deleteComment: () -> Void
     let blockAuthor: (String) -> Void

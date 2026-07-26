@@ -165,6 +165,12 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
     }
 
     public func logout(preventReconnection: Bool = false) async throws {
+        // A guest has no account to log out from. Destroying its identity would re-forge a brand-new
+        // guest (user_id churn), so logging out a guest is a no-op — matching Android's `!isGuest`
+        // guard. Only a logged-in (magic-link) user is cleared and dropped back to guest.
+        if case let .connected(user, _) = connectionState, user.profile.isGuest {
+            return
+        }
         let profileId: String? = if case let .connected(user, _) = connectionState {
             user.profile.id
         } else { nil }
@@ -305,6 +311,12 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
         }
 
     func onAuthenticatedCallFailed() async throws {
+        // Preserve the guest identity on a hard auth failure: a guest must never be destroyed and
+        // re-forged (that inflated iOS user_id counts ~7x vs Android). The stable per-device guest
+        // (installId-based) is kept as-is. Only a logged-in (magic-link) user is logged out.
+        if case let .connected(user, _) = connectionState, user.profile.isGuest {
+            return
+        }
         try await logout()
         guard !isLoggingOutAfterUnauthenticatedError else { return }
         isLoggingOutAfterUnauthenticatedError = true

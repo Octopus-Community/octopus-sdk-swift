@@ -350,79 +350,94 @@ public enum Com_Octopuscommunity_ProfileTag: SwiftProtobuf.Enum, Swift.CaseItera
 }
 
 ///normalized OctoObject
-public struct Com_Octopuscommunity_OctoObject: Sendable {
+public struct Com_Octopuscommunity_OctoObject: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var parentID: String = String()
+  public var parentID: String {
+    get {_storage._parentID}
+    set {_uniqueStorage()._parentID = newValue}
+  }
 
-  public var createdAt: UInt64 = 0
+  public var createdAt: UInt64 {
+    get {_storage._createdAt}
+    set {_uniqueStorage()._createdAt = newValue}
+  }
 
-  public var updatedAt: UInt64 = 0
+  public var updatedAt: UInt64 {
+    get {_storage._updatedAt}
+    set {_uniqueStorage()._updatedAt = newValue}
+  }
 
-  public var pressedEnterAt: UInt64 = 0
+  public var pressedEnterAt: UInt64 {
+    get {_storage._pressedEnterAt}
+    set {_uniqueStorage()._pressedEnterAt = newValue}
+  }
 
   ///Empty when user is deleted or banned
   public var createdBy: Com_Octopuscommunity_MinimalProfile {
-    get {_createdBy ?? Com_Octopuscommunity_MinimalProfile()}
-    set {_createdBy = newValue}
+    get {_storage._createdBy ?? Com_Octopuscommunity_MinimalProfile()}
+    set {_uniqueStorage()._createdBy = newValue}
   }
   /// Returns true if `createdBy` has been explicitly set.
-  public var hasCreatedBy: Bool {self._createdBy != nil}
+  public var hasCreatedBy: Bool {_storage._createdBy != nil}
   /// Clears the value of `createdBy`. Subsequent reads from it will return its default value.
-  public mutating func clearCreatedBy() {self._createdBy = nil}
+  public mutating func clearCreatedBy() {_uniqueStorage()._createdBy = nil}
 
   ///nanoId
-  public var id: String = String()
+  public var id: String {
+    get {_storage._id}
+    set {_uniqueStorage()._id = newValue}
+  }
 
   public var content: Com_Octopuscommunity_Content {
-    get {_content ?? Com_Octopuscommunity_Content()}
-    set {_content = newValue}
+    get {_storage._content ?? Com_Octopuscommunity_Content()}
+    set {_uniqueStorage()._content = newValue}
   }
   /// Returns true if `content` has been explicitly set.
-  public var hasContent: Bool {self._content != nil}
+  public var hasContent: Bool {_storage._content != nil}
   /// Clears the value of `content`. Subsequent reads from it will return its default value.
-  public mutating func clearContent() {self._content = nil}
+  public mutating func clearContent() {_uniqueStorage()._content = nil}
 
   public var status: Com_Octopuscommunity_OctoObject.Status {
-    get {_status ?? Com_Octopuscommunity_OctoObject.Status()}
-    set {_status = newValue}
+    get {_storage._status ?? Com_Octopuscommunity_OctoObject.Status()}
+    set {_uniqueStorage()._status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  public var hasStatus: Bool {self._status != nil}
+  public var hasStatus: Bool {_storage._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
-  public mutating func clearStatus() {self._status = nil}
+  public mutating func clearStatus() {_uniqueStorage()._status = nil}
 
   ///To fetch post comments
   ///Or comment replies
   public var descChildrenFeedID: String {
-    get {_descChildrenFeedID ?? String()}
-    set {_descChildrenFeedID = newValue}
+    get {_storage._descChildrenFeedID ?? String()}
+    set {_uniqueStorage()._descChildrenFeedID = newValue}
   }
   /// Returns true if `descChildrenFeedID` has been explicitly set.
-  public var hasDescChildrenFeedID: Bool {self._descChildrenFeedID != nil}
+  public var hasDescChildrenFeedID: Bool {_storage._descChildrenFeedID != nil}
   /// Clears the value of `descChildrenFeedID`. Subsequent reads from it will return its default value.
-  public mutating func clearDescChildrenFeedID() {self._descChildrenFeedID = nil}
+  public mutating func clearDescChildrenFeedID() {_uniqueStorage()._descChildrenFeedID = nil}
 
   public var ascChildrenFeedID: String {
-    get {_ascChildrenFeedID ?? String()}
-    set {_ascChildrenFeedID = newValue}
+    get {_storage._ascChildrenFeedID ?? String()}
+    set {_uniqueStorage()._ascChildrenFeedID = newValue}
   }
   /// Returns true if `ascChildrenFeedID` has been explicitly set.
-  public var hasAscChildrenFeedID: Bool {self._ascChildrenFeedID != nil}
+  public var hasAscChildrenFeedID: Bool {_storage._ascChildrenFeedID != nil}
   /// Clears the value of `ascChildrenFeedID`. Subsequent reads from it will return its default value.
-  public mutating func clearAscChildrenFeedID() {self._ascChildrenFeedID = nil}
+  public mutating func clearAscChildrenFeedID() {_uniqueStorage()._ascChildrenFeedID = nil}
 
   ///JSON string
   public var metadata: String {
-    get {_metadata ?? String()}
-    set {_metadata = newValue}
+    get {_storage._metadata ?? String()}
+    set {_uniqueStorage()._metadata = newValue}
   }
   /// Returns true if `metadata` has been explicitly set.
-  public var hasMetadata: Bool {self._metadata != nil}
+  public var hasMetadata: Bool {_storage._metadata != nil}
   /// Clears the value of `metadata`. Subsequent reads from it will return its default value.
-  public mutating func clearMetadata() {self._metadata = nil}
+  public mutating func clearMetadata() {_uniqueStorage()._metadata = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -442,12 +457,7 @@ public struct Com_Octopuscommunity_OctoObject: Sendable {
 
   public init() {}
 
-  fileprivate var _createdBy: Com_Octopuscommunity_MinimalProfile? = nil
-  fileprivate var _content: Com_Octopuscommunity_Content? = nil
-  fileprivate var _status: Com_Octopuscommunity_OctoObject.Status? = nil
-  fileprivate var _descChildrenFeedID: String? = nil
-  fileprivate var _ascChildrenFeedID: String? = nil
-  fileprivate var _metadata: String? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct Com_Octopuscommunity_RequesterCtx: Sendable {
@@ -647,12 +657,23 @@ public struct Com_Octopuscommunity_MinimalProfile: Sendable {
   /// Clears the value of `gamificationLevel`. Subsequent reads from it will return its default value.
   public mutating func clearGamificationLevel() {self._gamificationLevel = nil}
 
+  ///The user's id in the client's own system. Absent when the community does not expose client user ids, or the user has none.
+  public var clientUserID: String {
+    get {_clientUserID ?? String()}
+    set {_clientUserID = newValue}
+  }
+  /// Returns true if `clientUserID` has been explicitly set.
+  public var hasClientUserID: Bool {self._clientUserID != nil}
+  /// Clears the value of `clientUserID`. Subsequent reads from it will return its default value.
+  public mutating func clearClientUserID() {self._clientUserID = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _avatarURL: String? = nil
   fileprivate var _gamificationLevel: Int32? = nil
+  fileprivate var _clientUserID: String? = nil
 }
 
 public struct Com_Octopuscommunity_Content: @unchecked Sendable {
@@ -1705,81 +1726,137 @@ extension Com_Octopuscommunity_OctoObject: SwiftProtobuf.Message, SwiftProtobuf.
   public static let protoMessageName: String = _protobuf_package + ".OctoObject"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parentId\0\u{1}createdAt\0\u{1}createdBy\0\u{1}id\0\u{1}content\0\u{1}pressedEnterAt\0\u{1}updatedAt\0\u{2}\u{3}descChildrenFeedId\0\u{1}ascChildrenFeedId\0\u{2}\u{9}status\0\u{2}S\u{f}metadata\0")
 
+  fileprivate class _StorageClass {
+    var _parentID: String = String()
+    var _createdAt: UInt64 = 0
+    var _updatedAt: UInt64 = 0
+    var _pressedEnterAt: UInt64 = 0
+    var _createdBy: Com_Octopuscommunity_MinimalProfile? = nil
+    var _id: String = String()
+    var _content: Com_Octopuscommunity_Content? = nil
+    var _status: Com_Octopuscommunity_OctoObject.Status? = nil
+    var _descChildrenFeedID: String? = nil
+    var _ascChildrenFeedID: String? = nil
+    var _metadata: String? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _parentID = source._parentID
+      _createdAt = source._createdAt
+      _updatedAt = source._updatedAt
+      _pressedEnterAt = source._pressedEnterAt
+      _createdBy = source._createdBy
+      _id = source._id
+      _content = source._content
+      _status = source._status
+      _descChildrenFeedID = source._descChildrenFeedID
+      _ascChildrenFeedID = source._ascChildrenFeedID
+      _metadata = source._metadata
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.parentID) }()
-      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.createdAt) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._createdBy) }()
-      case 4: try { try decoder.decodeSingularStringField(value: &self.id) }()
-      case 5: try { try decoder.decodeSingularMessageField(value: &self._content) }()
-      case 6: try { try decoder.decodeSingularUInt64Field(value: &self.pressedEnterAt) }()
-      case 7: try { try decoder.decodeSingularUInt64Field(value: &self.updatedAt) }()
-      case 10: try { try decoder.decodeSingularStringField(value: &self._descChildrenFeedID) }()
-      case 11: try { try decoder.decodeSingularStringField(value: &self._ascChildrenFeedID) }()
-      case 20: try { try decoder.decodeSingularMessageField(value: &self._status) }()
-      case 999: try { try decoder.decodeSingularStringField(value: &self._metadata) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._parentID) }()
+        case 2: try { try decoder.decodeSingularUInt64Field(value: &_storage._createdAt) }()
+        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._createdBy) }()
+        case 4: try { try decoder.decodeSingularStringField(value: &_storage._id) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._content) }()
+        case 6: try { try decoder.decodeSingularUInt64Field(value: &_storage._pressedEnterAt) }()
+        case 7: try { try decoder.decodeSingularUInt64Field(value: &_storage._updatedAt) }()
+        case 10: try { try decoder.decodeSingularStringField(value: &_storage._descChildrenFeedID) }()
+        case 11: try { try decoder.decodeSingularStringField(value: &_storage._ascChildrenFeedID) }()
+        case 20: try { try decoder.decodeSingularMessageField(value: &_storage._status) }()
+        case 999: try { try decoder.decodeSingularStringField(value: &_storage._metadata) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.parentID.isEmpty {
-      try visitor.visitSingularStringField(value: self.parentID, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._parentID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._parentID, fieldNumber: 1)
+      }
+      if _storage._createdAt != 0 {
+        try visitor.visitSingularUInt64Field(value: _storage._createdAt, fieldNumber: 2)
+      }
+      try { if let v = _storage._createdBy {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+      } }()
+      if !_storage._id.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._id, fieldNumber: 4)
+      }
+      try { if let v = _storage._content {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      } }()
+      if _storage._pressedEnterAt != 0 {
+        try visitor.visitSingularUInt64Field(value: _storage._pressedEnterAt, fieldNumber: 6)
+      }
+      if _storage._updatedAt != 0 {
+        try visitor.visitSingularUInt64Field(value: _storage._updatedAt, fieldNumber: 7)
+      }
+      try { if let v = _storage._descChildrenFeedID {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 10)
+      } }()
+      try { if let v = _storage._ascChildrenFeedID {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 11)
+      } }()
+      try { if let v = _storage._status {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
+      } }()
+      try { if let v = _storage._metadata {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 999)
+      } }()
     }
-    if self.createdAt != 0 {
-      try visitor.visitSingularUInt64Field(value: self.createdAt, fieldNumber: 2)
-    }
-    try { if let v = self._createdBy {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
-    if !self.id.isEmpty {
-      try visitor.visitSingularStringField(value: self.id, fieldNumber: 4)
-    }
-    try { if let v = self._content {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    } }()
-    if self.pressedEnterAt != 0 {
-      try visitor.visitSingularUInt64Field(value: self.pressedEnterAt, fieldNumber: 6)
-    }
-    if self.updatedAt != 0 {
-      try visitor.visitSingularUInt64Field(value: self.updatedAt, fieldNumber: 7)
-    }
-    try { if let v = self._descChildrenFeedID {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 10)
-    } }()
-    try { if let v = self._ascChildrenFeedID {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 11)
-    } }()
-    try { if let v = self._status {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
-    } }()
-    try { if let v = self._metadata {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 999)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_OctoObject, rhs: Com_Octopuscommunity_OctoObject) -> Bool {
-    if lhs.parentID != rhs.parentID {return false}
-    if lhs.createdAt != rhs.createdAt {return false}
-    if lhs.updatedAt != rhs.updatedAt {return false}
-    if lhs.pressedEnterAt != rhs.pressedEnterAt {return false}
-    if lhs._createdBy != rhs._createdBy {return false}
-    if lhs.id != rhs.id {return false}
-    if lhs._content != rhs._content {return false}
-    if lhs._status != rhs._status {return false}
-    if lhs._descChildrenFeedID != rhs._descChildrenFeedID {return false}
-    if lhs._ascChildrenFeedID != rhs._ascChildrenFeedID {return false}
-    if lhs._metadata != rhs._metadata {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._parentID != rhs_storage._parentID {return false}
+        if _storage._createdAt != rhs_storage._createdAt {return false}
+        if _storage._updatedAt != rhs_storage._updatedAt {return false}
+        if _storage._pressedEnterAt != rhs_storage._pressedEnterAt {return false}
+        if _storage._createdBy != rhs_storage._createdBy {return false}
+        if _storage._id != rhs_storage._id {return false}
+        if _storage._content != rhs_storage._content {return false}
+        if _storage._status != rhs_storage._status {return false}
+        if _storage._descChildrenFeedID != rhs_storage._descChildrenFeedID {return false}
+        if _storage._ascChildrenFeedID != rhs_storage._ascChildrenFeedID {return false}
+        if _storage._metadata != rhs_storage._metadata {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2110,7 +2187,7 @@ extension Com_Octopuscommunity_ReactionData: SwiftProtobuf.Message, SwiftProtobu
 
 extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MinimalProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profileId\0\u{1}nickname\0\u{1}avatarUrl\0\u{1}tags\0\u{1}gamificationLevel\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profileId\0\u{1}nickname\0\u{1}avatarUrl\0\u{1}tags\0\u{1}gamificationLevel\0\u{1}clientUserId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2123,6 +2200,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
       case 3: try { try decoder.decodeSingularStringField(value: &self._avatarURL) }()
       case 4: try { try decoder.decodeRepeatedEnumField(value: &self.tags) }()
       case 5: try { try decoder.decodeSingularInt32Field(value: &self._gamificationLevel) }()
+      case 6: try { try decoder.decodeSingularStringField(value: &self._clientUserID) }()
       default: break
       }
     }
@@ -2148,6 +2226,9 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
     try { if let v = self._gamificationLevel {
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 5)
     } }()
+    try { if let v = self._clientUserID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 6)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2157,6 +2238,7 @@ extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProto
     if lhs._avatarURL != rhs._avatarURL {return false}
     if lhs.tags != rhs.tags {return false}
     if lhs._gamificationLevel != rhs._gamificationLevel {return false}
+    if lhs._clientUserID != rhs._clientUserID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

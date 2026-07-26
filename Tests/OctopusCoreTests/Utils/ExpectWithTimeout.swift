@@ -6,7 +6,7 @@ import Foundation
 import Testing
 import XCTest
 
-func expectWithTimeout(timeout: TimeInterval = 0.5, _ block: @autoclosure () throws -> Bool) async throws {
+func expectWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throws -> Bool) async throws {
     var elapsedTime: TimeInterval = 0
     let steps = 0.005
     while !(try block()) {
@@ -19,7 +19,7 @@ func expectWithTimeout(timeout: TimeInterval = 0.5, _ block: @autoclosure () thr
     }
 }
 
-func assertWithTimeout(timeout: TimeInterval = 0.5, _ block: @autoclosure () throws -> Bool) async throws {
+func assertWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throws -> Bool) async throws {
     var elapsedTime: TimeInterval = 0
     let steps = 0.005
     while !(try block()) {

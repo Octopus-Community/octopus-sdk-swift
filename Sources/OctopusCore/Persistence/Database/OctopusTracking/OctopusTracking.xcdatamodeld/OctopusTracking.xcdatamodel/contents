@@ -41,6 +41,9 @@
         <attribute name="firstSession" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="startTimestamp" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
+    <entity name="OctopusDrivenLoginEvent" representedClassName="OctopusDrivenLoginEventEntity" parentEntity="Event" syncable="YES">
+        <attribute name="action" attributeType="String"/>
+    </entity>
     <entity name="OpenClientObjectFromBridgeEvent" representedClassName="OpenClientObjectFromBridgeEventEntity" parentEntity="Event" syncable="YES"/>
     <entity name="PostOpenedEvent" representedClassName="PostOpenedEventEntity" parentEntity="Event" syncable="YES">
         <attribute name="originSdkHasFeaturedComment" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>

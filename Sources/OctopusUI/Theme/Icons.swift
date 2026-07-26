@@ -13,6 +13,8 @@ extension OctopusTheme.Assets {
             public let openList: UIImage
             /// Displayed in the group list when the group is selected (checkmark)
             public let selected: UIImage
+            /// Displayed in the post menu's "View group" entry, navigating to the post's group
+            public let viewGroup: UIImage
         }
 
         /// Group of icons used for content (Posts, Comments, Replies...)
@@ -272,6 +274,9 @@ extension OctopusTheme.Assets {
             public let close: UIImage
             /// More actions button
             public let moreActions: UIImage
+            /// Activity button (Unified Profile): the home floating button's glyph, shown in place of
+            /// the connected user's avatar when Unified Profile is active
+            public let activityButton: UIImage
             /// List cell navigation indicator (arrow  right)
             public let listCellNavIndicator: UIImage
         }
@@ -304,10 +309,12 @@ extension OctopusTheme.Assets.Icons.Groups {
     ///   - selected: Displayed in the group list when the group is selected (checkmark)
     public init(
         openList: UIImage? = nil,
-        selected: UIImage? = nil
+        selected: UIImage? = nil,
+        viewGroup: UIImage? = nil
     ) {
         self.openList = openList?.prepareForSdkUsage() ?? .Gen.search
         self.selected = selected?.prepareForSdkUsage() ?? .Gen.check
+        self.viewGroup = viewGroup?.prepareForSdkUsage() ?? .Gen.viewGroup
     }
 }
 
@@ -749,6 +756,8 @@ extension OctopusTheme.Assets.Icons.Common {
     ///   - toggle: Toggle button icons.
     ///   - close: Close button
     ///   - moreActions: More actions button
+    ///   - activityButton: Activity button (Unified Profile), shown in place of the connected user's
+    ///                     avatar on the home floating button when Unified Profile is active
     ///   - listCellNavIndicator: List cell navigation indicator (arrow  right)
     public init(
         radio: OctopusTheme.Assets.Icons.OnOff? = nil,
@@ -756,6 +765,7 @@ extension OctopusTheme.Assets.Icons.Common {
         toggle: OctopusTheme.Assets.Icons.OnOff? = nil,
         close: UIImage? = nil,
         moreActions: UIImage? = nil,
+        activityButton: UIImage? = nil,
         listCellNavIndicator: UIImage? = nil
     ) {
         self.radio = radio ?? .init(on: .Gen.RadioButton.on, off: .Gen.RadioButton.off)
@@ -763,6 +773,7 @@ extension OctopusTheme.Assets.Icons.Common {
         self.toggle = toggle ?? .init(on: .Gen.Toggle.on, off: .Gen.Toggle.off)
         self.close = close?.prepareForSdkUsage() ?? .Gen.close
         self.moreActions = moreActions?.prepareForSdkUsage() ?? .Gen.more
+        self.activityButton = activityButton?.prepareForSdkUsage() ?? .Gen.activity
         self.listCellNavIndicator = listCellNavIndicator?.prepareForSdkUsage() ?? .Gen.cellNavIndicator
     }
 }

@@ -18,8 +18,8 @@ import OctopusCore
 /// at publish time (text length, image size/ratio), so integration bugs
 /// surface during client-app QA instead of after the editor opens.
 public struct OctopusPrefilledPost: Sendable {
-    /// The text the editor opens with. Optional, but at least one of
-    /// `text` or `image` must be non-nil.
+    /// The text the editor opens with. Optional — `nil` (or `""`) opens the
+    /// editor with no prefilled text, for the user to write themselves.
     public let text: String?
 
     /// Local image bytes (e.g. `UIImage(...).jpegData(...)`). The SDK
@@ -51,17 +51,18 @@ public struct OctopusPrefilledPost: Sendable {
     /// Construct a prefilled-post payload.
     ///
     /// - Parameters:
-    ///   - text: Initial text shown in the editor. `nil` and `""` are
-    ///     equivalent (no prefilled text). At least one of `text` /
-    ///     `image` must be provided.
-    ///   - image: Initial image bytes shown in the editor. `nil` and
-    ///     empty `Data` are equivalent.
+    ///   - text: Initial text shown in the editor. Optional — `nil` and
+    ///     `""` are equivalent (no prefilled text).
+    ///   - image: Initial image bytes shown in the editor. Optional —
+    ///     `nil` and empty `Data` are equivalent.
     ///   - topicId: Identifier of the group to preselect.
     ///   - cta: Optional call-to-action attached to the published post.
-    /// - Throws: `OctopusPrefilledPost.ValidationError` if the payload
-    ///   is empty, the text length is out of bounds, the image cannot
-    ///   be decoded or violates size/ratio constraints, or the CTA is
-    ///   malformed.
+    /// - Note: `text` and `image` are both optional; a payload with only a
+    ///   `topicId` and/or `cta` (and empty content) opens the editor on the
+    ///   preselected group with empty, user-editable fields.
+    /// - Throws: `OctopusPrefilledPost.ValidationError` if the (provided)
+    ///   text length is out of bounds, the image cannot be decoded or
+    ///   violates size/ratio constraints, or the CTA is malformed.
     public init(text: String? = nil,
                 image: Data? = nil,
                 topicId: String? = nil,
@@ -70,9 +71,9 @@ public struct OctopusPrefilledPost: Sendable {
         let normalizedText: String? = (text?.isEmpty == true) ? nil : text
         let normalizedImage: Data? = (image?.isEmpty == true) ? nil : image
 
-        guard normalizedText != nil || normalizedImage != nil else {
-            throw ValidationError.contentEmpty
-        }
+        // Text and image are both optional: a Bridge Share can open the editor on a preselected
+        // group (with an optional CTA) and empty, user-editable fields. Any provided text/image is
+        // still validated below, and the editor re-validates the final content at publish time.
 
         // Match the editor's publish-time validation: pass the image
         // attachment so the too-short rule fires consistently
@@ -152,8 +153,9 @@ public struct OctopusPrefilledPost: Sendable {
     /// Validation failures surfaced by `OctopusPrefilledPost.init` and
     /// `OctopusPrefilledPost.CTA.init`.
     public enum ValidationError: Error, Equatable, CustomDebugStringConvertible {
-        /// Both `text` and `image` were nil (after normalizing `""` and
-        /// empty `Data` to nil). At least one is required.
+        /// Retained for backward compatibility. `text` and `image` are both
+        /// optional now, so an empty payload no longer throws — this remains
+        /// only as a defensive guard and is not raised for an empty payload.
         case contentEmpty
 
         /// `text` was shorter than the minimum length the editor

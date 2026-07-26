@@ -53,6 +53,12 @@ class CreatePostViewModel: ObservableObject {
     /// config is loaded, so behaviour is unchanged unless the community disables a capability.
     @Published private(set) var picturesEnabled = true
     @Published private(set) var pollsEnabled = true
+    /// How the community requires legal acceptance. Default `.implicit` until the config loads.
+    @Published private(set) var termsAcceptanceMode: TermsAcceptanceMode = .implicit
+    /// Drives the explicit terms-acceptance bottom sheet (explicit modes only).
+    @Published var displayConsentSheet = false
+    /// Set once the user accepts in the consent sheet, so the re-entered `send()` bypasses the gate.
+    private var explicitConsentGivenThisSession = false
 
     let communityGuidelinesUrl: URL
     let privacyPolicyUrl: URL
@@ -132,6 +138,13 @@ class CreatePostViewModel: ObservableObject {
                         self?.send()
                     }
                 }
+            }.store(in: &storage)
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.termsAcceptanceMode ?? .implicit }
+            .removeDuplicates()
+            .sink { [unowned self] mode in
+                termsAcceptanceMode = mode
             }.store(in: &storage)
 
         octopus.core.configRepository.communityConfigPublisher
@@ -221,6 +234,22 @@ class CreatePostViewModel: ObservableObject {
             }.store(in: &storage)
     }
 
+    /// Whether the connected user's only remaining blocker before publishing is the first-post
+    /// nickname-confirmation ("congrats") screen — so the consent sheet can be presented *before* it.
+    /// Returns `false` when the user is not connected or still owes a (forced) login, since those must
+    /// come first.
+    private var isBlockedOnlyByFirstPostNicknameValidation: Bool {
+        guard case .connected = octopus.core.connectionRepository.connectionState,
+              let config = octopus.core.configRepository.communityConfig else { return false }
+        let profile = octopus.core.profileRepository.profile
+        // A guest still subject to forced login must log in before anything else.
+        if profile?.isGuest ?? true, config.forceLoginOnStrongActions { return false }
+        return ConnectedActionChecker.needsNicknameValidation(
+            for: .post,
+            hasConfirmedNickname: profile?.hasConfirmedNickname ?? false,
+            nicknameLock: config.profileFieldsLock.nickname)
+    }
+
     func send() {
         guard let topic = selectedTopic else { return }
         let post = WritablePost(
@@ -238,8 +267,31 @@ class CreatePostViewModel: ObservableObject {
         }
         guard Validators.Post.validate(post: post) else { return }
 
+        // The first-post nickname-confirmation ("congrats") screen must not appear before the user has
+        // accepted the community's legal documents. When the connected user's only remaining blocker
+        // before publishing is that screen and explicit consent is still pending, present the consent
+        // sheet first; the nickname screen then follows once consent is accepted (on the re-entered
+        // `send()`). This front-runs only the nickname step — a required (forced) login still comes
+        // first (see `isBlockedOnlyByFirstPostNicknameValidation`).
+        if isBlockedOnlyByFirstPostNicknameValidation,
+           termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            displayConsentSheet = true
+            isLoading = false
+            return
+        }
+
         guard connectedActionChecker.ensureConnected(action: .post, actionWhenNotConnected: authenticationActionBinding) else {
             isWaitingToSendPost = true
+            isLoading = false
+            return
+        }
+
+        // Explicit consent gate: at the first contribution, an explicit-mode community presents the
+        // consent sheet before publishing. Acceptance is recorded (via `hasAcceptedCgu`) in
+        // `send(post:)`, so once given it is never asked again. (Reached when the user is not blocked
+        // by the nickname screen above — e.g. a confirmed or community-locked nickname.)
+        if termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            displayConsentSheet = true
             isLoading = false
             return
         }
@@ -250,6 +302,13 @@ class CreatePostViewModel: ObservableObject {
             await send(post: post)
             isLoading = false
         }
+    }
+
+    /// Called when the user accepts in the consent sheet: re-enters `send()`, which now bypasses the
+    /// consent gate and publishes (recording acceptance).
+    func acceptConsentAndSend() {
+        explicitConsentGivenThisSession = true
+        send()
     }
 
     private func send(post: WritablePost) async {

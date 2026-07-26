@@ -59,12 +59,9 @@ struct CommentDetailView: View {
                     zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousReplies: viewModel.loadPreviousReplies,
                     refresh: viewModel.refresh,
-                    displayProfile: { profileId in
-                        if profileId == viewModel.thisUserProfileId {
-                            navigator.push(.currentUserProfile)
-                        } else {
-                            navigator.push(.publicProfile(profileId: profileId))
-                        }
+                    displayProfile: { profileId, clientUserId in
+                        dispatchProfileTap(octopus: viewModel.octopus, navigator: navigator,
+                                           profileId: profileId, clientUserId: clientUserId)
                     },
                     openCreateReply: {
                         trackingApi.emit(event: .replyButtonClicked(.init(commentId: viewModel.commentUuid)))
@@ -203,7 +200,7 @@ private struct ContentView: View {
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
     let refresh: @Sendable () async -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openCreateReply: () -> Void
     let deleteComment: () -> Void
     let deleteReply: (String) -> Void

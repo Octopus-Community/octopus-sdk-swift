@@ -1089,12 +1089,29 @@ public struct Com_Octopuscommunity_UpdateProfileResponse: Sendable {
   public init() {}
 }
 
+///May throw FAILED_PRECONDITION on lookup by clientUserId when the community does not expose client user ids
 public struct Com_Octopuscommunity_GetPublicProfileRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var userID: String = String()
+  public var userRef: Com_Octopuscommunity_GetPublicProfileRequest.OneOf_UserRef? = nil
+
+  public var userID: String {
+    get {
+      if case .userID(let v)? = userRef {return v}
+      return String()
+    }
+    set {userRef = .userID(newValue)}
+  }
+
+  public var clientUserID: String {
+    get {
+      if case .clientUserID(let v)? = userRef {return v}
+      return String()
+    }
+    set {userRef = .clientUserID(newValue)}
+  }
 
   ///Default to false
   public var fetchTotalMessages: Bool {
@@ -1117,6 +1134,12 @@ public struct Com_Octopuscommunity_GetPublicProfileRequest: Sendable {
   public mutating func clearFetchGamification() {self._fetchGamification = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public enum OneOf_UserRef: Equatable, Sendable {
+    case userID(String)
+    case clientUserID(String)
+
+  }
 
   public init() {}
 
@@ -1212,6 +1235,16 @@ public struct Com_Octopuscommunity_PublicProfile: Sendable {
   /// Clears the value of `accountCreatedAt`. Subsequent reads from it will return its default value.
   public mutating func clearAccountCreatedAt() {self._accountCreatedAt = nil}
 
+  ///The user's id in the client's own system. Absent when the community does not expose client user ids, or the user has none.
+  public var clientUserID: String {
+    get {_clientUserID ?? String()}
+    set {_clientUserID = newValue}
+  }
+  /// Returns true if `clientUserID` has been explicitly set.
+  public var hasClientUserID: Bool {self._clientUserID != nil}
+  /// Clears the value of `clientUserID`. Subsequent reads from it will return its default value.
+  public mutating func clearClientUserID() {self._clientUserID = nil}
+
   ///JSON string
   public var metadata: String {
     get {_metadata ?? String()}
@@ -1232,6 +1265,7 @@ public struct Com_Octopuscommunity_PublicProfile: Sendable {
   fileprivate var _gamificationScore: Com_Octopuscommunity_PublicGamificationScore? = nil
   fileprivate var _totalMessages: Int32? = nil
   fileprivate var _accountCreatedAt: UInt64? = nil
+  fileprivate var _clientUserID: String? = nil
   fileprivate var _metadata: String? = nil
 }
 
@@ -3850,7 +3884,7 @@ extension Com_Octopuscommunity_UpdateProfileResponse.Error.AvatarInProcess: Swif
 
 extension Com_Octopuscommunity_GetPublicProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetPublicProfileRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}fetchTotalMessages\0\u{1}fetchGamification\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}fetchTotalMessages\0\u{1}fetchGamification\0\u{1}clientUserId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3858,9 +3892,24 @@ extension Com_Octopuscommunity_GetPublicProfileRequest: SwiftProtobuf.Message, S
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
+      case 1: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.userRef != nil {try decoder.handleConflictingOneOf()}
+          self.userRef = .userID(v)
+        }
+      }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self._fetchTotalMessages) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self._fetchGamification) }()
+      case 4: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.userRef != nil {try decoder.handleConflictingOneOf()}
+          self.userRef = .clientUserID(v)
+        }
+      }()
       default: break
       }
     }
@@ -3871,20 +3920,23 @@ extension Com_Octopuscommunity_GetPublicProfileRequest: SwiftProtobuf.Message, S
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
     // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.userID.isEmpty {
-      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
-    }
+    try { if case .userID(let v)? = self.userRef {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 1)
+    } }()
     try { if let v = self._fetchTotalMessages {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
     } }()
     try { if let v = self._fetchGamification {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
     } }()
+    try { if case .clientUserID(let v)? = self.userRef {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetPublicProfileRequest, rhs: Com_Octopuscommunity_GetPublicProfileRequest) -> Bool {
-    if lhs.userID != rhs.userID {return false}
+    if lhs.userRef != rhs.userRef {return false}
     if lhs._fetchTotalMessages != rhs._fetchTotalMessages {return false}
     if lhs._fetchGamification != rhs._fetchGamification {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -3928,7 +3980,7 @@ extension Com_Octopuscommunity_GetPublicProfileResponse: SwiftProtobuf.Message, 
 
 extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PublicProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{2}\u{6}descPostFeedId\0\u{1}ascPostFeedId\0\u{2}\u{9}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}~\u{e}metadata\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{2}\u{6}descPostFeedId\0\u{1}ascPostFeedId\0\u{2}\u{9}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}\u{9}clientUserId\0\u{2}u\u{e}metadata\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3946,6 +3998,7 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
       case 30: try { try decoder.decodeSingularMessageField(value: &self._gamificationScore) }()
       case 40: try { try decoder.decodeSingularInt32Field(value: &self._totalMessages) }()
       case 41: try { try decoder.decodeSingularUInt64Field(value: &self._accountCreatedAt) }()
+      case 50: try { try decoder.decodeSingularStringField(value: &self._clientUserID) }()
       case 999: try { try decoder.decodeSingularStringField(value: &self._metadata) }()
       default: break
       }
@@ -3987,6 +4040,9 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
     try { if let v = self._accountCreatedAt {
       try visitor.visitSingularUInt64Field(value: v, fieldNumber: 41)
     } }()
+    try { if let v = self._clientUserID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 50)
+    } }()
     try { if let v = self._metadata {
       try visitor.visitSingularStringField(value: v, fieldNumber: 999)
     } }()
@@ -4004,6 +4060,7 @@ extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtob
     if lhs._gamificationScore != rhs._gamificationScore {return false}
     if lhs._totalMessages != rhs._totalMessages {return false}
     if lhs._accountCreatedAt != rhs._accountCreatedAt {return false}
+    if lhs._clientUserID != rhs._clientUserID {return false}
     if lhs._metadata != rhs._metadata {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

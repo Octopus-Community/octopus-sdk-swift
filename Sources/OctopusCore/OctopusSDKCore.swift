@@ -29,6 +29,7 @@ public class OctopusSDKCore: ObservableObject {
     public let videosRepository: VideosRepository
     public let sdkEventsEmitter: SdkEventsEmitter
     public let languageRepository: LanguageRepository
+    public let octopusDrivenLoginMonitor: OctopusDrivenLoginMonitor
 
     public let validators: Validators
 
@@ -138,6 +139,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { TrackingRepository(injector: $0, forceReset: cleanAfterCommunitySwitch) }
         injector.register { AppSessionMonitor(injector: $0) }
         injector.register { TrackingEventsSendingMonitor(injector: $0) }
+        injector.register { OctopusDrivenLoginMonitor(injector: $0) }
 
         // Notifications
         injector.register { _ in UserNotificationCenterProviderDefault() }
@@ -154,6 +156,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.getInjected(identifiedBy: Injected.appSessionMonitor).start()
         injector.getInjected(identifiedBy: Injected.communityAccessMonitor).start()
         injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).start()
+        injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).start()
         switch connectionMode {
         case .octopus:
             injector.getInjected(identifiedBy: Injected.magicLinkMonitor).start()
@@ -185,6 +188,7 @@ public class OctopusSDKCore: ObservableObject {
         toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
         videosRepository = injector.getInjected(identifiedBy: Injected.videosRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
+        octopusDrivenLoginMonitor = injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor)
     }
 
     public func cleanupBeforeCommunitySwitch() async throws {
@@ -246,6 +250,7 @@ public class OctopusSDKCore: ObservableObject {
     }
 
     deinit {
+        injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).stop()
         injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).stop()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).stop()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).stop()

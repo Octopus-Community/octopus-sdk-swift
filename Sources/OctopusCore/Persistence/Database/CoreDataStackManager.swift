@@ -22,7 +22,9 @@ class CoreDataStackManager: @unchecked Sendable {
 
     // use only one model even in the Unit Tests.
     // cf https://stackoverflow.com/questions/51851485/multiple-nsentitydescriptions-claim-nsmanagedobject-subclass
-    nonisolated(unsafe) static var models = [String: NSManagedObjectModel]()
+    // Guarded by `modelsLock`: stacks can be created concurrently (e.g. parallel test suites).
+    private static let modelsLock = NSLock()
+    nonisolated(unsafe) private static var models = [String: NSManagedObjectModel]()
 
     init(persistentContainerName: String, eraseExistingContainer: Bool = false, inRam: Bool = false) throws(CoreDataErrors) {
         persistentContainer = NSPersistentContainer(
@@ -44,6 +46,9 @@ class CoreDataStackManager: @unchecked Sendable {
     }
 
     private static func loadModel(name: String) throws(CoreDataErrors) -> NSManagedObjectModel {
+        modelsLock.lock()
+        defer { modelsLock.unlock() }
+
         if let model = models[name] {
             return model
         }

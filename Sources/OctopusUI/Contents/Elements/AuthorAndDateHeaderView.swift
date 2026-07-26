@@ -12,7 +12,7 @@ struct AuthorAndDateHeaderView: View {
     let relativeDate: String
     var topPadding: CGFloat = 0
     var bottomPadding: CGFloat = 0
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     var displayContent: (() -> Void)?
 
     var body: some View {

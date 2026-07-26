@@ -141,6 +141,7 @@ class NotificationsTests: XCTestCase {
             isGuest: true,
             notificationBadgeCount: 0, blockedProfileIds: [],
             entitlements: [],
+            clientUserId: nil,
             newestFirstPostsFeed: Feed(id: "", feedManager: postsFeedManager))
     }
 }
@@ -182,6 +183,16 @@ private class MockProfileRepository: ProfileRepository, InjectableObject, @unche
     }
 
     func fetchProfile(profileId: String) async throws(OctopusCore.ServerCallError) {
+        fatalError("Not implemented")
+    }
+
+    func fetchProfile(byProfileId profileId: String) async throws(OctopusCore.ServerCallError)
+    -> OctopusCore.Profile? {
+        fatalError("Not implemented")
+    }
+
+    func fetchProfile(byClientUserId clientUserId: String) async throws(OctopusCore.ServerCallError)
+    -> OctopusCore.Profile? {
         fatalError("Not implemented")
     }
 

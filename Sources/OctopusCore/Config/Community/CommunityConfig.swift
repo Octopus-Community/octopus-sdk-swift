@@ -16,6 +16,16 @@ public struct CommunityConfig: Equatable, Sendable {
     public let profileFieldsLock: ProfileFieldsLock
     /// Per-content-type creation options (pictures / polls). Absent ⇒ `.allEnabled` ⇒ today's behaviour.
     public let contentOptions: ContentOptions
+    /// Activation flag of the Unified Profile feature. When `true`, the community exposes members'
+    /// client user ids (`MinimalProfile.clientUserId` / `Profile.clientUserId`) so a tap on a member's
+    /// profile can hand the host that member's client user id and let it open its own profile screen.
+    /// The feature is only active when this flag AND the host-wired `onNavigateToProfile` callback are
+    /// both set; otherwise profile taps keep opening the SDK's native profile screens. Absent /
+    /// unseeded ⇒ `false` ⇒ today's native-profile behaviour.
+    public let exposeClientUserId: Bool
+    /// How users must accept the legal documents at their first contribution. Absent ⇒ `.implicit`
+    /// ⇒ today's behaviour (implicit acceptance, no consent sheet).
+    public let termsAcceptanceMode: TermsAcceptanceMode
 }
 
 extension CommunityConfig {
@@ -26,6 +36,8 @@ extension CommunityConfig {
         self.displayConfig = entity.displayConfig.map { DisplayConfig(from: $0) }
         self.profileFieldsLock = ProfileFieldsLock(from: entity)
         self.contentOptions = ContentOptions(from: entity)
+        self.exposeClientUserId = entity.exposeClientUserId
+        self.termsAcceptanceMode = TermsAcceptanceMode(storageValue: entity.termsAcceptanceMode)
     }
 
     init(from config: Com_Octopuscommunity_ApiKeyConfig) {
@@ -47,6 +59,10 @@ extension CommunityConfig {
         } else {
             contentOptions = .allEnabled
         }
+        // ApiKeyConfig.exposeClientUserId is a plain proto3 bool (false when unset).
+        exposeClientUserId = config.exposeClientUserID
+        // ApiKeyConfig.termsAcceptanceMode is a plain proto3 enum (.implicit when unset).
+        termsAcceptanceMode = TermsAcceptanceMode(from: config.termsAcceptanceMode)
     }
 }
 
@@ -60,7 +76,9 @@ extension CommunityConfig {
                         gamificationConfig: gamificationConfig,
                         displayConfig: displayConfig,
                         profileFieldsLock: lock,
-                        contentOptions: contentOptions)
+                        contentOptions: contentOptions,
+                        exposeClientUserId: exposeClientUserId,
+                        termsAcceptanceMode: termsAcceptanceMode)
     }
 
     /// Returns a copy with only `contentOptions` replaced. Internal test affordance used (via an
@@ -72,6 +90,36 @@ extension CommunityConfig {
                         gamificationConfig: gamificationConfig,
                         displayConfig: displayConfig,
                         profileFieldsLock: profileFieldsLock,
-                        contentOptions: options)
+                        contentOptions: options,
+                        exposeClientUserId: exposeClientUserId,
+                        termsAcceptanceMode: termsAcceptanceMode)
+    }
+
+    /// Returns a copy with only `exposeClientUserId` replaced. Internal test affordance used (via an
+    /// `@_spi` SDK entry point) by the sample app to exercise the Unified Profile activation flag
+    /// without a backend-driven config (OCT-1374).
+    func withExposeClientUserId(_ enabled: Bool) -> CommunityConfig {
+        CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
+                        displayAccountAge: displayAccountAge,
+                        gamificationConfig: gamificationConfig,
+                        displayConfig: displayConfig,
+                        profileFieldsLock: profileFieldsLock,
+                        contentOptions: contentOptions,
+                        exposeClientUserId: enabled,
+                        termsAcceptanceMode: termsAcceptanceMode)
+    }
+
+    /// Returns a copy with only `termsAcceptanceMode` replaced. Internal test affordance used (via an
+    /// `@_spi` SDK entry point) by the sample app to exercise the explicit-consent modes without a
+    /// backend-driven config.
+    func withTermsAcceptanceMode(_ mode: TermsAcceptanceMode) -> CommunityConfig {
+        CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
+                        displayAccountAge: displayAccountAge,
+                        gamificationConfig: gamificationConfig,
+                        displayConfig: displayConfig,
+                        profileFieldsLock: profileFieldsLock,
+                        contentOptions: contentOptions,
+                        exposeClientUserId: exposeClientUserId,
+                        termsAcceptanceMode: mode)
     }
 }

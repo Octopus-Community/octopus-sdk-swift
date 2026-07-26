@@ -20,7 +20,7 @@ struct ResponseFeedItemView: View {
     var onCardTap: (() -> Void)?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let displayResponseDetail: (_ id: String, _ reply: Bool) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let deleteResponse: (String) -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
@@ -66,7 +66,7 @@ struct ResponseFeedItemView: View {
         .modify {
             if let authorId = response.author.profileId {
                 $0.accessibilityAction(named: Text("Accessibility.Content.Action.ViewAuthor", bundle: .module)) {
-                    displayProfile(authorId)
+                    displayProfile(authorId, response.author.clientUserId)
                 }
             } else { $0 }
         }
@@ -132,7 +132,7 @@ struct ResponseFeedItemView: View {
         ),
         zoomableImageInfo: .constant(nil),
         displayResponseDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         deleteResponse: { _ in },
         blockAuthor: { _ in },
         reactionTapped: { _, _ in },
@@ -177,7 +177,7 @@ struct ResponseFeedItemView: View {
         ),
         zoomableImageInfo: .constant(nil),
         displayResponseDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         deleteResponse: { _ in },
         blockAuthor: { _ in },
         reactionTapped: { _, _ in },
@@ -219,7 +219,7 @@ struct ResponseFeedItemView: View {
         ),
         zoomableImageInfo: .constant(nil),
         displayResponseDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         deleteResponse: { _ in },
         blockAuthor: { _ in },
         reactionTapped: { _, _ in },
@@ -263,7 +263,7 @@ struct ResponseFeedItemView: View {
         ),
         zoomableImageInfo: .constant(nil),
         displayResponseDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         deleteResponse: { _ in },
         blockAuthor: { _ in },
         reactionTapped: { _, _ in },

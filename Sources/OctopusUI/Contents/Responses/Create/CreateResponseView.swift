@@ -196,12 +196,12 @@ private struct ContentView: View {
             .background(RoundedRectangle(cornerRadius: 24)
                 .stroke(theme.colors.gray300, lineWidth: 1)
                 .padding(.horizontal, -1)
-                .foregroundColor(Color(.systemBackground))
+                .foregroundColor(theme.colors.background)
                 .overlay(
                     Rectangle()
                         .padding(.top, 24)
                         .padding(.bottom, -1)
-                        .foregroundColor(Color(.systemBackground))
+                        .foregroundColor(theme.colors.background)
                 )
             )
 

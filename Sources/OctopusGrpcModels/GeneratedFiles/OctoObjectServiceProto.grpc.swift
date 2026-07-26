@@ -90,6 +90,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>
 
+  func moderateContent(
+    _ request: Com_Octopuscommunity_ModerateContentRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_ModerateContentRequest, Com_Octopuscommunity_ModerateContentResponse>
+
   func shadowbanPost(
     _ request: Com_Octopuscommunity_ShadowbanPostRequest,
     callOptions: CallOptions?
@@ -119,6 +124,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     _ request: Com_Octopuscommunity_UnshadowbanReplyRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>
+
+  func unBanPost(
+    _ request: Com_Octopuscommunity_UnBanPostRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_UnBanPostRequest, Com_Octopuscommunity_UnBanPostResponse>
+
+  func unBanComment(
+    _ request: Com_Octopuscommunity_UnBanCommentRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_UnBanCommentRequest, Com_Octopuscommunity_UnBanCommentResponse>
+
+  func unBanReply(
+    _ request: Com_Octopuscommunity_UnBanReplyRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_UnBanReplyRequest, Com_Octopuscommunity_UnBanReplyResponse>
 
   func reportContent(
     _ request: Com_Octopuscommunity_ReportContentRequest,
@@ -423,6 +443,24 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
     )
   }
 
+  /// Unary call to ModerateContent
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to ModerateContent.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func moderateContent(
+    _ request: Com_Octopuscommunity_ModerateContentRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_ModerateContentRequest, Com_Octopuscommunity_ModerateContentResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateContent.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeModerateContentInterceptors() ?? []
+    )
+  }
+
   /// Unary call to ShadowbanPost
   ///
   /// - Parameters:
@@ -528,6 +566,60 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UnBanPost
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnBanPost.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unBanPost(
+    _ request: Com_Octopuscommunity_UnBanPostRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_UnBanPostRequest, Com_Octopuscommunity_UnBanPostResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanPostInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UnBanComment
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnBanComment.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unBanComment(
+    _ request: Com_Octopuscommunity_UnBanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_UnBanCommentRequest, Com_Octopuscommunity_UnBanCommentResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanCommentInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UnBanReply
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnBanReply.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func unBanReply(
+    _ request: Com_Octopuscommunity_UnBanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_UnBanReplyRequest, Com_Octopuscommunity_UnBanReplyResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanReplyInterceptors() ?? []
     )
   }
 
@@ -826,6 +918,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>
 
+  func makeModerateContentCall(
+    _ request: Com_Octopuscommunity_ModerateContentRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ModerateContentRequest, Com_Octopuscommunity_ModerateContentResponse>
+
   func makeShadowbanPostCall(
     _ request: Com_Octopuscommunity_ShadowbanPostRequest,
     callOptions: CallOptions?
@@ -855,6 +952,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     _ request: Com_Octopuscommunity_UnshadowbanReplyRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>
+
+  func makeUnBanPostCall(
+    _ request: Com_Octopuscommunity_UnBanPostRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnBanPostRequest, Com_Octopuscommunity_UnBanPostResponse>
+
+  func makeUnBanCommentCall(
+    _ request: Com_Octopuscommunity_UnBanCommentRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnBanCommentRequest, Com_Octopuscommunity_UnBanCommentResponse>
+
+  func makeUnBanReplyCall(
+    _ request: Com_Octopuscommunity_UnBanReplyRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnBanReplyRequest, Com_Octopuscommunity_UnBanReplyResponse>
 
   func makeReportContentCall(
     _ request: Com_Octopuscommunity_ReportContentRequest,
@@ -1080,6 +1192,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func makeModerateContentCall(
+    _ request: Com_Octopuscommunity_ModerateContentRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_ModerateContentRequest, Com_Octopuscommunity_ModerateContentResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateContent.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeModerateContentInterceptors() ?? []
+    )
+  }
+
   public func makeShadowbanPostCall(
     _ request: Com_Octopuscommunity_ShadowbanPostRequest,
     callOptions: CallOptions? = nil
@@ -1149,6 +1273,42 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? []
+    )
+  }
+
+  public func makeUnBanPostCall(
+    _ request: Com_Octopuscommunity_UnBanPostRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnBanPostRequest, Com_Octopuscommunity_UnBanPostResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanPostInterceptors() ?? []
+    )
+  }
+
+  public func makeUnBanCommentCall(
+    _ request: Com_Octopuscommunity_UnBanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnBanCommentRequest, Com_Octopuscommunity_UnBanCommentResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanCommentInterceptors() ?? []
+    )
+  }
+
+  public func makeUnBanReplyCall(
+    _ request: Com_Octopuscommunity_UnBanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_UnBanReplyRequest, Com_Octopuscommunity_UnBanReplyResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanReplyInterceptors() ?? []
     )
   }
 
@@ -1431,6 +1591,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func moderateContent(
+    _ request: Com_Octopuscommunity_ModerateContentRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_ModerateContentResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateContent.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeModerateContentInterceptors() ?? []
+    )
+  }
+
   public func shadowbanPost(
     _ request: Com_Octopuscommunity_ShadowbanPostRequest,
     callOptions: CallOptions? = nil
@@ -1500,6 +1672,42 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? []
+    )
+  }
+
+  public func unBanPost(
+    _ request: Com_Octopuscommunity_UnBanPostRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UnBanPostResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanPost.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanPostInterceptors() ?? []
+    )
+  }
+
+  public func unBanComment(
+    _ request: Com_Octopuscommunity_UnBanCommentRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UnBanCommentResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanComment.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanCommentInterceptors() ?? []
+    )
+  }
+
+  public func unBanReply(
+    _ request: Com_Octopuscommunity_UnBanReplyRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_UnBanReplyResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanReply.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnBanReplyInterceptors() ?? []
     )
   }
 
@@ -1673,6 +1881,9 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
   /// - Returns: Interceptors to use when invoking 'moderatePost'.
   func makeModeratePostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'moderateContent'.
+  func makeModerateContentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ModerateContentRequest, Com_Octopuscommunity_ModerateContentResponse>]
+
   /// - Returns: Interceptors to use when invoking 'shadowbanPost'.
   func makeShadowbanPostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse>]
 
@@ -1690,6 +1901,15 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
 
   /// - Returns: Interceptors to use when invoking 'unshadowbanReply'.
   func makeUnshadowbanReplyInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unBanPost'.
+  func makeUnBanPostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnBanPostRequest, Com_Octopuscommunity_UnBanPostResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unBanComment'.
+  func makeUnBanCommentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnBanCommentRequest, Com_Octopuscommunity_UnBanCommentResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unBanReply'.
+  func makeUnBanReplyInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UnBanReplyRequest, Com_Octopuscommunity_UnBanReplyResponse>]
 
   /// - Returns: Interceptors to use when invoking 'reportContent'.
   func makeReportContentInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_ReportContentRequest, Com_Octopuscommunity_ReportContentResponse>]
@@ -1738,12 +1958,16 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.updatePost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deletePost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderatePost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateContent,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanPost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanComment,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.shadowbanReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanPost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanComment,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unshadowbanReply,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanPost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanComment,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.unBanReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.reportContent,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getOrCreateBridgePost,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getBridgePost,
@@ -1841,6 +2065,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let moderateContent = GRPCMethodDescriptor(
+      name: "ModerateContent",
+      path: "/com.octopuscommunity.OctoObjectService/ModerateContent",
+      type: GRPCCallType.unary
+    )
+
     public static let shadowbanPost = GRPCMethodDescriptor(
       name: "ShadowbanPost",
       path: "/com.octopuscommunity.OctoObjectService/ShadowbanPost",
@@ -1874,6 +2104,24 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
     public static let unshadowbanReply = GRPCMethodDescriptor(
       name: "UnshadowbanReply",
       path: "/com.octopuscommunity.OctoObjectService/UnshadowbanReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let unBanPost = GRPCMethodDescriptor(
+      name: "UnBanPost",
+      path: "/com.octopuscommunity.OctoObjectService/UnBanPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let unBanComment = GRPCMethodDescriptor(
+      name: "UnBanComment",
+      path: "/com.octopuscommunity.OctoObjectService/UnBanComment",
+      type: GRPCCallType.unary
+    )
+
+    public static let unBanReply = GRPCMethodDescriptor(
+      name: "UnBanReply",
+      path: "/com.octopuscommunity.OctoObjectService/UnBanReply",
       type: GRPCCallType.unary
     )
 
@@ -1967,6 +2215,8 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
 
   func moderatePost(request: Com_Octopuscommunity_ModeratePostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ModeratePostResponse>
 
+  func moderateContent(request: Com_Octopuscommunity_ModerateContentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ModerateContentResponse>
+
   func shadowbanPost(request: Com_Octopuscommunity_ShadowbanPostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ShadowbanPostResponse>
 
   func shadowbanComment(request: Com_Octopuscommunity_ShadowbanCommentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ShadowbanCommentResponse>
@@ -1978,6 +2228,12 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
   func unshadowbanComment(request: Com_Octopuscommunity_UnshadowbanCommentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnshadowbanCommentResponse>
 
   func unshadowbanReply(request: Com_Octopuscommunity_UnshadowbanReplyRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnshadowbanReplyResponse>
+
+  func unBanPost(request: Com_Octopuscommunity_UnBanPostRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnBanPostResponse>
+
+  func unBanComment(request: Com_Octopuscommunity_UnBanCommentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnBanCommentResponse>
+
+  func unBanReply(request: Com_Octopuscommunity_UnBanReplyRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_UnBanReplyResponse>
 
   ///Do nothing if moderation mod is off
   func reportContent(request: Com_Octopuscommunity_ReportContentRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ReportContentResponse>
@@ -2141,6 +2397,15 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         userFunction: self.moderatePost(request:context:)
       )
 
+    case "ModerateContent":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ModerateContentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ModerateContentResponse>(),
+        interceptors: self.interceptors?.makeModerateContentInterceptors() ?? [],
+        userFunction: self.moderateContent(request:context:)
+      )
+
     case "ShadowbanPost":
       return UnaryServerHandler(
         context: context,
@@ -2193,6 +2458,33 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanReplyResponse>(),
         interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? [],
         userFunction: self.unshadowbanReply(request:context:)
+      )
+
+    case "UnBanPost":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnBanPostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnBanPostResponse>(),
+        interceptors: self.interceptors?.makeUnBanPostInterceptors() ?? [],
+        userFunction: self.unBanPost(request:context:)
+      )
+
+    case "UnBanComment":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnBanCommentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnBanCommentResponse>(),
+        interceptors: self.interceptors?.makeUnBanCommentInterceptors() ?? [],
+        userFunction: self.unBanComment(request:context:)
+      )
+
+    case "UnBanReply":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnBanReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnBanReplyResponse>(),
+        interceptors: self.interceptors?.makeUnBanReplyInterceptors() ?? [],
+        userFunction: self.unBanReply(request:context:)
       )
 
     case "ReportContent":
@@ -2360,6 +2652,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_ModeratePostResponse
 
+  func moderateContent(
+    request: Com_Octopuscommunity_ModerateContentRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_ModerateContentResponse
+
   func shadowbanPost(
     request: Com_Octopuscommunity_ShadowbanPostRequest,
     context: GRPCAsyncServerCallContext
@@ -2389,6 +2686,21 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     request: Com_Octopuscommunity_UnshadowbanReplyRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_UnshadowbanReplyResponse
+
+  func unBanPost(
+    request: Com_Octopuscommunity_UnBanPostRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UnBanPostResponse
+
+  func unBanComment(
+    request: Com_Octopuscommunity_UnBanCommentRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UnBanCommentResponse
+
+  func unBanReply(
+    request: Com_Octopuscommunity_UnBanReplyRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_UnBanReplyResponse
 
   ///Do nothing if moderation mod is off
   func reportContent(
@@ -2586,6 +2898,15 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         wrapping: { try await self.moderatePost(request: $0, context: $1) }
       )
 
+    case "ModerateContent":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_ModerateContentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_ModerateContentResponse>(),
+        interceptors: self.interceptors?.makeModerateContentInterceptors() ?? [],
+        wrapping: { try await self.moderateContent(request: $0, context: $1) }
+      )
+
     case "ShadowbanPost":
       return GRPCAsyncServerHandler(
         context: context,
@@ -2638,6 +2959,33 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnshadowbanReplyResponse>(),
         interceptors: self.interceptors?.makeUnshadowbanReplyInterceptors() ?? [],
         wrapping: { try await self.unshadowbanReply(request: $0, context: $1) }
+      )
+
+    case "UnBanPost":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnBanPostRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnBanPostResponse>(),
+        interceptors: self.interceptors?.makeUnBanPostInterceptors() ?? [],
+        wrapping: { try await self.unBanPost(request: $0, context: $1) }
+      )
+
+    case "UnBanComment":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnBanCommentRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnBanCommentResponse>(),
+        interceptors: self.interceptors?.makeUnBanCommentInterceptors() ?? [],
+        wrapping: { try await self.unBanComment(request: $0, context: $1) }
+      )
+
+    case "UnBanReply":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_UnBanReplyRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_UnBanReplyResponse>(),
+        interceptors: self.interceptors?.makeUnBanReplyInterceptors() ?? [],
+        wrapping: { try await self.unBanReply(request: $0, context: $1) }
       )
 
     case "ReportContent":
@@ -2785,6 +3133,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeModeratePostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ModeratePostRequest, Com_Octopuscommunity_ModeratePostResponse>]
 
+  /// - Returns: Interceptors to use when handling 'moderateContent'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeModerateContentInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ModerateContentRequest, Com_Octopuscommunity_ModerateContentResponse>]
+
   /// - Returns: Interceptors to use when handling 'shadowbanPost'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeShadowbanPostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_ShadowbanPostRequest, Com_Octopuscommunity_ShadowbanPostResponse>]
@@ -2808,6 +3160,18 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   /// - Returns: Interceptors to use when handling 'unshadowbanReply'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUnshadowbanReplyInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnshadowbanReplyRequest, Com_Octopuscommunity_UnshadowbanReplyResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unBanPost'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnBanPostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnBanPostRequest, Com_Octopuscommunity_UnBanPostResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unBanComment'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnBanCommentInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnBanCommentRequest, Com_Octopuscommunity_UnBanCommentResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unBanReply'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnBanReplyInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_UnBanReplyRequest, Com_Octopuscommunity_UnBanReplyResponse>]
 
   /// - Returns: Interceptors to use when handling 'reportContent'.
   ///   Defaults to calling `self.makeInterceptors()`.
@@ -2865,12 +3229,16 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.updatePost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deletePost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderatePost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderateContent,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.shadowbanPost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.shadowbanComment,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.shadowbanReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unshadowbanPost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unshadowbanComment,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unshadowbanReply,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unBanPost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unBanComment,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.unBanReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.reportContent,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getOrCreateBridgePost,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getBridgePost,
@@ -2968,6 +3336,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let moderateContent = GRPCMethodDescriptor(
+      name: "ModerateContent",
+      path: "/com.octopuscommunity.OctoObjectService/ModerateContent",
+      type: GRPCCallType.unary
+    )
+
     public static let shadowbanPost = GRPCMethodDescriptor(
       name: "ShadowbanPost",
       path: "/com.octopuscommunity.OctoObjectService/ShadowbanPost",
@@ -3001,6 +3375,24 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
     public static let unshadowbanReply = GRPCMethodDescriptor(
       name: "UnshadowbanReply",
       path: "/com.octopuscommunity.OctoObjectService/UnshadowbanReply",
+      type: GRPCCallType.unary
+    )
+
+    public static let unBanPost = GRPCMethodDescriptor(
+      name: "UnBanPost",
+      path: "/com.octopuscommunity.OctoObjectService/UnBanPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let unBanComment = GRPCMethodDescriptor(
+      name: "UnBanComment",
+      path: "/com.octopuscommunity.OctoObjectService/UnBanComment",
+      type: GRPCCallType.unary
+    )
+
+    public static let unBanReply = GRPCMethodDescriptor(
+      name: "UnBanReply",
+      path: "/com.octopuscommunity.OctoObjectService/UnBanReply",
       type: GRPCCallType.unary
     )
 

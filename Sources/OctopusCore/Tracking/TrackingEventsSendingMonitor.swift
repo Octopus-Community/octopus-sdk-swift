@@ -246,7 +246,27 @@ private extension Event {
                                 .with { $0.value = value.value }
                         }
                     })
+            case let .octopusDrivenLogin(action):
+                    .octopusDrivenLogin(.with {
+                        $0.action = action.protoAction
+                    })
             }
+        }
+    }
+}
+
+private extension OctopusDrivenLoginAction {
+    /// Maps the cross-platform action onto the dedicated proto enum.
+    var protoAction: Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin.Action {
+        switch self {
+        case .post: .post
+        case .comment: .comment
+        case .reply: .reply
+        case .reaction: .reaction
+        case .vote: .vote
+        case .moderation: .moderation
+        case .blockUser: .blockUser
+        case .viewOwnProfile: .viewOwnProfile
         }
     }
 }

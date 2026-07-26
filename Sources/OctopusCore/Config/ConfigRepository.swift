@@ -30,6 +30,16 @@ public protocol ConfigRepository: Sendable {
     /// per-content-type content options of the published community config, without a backend-driven
     /// config. Pass `nil` to clear and fall back to the backend value. Used by the sample app (OCT-1426).
     func debugOverrideContentOptions(_ options: ContentOptions?)
+
+    /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the Unified
+    /// Profile activation flag (`exposeClientUserId`) of the published community config, applied on top
+    /// of the backend-driven config. Pass `nil` to clear and fall back to the backend value. Used by
+    /// the sample app to exercise the feature before the backend serves it (OCT-1374).
+    func debugOverrideExposeClientUserId(_ enabled: Bool?)
+    /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the
+    /// terms-acceptance mode of the published community config, without a backend-driven config.
+    /// Pass `nil` to clear and fall back to the backend value (currently `.implicit`).
+    func debugOverrideTermsAcceptanceMode(_ mode: TermsAcceptanceMode?)
 }
 
 extension Injected {
@@ -46,6 +56,8 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
     private var storedCommunityConfig: CommunityConfig?
     private var profileFieldsLockOverride: ProfileFieldsLock?
     private var contentOptionsOverride: ContentOptions?
+    private var exposeClientUserIdOverride: Bool?
+    private var termsAcceptanceModeOverride: TermsAcceptanceMode?
 
     @Published private(set) var userConfig: UserConfig?
     var userConfigPublisher: AnyPublisher<UserConfig?, Never> { $userConfig.eraseToAnyPublisher() }
@@ -122,6 +134,12 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
         if let contentOptionsOverride, let current = config {
             config = current.withContentOptions(contentOptionsOverride)
         }
+        if let exposeClientUserIdOverride, let current = config {
+            config = current.withExposeClientUserId(exposeClientUserIdOverride)
+        }
+        if let termsAcceptanceModeOverride, let current = config {
+            config = current.withTermsAcceptanceMode(termsAcceptanceModeOverride)
+        }
         communityConfig = config
     }
 
@@ -132,6 +150,16 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
 
     func debugOverrideContentOptions(_ options: ContentOptions?) {
         contentOptionsOverride = options
+        publishCommunityConfig()
+    }
+
+    func debugOverrideExposeClientUserId(_ enabled: Bool?) {
+        exposeClientUserIdOverride = enabled
+        publishCommunityConfig()
+    }
+
+    func debugOverrideTermsAcceptanceMode(_ mode: TermsAcceptanceMode?) {
+        termsAcceptanceModeOverride = mode
         publishCommunityConfig()
     }
 

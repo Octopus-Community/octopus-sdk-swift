@@ -33,6 +33,8 @@ class PostDetailViewModel: ObservableObject {
         let author: Author
         let relativeDate: String
         let topic: String?
+        /// Identifier of the post's group (its `parentId`). Backs the "View group" menu entry.
+        let groupId: String?
         let aggregatedInfo: AggregatedInfo
         let userInteractions: UserInteractions
         let canBeDeleted: Bool

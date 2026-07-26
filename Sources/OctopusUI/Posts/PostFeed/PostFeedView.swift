@@ -17,7 +17,8 @@ struct PostFeedView<EmptyPostView: View>: View {
 
     let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
+    let openGroup: (String) -> Void
     let displayContentModeration: (String) -> Void
 
     @ViewBuilder var emptyPostView: EmptyPostView
@@ -28,7 +29,8 @@ struct PostFeedView<EmptyPostView: View>: View {
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
          displayPostDetail: @escaping (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void,
          displayCommentDetail: @escaping (_ id: String, _ reply: Bool) -> Void,
-         displayProfile: @escaping (String) -> Void,
+         displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void,
+         openGroup: @escaping (String) -> Void,
          displayContentModeration: @escaping (String) -> Void,
          @ViewBuilder _ emptyPostView: () -> EmptyPostView) {
         _viewModel = Compat.StateObject(wrappedValue: viewModel)
@@ -36,6 +38,7 @@ struct PostFeedView<EmptyPostView: View>: View {
         self.displayPostDetail = displayPostDetail
         self.displayCommentDetail = displayCommentDetail
         self.displayProfile = displayProfile
+        self.openGroup = openGroup
         self.displayContentModeration = displayContentModeration
         self.emptyPostView = emptyPostView()
     }
@@ -51,6 +54,7 @@ struct PostFeedView<EmptyPostView: View>: View {
                 displayPostDetail: displayPostDetail,
                 displayCommentDetail: displayCommentDetail,
                 displayProfile: displayProfile,
+                openGroup: openGroup,
                 deletePost: viewModel.deletePost(postId:),
                 deleteComment: viewModel.deleteComment(commentId:),
                 blockAuthor: viewModel.blockAuthor(profileId:),
@@ -93,7 +97,8 @@ private struct ContentView<EmptyPostView: View>: View {
     let loadPreviousItems: () -> Void
     let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
+    let openGroup: (String) -> Void
     let deletePost: (String) -> Void
     let deleteComment: (String) -> Void
     let blockAuthor: (String) -> Void
@@ -115,6 +120,7 @@ private struct ContentView<EmptyPostView: View>: View {
                           displayPostDetail: displayPostDetail,
                           displayCommentDetail: displayCommentDetail,
                           displayProfile: displayProfile,
+                          openGroup: openGroup,
                           deletePost: deletePost,
                           deleteComment: deleteComment,
                           blockAuthor: blockAuthor,
@@ -142,7 +148,8 @@ private struct PostsView<EmptyPostView: View>: View {
     let loadPreviousItems: () -> Void
     let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
+    let openGroup: (String) -> Void
     let deletePost: (String) -> Void
     let deleteComment: (String) -> Void
     let blockAuthor: (String) -> Void
@@ -166,6 +173,7 @@ private struct PostsView<EmptyPostView: View>: View {
                                     displayPostDetail: displayPostDetail,
                                     displayCommentDetail: displayCommentDetail,
                                     displayProfile: displayProfile,
+                                    openGroup: openGroup,
                                     deletePost: deletePost,
                                     deleteComment: deleteComment,
                                     blockAuthor: blockAuthor,

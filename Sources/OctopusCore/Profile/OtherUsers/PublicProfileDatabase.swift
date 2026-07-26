@@ -52,6 +52,7 @@ class PublicProfileDatabase: InjectableObject {
             profileEntity.gamificationLevelOptional = profile.gamificationLevel.map { NSNumber(integerLiteral: $0) }
             profileEntity.descPostFeedId = profile.descPostFeedId
             profileEntity.ascPostFeedId = profile.ascPostFeedId
+            profileEntity.clientUserId = profile.clientUserId
 
             try context.save()
         }

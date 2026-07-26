@@ -24,28 +24,49 @@ class LanguageViewModel: ObservableObject {
         }
     }
 
+    /// The languages supported by the SDK (Localizable.xcstrings), in the sheet's canonical column order.
+    /// Arabic is right-to-left: selecting it also simulates an RTL host app (see `SampleLanguageManager`).
     let languages: [Language] = [
         Language(locale: Locale(identifier: "fr"), name: "French", comment: ""),
-        Language(locale: Locale(identifier: "fr_BE"), name: "Belgian French", comment: ""), // You should prefer fr-BE but this is to ensure that the sdk is correctly handling the _
         Language(locale: Locale(identifier: "en"), name: "English", comment: ""),
-        Language(locale: Locale(identifier: "zh-Hant"), name: "Chinese", comment: "As this language is not supported yet, it will default to the base language (english)"),
+        Language(locale: Locale(identifier: "de"), name: "German", comment: ""),
+        Language(locale: Locale(identifier: "it"), name: "Italian", comment: ""),
+        Language(locale: Locale(identifier: "es"), name: "Spanish", comment: ""),
+        Language(locale: Locale(identifier: "pt"), name: "Portuguese", comment: ""),
+        Language(locale: Locale(identifier: "tr"), name: "Turkish", comment: ""),
+        Language(locale: Locale(identifier: "pl"), name: "Polish", comment: ""),
+        Language(locale: Locale(identifier: "sv"), name: "Swedish", comment: ""),
+        Language(locale: Locale(identifier: "fi"), name: "Finnish", comment: ""),
+        Language(locale: Locale(identifier: "da"), name: "Danish", comment: ""),
+        Language(locale: Locale(identifier: "nl"), name: "Dutch", comment: ""),
+        Language(locale: Locale(identifier: "nb"), name: "Norwegian Bokmål", comment: ""),
+        Language(locale: Locale(identifier: "ro"), name: "Romanian", comment: ""),
+        Language(locale: Locale(identifier: "ar"), name: "Arabic", comment: "Right-to-left: also simulates an RTL host app."),
+        Language(locale: Locale(identifier: "hi"), name: "Hindi", comment: ""),
+        Language(locale: Locale(identifier: "th"), name: "Thai", comment: ""),
+        Language(locale: Locale(identifier: "id"), name: "Indonesian", comment: ""),
+        Language(locale: Locale(identifier: "ms"), name: "Malay", comment: ""),
+        Language(locale: Locale(identifier: "vi"), name: "Vietnamese", comment: ""),
+        Language(locale: Locale(identifier: "ru"), name: "Russian", comment: ""),
+        Language(locale: Locale(identifier: "ja"), name: "Japanese", comment: ""),
+        Language(locale: Locale(identifier: "zh-Hans"), name: "Chinese (Simplified)", comment: ""),
+        Language(locale: Locale(identifier: "zh-Hant"), name: "Chinese (Traditional)", comment: ""),
+        // Test cases (not shipped languages):
+        Language(locale: Locale(identifier: "fr_BE"), name: "Belgian French", comment: "You should prefer fr-BE but this is to ensure that the sdk is correctly handling the _"),
         Language(locale: nil, name: "System", comment: "Set nil as overriden locale to let Octopus use default locale again."),
     ]
 
     @Published private(set) var selectedLanguage: Language?
 
-    private let languageSetKey = "overridenLanguage"
-
-    private let userDefaults = UserDefaults.standard
+    private let languageManager = SampleLanguageManager.instance
 
     init() {
-        let selectedLanguageValue = userDefaults.string(forKey: languageSetKey)
-        selectedLanguage = languages.first { $0.locale?.identifier == selectedLanguageValue }
+        let selectedLocaleId = languageManager.overriddenLocale?.identifier
+        selectedLanguage = languages.first { $0.locale?.identifier == selectedLocaleId }
     }
 
     func set(language: Language) {
-        userDefaults.set(language.locale?.identifier, forKey: languageSetKey)
         selectedLanguage = language
-        OctopusSDKProvider.instance.octopus.overrideDefaultLocale(with: language.locale)
+        languageManager.set(locale: language.locale)
     }
 }

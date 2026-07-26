@@ -12,6 +12,8 @@ struct PostViewData {
     let author: Author
     let relativeDate: String
     let topic: String?
+    /// Identifier of the post's group. Backs the "View group" menu entry (nil hides it).
+    let groupId: String?
     let tags: [PostTag]
     let content: PostContent
     let canBeDeleted: Bool

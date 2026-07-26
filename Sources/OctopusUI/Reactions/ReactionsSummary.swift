@@ -66,7 +66,7 @@ private struct ContentView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: reactionImageSize, height: reactionImageSize)
-                        .shadow(color: Color(UIColor.systemBackground), radius: 0, x: -1, y: 0)
+                        .shadow(color: theme.colors.background, radius: 0, x: -1, y: 0)
                 }
             }
             if countPlacement == .trailing {

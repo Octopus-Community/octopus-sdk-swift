@@ -65,6 +65,11 @@ public protocol UserService {
         authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetPublicProfileResponse
 
+    func getPublicProfile(
+        clientUserId: String,
+        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetPublicProfileResponse
+
     func deleteUser(userId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeleteUserResponse
 
@@ -124,6 +129,23 @@ class UserServiceClient: ServiceClient, UserService {
     -> Com_Octopuscommunity_GetPublicProfileResponse {
         let request = Com_Octopuscommunity_GetPublicProfileRequest.with {
             $0.userID = profileId
+            $0.fetchTotalMessages = true
+            $0.fetchGamification = true
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.getPublicProfile(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func getPublicProfile(
+        clientUserId: String,
+        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetPublicProfileResponse {
+        // Lookup by the host's own client user id via the GetPublicProfileRequest.user_ref oneof.
+        // May fail with FAILED_PRECONDITION when the community does not expose client user ids.
+        let request = Com_Octopuscommunity_GetPublicProfileRequest.with {
+            $0.clientUserID = clientUserId
             $0.fetchTotalMessages = true
             $0.fetchGamification = true
         }

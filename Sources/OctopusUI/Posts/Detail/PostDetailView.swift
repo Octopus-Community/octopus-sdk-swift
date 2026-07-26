@@ -87,12 +87,9 @@ struct PostDetailView: View {
                         navigator.push(.commentDetail(commentId: commentId, displayGoToParentButton: false,
                                                       reply: reply, replyToScrollTo: nil))
                     },
-                    displayProfile: { profileId in
-                        if profileId == viewModel.thisUserProfileId {
-                            navigator.push(.currentUserProfile)
-                        } else {
-                            navigator.push(.publicProfile(profileId: profileId))
-                        }
+                    displayProfile: { profileId, clientUserId in
+                        dispatchProfileTap(octopus: viewModel.octopus, navigator: navigator,
+                                           profileId: profileId, clientUserId: clientUserId)
                     },
                     openCreateComment: {
                         trackingApi.emit(event: .commentButtonClicked(.init(postId: viewModel.postUuid)))
@@ -118,9 +115,21 @@ struct PostDetailView: View {
                                       textFocused: $viewModel.commentTextFocused,
                                       hasChanges: $commentHasChanges,
                                       ensureConnected: viewModel.ensureConnected)
+                    // Opaque background extended into the bottom safe area so the composer bar and
+                    // the home-indicator area stay white. On large screens (where side margins
+                    // appear) the top is rounded (radius 24) so the gray margin background follows
+                    // the bar's rounded top curve; on narrow screens (e.g. iPhone portrait, no
+                    // margins) it stays square so no gray shows behind the corners (OCT-1532).
+                    .background(
+                        theme.colors.background
+                            .cornerRadius(width > OctopusContentLayout.maxContentWidth ? 24 : 0,
+                                          corners: [.topLeft, .topRight])
+                            .edgesIgnoringSafeArea(.bottom)
+                    )
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .largeScreenMarginBackground()
 
             if viewModel.postDeletion == .inProgress || viewModel.isDeletingComment {
                 LoadingOverlay()
@@ -245,8 +254,14 @@ struct PostDetailView: View {
     @ViewBuilder
     private var moreActionBarItem: some View {
         if #available(iOS 14.0, *), let post = viewModel.post,
-           post.canBeDeleted || post.canBeModerated || post.canBeBlockedByUser {
+           post.canBeDeleted || post.canBeModerated || post.canBeBlockedByUser || post.groupId != nil {
             Menu(content: {
+                if let groupId = post.groupId {
+                    Button(action: { navigator.push(.groupDetail(groupId: groupId)) }) {
+                        Label(title: { Text("Post.Menu.ViewGroup.Button", bundle: .module) },
+                              icon: { Image(uiImage: theme.assets.icons.groups.viewGroup) })
+                    }
+                }
                 if post.canBeDeleted {
                     Button(action: { displayWillDeleteAlert = true }) {
                         Label(title: { Text("Post.Delete.Button", bundle: .module) },
@@ -314,7 +329,7 @@ private struct ContentView: View {
     let loadPreviousComments: () -> Void
     let refresh: @Sendable () async -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openCreateComment: () -> Void
     let deletePost: () -> Void
     let deleteComment: (String) -> Void
@@ -328,13 +343,9 @@ private struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
 #if compiler(>=6.2)
-            // Disable nav bar opacity on iOS 26 to have the same behavior as before.
-            // TODO: See with product team if we need to keep it.
-            if #available(iOS 26.0, *) {
-                Color.white.opacity(0.0001)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 1)
-            } else if #unavailable(iOS 16.0) {
+            // On iOS 26 the navigation bar uses its default translucent (glass) behavior (OCT-1532).
+            // The near-invisible top spacer is kept only for pre-iOS-16 scroll behavior.
+            if #unavailable(iOS 16.0) {
                 Color.white.opacity(0.0001)
                     .frame(maxWidth: .infinity)
                     .frame(height: 1)
@@ -345,7 +356,9 @@ private struct ContentView: View {
                 LazyIfPossibleVStack(spacing: 0, preventLaziness: scrollToBottom || scrollToId != nil) {
                     if let post {
                         PostDetailContentView(post: post,
-                                              width: width,
+                                              // Clamp to the content cap so media is sized to the
+                                              // constrained column width, not the full screen (OCT-1532).
+                                              width: min(width, OctopusContentLayout.maxContentWidth),
                                               zoomableImageInfo: $zoomableImageInfo,
                                               displayProfile: displayProfile,
                                               openCreateComment: openCreateComment,
@@ -400,7 +413,9 @@ private struct ContentView: View {
                         }
                     }
                 }
-            }.postsVisibilityScrollView()
+                .constrainedContentColumn()
+            }
+            .postsVisibilityScrollView()
         }
     }
 }
@@ -426,6 +441,7 @@ private struct ContentView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
+            groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
                 .init(reactionKind: .heart, count: 10),
                 .init(reactionKind: .clap, count: 5),
@@ -450,7 +466,7 @@ private struct ContentView: View {
         loadPreviousComments: { },
         refresh: { },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         openCreateComment: { },
         deletePost: { },
         deleteComment: { _ in },
@@ -487,6 +503,7 @@ private struct ContentView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
+            groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
                 .init(reactionKind: .heart, count: 10),
                 .init(reactionKind: .clap, count: 5),
@@ -511,7 +528,7 @@ private struct ContentView: View {
         loadPreviousComments: { },
         refresh: { },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         openCreateComment: { },
         deletePost: { },
         deleteComment: { _ in },
@@ -557,6 +574,7 @@ private struct ContentView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
+            groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
                 .init(reactionKind: .heart, count: 10),
                 .init(reactionKind: .clap, count: 5),
@@ -581,7 +599,7 @@ private struct ContentView: View {
         loadPreviousComments: { },
         refresh: { },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         openCreateComment: { },
         deletePost: { },
         deleteComment: { _ in },
@@ -624,6 +642,7 @@ private struct ContentView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
+            groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
                 .init(reactionKind: .heart, count: 10),
                 .init(reactionKind: .clap, count: 5),
@@ -648,7 +667,7 @@ private struct ContentView: View {
         loadPreviousComments: { },
         refresh: { },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         openCreateComment: { },
         deletePost: { },
         deleteComment: { _ in },
@@ -685,6 +704,7 @@ private struct ContentView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "2h. ago",
             topic: "Help",
+            groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
                 .init(reactionKind: .heart, count: 10),
                 .init(reactionKind: .clap, count: 5),
@@ -713,7 +733,7 @@ private struct ContentView: View {
         loadPreviousComments: { },
         refresh: { },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         openCreateComment: { },
         deletePost: { },
         deleteComment: { _ in },

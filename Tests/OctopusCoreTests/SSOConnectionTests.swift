@@ -498,6 +498,68 @@ class SSOConnectionTests: XCTestCase {
         }
     }
 
+    /// Regression: a hard authentication failure on a guest must NOT destroy and re-forge the guest
+    /// identity. That churn inflated iOS user_id counts (~7x vs Android). The existing guest must be
+    /// preserved as-is — no new guest minted (aligns iOS with Android's `!isGuest` guard).
+    func testGuestIdentityPreservedOnAuthenticatedCallFailure() async throws {
+        // Precondition: connected as guest
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+
+        let connectedExpectation = XCTestExpectation(description: "Connected as guest")
+        connectionRepository.$connectionState.sink { state in
+            if case let .connected(user, nil) = state, user.profile.isGuest {
+                connectedExpectation.fulfill()
+            }
+        }.store(in: &storage)
+        await fulfillment(of: [connectedExpectation], timeout: 5)
+
+        // Any churn would call getGuestJwt and mint a *different* guest.
+        mockUserService.injectNextGetGuestJwtResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "newJWT"
+                $0.userID = "newGuestUserId"
+                $0.profile = .with {
+                    $0.id = "newGuestProfileId"
+                    $0.nickname = "Guest"
+                    $0.isGuest = true
+                }
+            })
+        })
+
+        // Act: a hard authentication failure occurs.
+        try await connectionRepository.onAuthenticatedCallFailed()
+
+        // Assert: the guest identity is preserved — same user id, no new guest minted.
+        XCTAssertEqual(userDataStorage.userData?.id, "guestUserId")
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
+    /// A guest has no account to log out from: `logout()` must be a no-op for a guest (matching
+    /// Android's `!isGuest` guard), preserving the guest identity instead of destroying it.
+    func testLogoutOnGuestPreservesIdentity() async throws {
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+
+        let connectedExpectation = XCTestExpectation(description: "Connected as guest")
+        connectionRepository.$connectionState.sink { state in
+            if case let .connected(user, nil) = state, user.profile.isGuest {
+                connectedExpectation.fulfill()
+            }
+        }.store(in: &storage)
+        await fulfillment(of: [connectedExpectation], timeout: 5)
+
+        try await connectionRepository.logout()
+
+        // The guest identity must survive an explicit logout.
+        XCTAssertEqual(userDataStorage.userData?.id, "guestUserId")
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
     private func setupWithNonConnectedWithoutErrorState(previousProfileId: String? = nil) async throws {
         userDataStorage.store(clientUserData: nil)
         userDataStorage.store(userData: nil)

@@ -34,6 +34,21 @@ enum UserAction {
             return false
         }
     }
+
+    /// The Core-level action type reported with the `octopus_driven_login` analytics event when this
+    /// action is what triggered the login request.
+    var drivenLoginAction: OctopusDrivenLoginAction {
+        switch self {
+        case .post: return .post
+        case .comment: return .comment
+        case .reply: return .reply
+        case .reaction: return .reaction
+        case .vote: return .vote
+        case .moderation: return .moderation
+        case .blockUser: return .blockUser
+        case .viewOwnProfile: return .viewOwnProfile
+        }
+    }
 }
 
 enum ConnectedActionReplacement: Equatable {
@@ -148,16 +163,24 @@ class ConnectedActionChecker {
                 hasError: error != nil)
         }
 
-        switch Self.decision(magicLinkRequestActive: connectionRepository.magicLinkRequest != nil,
+        let magicLinkActive = connectionRepository.magicLinkRequest != nil
+        switch Self.decision(magicLinkRequestActive: magicLinkActive,
                              state: state, isSSO: isSSO,
                              clientUserConnected: connectionRepository.clientUserConnected,
                              action: action) {
         case .proceed:
             return true
         case let .block(replacement):
+            // octopus_driven_login (#315): report when this action is what triggered a login prompt.
+            // A `.login` replacement is a login drive on the non-SSO / magic-link-login paths — but not
+            // when it merely reflects a pending magic-link request (which was not caused by this action).
+            if replacement == .login, !magicLinkActive {
+                octopus.core.octopusDrivenLoginMonitor.notifyLoginRequested(action: action.drivenLoginAction)
+            }
             actionWhenNotConnected.wrappedValue = replacement
             return false
         case .requireSSOLogin:
+            octopus.core.octopusDrivenLoginMonitor.notifyLoginRequested(action: action.drivenLoginAction)
             if case let .sso(config) = connectionRepository.connectionMode {
                 config.loginRequired()
             }

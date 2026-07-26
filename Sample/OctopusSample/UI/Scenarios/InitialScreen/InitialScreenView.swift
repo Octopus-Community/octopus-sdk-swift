@@ -153,6 +153,7 @@ extension OctopusInitialScreen: @retroactive Identifiable {
         case .mainFeed: "mainFeed"
         case .post: "post"
         case .group: "group"
+        case .activity: "activity"
         case .createPost: "createPost"
         }
     }

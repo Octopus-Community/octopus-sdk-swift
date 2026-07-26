@@ -14,7 +14,7 @@ struct CommentDetailRepliesView: View {
     let hideLoader: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let deleteReply: (String) -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void

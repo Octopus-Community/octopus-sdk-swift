@@ -31,6 +31,7 @@ struct PostTextContentView: View {
     var body: some View {
         textView
             .font(theme.fonts.body2)
+            .octopusBodyContentLineHeight()
             .foregroundColor(theme.colors.gray900)
             .frame(maxWidth: .infinity, alignment: .leading)
             .multilineTextAlignment(.leading)

@@ -18,6 +18,16 @@ final class RefreshEntitlementsTests: XCTestCase {
     private var userProfileDatabase: CurrentUserProfileDatabase!
     private var storage = [AnyCancellable]()
 
+    /// Timeout for waits that depend on the `connectionState` / profile Combine pipelines
+    /// settling. Those transitions are published asynchronously through several
+    /// `.receive(on: DispatchQueue.main)` hops; on a saturated CI runner that delivery can be
+    /// starved far beyond the sub-100ms it takes locally (a ~15s outlier was observed for
+    /// `testGuestThrowsNotConnected` — same machine-load family as PR #319). A generous timeout
+    /// stays a no-op in the normal case (the wait returns as soon as the state settles) while
+    /// tolerating that starvation. The guest scenario is the most exposed: it relies solely on
+    /// the repo's init-time pipeline burst, with no later write to re-trigger delivery.
+    private let connectionSettleTimeout: TimeInterval = 30
+
     override func setUp() {
         let connectionMode = ConnectionMode.sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
         injector = Injector()
@@ -117,7 +127,7 @@ final class RefreshEntitlementsTests: XCTestCase {
                 guestExpectation.fulfill()
             }
         }.store(in: &storage)
-        await fulfillment(of: [guestExpectation], timeout: 15)
+        await fulfillment(of: [guestExpectation], timeout: connectionSettleTimeout)
 
         do {
             try await repo.refreshEntitlements()
@@ -203,7 +213,7 @@ final class RefreshEntitlementsTests: XCTestCase {
             .sink {
                 if let stored = $0, stored.isGuest { inDb.fulfill() }
             }.store(in: &storage)
-        await fulfillment(of: [inDb], timeout: 15)
+        await fulfillment(of: [inDb], timeout: connectionSettleTimeout)
     }
 
     /// Brings the SSO repo into a fully connected, non-guest state. Mirrors the setup used
@@ -243,7 +253,7 @@ final class RefreshEntitlementsTests: XCTestCase {
             ClientUser(userId: "clientUserId", profile: .init(nickname: "Nick", bio: nil, picture: nil)),
             tokenProvider: { "fakeClientToken" }
         )
-        await fulfillment(of: [connected], timeout: 15)
+        await fulfillment(of: [connected], timeout: connectionSettleTimeout)
         return repo
     }
 }

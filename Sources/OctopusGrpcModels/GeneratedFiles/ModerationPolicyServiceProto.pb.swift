@@ -853,6 +853,8 @@ public struct Com_Octopuscommunity_ListAttachedPoliciesResponse: Sendable {
     /// Clears the value of `redirect`. Subsequent reads from it will return its default value.
     public mutating func clearRedirect() {self._redirect = nil}
 
+    public var createdAt: UInt64 = 0
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
@@ -2256,7 +2258,7 @@ extension Com_Octopuscommunity_ListAttachedPoliciesResponse: SwiftProtobuf.Messa
 
 extension Com_Octopuscommunity_ListAttachedPoliciesResponse.AttachedPolicy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ListAttachedPoliciesResponse.protoMessageName + ".AttachedPolicy"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0\u{1}nameEn\0\u{1}nameFr\0\u{1}descriptionEn\0\u{1}descriptionFr\0\u{1}contentAction\0\u{1}sendToSupport\0\u{1}autoReply\0\u{1}redirect\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0\u{1}nameEn\0\u{1}nameFr\0\u{1}descriptionEn\0\u{1}descriptionFr\0\u{1}contentAction\0\u{1}sendToSupport\0\u{1}autoReply\0\u{1}redirect\0\u{1}createdAt\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2273,6 +2275,7 @@ extension Com_Octopuscommunity_ListAttachedPoliciesResponse.AttachedPolicy: Swif
       case 7: try { try decoder.decodeSingularMessageField(value: &self._sendToSupport) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._autoReply) }()
       case 9: try { try decoder.decodeSingularMessageField(value: &self._redirect) }()
+      case 10: try { try decoder.decodeSingularUInt64Field(value: &self.createdAt) }()
       default: break
       }
     }
@@ -2310,6 +2313,9 @@ extension Com_Octopuscommunity_ListAttachedPoliciesResponse.AttachedPolicy: Swif
     try { if let v = self._redirect {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
     } }()
+    if self.createdAt != 0 {
+      try visitor.visitSingularUInt64Field(value: self.createdAt, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2323,6 +2329,7 @@ extension Com_Octopuscommunity_ListAttachedPoliciesResponse.AttachedPolicy: Swif
     if lhs._sendToSupport != rhs._sendToSupport {return false}
     if lhs._autoReply != rhs._autoReply {return false}
     if lhs._redirect != rhs._redirect {return false}
+    if lhs.createdAt != rhs.createdAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

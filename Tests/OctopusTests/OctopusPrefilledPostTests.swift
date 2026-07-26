@@ -9,18 +9,29 @@ import Octopus
 
 struct OctopusPrefilledPostTests {
 
-    // MARK: - content-empty
+    // MARK: - optional text & image (Bridge Share: preselected group, empty editable fields)
 
-    @Test func initThrowsContentEmptyWhenBothNil() {
-        #expect(throws: OctopusPrefilledPost.ValidationError.contentEmpty) {
-            _ = try OctopusPrefilledPost(text: nil, image: nil)
-        }
+    @Test func initAcceptsEmptyPayloadWhenBothNil() throws {
+        let post = try OctopusPrefilledPost(text: nil, image: nil)
+        #expect(post.text == nil)
+        #expect(post.image == nil)
     }
 
-    @Test func initThrowsContentEmptyWhenBothEmpty() {
-        #expect(throws: OctopusPrefilledPost.ValidationError.contentEmpty) {
-            _ = try OctopusPrefilledPost(text: "", image: Data())
-        }
+    @Test func initAcceptsEmptyPayloadWhenBothEmpty() throws {
+        // `""` / empty `Data` normalize to nil, and an empty payload is now allowed.
+        let post = try OctopusPrefilledPost(text: "", image: Data())
+        #expect(post.text == nil)
+        #expect(post.image == nil)
+    }
+
+    @Test func initAcceptsGroupAndCtaOnlyWithoutTextOrImage() throws {
+        let post = try OctopusPrefilledPost(
+            topicId: "topic-id",
+            cta: try OctopusPrefilledPost.CTA(url: URL(string: "myapp://item/42")!, label: "Open"))
+        #expect(post.text == nil)
+        #expect(post.image == nil)
+        #expect(post.topicId == "topic-id")
+        #expect(post.cta?.label == "Open")
     }
 
     // MARK: - text validation

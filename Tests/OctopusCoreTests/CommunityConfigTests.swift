@@ -12,6 +12,8 @@ import OctopusDependencyInjection
 /// focusing on the per-field profile lock (OCT-1487).
 final class CommunityConfigTests: XCTestCase {
 
+    private var storage = [AnyCancellable]()
+
     func testProfileFieldsLockMappedFromProto() {
         let config = Com_Octopuscommunity_ApiKeyConfig.with {
             $0.profileFieldsLock = .with {
@@ -64,7 +66,8 @@ final class CommunityConfigTests: XCTestCase {
         let lock = ProfileFieldsLock(nickname: .readOnly, avatar: .editable, bio: .disabled)
         let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
                                      gamificationConfig: nil, displayConfig: nil, profileFieldsLock: lock,
-                                     contentOptions: .allEnabled)
+                                     contentOptions: .allEnabled, exposeClientUserId: false,
+                                     termsAcceptanceMode: .implicit)
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -74,7 +77,8 @@ final class CommunityConfigTests: XCTestCase {
     func testWithProfileFieldsLockReplacesOnlyTheLock() {
         let base = CommunityConfig(forceLoginOnStrongActions: true, displayAccountAge: true,
                                    gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
-                                   contentOptions: .allEnabled)
+                                   contentOptions: .allEnabled, exposeClientUserId: false,
+                                   termsAcceptanceMode: .implicit)
         let clue = ProfileFieldsLock(nickname: .readOnly, avatar: .readOnly, bio: .disabled)
 
         let overridden = base.withProfileFieldsLock(clue)
@@ -85,6 +89,131 @@ final class CommunityConfigTests: XCTestCase {
         XCTAssertEqual(overridden.displayAccountAge, base.displayAccountAge)
         XCTAssertEqual(overridden.gamificationConfig, base.gamificationConfig)
         XCTAssertEqual(overridden.displayConfig, base.displayConfig)
+    }
+
+    // MARK: exposeClientUserId (Unified Profile activation flag, OCT-1374)
+
+    func testExposeClientUserIdMappedFromProto() {
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.exposeClientUserID = true
+        }
+
+        XCTAssertTrue(CommunityConfig(from: config).exposeClientUserId)
+    }
+
+    func testExposeClientUserIdAbsentDefaultsToFalse() {
+        // Plain proto3 bool: false when unset (no has-guard).
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.displayAccountAge = true
+        }
+
+        XCTAssertFalse(CommunityConfig(from: config).exposeClientUserId)
+    }
+
+    func testExposeClientUserIdPersistsThroughDatabase() async throws {
+        let injector = Injector()
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+
+        let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
+                                     gamificationConfig: nil, displayConfig: nil,
+                                     profileFieldsLock: .allEditable, contentOptions: .allEnabled,
+                                     exposeClientUserId: true, termsAcceptanceMode: .implicit)
+        try await db.upsert(config: config)
+
+        let stored = try await firstNonNil(db.configPublisher())
+        XCTAssertTrue(stored.exposeClientUserId)
+    }
+
+    func testWithExposeClientUserIdReplacesOnlyTheFlag() {
+        let base = CommunityConfig(forceLoginOnStrongActions: true, displayAccountAge: true,
+                                   gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
+                                   contentOptions: .allEnabled, exposeClientUserId: false,
+                                   termsAcceptanceMode: .implicit)
+
+        let overridden = base.withExposeClientUserId(true)
+
+        XCTAssertTrue(overridden.exposeClientUserId)
+        // every other field is preserved
+        XCTAssertEqual(overridden.forceLoginOnStrongActions, base.forceLoginOnStrongActions)
+        XCTAssertEqual(overridden.displayAccountAge, base.displayAccountAge)
+        XCTAssertEqual(overridden.profileFieldsLock, base.profileFieldsLock)
+        XCTAssertEqual(overridden.contentOptions, base.contentOptions)
+    }
+
+    func testDebugOverrideExposeClientUserId() async throws {
+        let injector = Injector()
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        injector.register { UserConfigDatabase(injector: $0) }
+        injector.registerMocks(.remoteClient, .networkMonitor, .appStateMonitor, .authProvider, .securedStorage)
+        injector.register { UserDataStorage(injector: $0) }
+        let communityConfigDatabase = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+
+        let repo: ConfigRepository = ConfigRepositoryDefault(injector: injector)
+
+        var published: CommunityConfig?
+        repo.communityConfigPublisher.sink { published = $0 }.store(in: &storage)
+
+        // Seed the backend-driven config with the flag enabled.
+        try await communityConfigDatabase.upsert(config: CommunityConfig(
+            forceLoginOnStrongActions: false, displayAccountAge: false,
+            gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
+            contentOptions: .allEnabled, exposeClientUserId: true, termsAcceptanceMode: .implicit))
+        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
+
+        // Override OFF on top of the backend value.
+        repo.debugOverrideExposeClientUserId(false)
+        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == false)
+
+        // Override ON.
+        repo.debugOverrideExposeClientUserId(true)
+        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
+
+        // Clear the override → falls back to the backend value (true).
+        repo.debugOverrideExposeClientUserId(nil)
+        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
+    }
+
+    // MARK: termsAcceptanceMode (explicit terms acceptance, OCT-1633)
+
+    func testTermsAcceptanceModeMappedFromProto() {
+        let multi = Com_Octopuscommunity_ApiKeyConfig.with { $0.termsAcceptanceMode = .explicitMultiCheckbox }
+        let single = Com_Octopuscommunity_ApiKeyConfig.with { $0.termsAcceptanceMode = .explicitSingleCheckbox }
+
+        XCTAssertEqual(CommunityConfig(from: multi).termsAcceptanceMode, .explicitMultiCheckbox)
+        XCTAssertEqual(CommunityConfig(from: single).termsAcceptanceMode, .explicitSingleCheckbox)
+    }
+
+    func testTermsAcceptanceModeAbsentDefaultsToImplicit() {
+        // Plain proto3 enum: .implicit (0) when unset.
+        let config = Com_Octopuscommunity_ApiKeyConfig.with { $0.displayAccountAge = true }
+
+        XCTAssertEqual(CommunityConfig(from: config).termsAcceptanceMode, .implicit)
+        XCTAssertFalse(CommunityConfig(from: config).termsAcceptanceMode.isExplicit)
+    }
+
+    func testTermsAcceptanceModeUnknownValueDefaultsToImplicit() {
+        let config = Com_Octopuscommunity_ApiKeyConfig.with { $0.termsAcceptanceMode = .UNRECOGNIZED(99) }
+
+        XCTAssertEqual(CommunityConfig(from: config).termsAcceptanceMode, .implicit)
+    }
+
+    func testTermsAcceptanceModePersistsThroughDatabase() async throws {
+        let injector = Injector()
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+
+        let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
+                                     gamificationConfig: nil, displayConfig: nil,
+                                     profileFieldsLock: .allEditable, contentOptions: .allEnabled,
+                                     exposeClientUserId: false, termsAcceptanceMode: .explicitSingleCheckbox)
+        try await db.upsert(config: config)
+
+        let stored = try await firstNonNil(db.configPublisher())
+        XCTAssertEqual(stored.termsAcceptanceMode, .explicitSingleCheckbox)
     }
 
     /// Awaits the first non-nil value of a config publisher (the stored config after an upsert).
