@@ -44,9 +44,13 @@ let package = Package(
                 "OctopusDependencyInjection"
             ],
             resources: [
-                .copy("Persistence/Database/OctopusModel/OctopusModel.xcdatamodeld"),
-                .copy("Persistence/Database/OctopusTracking/OctopusTracking.xcdatamodeld"),
-                .copy("Persistence/Database/OctopusConfig/OctopusConfig.xcdatamodeld"),
+                // `.process` makes SwiftPM compile the CoreData models (momc → `.momd`) itself.
+                // With `.copy` the raw `.xcdatamodeld` was copied verbatim and we relied on Xcode's
+                // implicit data-model compilation — which Xcode 27 dropped, breaking model loading
+                // ("A model file named OctopusModel cannot be found in the module.").
+                .process("Persistence/Database/OctopusModel/OctopusModel.xcdatamodeld"),
+                .process("Persistence/Database/OctopusTracking/OctopusTracking.xcdatamodeld"),
+                .process("Persistence/Database/OctopusConfig/OctopusConfig.xcdatamodeld"),
             ]),
         .target(
             name: "OctopusRemoteClient",
