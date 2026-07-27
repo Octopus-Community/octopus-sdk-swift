@@ -36,7 +36,8 @@ struct CreateCommentView: View {
             responseKind: .comment,
             isLoading: viewModel.isLoading,
             sendAvailable: viewModel.sendAvailable,
-            displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendAvailable,
+            displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendAvailable
+                && !viewModel.termsAcceptanceMode.isExplicit,
             picturesEnabled: viewModel.picturesEnabled,
             text: $viewModel.text,
             picture: $viewModel.picture,
@@ -48,11 +49,19 @@ struct CreateCommentView: View {
             privacyPolicyUrl: viewModel.privacyPolicyUrl,
             communityGuidelinesUrl: viewModel.communityGuidelinesUrl,
             send: viewModel.send,
-            userProfileTapped: { navigator.push(.currentUserProfile) },
+            userProfileTapped: { dispatchCurrentUserProfileTap(octopus: viewModel.octopus, navigator: navigator) },
             resetAlertError: { viewModel.alertError = nil },
             ensureConnected: ensureConnected)
         .onReceive(viewModel.$hasChanges) {
             hasChanges = $0
         }
+        .termsConsentSheet(
+            isPresented: $viewModel.displayConsentSheet,
+            mode: viewModel.termsAcceptanceMode,
+            contribution: .comment,
+            termsUrl: viewModel.termsOfUseUrl,
+            privacyUrl: viewModel.privacyPolicyUrl,
+            rulesUrl: viewModel.communityGuidelinesUrl,
+            onAccept: { viewModel.acceptConsentAndSend() })
     }
 }

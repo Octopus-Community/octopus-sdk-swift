@@ -26,7 +26,19 @@ struct CustomThemeView: View {
     @State private var titleCentered: Bool = false
     @State private var titleAsLogo: Bool = true
     @State private var navBarWithColor: Bool = false
+    @State private var customBackground: Bool = true
     @State private var iconFamily: IconFamily = .notCustomized
+
+    /// A warm, brand-flavored community background that adapts to light/dark mode. Showcases the
+    /// customizable community background color (parity with Android's `OctopusColorScheme.background`)
+    /// and the recommended `Color(UIColor { ... })` pattern for a color that follows the system theme.
+    private var customBackgroundColor: Color {
+        Color(UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.14, green: 0.11, blue: 0.07, alpha: 1)  // warm dark
+                : UIColor(red: 0.98, green: 0.95, blue: 0.89, alpha: 1)  // warm cream
+        })
+    }
 
     /// Create a custom theme
     var appTheme: OctopusTheme {
@@ -35,7 +47,11 @@ struct CustomThemeView: View {
                 primarySet: OctopusTheme.Colors.ColorSet(
                     main: .Scenarios.CustomTheme.Colors.primary,
                     lowContrast: .Scenarios.CustomTheme.Colors.primaryLow,
-                    highContrast: .Scenarios.CustomTheme.Colors.primaryHigh)),
+                    highContrast: .Scenarios.CustomTheme.Colors.primaryHigh),
+                // OCT-1370: showcase the customizable link/URL color (rendered in posts/comments)
+                link: .purple,
+                // Showcase the customizable community background color
+                background: customBackground ? customBackgroundColor : nil),
             fonts: .init(
                 title1: Font.custom("Courier New", size: 26),
                 title2: Font.custom("Courier New", size: 20),
@@ -67,6 +83,18 @@ struct CustomThemeView: View {
                         }
                         Toggle(isOn: $navBarWithColor) {
                             Text("Use primary color on nav bar")
+                        }
+                    }
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+
+                    VStack(spacing: 8) {
+                        Text("Background")
+                            .font(.subheadline).bold()
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Toggle(isOn: $customBackground) {
+                            Text("Use custom community background color")
                         }
                     }
                     .padding()

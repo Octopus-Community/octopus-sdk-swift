@@ -133,6 +133,11 @@ extension EventsViewModel.DisplayableEvent {
                 params = [
                     "Profile Id: \(context.profileId)"
                 ]
+            case let .otherUserPosts(context):
+                eventName = "Other User Posts Screen Displayed"
+                params = [
+                    "Profile Id: \(context.profileId)"
+                ]
             case .editProfile:
                 eventName = "Edit Profile Screen Displayed"
                 params = []
@@ -150,9 +155,6 @@ extension EventsViewModel.DisplayableEvent {
                 params = []
             case .settingsAccount:
                 eventName = "Account Settings Screen Displayed"
-                params = []
-            case .settingsAbout:
-                eventName = "About Screen Displayed"
                 params = []
             case .reportExplanation:
                 eventName = "Report Explanation Screen Displayed"

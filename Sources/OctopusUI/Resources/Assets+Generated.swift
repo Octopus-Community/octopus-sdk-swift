@@ -126,6 +126,7 @@ extension GenColorResource {
 // MARK: - Image Symbols -
 
 extension GenImageResource {
+    static let activity = GenImageResource(name: "activity", bundle: resourceBundle)
     static let add = GenImageResource(name: "add", bundle: resourceBundle)
     static let addMedia = GenImageResource(name: "addMedia", bundle: resourceBundle)
     static let arrowRight = GenImageResource(name: "arrowRight", bundle: resourceBundle)
@@ -153,6 +154,7 @@ extension GenImageResource {
     static let search = GenImageResource(name: "search", bundle: resourceBundle)
     static let send = GenImageResource(name: "send", bundle: resourceBundle)
     static let trash = GenImageResource(name: "trash", bundle: resourceBundle)
+    static let viewGroup = GenImageResource(name: "viewGroup", bundle: resourceBundle)
     enum AggregatedInfo {
         static let comment = GenImageResource(name: "AggregatedInfo/comment", bundle: resourceBundle)
         static let like = GenImageResource(name: "AggregatedInfo/like", bundle: resourceBundle)
@@ -258,6 +260,7 @@ extension UIKit.UIColor {
 
 extension UIKit.UIImage {
     enum Gen {
+        static var activity: UIKit.UIImage { .init(res: .activity) }
         static var add: UIKit.UIImage { .init(res: .add) }
         static var addMedia: UIKit.UIImage { .init(res: .addMedia) }
         static var arrowRight: UIKit.UIImage { .init(res: .arrowRight) }
@@ -285,6 +288,7 @@ extension UIKit.UIImage {
         static var search: UIKit.UIImage { .init(res: .search) }
         static var send: UIKit.UIImage { .init(res: .send) }
         static var trash: UIKit.UIImage { .init(res: .trash) }
+        static var viewGroup: UIKit.UIImage { .init(res: .viewGroup) }
         enum AggregatedInfo {
             static var comment: UIKit.UIImage { .init(res: .AggregatedInfo.comment) }
             static var like: UIKit.UIImage { .init(res: .AggregatedInfo.like) }

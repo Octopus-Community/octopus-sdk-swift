@@ -34,6 +34,10 @@ class PostListViewModel: ObservableObject {
     private var storage = [AnyCancellable]()
     private var feedStorage = [AnyCancellable]()
 
+    /// Whether a post was created during the currently-open composer session. Reset when the composer
+    /// opens, set when a `.postCreated` event is received. Used to scroll to top only on a real creation.
+    private var didCreatePostInComposer = false
+
     private var feed: Feed<Post, Comment>?
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore) {
@@ -45,14 +49,25 @@ class PostListViewModel: ObservableObject {
             .prepend([])
             .zip(mainFlowPath.$path.removeDuplicates())
             .sink { [unowned self] previous, current in
-                if case .currentUserProfile = previous.last, current == [] {
+                if case .createPost = current.last {
+                    // The composer just opened: start tracking whether a post gets created this session.
+                    didCreatePostInComposer = false
+                } else if case .currentUserProfile = previous.last, current == [] {
                     // refresh automatically when the user profile is dismissed
                     refreshFeed(isManual: false)
                     refreshCurrentUserProfile()
                 } else if case .createPost = previous.last, current == [] {
+                    // The composer was dismissed back to the feed: always refresh, but only scroll to top
+                    // if a post was actually created (cancel via Back / swipe-down keeps the scroll).
                     refreshFeed(isManual: false)
-                    scrollToTop = true
+                    scrollToTop = FeedComposerScrollPolicy.shouldScrollToTop(
+                        previousLast: previous.last, current: current, didCreatePost: didCreatePostInComposer)
                 }
+            }.store(in: &storage)
+
+        octopus.core.sdkEventsEmitter.events
+            .sink { [unowned self] event in
+                if case .postCreated = event { didCreatePostInComposer = true }
             }.store(in: &storage)
 
         /// Reload current profile when app moves to foreground

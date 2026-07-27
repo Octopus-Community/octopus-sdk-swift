@@ -20,6 +20,8 @@ struct StorableProfile: Sendable {
 
     let descPostFeedId: String
     let ascPostFeedId: String
+
+    let clientUserId: String?
 }
 
 extension StorableProfile {
@@ -34,6 +36,7 @@ extension StorableProfile {
         gamificationLevel = entity.gamificationLevel
         descPostFeedId = entity.descPostFeedId
         ascPostFeedId = entity.ascPostFeedId
+        clientUserId = entity.clientUserId
     }
 
     init(from profile: Com_Octopuscommunity_PublicProfile) {
@@ -51,5 +54,7 @@ extension StorableProfile {
 
         descPostFeedId = profile.descPostFeedID
         ascPostFeedId = profile.ascPostFeedID
+
+        clientUserId = profile.hasClientUserID ? profile.clientUserID.nilIfEmpty : nil
     }
 }

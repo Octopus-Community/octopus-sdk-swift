@@ -22,8 +22,16 @@ struct OctopusUIView: View {
     @State private var displayEditAppUserProfile = false
     @State private var displayGroupAccessDenied = false
     @State private var groupAccessDeniedGroupId: String = ""
+    @State private var displayClientProfile = false
+    @State private var clientProfileClientUserId: String = ""
 
     @State private var isDisplayed = false
+
+    // Internal-demo only: the SDK always follows the host app's layout direction. To preview RTL
+    // (Arabic) without switching the whole device to an RTL language, simulate an RTL host by forcing
+    // the layout direction on the Octopus view when an RTL override language is selected.
+    @Environment(\.layoutDirection) private var inheritedLayoutDirection
+    @ObservedObject private var languageManager = SampleLanguageManager.instance
 
     init(
         octopus: OctopusSDK,
@@ -52,6 +60,9 @@ struct OctopusUIView: View {
             navigationMode: navigationMode,
             notificationUserInfo: $octopusNotificationUserInfo
         )
+        // Force RTL only when an RTL override language is picked; otherwise keep the inherited direction.
+        .environment(\.layoutDirection,
+                     languageManager.simulatedLayoutDirection == .rightToLeft ? .rightToLeft : inheritedLayoutDirection)
         .fullScreenCover(isPresented: $displayAppUserLogin) {
             AppLoginScreen()
         }
@@ -60,6 +71,29 @@ struct OctopusUIView: View {
         }
         .fullScreenCover(isPresented: $displayGroupAccessDenied) {
             GroupAccessDeniedScreen(groupId: groupAccessDeniedGroupId)
+        }
+        .fullScreenCover(isPresented: $displayClientProfile) {
+            ClientProfileScreen(clientUserId: clientProfileClientUserId)
+        }
+        .onReceive(ClientProfileManager.instance.$tappedClientUserId) {
+            guard isDisplayed, let clientUserId = $0 else { return }
+            clientProfileClientUserId = clientUserId
+            displayClientProfile = true
+            // Consume the tap immediately so `tappedClientUserId` behaves as a one-shot event.
+            // If it stayed non-nil while ClientProfileScreen is shown, any OTHER OctopusUIView that
+            // appears on top (notably the "See their Octopus posts" activity screen, which is itself
+            // an OctopusUIView) would re-receive this current value the moment it subscribes — a
+            // `@Published` replays its current value to every new subscriber — and re-fire this
+            // handler. That competing presentation cancels the just-presented activity sheet, so the
+            // button looked broken. Resetting here (rather than on dismiss) closes that window.
+            ClientProfileManager.instance.tappedClientUserId = nil
+        }
+        .onReceive(ClientProfileManager.instance.$editProfileRequested) {
+            guard isDisplayed, $0 else { return }
+            // "Edit my profile" from the connected-user Activity menu → host's own edit screen.
+            displayEditAppUserProfile = true
+            // Consume the one-shot event immediately (mirrors tappedClientUserId above).
+            ClientProfileManager.instance.editProfileRequested = false
         }
         .onReceive(GroupAccessDeniedManager.instance.$deniedGroupId) {
             guard isDisplayed, let groupId = $0 else { return }

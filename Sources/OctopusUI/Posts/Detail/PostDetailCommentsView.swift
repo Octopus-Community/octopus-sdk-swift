@@ -15,7 +15,7 @@ struct PostDetailCommentsView: View {
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openCreateComment: () -> Void
     let deleteComment: (String) -> Void
     let blockAuthor: (String) -> Void

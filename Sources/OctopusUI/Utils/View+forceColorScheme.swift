@@ -6,6 +6,7 @@ import SwiftUI
 
 private struct ForceColorSchemeModifier: ViewModifier {
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.octopusTheme) private var theme
     let forceColorScheme: Bool
     let forcedColorScheme: ColorScheme
 
@@ -22,7 +23,7 @@ private struct ForceColorSchemeModifier: ViewModifier {
             .colorScheme(forceColorScheme ? forcedColorScheme : colorScheme)
             .modify {
                 if #available(iOS 16.0, *) {
-                    $0.toolbarBackground(forceColorScheme ? color : Color(UIColor.systemBackground),
+                    $0.toolbarBackground(forceColorScheme ? color : theme.colors.background,
                                          for: .navigationBar)
                 } else { $0 }
             }

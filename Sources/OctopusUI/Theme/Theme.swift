@@ -42,6 +42,12 @@ public struct OctopusTheme: Sendable {
         public let primaryHighContrast: Color
         /// Color of the text displayed over a view with primary color
         public let onPrimary: Color
+        /// Color of links (e.g. URLs displayed in posts and comments)
+        public let link: Color
+        /// Background color of the community screens. Default is the system background
+        /// (white in light mode, near-black in dark mode). Pass a dynamic `Color(UIColor { ... })`
+        /// if you need a custom color that adapts to light/dark mode.
+        public let background: Color
 
         // Non editable values
         public let gray100: Color = .Gen.Theme.gray100
@@ -66,8 +72,6 @@ public struct OctopusTheme: Sendable {
         public let success: Color = .Gen.Theme.success
         /// Low contrast color for elements that represents a success
         public let successLowContrast: Color = .Gen.Theme.successLowContrast
-        /// Color of links
-        public let link: Color = .Gen.Theme.link
         /// Color of the like button when the content is liked
         public let like: Color = .Gen.Theme.danger200
         /// Background color of the screens that are placed above others
@@ -78,13 +82,21 @@ public struct OctopusTheme: Sendable {
         ///   - primarySet: the primary color set. Nil if you want the default value to be used.
         ///   - onPrimary: the color of a content displayed over a view with the primary color.
         ///                Nil if you want the default value to be used.
+        ///   - link: the color of links (e.g. URLs displayed in posts and comments).
+        ///           Nil if you want the default value to be used.
+        ///   - background: the background color of the community screens. Nil if you want the default
+        ///                 value (system background) to be used.
         public init(
             primarySet: ColorSet? = nil,
-            onPrimary: Color? = nil) {
+            onPrimary: Color? = nil,
+            link: Color? = nil,
+            background: Color? = nil) {
                 self.primary = primarySet?.main ?? .Gen.Theme.Primary.main
                 self.primaryLowContrast = primarySet?.lowContrast ?? .Gen.Theme.Primary.lowContrast
                 self.primaryHighContrast = primarySet?.highContrast ?? .Gen.Theme.Primary.highContrast
                 self.onPrimary = onPrimary ?? .Gen.Theme.gray100
+                self.link = link ?? .Gen.Theme.link
+                self.background = background ?? Color(.systemBackground)
             }
     }
 

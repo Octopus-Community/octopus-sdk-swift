@@ -12,16 +12,21 @@ public struct MinimalProfile: Equatable, Sendable {
     public let avatarUrl: URL?
     public let tags: ProfileTags
     public let gamificationLevel: Int?
+    /// The user's id in the host app's own system (Unified Profile). Non-nil only when the community
+    /// exposes client user ids (`CommunityConfig.exposeClientUserId`) and the member has one — absent
+    /// for Octopus-auth users, guests and BO/admin-created profiles. Defaults to `nil`.
+    public let clientUserId: String?
 
     /// Public constructor, only for SwiftUI previews
     public init(uuid: String, nickname: String,
                 avatarUrl: URL? = nil, tags: ProfileTags = [],
-                gamificationLevel: Int? = nil) {
+                gamificationLevel: Int? = nil, clientUserId: String? = nil) {
         self.uuid = uuid
         self.nickname = nickname
         self.avatarUrl = avatarUrl
         self.tags = tags
         self.gamificationLevel = gamificationLevel
+        self.clientUserId = clientUserId
     }
 }
 
@@ -49,6 +54,7 @@ extension MinimalProfile {
         avatarUrl = entity.avatarUrl
         tags = entity.tags
         gamificationLevel = entity.gamificationLevel >= 0 ? entity.gamificationLevel : nil
+        clientUserId = entity.clientUserId
     }
 
     init(from profile: Com_Octopuscommunity_MinimalProfile) {
@@ -61,6 +67,7 @@ extension MinimalProfile {
         }
         tags = ProfileTags(from: profile.tags)
         gamificationLevel = profile.hasGamificationLevel ? Int(profile.gamificationLevel) : nil
+        clientUserId = profile.hasClientUserID ? profile.clientUserID.nilIfEmpty : nil
     }
 }
 

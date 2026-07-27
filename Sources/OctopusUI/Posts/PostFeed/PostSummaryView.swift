@@ -18,7 +18,8 @@ struct PostSummaryView: View {
     let displayPostDetail: (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool,
                             _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
+    let openGroup: (String) -> Void
     let deletePost: (String) -> Void
     let deleteComment: (String) -> Void
     let blockAuthor: (String) -> Void
@@ -60,6 +61,7 @@ struct PostSummaryView: View {
                 reactionTapped: { reactionTapped($0, post.uuid) },
                 voteOnPoll: { voteOnPoll($0, post.uuid) },
                 displayProfile: displayProfile,
+                openGroup: openGroup,
                 deletePost: { deletePost(post.uuid) },
                 blockAuthor: blockAuthor,
                 displayContentModeration: displayContentModeration,
@@ -119,7 +121,7 @@ struct PostSummaryView: View {
         .modify {
             if let authorId = post.author.profileId {
                 $0.accessibilityAction(named: Text("Accessibility.Content.Action.ViewAuthor", bundle: .module)) {
-                    displayProfile(authorId)
+                    displayProfile(authorId, post.author.clientUserId)
                 }
             } else { $0 }
         }
@@ -187,6 +189,7 @@ struct PostSummaryView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
+            groupId: "groupUuid",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -215,7 +218,8 @@ struct PostSummaryView: View {
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
+        openGroup: { _ in },
         deletePost: { _ in },
         deleteComment: { _ in },
         blockAuthor: { _ in },
@@ -243,6 +247,7 @@ struct PostSummaryView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
+            groupId: "groupUuid",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -273,7 +278,8 @@ struct PostSummaryView: View {
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
+        openGroup: { _ in },
         deletePost: { _ in },
         deleteComment: { _ in },
         blockAuthor: { _ in },
@@ -301,6 +307,7 @@ struct PostSummaryView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
+            groupId: "groupUuid",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -340,7 +347,8 @@ struct PostSummaryView: View {
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
+        openGroup: { _ in },
         deletePost: { _ in },
         deleteComment: { _ in },
         blockAuthor: { _ in },
@@ -368,6 +376,7 @@ struct PostSummaryView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
+            groupId: "groupUuid",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -397,7 +406,8 @@ struct PostSummaryView: View {
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
+        openGroup: { _ in },
         deletePost: { _ in },
         deleteComment: { _ in },
         blockAuthor: { _ in },
@@ -429,6 +439,7 @@ struct PostSummaryView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
+            groupId: "groupUuid",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -466,7 +477,8 @@ struct PostSummaryView: View {
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
+        openGroup: { _ in },
         deletePost: { _ in },
         deleteComment: { _ in },
         blockAuthor: { _ in },
@@ -498,6 +510,7 @@ struct PostSummaryView: View {
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
             relativeDate: "3d ago",
             topic: "Help",
+            groupId: "groupUuid",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -528,7 +541,8 @@ struct PostSummaryView: View {
         zoomableImageInfo: .constant(nil),
         displayPostDetail: { _, _, _, _, _ in },
         displayCommentDetail: { _, _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
+        openGroup: { _ in },
         deletePost: { _ in },
         deleteComment: { _ in },
         blockAuthor: { _ in },

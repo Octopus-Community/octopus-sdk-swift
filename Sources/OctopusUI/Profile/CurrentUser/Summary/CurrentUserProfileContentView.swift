@@ -8,6 +8,7 @@ import UIKit
 
 struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: View {
     @Environment(\.octopusTheme) private var theme
+    @Environment(\.layoutDirection) private var layoutDirection
     let profile: DisplayableCurrentUserProfile
     let gamificationConfig: GamificationConfig?
     let displayAccountAge: Bool
@@ -57,8 +58,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
-            Compat.ScrollView(refreshAction: refresh) {
+        Compat.ScrollView(refreshAction: refresh) {
                 VStack(spacing: 0) {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 16) {
@@ -80,7 +80,9 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                                                 .background(theme.colors.primary)
                                                 .clipShape(Circle())
                                                 .frame(width: 20, height: 20)
-                                                .offset(x: 26, y: 26)
+                                                // Keep the badge on the avatar's trailing-bottom corner in
+                                                // both directions (offset x is physical, so flip it in RTL).
+                                                .offset(x: layoutDirection == .rightToLeft ? -26 : 26, y: 26)
                                         )
                                 }
                                 .buttonStyle(.plain)
@@ -258,15 +260,30 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                     }
 
                 }
+                // Top gap moved inside the scroll content (was `.padding(.top, 8)` wrapping the whole
+                // scroll view, which pinned it below the safe area and blocked the under-bar bleed).
+                .padding(.top, 8)
+                .constrainedContentColumn()
             }
+            // Match the feed/group scroll views so the scroll owns the full region, including the
+            // space behind the nav bar — the content then bleeds under the iOS 26 translucent bar.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .coordinateSpace(name: scrollViewCoordinateSpace)
             .postsVisibilityScrollView()
+            // Pinned tab header as an overlay (not a ZStack sibling): an overlay renders inside the
+            // base view's safe area, so it stays below the nav bar while the scroll view bleeds under
+            // it — mirroring the feed's explore-bar overlay in MainRootFeedView.
+            .overlay(stickyTabHeader, alignment: .top)
+    }
 
-            if displayStickyHeader {
-                CustomSegmentedControl(tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],
-                                       tabCount: 2, selectedTab: $selectedTab)
-                .background(Color(UIColor.systemBackground))
-            }
+    @ViewBuilder
+    private var stickyTabHeader: some View {
+        if displayStickyHeader {
+            // Instagram-style glass "pills" that float over the blurred content scrolling under the
+            // translucent nav bar.
+            ProfileStickyTabsHeader(
+                tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],
+                selectedTab: $selectedTab)
         }
     }
 

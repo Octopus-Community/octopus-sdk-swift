@@ -29,6 +29,7 @@ struct PostCatchPhraseView: View {
     var body: some View {
         HStack {
             textView
+                .octopusBodyContentLineHeight()
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }

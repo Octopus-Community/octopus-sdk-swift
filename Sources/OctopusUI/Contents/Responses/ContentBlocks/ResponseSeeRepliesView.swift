@@ -15,6 +15,7 @@ struct ResponseSeeRepliesView: View {
             HStack(spacing: 4) {
                 Image(uiImage: theme.assets.icons.content.comment.seeReply)
                     .resizable()
+                    .flipsForRightToLeftLayoutDirection(true)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 18, height: 18)
                     .foregroundColor(theme.colors.primary)

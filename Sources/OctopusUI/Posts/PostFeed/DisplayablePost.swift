@@ -69,6 +69,8 @@ struct DisplayablePost: Equatable {
     let author: Author
     let relativeDate: String
     let topic: String?
+    /// Identifier of the post's group (its `parentId`). Backs the "View group" menu entry.
+    let groupId: String?
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
@@ -164,6 +166,7 @@ extension DisplayablePost {
         }
         relativeDate = dateFormatter.customLocalizedStructure(for: post.creationDate, relativeTo: Date())
         self.topic = topic?.name
+        self.groupId = post.parentId
 
         displayEvents = CellDisplayEvents(onAppear: onAppear, onDisappear: onDisappear)
     }

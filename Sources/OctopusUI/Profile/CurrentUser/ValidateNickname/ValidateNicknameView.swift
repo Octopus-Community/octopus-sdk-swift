@@ -19,7 +19,7 @@ struct ValidateNicknameScreen: View {
         ValidateNicknameFlowNavigationStack(octopus: octopus, flowPath: flowPath) {
             ValidateNicknameView(octopus: octopus, isPresented: $isPresented)
         }
-        .presentationBackground(Color(.systemBackground))
+        .presentationBackground(theme.colors.background)
         .accentColor(theme.colors.primary)
     }
 }

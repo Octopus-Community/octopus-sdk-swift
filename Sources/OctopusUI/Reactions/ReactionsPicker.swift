@@ -38,7 +38,7 @@ struct PopoverReactionsBar: View {
         .padding(.horizontal, barHorizontalPadding)
         .background(
             Capsule()
-                .fill(Color(.systemBackground))
+                .fill(theme.colors.background)
                 .overlay(Capsule().stroke(theme.colors.gray300, lineWidth: 1))
                 .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
         )

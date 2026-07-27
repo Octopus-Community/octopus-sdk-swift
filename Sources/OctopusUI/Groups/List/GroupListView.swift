@@ -99,15 +99,9 @@ private struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-#if compiler(>=6.2)
-            // Disable nav bar opacity on iOS 26 to have the same behavior as before.
-            // TODO: See with product team if we need to keep it.
-            if #available(iOS 26.0, *) {
-                Color.white.opacity(0.0001)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 1)
-            }
-#endif
+            // On iOS 26 the navigation bar uses its default translucent (glass) behavior, matching
+            // the other screens of the SDK (OCT-1532 — product confirmed the group list should not
+            // opt out of the iOS 26 nav bar style).
             GeometryReader { geometry in
                 Compat.ScrollView(refreshAction: refresh) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -116,7 +110,12 @@ private struct ContentView: View {
                                 let section = groups.sections[sectionIdx]
                                 if let currentSectionGroups = groups.groupsBySection[section],
                                    !currentSectionGroups.isEmpty {
-                                    SectionView(section: section, horizontalPadding: leadingPadding)
+                                    // Separator above every block except the first rendered (non-empty) one.
+                                    let hasEarlierRenderedSection = groups.sections[..<sectionIdx].contains {
+                                        !(groups.groupsBySection[$0]?.isEmpty ?? true)
+                                    }
+                                    SectionView(section: section, horizontalPadding: leadingPadding,
+                                                showSeparator: hasEarlierRenderedSection)
 
                                     ForEach(currentSectionGroups.indices, id: \.self) { groupIdx in
                                         let group = currentSectionGroups[groupIdx]
@@ -146,6 +145,9 @@ private struct ContentView: View {
                         }
                     }
                     .frame(minHeight: geometry.size.height)
+                    // Cap & center the list column on large screens so the follow CTA stays close to
+                    // the group name instead of being pushed to the far edge in landscape (OCT-1532).
+                    .constrainedContentColumn()
                 }
                 .onValueChanged(of: context, initial: true) { context in
                     switch context {
@@ -156,6 +158,7 @@ private struct ContentView: View {
                 }
             }
         }
+        .largeScreenMarginBackground()
     }
 }
 
@@ -164,19 +167,28 @@ private struct SectionView: View {
 
     let section: GroupList.Section
     let horizontalPadding: CGFloat
+    /// A full-width 1px separator is drawn above the section, except when it is the first block of the
+    /// list (never at the head, never at the foot).
+    let showSeparator: Bool
 
     var body: some View {
-        switch section {
-        case .noSectionGroups:
-            EmptyView()
-        case let .clientSection(name):
-            Text(name)
-                .font(theme.fonts.body2)
-                .fontWeight(.semibold)
-                .foregroundColor(theme.colors.gray500)
-                .padding(.top, 24)
-                .padding(.bottom, 4)
-                .padding(.horizontal, horizontalPadding)
+        VStack(alignment: .leading, spacing: 0) {
+            if showSeparator {
+                theme.colors.gray300.frame(height: 1)
+                    .padding(.top, 8)
+            }
+            switch section {
+            case .noSectionGroups:
+                EmptyView()
+            case let .clientSection(name):
+                Text(name)
+                    .font(theme.fonts.body2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(theme.colors.gray500)
+                    .padding(.top, 20)
+                    .padding(.bottom, 8)
+                    .padding(.horizontal, horizontalPadding)
+            }
         }
     }
 }
@@ -224,7 +236,7 @@ private struct GroupView: View {
                     FollowGroupButton(canChangeFollowStatus: canChangeFollowStatus, isFollowed: isFollowed,
                                       toggleFollow: { changeFollowStatus(group.id, !isFollowed) })
 
-                    IconImage(theme.assets.icons.common.listCellNavIndicator)
+                    IconImage(theme.assets.icons.common.listCellNavIndicator, flipsForRTL: true)
                         .font(theme.fonts.body1)
                         .foregroundColor(theme.colors.gray300)
                 case .groupSelection:

@@ -21,6 +21,8 @@ class PublicProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var descPostFeedId: String
     @NSManaged public var ascPostFeedId: String
 
+    @NSManaged public var clientUserId: String?
+
     var tags: ProfileTags { ProfileTags(rawValue: tagsRawValue) }
 
     var totalMessages: Int? {

@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import Combine
 import UserNotifications
 import Testing
 import Octopus
@@ -247,6 +248,24 @@ class APITests {
         })
     }
 
+    @Test func testSetOnNavigateToProfileCallback() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        octopus.set(onNavigateToProfileCallback: { clientUserId in
+            let _: String = clientUserId
+        })
+        octopus.set(onNavigateToProfileCallback: nil)
+        let _: ((String) -> Void)? = octopus.onNavigateToProfileCallback
+    }
+
+    @Test func testSetOnNavigateToProfileEditCallback() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        octopus.set(onNavigateToProfileEditCallback: { fieldToEdit in
+            let _: ConnectionMode.SSOConfiguration.ProfileField? = fieldToEdit
+        })
+        octopus.set(onNavigateToProfileEditCallback: nil)
+        let _: ((ConnectionMode.SSOConfiguration.ProfileField?) -> Void)? = octopus.onNavigateToProfileEditCallback
+    }
+
     @Test func testSwitchCommunity() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY")
         try await octopus.switchCommunity(apiKey: "")
@@ -357,13 +376,14 @@ class APITests {
                 case .profile: break
                 case let .otherUserProfile(context):
                     let _: String = context.profileId
+                case let .otherUserPosts(context):
+                    let _: String = context.profileId
                 case .editProfile: break
                 case .reportContent: break
                 case .reportProfile: break
                 case .validateNickname: break
                 case .settingsList: break
                 case .settingsAccount: break
-                case .settingsAbout: break
                 case .reportExplanation: break
                 case .deleteAccount: break
                 }
@@ -441,6 +461,12 @@ class APITests {
         )
         _ = OctopusInitialScreen.createPost(.init(prefilledPost: signedPrefill))
 
+        // User-posts initial screen (Unified Profile) — both entry points
+        _ = OctopusInitialScreen.activity(.init(clientUserId: "CLIENT_USER_ID"))
+        _ = OctopusInitialScreen.activity(.init(profileId: "PROFILE_ID"))
+        _ = OctopusInitialScreen.ActivityScreenInfo(clientUserId: "CLIENT_USER_ID")
+        _ = OctopusInitialScreen.ActivityScreenInfo(profileId: "PROFILE_ID")
+
         // Surface every ValidationError case so removing one becomes a compile error
         func handle(_ error: OctopusPrefilledPost.ValidationError) {
             switch error {
@@ -457,6 +483,29 @@ class APITests {
             let _: String = error.debugDescription
         }
         _ = handle
+    }
+
+    @Test func testCommunityDataApi() async throws {
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+
+        // Both entry points (Unified Profile): by client user id and by Octopus profile id
+        let _: OctopusCommunityData? = try await octopusSdk.fetchCommunityData(clientUserId: "CLIENT_USER_ID")
+        let _: OctopusCommunityData? = try await octopusSdk.fetchCommunityData(profileId: "PROFILE_ID")
+        let _: AnyPublisher<OctopusCommunityData?, Never> =
+            octopusSdk.communityDataPublisher(clientUserId: "CLIENT_USER_ID")
+        let _: AnyPublisher<OctopusCommunityData?, Never> =
+            octopusSdk.communityDataPublisher(profileId: "PROFILE_ID")
+
+        // Surface every public field so removing one becomes a compile error
+        func consume(_ data: OctopusCommunityData) {
+            let _: String = data.profileId
+            let _: Int? = data.messageCount
+            if let gamification: OctopusGamification = data.gamification {
+                let _: Int = gamification.level
+                let _: Int? = gamification.score
+            }
+        }
+        _ = consume
     }
 
     @Test func testSyncFollowGroupsAPI() async throws {
@@ -561,6 +610,7 @@ extension APITests {
     @Test func testOctopusProfile() async throws {
         func check(profile: OctopusProfile) {
             let _: Set<String> = profile.entitlements
+            let _: String? = profile.clientUserId
             let _: Bool = profile.isGuest
         }
         _ = check

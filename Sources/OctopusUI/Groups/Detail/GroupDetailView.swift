@@ -22,6 +22,7 @@ struct GroupDetailView: View {
     private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
+    @State private var isScrollingDown = false
 
     init(octopus: OctopusSDK, groupId: String, mainFlowPath: MainFlowPath,
          translationStore: ContentTranslationPreferenceStore,
@@ -44,7 +45,8 @@ struct GroupDetailView: View {
                 viewModel.octopus.groupAccessDeniedCallback?(viewModel.groupId)
             },
             scrollToTop: $viewModel.scrollToTop,
-            refresh: viewModel.refresh) {
+            refresh: viewModel.refresh,
+            isScrollingDown: $isScrollingDown) {
                 postFeedView
             }
             .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
@@ -56,9 +58,11 @@ struct GroupDetailView: View {
                             AuthorActionView(
                                 octopus: viewModel.octopus, actionKind: .post,
                                 displayCreateButton: viewModel.canCreateAnyPost,
+                                isScrollingDown: isScrollingDown,
                                 userProfileTapped: {
                                     if viewModel.ensureConnected(action: .viewOwnProfile) {
-                                        navigator.push(.currentUserProfile)
+                                        dispatchCurrentUserActivityTap(octopus: viewModel.octopus,
+                                                                      navigator: navigator)
                                     }
                                 },
                                 actionTapped: {
@@ -74,9 +78,11 @@ struct GroupDetailView: View {
                                 AuthorActionView(
                                     octopus: viewModel.octopus, actionKind: .post,
                                     displayCreateButton: viewModel.canCreateAnyPost,
+                                    isScrollingDown: isScrollingDown,
                                     userProfileTapped: {
                                         if viewModel.ensureConnected(action: .viewOwnProfile) {
-                                            navigator.push(.currentUserProfile)
+                                            dispatchCurrentUserActivityTap(octopus: viewModel.octopus,
+                                                                          navigator: navigator)
                                         }
                                     },
                                     actionTapped: {
@@ -87,6 +93,7 @@ struct GroupDetailView: View {
                         alignment: .bottomTrailing)
                 }
             }
+            .largeScreenMarginBackground()
             .zoomableImageContainer(
                 zoomableImageInfo: $zoomableImageInfo,
                 defaultLeadingBarItem: leadingBarItem(group: viewModel.group),
@@ -118,14 +125,12 @@ struct GroupDetailView: View {
                     navigator.push(.commentDetail(
                         commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: nil))
                 },
-                displayProfile: { profileId in
+                displayProfile: { profileId, clientUserId in
                     if #available(iOS 14, *) { Logger.profile.trace("Display profile \(profileId)") }
-                    if profileId == viewModel.thisUserProfileId {
-                        navigator.push(.currentUserProfile)
-                    } else {
-                        navigator.push(.publicProfile(profileId: profileId))
-                    }
+                    dispatchProfileTap(octopus: viewModel.octopus, navigator: navigator,
+                                       profileId: profileId, clientUserId: clientUserId)
                 },
+                openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                 displayContentModeration: {
                     mainFlowPath.reportTarget = .content(contentId: $0)
                 }) {
@@ -165,20 +170,13 @@ private struct ContentView<PostsView: View>: View {
     let onAccessDeniedTap: () -> Void
     @Binding var scrollToTop: Bool
     let refresh: @Sendable () async -> Void
+    @Binding var isScrollingDown: Bool
 
     @ViewBuilder let postsView: PostsView
 
     var body: some View {
         VStack(spacing: 0) {
-#if compiler(>=6.2)
-            // Disable nav bar opacity on iOS 26 to have the same behavior as before.
-            // TODO: See with product team if we need to keep it.
-            if #available(iOS 26.0, *) {
-                Color.white.opacity(0.0001)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 1)
-            }
-#endif
+            // On iOS 26 the navigation bar uses its default translucent (glass) behavior (OCT-1532).
             Compat.ScrollView(
                 showIndicators: false,
                 scrollToTop: $scrollToTop,
@@ -215,9 +213,12 @@ private struct ContentView<PostsView: View>: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
                     }
+                    .scrollDirectionAnchor()
+                    .constrainedContentColumn()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .postsVisibilityScrollView()
+                .onScrollDirectionChange(isScrollingDown: $isScrollingDown)
         }
     }
 }

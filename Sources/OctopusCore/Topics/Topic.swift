@@ -19,6 +19,15 @@ public struct Topic: Sendable, Equatable {
 }
 
 extension Topic {
+    /// Returns a copy of the topic with its `sections` replaced. Used by the debug section-override
+    /// affordance (see `TopicsRepository.debugOverrideTopicSections`) so the sample can exercise the
+    /// sectioned group-list rendering without a backend that serves client sections.
+    func withSections(_ sections: [Section]) -> Topic {
+        Topic(uuid: uuid, name: name, description: description, canChangeFollowStatus: canChangeFollowStatus,
+              isFollowed: isFollowed, sections: sections, feedId: feedId, permissions: permissions,
+              customAction: customAction, feed: feed)
+    }
+
     init(from topic: StorableTopic, postFeedsStore: PostFeedsStore) {
         uuid = topic.uuid
         name = topic.name

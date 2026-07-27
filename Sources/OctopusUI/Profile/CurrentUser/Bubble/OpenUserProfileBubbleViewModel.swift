@@ -12,6 +12,10 @@ class OpenUserProfileBubbleViewModel: ObservableObject {
 
     @Published private(set) var avatar: Author.Avatar = .notConnected
     @Published private(set) var badgeCount: String?
+    /// Whether Unified Profile is active (OCT-1374). When `true`, the home floating button shows the
+    /// activity-button glyph instead of the connected user's avatar and opens the Activity screen (same
+    /// gate as the profile-tap routing — see `unifiedProfileActive`).
+    @Published private(set) var isUnifiedProfileActive = false
 
     let octopus: OctopusSDK
 
@@ -37,5 +41,15 @@ class OpenUserProfileBubbleViewModel: ObservableObject {
             default: "+99"
             }
         }.store(in: &storage)
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { [octopus] config in
+                unifiedProfileActive(
+                    exposeClientUserId: config?.exposeClientUserId ?? false,
+                    onNavigateToProfileWired: octopus.onNavigateToProfileCallback != nil)
+            }
+            .removeDuplicates()
+            .sink { [unowned self] in isUnifiedProfileActive = $0 }
+            .store(in: &storage)
     }
 }

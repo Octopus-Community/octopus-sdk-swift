@@ -36,6 +36,23 @@ public protocol ProfileRepository: Sendable {
 
     func getProfile(profileId: String) -> AnyPublisher<Profile?, Never>
     func fetchProfile(profileId: String) async throws(ServerCallError)
+
+    /// Fetches a member's public profile directly by their Octopus profile id (Unified Profile).
+    /// Mirrors ``fetchProfile(byClientUserId:)`` but resolves the member by their Octopus id rather
+    /// than the host's own client user id, so it needs no client-user-id lookup. Upserts the fetched
+    /// profile into the public-profile database when one is returned, and returns it (or `nil` when the
+    /// server has no such profile). Unlike ``fetchProfile(profileId:)`` — which only refreshes the
+    /// cache and returns `Void` — this returns the fetched profile for a one-shot read.
+    func fetchProfile(byProfileId profileId: String) async throws(ServerCallError) -> Profile?
+
+    /// Fetches a member's public profile by the host's own client user id (Unified Profile), resolved
+    /// through the `GetPublicProfile` client-user-id lookup. Upserts the fetched profile into the
+    /// public-profile database when one is returned, and returns it (or `nil` when the community has
+    /// no member for that client user id). An empty response leaves the cache untouched — there is
+    /// nothing cached under a client user id to evict. The lookup may fail with a server error (e.g.
+    /// FAILED_PRECONDITION) when the community does not expose client user ids.
+    func fetchProfile(byClientUserId clientUserId: String) async throws(ServerCallError) -> Profile?
+
     func blockUser(profileId: String) async throws(AuthenticatedActionError)
 }
 
@@ -113,8 +130,14 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 )
                 .map { [weak self] in
                     guard let self, let storableProfile = $0 else { return nil }
+                    // Unified Profile (SSO): stamp the host's client user id on the connected user's
+                    // profile. Mirrors Android — only non-guest profiles carry it; guests get nil.
+                    // (The tuple's second element stays the raw clientId, feeding profileClientUserId
+                    // for the client-user/profile matching below.)
+                    let clientUserId = storableProfile.isGuest ? nil : userData.clientId
                     return (CurrentUserProfile(storableProfile: storableProfile, gamificationLevels: $1 ?? [],
-                                               postFeedsStore: postFeedsStore), userData.clientId)
+                                               postFeedsStore: postFeedsStore, clientUserId: clientUserId),
+                            userData.clientId)
                 }
                 .eraseToAnyPublisher()
             }
@@ -257,6 +280,67 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         }
     }
 
+    public func fetchProfile(byProfileId profileId: String) async throws(ServerCallError) -> Profile? {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        // Cold start: the gamification level is resolved against the cached community config. Without
+        // this best-effort load, a fetch performed before the config is cached would report
+        // `gamificationLevel == nil` even when gamification is enabled (indistinguishable from
+        // "disabled"). A config failure falls back to the previous behavior instead of failing the
+        // profile fetch itself.
+        if configRepository.communityConfig == nil {
+            try? await configRepository.refreshCommunityConfig()
+        }
+        do {
+            let profileResponse = try await remoteClient.userService.getPublicProfile(
+                profileId: profileId,
+                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            // Mirror fetchProfile(byClientUserId:): return nil on an empty response rather than
+            // upserting a malformed profile.
+            guard profileResponse.hasProfile else { return nil }
+            let storableProfile = StorableProfile(from: profileResponse.profile)
+            try await publicProfileDatabase.upsert(profile: storableProfile)
+            return Profile(
+                storableProfile: storableProfile,
+                gamificationLevels: configRepository.communityConfig?.gamificationConfig?.gamificationLevels ?? [],
+                postFeedsStore: postFeedsStore)
+        } catch {
+            if let error = error as? RemoteClientError {
+                throw .serverError(ServerError(remoteClientError: error))
+            } else {
+                throw .other(error)
+            }
+        }
+    }
+
+    public func fetchProfile(byClientUserId clientUserId: String) async throws(ServerCallError) -> Profile? {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        // Same cold-start guard as fetchProfile(byProfileId:) — see the comment there.
+        if configRepository.communityConfig == nil {
+            try? await configRepository.refreshCommunityConfig()
+        }
+        do {
+            let profileResponse = try await remoteClient.userService.getPublicProfile(
+                clientUserId: clientUserId,
+                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            // Unlike fetchProfile(profileId:), do NOT delete on an empty response: a community that does
+            // not expose client user ids simply yields no profile, and there is nothing cached under a
+            // client user id to evict.
+            guard profileResponse.hasProfile else { return nil }
+            let storableProfile = StorableProfile(from: profileResponse.profile)
+            try await publicProfileDatabase.upsert(profile: storableProfile)
+            return Profile(
+                storableProfile: storableProfile,
+                gamificationLevels: configRepository.communityConfig?.gamificationConfig?.gamificationLevels ?? [],
+                postFeedsStore: postFeedsStore)
+        } catch {
+            if let error = error as? RemoteClientError {
+                throw .serverError(ServerError(remoteClientError: error))
+            } else {
+                throw .other(error)
+            }
+        }
+    }
+
     public func blockUser(profileId: String) async throws(AuthenticatedActionError) {
         guard let profile = profile else { throw .userNotAuthenticated }
         guard profileId != profile.id else { throw .other(InternalError.invalidArgument) }
@@ -290,11 +374,14 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     func createOrUpdateUserProfile(with profile: EditableProfile, findAvailableNickname: Bool = false)
     async throws(UpdateProfile.Error) -> (CurrentUserProfile, Data?) {
         let (storableProfile, pictureData) = try await internalUpdateUserProfile(with: profile)
+        // Keep the returned value consistent with the published profile (see Combine pipeline): the
+        // connected user's client user id is stamped for non-guest SSO profiles, nil otherwise.
+        let clientUserId = storableProfile.isGuest ? nil : userDataStorage.userData?.clientId
         return (
             CurrentUserProfile(
                 storableProfile: storableProfile,
                 gamificationLevels: configRepository.communityConfig?.gamificationConfig?.gamificationLevels ?? [],
-                postFeedsStore: postFeedsStore),
+                postFeedsStore: postFeedsStore, clientUserId: clientUserId),
             pictureData)
     }
 

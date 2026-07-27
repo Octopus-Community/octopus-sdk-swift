@@ -42,7 +42,7 @@ struct MagicLinkView: View {
 //                    EmptyView()
 //                }.hidden()
             }
-            .presentationBackground(Color(.systemBackground))
+            .presentationBackground(theme.colors.background)
             .compatAlert(
                 "Common.Error",
                 isPresented: $displayMagicLinkConfirmationError,

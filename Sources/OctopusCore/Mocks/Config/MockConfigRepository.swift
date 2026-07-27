@@ -17,12 +17,25 @@ class MockConfigRepository: ConfigRepository, InjectableObject, @unchecked Senda
     @Published private(set) var userConfig: UserConfig?
     var userConfigPublisher: AnyPublisher<UserConfig?, Never> { $userConfig.eraseToAnyPublisher() }
 
+    /// The config `refreshCommunityConfig()` will apply on its next call, or `nil` to keep the no-op
+    /// default behavior. Lets tests simulate the cold-start guard in
+    /// `ProfileRepository.fetchProfile(byProfileId:)` / `fetchProfile(byClientUserId:)`: a config that
+    /// only becomes available once the (mocked) refresh is triggered.
+    private var nextRefreshCommunityConfig: CommunityConfig?
+
     init() {
         userConfig = UserConfig(canAccessCommunity: true, accessDeniedMessage: nil)
     }
 
-    func refreshCommunityConfig() async throws(ServerCallError) {
+    func injectNextRefreshCommunityConfig(_ config: CommunityConfig) {
+        nextRefreshCommunityConfig = config
+    }
 
+    func refreshCommunityConfig() async throws(ServerCallError) {
+        if let nextRefreshCommunityConfig {
+            communityConfig = nextRefreshCommunityConfig
+            self.nextRefreshCommunityConfig = nil
+        }
     }
 
     public func overrideCommunityAccess(_ access: Bool) async throws {
@@ -41,5 +54,15 @@ class MockConfigRepository: ConfigRepository, InjectableObject, @unchecked Senda
     public func debugOverrideContentOptions(_ options: ContentOptions?) {
         guard let communityConfig, let options else { return }
         self.communityConfig = communityConfig.withContentOptions(options)
+    }
+
+    public func debugOverrideExposeClientUserId(_ enabled: Bool?) {
+        guard let communityConfig, let enabled else { return }
+        self.communityConfig = communityConfig.withExposeClientUserId(enabled)
+    }
+
+    public func debugOverrideTermsAcceptanceMode(_ mode: TermsAcceptanceMode?) {
+        guard let communityConfig, let mode else { return }
+        self.communityConfig = communityConfig.withTermsAcceptanceMode(mode)
     }
 }

@@ -24,6 +24,7 @@ struct ScenariosView: View {
                 }
                 Section(header: Text("Groups")) {
                     SyncFollowGroupsCell()
+                    GroupSectionsCell()
                 }
                 Section(header: Text("A/B Testing")) {
                     TrackABTestsCell(showFullScreen: showFullScreen)
@@ -34,9 +35,14 @@ struct ScenariosView: View {
                 }
                 Section(header: Text("Profile")) {
                     ProfileFieldsLockCell()
+                    UnifiedProfileCell()
+                    ProfileDirectOpenCell()
                 }
                 Section(header: Text("Content")) {
                     ContentOptionsCell()
+                }
+                Section(header: Text("Consent")) {
+                    TermsAcceptanceModeCell()
                 }
                 Section(header: Text("Analytics")) {
                     CustomEventsCell()

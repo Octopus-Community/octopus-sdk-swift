@@ -33,6 +33,10 @@ extension OctopusEvent {
         case profile
         /// The profile screen of another Octopus user
         case otherUserProfile(OtherUserProfileContext)
+        /// The posts-only "user posts" screen of another Octopus user (Unified Profile).
+        /// Displayed when the host opens a member's posts by their client user id, or when a profile
+        /// tap resolves to a member with no client id while Unified Profile is active.
+        case otherUserPosts(OtherUserPostsContext)
         /// The edit profile screen
         case editProfile
         /// The report content screen
@@ -46,8 +50,6 @@ extension OctopusEvent {
         /// The account settings screen.
         /// Only visible if the SDK is configured in Octopus authentication (not SSO)
         case settingsAccount
-        /// The about settings screen
-        case settingsAbout
         /// The report explanation screen
         case reportExplanation
         /// The delete account screen.
@@ -60,6 +62,12 @@ extension OctopusEvent.Screen {
     /// Context of the otherUserProfile Screen
     public protocol OtherUserProfileContext: Sendable {
         /// The id of the profile that is displayed
+        var profileId: String { get }
+    }
+
+    /// Context of the otherUserPosts Screen
+    public protocol OtherUserPostsContext: Sendable {
+        /// The id of the profile whose posts are displayed
         var profileId: String { get }
     }
 
@@ -122,13 +130,13 @@ extension OctopusEvent.Screen {
         case .createPost: .createPost
         case .profile: .profile
         case let .otherUserProfile(context): .otherUserProfile(context)
+        case let .otherUserPosts(context): .otherUserPosts(context)
         case .editProfile: .editProfile
         case .reportContent: .reportContent
         case .reportProfile: .reportProfile
         case .validateNickname: .validateNickname
         case .settingsList: .settingsList
         case .settingsAccount: .settingsAccount
-        case .settingsAbout: .settingsAbout
         case .reportExplanation: .reportExplanation
         case .deleteAccount: .deleteAccount
         }
@@ -136,6 +144,7 @@ extension OctopusEvent.Screen {
 }
 
 extension SdkEvent.ScreenDisplayedContext.OtherUserProfileContext: OctopusEvent.Screen.OtherUserProfileContext { }
+extension SdkEvent.ScreenDisplayedContext.OtherUserPostsContext: OctopusEvent.Screen.OtherUserPostsContext { }
 extension SdkEvent.ScreenDisplayedContext.MainFeedContext: OctopusEvent.Screen.MainFeedContext { }
 extension SdkEvent.ScreenDisplayedContext.CommentDetailContext: OctopusEvent.Screen.CommentDetailContext { }
 extension SdkEvent.ScreenDisplayedContext.PostDetailContext: OctopusEvent.Screen.PostDetailContext { }

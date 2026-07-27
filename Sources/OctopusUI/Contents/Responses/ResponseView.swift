@@ -22,7 +22,7 @@ struct ResponseView: View {
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
     let reactionTapped: (ReactionKind?) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let deleteResponse: () -> Void
     let blockAuthor: (String) -> Void
     let openCreateReply: () -> Void
@@ -39,7 +39,7 @@ struct ResponseView: View {
         showsRepliesRow: Bool = true,
         zoomableImageInfo: Binding<ZoomableImageInfo?>,
         reactionTapped: @escaping (ReactionKind?) -> Void,
-        displayProfile: @escaping (String) -> Void,
+        displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void,
         deleteResponse: @escaping () -> Void,
         blockAuthor: @escaping (String) -> Void,
         openCreateReply: @escaping () -> Void,
@@ -132,7 +132,7 @@ private struct ResponseContentView: View {
     let onReport: () -> Void
     let onBlockAuthor: () -> Void
     let reactionTapped: (ReactionKind?) -> Void
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openCreateReply: () -> Void
     let openRepliesList: () -> Void
 
@@ -255,7 +255,7 @@ private struct ResponseContentView: View {
         context: .summary(onCardTap: {}),
         zoomableImageInfo: .constant(nil),
         reactionTapped: { _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         deleteResponse: {},
         blockAuthor: { _ in },
         openCreateReply: {},
@@ -270,7 +270,7 @@ private struct ResponseContentView: View {
         context: .summary(onCardTap: {}),
         zoomableImageInfo: .constant(nil),
         reactionTapped: { _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         deleteResponse: {},
         blockAuthor: { _ in },
         openCreateReply: {},
@@ -285,7 +285,7 @@ private struct ResponseContentView: View {
         context: .detail,
         zoomableImageInfo: .constant(nil),
         reactionTapped: { _ in },
-        displayProfile: { _ in },
+        displayProfile: { _, _ in },
         deleteResponse: {},
         blockAuthor: { _ in },
         openCreateReply: {},

@@ -21,6 +21,10 @@ struct MainRootFeedView: View {
     private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
+    @State private var isScrollingDown = false
+    /// Height of the floating "explore groups" bar, measured so the feed's first item can be inset
+    /// below it (the bar floats over the content, so without this its top would sit under the bar).
+    @State private var exploreBarHeight: CGFloat = 0
 
     init(octopus: OctopusSDK,
          mainFlowPath: MainFlowPath,
@@ -36,33 +40,78 @@ struct MainRootFeedView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        PostListView(octopus: viewModel.octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
+                     selectedRootFeed: $viewModel.mainRootFeed,
+                     zoomableImageInfo: $zoomableImageInfo,
+                     isScrollingDown: $isScrollingDown,
+                     // Inset the first item below the floating explore bar (+6pt gap matching the
+                     // bar's own top gap, +8pt breathing room) so the first post's author is never
+                     // hidden under the bar.
+                     topContentInset: exploreBarHeight > 0 ? exploreBarHeight + 6 + 8 : 0)
+            // Bar as an overlay (it floats over the feed, matching the design) rather than a
+            // safe-area inset or a VStack: the scroll content inset never changes, so retracting
+            // the bar does not fight the scroll momentum (no fling slow-down).
+            .overlay(exploreGroupsBarOverlay, alignment: .top)
+            // Value-driven animation so the bar's retract transition fires reliably (even on a
+            // fast fling), mirroring the create button's own value-driven animation.
+            .animation(.easeInOut(duration: 0.3), value: isScrollingDown)
+            .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
+                                    defaultLeadingBarItem: leadingBarItem,
+                                    defaultLeadingSharedBackgroundVisibility: .hidden,
+                                    defaultTrailingBarItem: trailingBarItem,
+                                    defaultCenteredBarItem: centeredBarItem,
+                                    defaultCenteredBarItemVisibility: centeredItemVisibility,
+                                    navBarTitle: titleText,
+                                    defaultNavigationBarPrimaryColor: coloredNavBar,
+                                    // Glass (translucent) nav bar on the default (non-colored) feed,
+                                    // matching the group/post detail screens. The colored case keeps
+                                    // its solid primary background (public `mainFeedColoredNavBar` API).
+                                    // `forceInlineTitle` keeps the title inline even though the feed is
+                                    // a navigation root (glass uses `.automatic`, which would show a
+                                    // large-title block here).
+                                    defaultNavigationBarOpaque: false,
+                                    forceInlineTitle: !coloredNavBar)
+            .errorAlert(viewModel.$error)
+    }
 
-            Button(action: { navigator.push(.groupList(context: .displayFeed)) }) {
-                HStack(spacing: 3) {
-                    IconImage(theme.assets.icons.groups.openList)
-                        .scaleEffect(1.2)
-                    Text("Groups.OpenList", bundle: .module)
-                        .fontWeight(.medium)
-                }
-                .font(theme.fonts.body2)
-                .foregroundColor(theme.colors.gray900)
-            }
-            .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true, externalVerticalPadding: 5))
-            .padding(.horizontal, 16)
-            PostListView(octopus: viewModel.octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
-                         selectedRootFeed: $viewModel.mainRootFeed,
-                         zoomableImageInfo: $zoomableImageInfo)
+    @ViewBuilder
+    private var exploreGroupsBarOverlay: some View {
+        if !isScrollingDown {
+            exploreGroupsBar
+                .readHeight($exploreBarHeight)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 6) // 6pt gap below the navigation bar
+                .transition(.move(edge: .top).combined(with: .opacity))
         }
-        .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
-                                defaultLeadingBarItem: leadingBarItem,
-                                defaultLeadingSharedBackgroundVisibility: .hidden,
-                                defaultTrailingBarItem: trailingBarItem,
-                                defaultCenteredBarItem: centeredBarItem,
-                                defaultCenteredBarItemVisibility: centeredItemVisibility,
-                                navBarTitle: titleText,
-                                defaultNavigationBarPrimaryColor: coloredNavBar)
-        .errorAlert(viewModel.$error)
+    }
+
+    @ViewBuilder
+    private var exploreGroupsBar: some View {
+        Button(action: { navigator.push(.groupList(context: .displayFeed)) }) {
+            HStack(spacing: 3) {
+                IconImage(theme.assets.icons.groups.openList)
+                    .scaleEffect(1.2)
+                Text("Groups.OpenList", bundle: .module)
+                    .fontWeight(.medium)
+            }
+            .font(theme.fonts.body2)
+            .foregroundColor(theme.colors.gray900)
+        }
+        // iOS 26: native glass button (correct bounds, no halo). Below: the existing outline pill.
+        .modify {
+#if compiler(>=6.2)
+            if #available(iOS 26.0, *) {
+                $0.buttonStyle(.glass)
+            } else {
+                $0.buttonStyle(OctopusButtonStyle(.mid, style: .outline,
+                                                  hasLeadingIcon: true, externalVerticalPadding: 5))
+            }
+#else
+            $0.buttonStyle(OctopusButtonStyle(.mid, style: .outline,
+                                              hasLeadingIcon: true, externalVerticalPadding: 5))
+#endif
+        }
+        .padding(.horizontal, 16)
     }
 
     @ViewBuilder

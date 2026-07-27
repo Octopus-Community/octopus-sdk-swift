@@ -210,6 +210,14 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       set {eventType = .clickOnTopicCta(newValue)}
     }
 
+    public var octopusDrivenLogin: Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin {
+      get {
+        if case .octopusDrivenLogin(let v)? = eventType {return v}
+        return Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin()
+      }
+      set {eventType = .octopusDrivenLogin(newValue)}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public enum OneOf_EventType: Equatable, Sendable {
@@ -234,6 +242,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
       case clientSetAbtestInfo(Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo)
       /// Click on a Topic CTA
       case clickOnTopicCta(Com_Octopuscommunity_TrackRequest.ClickOnTopicCta)
+      case octopusDrivenLogin(Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin)
 
     }
 
@@ -663,6 +672,82 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
+  ///Login attributed to Octopus: the user hit a login-gated action in the SDK and then logged in during the same app run
+  public struct OctopusDrivenLogin: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    /// The login-gated action that triggered the login request
+    public var action: Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin.Action = .unspecified
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public enum Action: SwiftProtobuf.Enum, Swift.CaseIterable {
+      public typealias RawValue = Int
+      case unspecified // = 0
+      case post // = 1
+      case comment // = 2
+      case reply // = 3
+      case reaction // = 4
+      case vote // = 5
+      case moderation // = 6
+      case blockUser // = 7
+      case viewOwnProfile // = 8
+      case UNRECOGNIZED(Int)
+
+      public init() {
+        self = .unspecified
+      }
+
+      public init?(rawValue: Int) {
+        switch rawValue {
+        case 0: self = .unspecified
+        case 1: self = .post
+        case 2: self = .comment
+        case 3: self = .reply
+        case 4: self = .reaction
+        case 5: self = .vote
+        case 6: self = .moderation
+        case 7: self = .blockUser
+        case 8: self = .viewOwnProfile
+        default: self = .UNRECOGNIZED(rawValue)
+        }
+      }
+
+      public var rawValue: Int {
+        switch self {
+        case .unspecified: return 0
+        case .post: return 1
+        case .comment: return 2
+        case .reply: return 3
+        case .reaction: return 4
+        case .vote: return 5
+        case .moderation: return 6
+        case .blockUser: return 7
+        case .viewOwnProfile: return 8
+        case .UNRECOGNIZED(let i): return i
+        }
+      }
+
+      // The compiler won't synthesize support with the UNRECOGNIZED case.
+      public static let allCases: [Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin.Action] = [
+        .unspecified,
+        .post,
+        .comment,
+        .reply,
+        .reaction,
+        .vote,
+        .moderation,
+        .blockUser,
+        .viewOwnProfile,
+      ]
+
+    }
+
+    public init() {}
+  }
+
   public init() {}
 }
 
@@ -712,7 +797,7 @@ extension Com_Octopuscommunity_TrackRequest: SwiftProtobuf.Message, SwiftProtobu
 
 extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Event"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timestamp\0\u{1}appSessionId\0\u{1}octoSessionId\0\u{2}\u{9}enteringApp\0\u{1}leavingApp\0\u{1}enteringOctopus\0\u{1}leavingOctopus\0\u{1}customEvent\0\u{1}bridgePostOpened\0\u{1}openClientObjectFromBridge\0\u{1}postOpened\0\u{1}clientContentSharingStarted\0\u{1}clientContentSharingCanceled\0\u{1}viewTopic\0\u{1}viewProfile\0\u{1}searchTopicButtonHit\0\u{1}viewTranslationButtonHit\0\u{1}videoPlayed\0\u{1}clickOnCta\0\u{1}clientSetABTestInfo\0\u{1}clickOnTopicCta\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timestamp\0\u{1}appSessionId\0\u{1}octoSessionId\0\u{2}\u{9}enteringApp\0\u{1}leavingApp\0\u{1}enteringOctopus\0\u{1}leavingOctopus\0\u{1}customEvent\0\u{1}bridgePostOpened\0\u{1}openClientObjectFromBridge\0\u{1}postOpened\0\u{1}clientContentSharingStarted\0\u{1}clientContentSharingCanceled\0\u{1}viewTopic\0\u{1}viewProfile\0\u{1}searchTopicButtonHit\0\u{1}viewTranslationButtonHit\0\u{1}videoPlayed\0\u{1}clickOnCta\0\u{1}clientSetABTestInfo\0\u{1}clickOnTopicCta\0\u{1}octopusDrivenLogin\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -957,6 +1042,19 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
           self.eventType = .clickOnTopicCta(v)
         }
       }()
+      case 30: try {
+        var v: Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin?
+        var hadOneofValue = false
+        if let current = self.eventType {
+          hadOneofValue = true
+          if case .octopusDrivenLogin(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.eventType = .octopusDrivenLogin(v)
+        }
+      }()
       default: break
       }
     }
@@ -1048,6 +1146,10 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
     case .clickOnTopicCta?: try {
       guard case .clickOnTopicCta(let v)? = self.eventType else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 29)
+    }()
+    case .octopusDrivenLogin?: try {
+      guard case .octopusDrivenLogin(let v)? = self.eventType else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 30)
     }()
     case nil: break
     }
@@ -1902,6 +2004,40 @@ extension Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo: SwiftProtobuf.M
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".OctopusDrivenLogin"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}action\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.action) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.action != .unspecified {
+      try visitor.visitSingularEnumField(value: self.action, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin, rhs: Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin) -> Bool {
+    if lhs.action != rhs.action {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin.Action: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ACTION_UNSPECIFIED\0\u{1}POST\0\u{1}COMMENT\0\u{1}REPLY\0\u{1}REACTION\0\u{1}VOTE\0\u{1}MODERATION\0\u{1}BLOCK_USER\0\u{1}VIEW_OWN_PROFILE\0")
 }
 
 extension Com_Octopuscommunity_TrackResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

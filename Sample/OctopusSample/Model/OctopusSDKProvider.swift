@@ -47,6 +47,7 @@ class OctopusSDKProvider {
         TrackingManager.instance.set(octopus: octopus)
         URLManager.instance.set(octopus: octopus)
         GroupAccessDeniedManager.instance.set(octopus: octopus)
+        ClientProfileManager.instance.set(octopus: octopus)
     }
 
     private func initializeSDK() {

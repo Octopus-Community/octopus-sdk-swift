@@ -14,6 +14,7 @@ extension PostViewData {
         self.author = post.author
         self.relativeDate = post.relativeDate
         self.topic = post.topic
+        self.groupId = post.groupId
         self.canBeDeleted = post.canBeDeleted
         self.canBeModerated = post.canBeModerated
         self.canBeBlockedByUser = post.canBeBlockedByUser
@@ -66,6 +67,7 @@ extension PostViewData {
         self.author = post.author
         self.relativeDate = post.relativeDate
         self.topic = post.topic
+        self.groupId = post.groupId
         // Detail-side is always a published post (moderated posts don't open detail),
         // so no `.moderated` tag. If that assumption ever changes, set it here.
         self.tags = []

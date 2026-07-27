@@ -72,6 +72,41 @@ public final class OctopusSDK: ObservableObject {
     /// If it is `handledByOctopus`, the URL will be opened by the Octopus SDK using `UIApplication.shared.open(URL)`.
     public private(set) var onNavigateToURLCallback: ((URL) -> URLOpeningStrategy)?
 
+    /// The block that will be called when a user taps on any profile inside the community — another
+    /// member's profile or the connected user's own profile — so the host can open its own profile
+    /// screen for that member (Unified Profile).
+    ///
+    /// The parameter is the tapped member's `clientUserId` (your app's own id for them). Unified
+    /// Profile is active only when **both** this callback is wired **and** the community exposes
+    /// client user ids (`CommunityConfig.exposeClientUserId`): then every profile tap routes to you
+    /// and the SDK stops showing its native profile screens. A member without a client id (a guest,
+    /// or a BO/admin-created profile) instead opens the Octopus activity (posts) screen — the
+    /// callback is never invoked with a nil id. Leave it `nil` (default), or when the community does
+    /// not expose client user ids, to keep the SDK's native profile screens — current behaviour,
+    /// unchanged.
+    ///
+    /// Set via ``set(onNavigateToProfileCallback:)``.
+    public private(set) var onNavigateToProfileCallback: ((_ clientUserId: String) -> Void)?
+
+    /// The block that will be called when the connected user asks to edit their own profile from the
+    /// Octopus activity screen (Unified Profile), so the host can open its own profile-edit screen.
+    ///
+    /// The parameter is the field the user wants to edit, or `nil` to open the full editor. It reuses
+    /// the same ``ConnectionMode/SSOConfiguration/ProfileField`` type as SSO's `modifyUser`.
+    ///
+    /// This is a **new, additive, mode-agnostic** hook, deliberately independent of SSO's `modifyUser`:
+    /// - Unlike `modifyUser` (which defaults to a no-op closure), this callback is independently
+    ///   nil-checkable — the activity screen shows its "Edit my profile" menu item only when a host
+    ///   genuinely wired it, so the item never dead-ends.
+    /// - Unlike `modifyUser` (SSO-config only), it works in **both** `.octopus` and `.sso` connection
+    ///   modes.
+    /// - The SDK's own native profile screen keeps using SSO's `modifyUser` for its edit flow; this
+    ///   callback is used **only** by the Unified Profile activity screen's overflow menu. The two
+    ///   edit-profile hooks are intentionally separate so wiring one never changes the other.
+    ///
+    /// Set via ``set(onNavigateToProfileEditCallback:)``.
+    public private(set) var onNavigateToProfileEditCallback: ((_ fieldToEdit: ConnectionMode.SSOConfiguration.ProfileField?) -> Void)?
+
 #if swift(>=5.9)
     /// Core interface. This object should not be used by external devs, it is only used by the UI lib
     package private(set) var core: OctopusSDKCore
@@ -368,6 +403,51 @@ extension OctopusSDK {
     public func debugOverrideContentOptions(_ options: ContentOptions?) {
         core.configRepository.debugOverrideContentOptions(options)
     }
+
+    /// Internal test affordance: locally override the terms-acceptance mode of the community config,
+    /// without a backend-driven config. Pass `nil` to clear the override and fall back to the backend
+    /// value (currently `.implicit`). Used by the sample app to exercise the explicit-consent modes.
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter mode: the mode to apply, or `nil` to restore the backend-provided config.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideTermsAcceptanceMode(_ mode: TermsAcceptanceMode?) {
+        core.configRepository.debugOverrideTermsAcceptanceMode(mode)
+    }
+
+    /// Internal test affordance: locally redistribute the published groups into the given mock client
+    /// sections, so the sectioned group-list rendering (title padding + inter-section separator) can be
+    /// exercised in the sample without a backend that serves client sections. Pass an empty array to
+    /// clear the override and fall back to the backend values.
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter mockSectionNames: the mock section titles to distribute groups into, or `[]` to clear.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideTopicSections(mockSectionNames: [String]) {
+        core.topicsRepository.debugOverrideTopicSections(mockSectionNames: mockSectionNames)
+    }
+
+    /// Internal test affordance: locally override `CommunityConfig.exposeClientUserId` — the Unified
+    /// Profile activation flag — applied on top of the backend-driven community config, without a
+    /// backend-driven config. Pass `nil` to clear the override and fall back to the backend value.
+    /// Used by the sample app to exercise the Unified Profile activation flag before the backend
+    /// serves it (OCT-1374).
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter enabled: the value to force, or `nil` to restore the backend-provided config.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideExposeClientUserId(_ enabled: Bool?) {
+        core.configRepository.debugOverrideExposeClientUserId(enabled)
+    }
 }
 
 // MARK: - Analytics
@@ -630,6 +710,152 @@ extension OctopusSDK {
     ///                              `UIApplication.shared.open(URL)`.
     public func set(onNavigateToURLCallback: ((URL) -> URLOpeningStrategy)?) {
         self.onNavigateToURLCallback = onNavigateToURLCallback
+    }
+}
+
+// MARK: - Profile navigation
+extension OctopusSDK {
+    /// Set the callback that will be called when a user taps on any profile inside the community —
+    /// another member's profile or the connected user's own profile — so the host can open its own
+    /// profile screen for that member (Unified Profile).
+    ///
+    /// The parameter is the tapped member's `clientUserId` (your app's own id for them). Unified
+    /// Profile is active only when **both** this callback is wired **and** the community exposes
+    /// client user ids (`CommunityConfig.exposeClientUserId`): then every profile tap routes to you
+    /// and the SDK stops showing its native profile screens. A member without a client id (a guest,
+    /// or a BO/admin-created profile) instead opens the Octopus activity (posts) screen — the
+    /// callback is never invoked with a nil id.
+    ///
+    /// - Parameter onNavigateToProfileCallback: the callback invoked with the tapped member's
+    ///   `clientUserId`. Pass `nil` to unwire it and keep the SDK's native profile screens (this is
+    ///   also the behaviour when the community does not expose client user ids).
+    public func set(onNavigateToProfileCallback: ((_ clientUserId: String) -> Void)?) {
+        self.onNavigateToProfileCallback = onNavigateToProfileCallback
+    }
+
+    /// Set the callback that will be called when the connected user asks to edit their own profile
+    /// from the Octopus activity screen (Unified Profile), so the host can open its own profile-edit
+    /// screen.
+    ///
+    /// This is a **new, additive, mode-agnostic** hook, deliberately independent of SSO's `modifyUser`:
+    /// - It is independently nil-checkable (unlike `modifyUser`, which defaults to a no-op closure):
+    ///   the activity screen shows its "Edit my profile" menu item only when this callback is wired,
+    ///   so the item never dead-ends.
+    /// - It works in **both** `.octopus` and `.sso` connection modes (unlike `modifyUser`, which is
+    ///   SSO-config only).
+    /// - The SDK's own native profile screen keeps using SSO's `modifyUser` for its edit flow; this
+    ///   callback is used **only** by the Unified Profile activity screen. The two edit-profile hooks
+    ///   are intentionally kept separate.
+    ///
+    /// - Parameter onNavigateToProfileEditCallback: the callback invoked with the field the user wants
+    ///   to edit (or `nil` to open the full editor). Pass `nil` to unwire it, which also hides the
+    ///   activity screen's "Edit my profile" menu item.
+    public func set(
+        onNavigateToProfileEditCallback: ((_ fieldToEdit: ConnectionMode.SSOConfiguration.ProfileField?) -> Void)?
+    ) {
+        self.onNavigateToProfileEditCallback = onNavigateToProfileEditCallback
+    }
+}
+
+// MARK: - Community Data
+extension OctopusSDK {
+    /// Refreshes and returns a read-only ``OctopusCommunityData`` snapshot for the member identified
+    /// by the host app's own `clientUserId` (Unified Profile).
+    ///
+    /// Resolves the member through the `GetPublicProfile` client-user-id lookup, so a host that only
+    /// knows its own user ids can surface Octopus community stats on its profile screen without ever
+    /// handling Octopus ids. Requires the community to expose client user ids
+    /// (`CommunityConfig.exposeClientUserId`).
+    ///
+    /// - Parameter clientUserId: the host's own id for the member whose community data to fetch.
+    /// - Returns: the refreshed ``OctopusCommunityData``, or `nil` when the member is unknown.
+    /// - Throws: when the lookup fails, e.g. when the community does not expose client user ids, or on
+    ///   a network / server error.
+    public func fetchCommunityData(clientUserId: String) async throws -> OctopusCommunityData? {
+        guard let profile = try await core.profileRepository.fetchProfile(byClientUserId: clientUserId) else {
+            return nil
+        }
+        return OctopusCommunityData(from: profile)
+    }
+
+    /// Refreshes and returns a read-only ``OctopusCommunityData`` snapshot for the member identified
+    /// by their Octopus `profileId` (Unified Profile).
+    ///
+    /// The by-profile-id counterpart of ``fetchCommunityData(clientUserId:)``: use it when you already
+    /// hold the member's Octopus profile id (e.g. one surfaced by a profile tap), so no client-user-id
+    /// lookup is needed. Refreshes the cached profile from the server before mapping it.
+    ///
+    /// - Parameter profileId: the Octopus profile id of the member whose community data to fetch.
+    /// - Returns: the refreshed ``OctopusCommunityData``, or `nil` when no such profile exists.
+    /// - Throws: on a network / server error.
+    public func fetchCommunityData(profileId: String) async throws -> OctopusCommunityData? {
+        guard let profile = try await core.profileRepository.fetchProfile(byProfileId: profileId) else {
+            return nil
+        }
+        return OctopusCommunityData(from: profile)
+    }
+
+    /// A publisher of read-only ``OctopusCommunityData`` for the member identified by the host app's
+    /// own `clientUserId` (Unified Profile).
+    ///
+    /// The reactive counterpart of ``fetchCommunityData(clientUserId:)``: use it from your own
+    /// profile screen — which only knows your app's user ids — to observe a member's Octopus community
+    /// stats without handling Octopus ids. The member is resolved once through the `GetPublicProfile`
+    /// client-user-id lookup, then the publisher tracks that member's cached data and updates on every
+    /// refresh (e.g. via ``fetchCommunityData(clientUserId:)``). Requires the community to expose
+    /// client user ids (`CommunityConfig.exposeClientUserId`); emits `nil` when the member is unknown
+    /// or the lookup fails. Errors are never surfaced on this `Never`-failure publisher — a failed
+    /// resolution emits `nil`.
+    ///
+    /// - Parameter clientUserId: the host's own id for the member whose community data to observe.
+    /// - Returns: a publisher that emits the member's ``OctopusCommunityData`` or `nil` when unknown.
+    public func communityDataPublisher(clientUserId: String) -> AnyPublisher<OctopusCommunityData?, Never> {
+        // Capture the (Sendable) repository rather than the non-Sendable `core`, so it can safely
+        // cross into the resolution Task (same pattern as the fire-and-forget `connectUser`).
+        let profileRepository = core.profileRepository
+        // Cold: each subscription re-resolves the id, then tracks the cached profile.
+        return Deferred {
+            Future<String?, Never> { promise in
+                // `promise` is fulfilled exactly once, only from within this Task — safe to send.
+                nonisolated(unsafe) let promise = promise
+                Task {
+                    let resolvedProfileId = try? await profileRepository
+                        .fetchProfile(byClientUserId: clientUserId)?.id
+                    promise(.success(resolvedProfileId))
+                }
+            }
+        }
+        .flatMap { resolvedProfileId -> AnyPublisher<OctopusCommunityData?, Never> in
+            guard let resolvedProfileId else {
+                return Just(nil).eraseToAnyPublisher()
+            }
+            return profileRepository.getProfile(profileId: resolvedProfileId)
+                .map { $0.map { OctopusCommunityData(from: $0) } }
+                .eraseToAnyPublisher()
+        }
+        // Deliver on the main thread: the resolved branch already hops to main (via the profile
+        // database publisher), but the failed-resolution `Just(nil)` branch would otherwise emit
+        // synchronously on the resolution Task's background thread, breaking a SwiftUI binding.
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+    }
+
+    /// A publisher of read-only ``OctopusCommunityData`` for the member identified by their Octopus
+    /// `profileId` (Unified Profile).
+    ///
+    /// The reactive counterpart of ``fetchCommunityData(profileId:)``, and the by-profile-id sibling
+    /// of ``communityDataPublisher(clientUserId:)``. Because the Octopus id is already known there is
+    /// no async resolution step: the publisher tracks that member's cached data directly and updates
+    /// on every refresh (e.g. via ``fetchCommunityData(profileId:)``). Emits `nil` when the member is
+    /// unknown.
+    ///
+    /// - Parameter profileId: the Octopus profile id of the member whose community data to observe.
+    /// - Returns: a publisher that emits the member's ``OctopusCommunityData`` or `nil` when unknown.
+    public func communityDataPublisher(profileId: String) -> AnyPublisher<OctopusCommunityData?, Never> {
+        core.profileRepository.getProfile(profileId: profileId)
+            .map { $0.map { OctopusCommunityData(from: $0) } }
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
 }
 

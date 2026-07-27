@@ -35,6 +35,13 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
 
     @Published private(set) var forceDisplayGamificationRules: Bool = false
 
+    /// Whether the connected profile is Octopus-owned (`.octopus` connection mode). Gates the
+    /// overflow menu's account-settings and logout rows: an SSO profile is managed by the host app,
+    /// so neither applies (mirrors the former `SettingsListViewModel.octopusOwnedProfile`).
+    let octopusOwnedProfile: Bool
+    @Published private(set) var logoutInProgress = false
+    @Published var logoutDone = false
+
     let hasInitialNotSeenNotifications: Bool
 
     let notifCenterViewModel: NotificationCenterViewModel
@@ -53,7 +60,25 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
         self.gamificationRulesViewManager = gamificationRulesViewManager
         notifCenterViewModel = NotificationCenterViewModel(octopus: octopus)
 
+        switch octopus.core.connectionRepository.connectionMode {
+        case .octopus:
+            octopusOwnedProfile = true
+        case .sso:
+            octopusOwnedProfile = false
+        }
+
         hasInitialNotSeenNotifications = (octopus.core.profileRepository.profile?.notificationBadgeCount ?? 0) > 0
+
+        // Lock the main flow while a logout is running / just completed, so the user can't navigate
+        // on a half-torn-down session (mirrors the former `SettingsListViewModel` wiring).
+        Publishers.CombineLatest(
+            $logoutInProgress,
+            $logoutDone
+        ).sink {
+            let shouldBeLocked = $0 || $1
+            guard shouldBeLocked != mainFlowPath.isLocked else { return }
+            mainFlowPath.isLocked = shouldBeLocked
+        }.store(in: &storage)
 
         Task {
             await fetchProfile(manual: false)
@@ -183,6 +208,23 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
             try await notifCenterViewModel.refresh()
         } catch {
             self.error = error.displayableMessage
+        }
+    }
+
+    /// Logs the connected (Octopus-owned) user out, from the overflow menu's "Log out" row
+    /// (mirrors the former `SettingsListViewModel.logout`). `logoutDone` drives the view's
+    /// confirmation alert, which pops to the community root.
+    func logout() {
+        Task {
+            logoutInProgress = true
+            do {
+                try await octopus.core.connectionRepository.logout(preventReconnection: false)
+                logoutDone = true
+                logoutInProgress = false
+            } catch {
+                logoutInProgress = false
+                self.error = .localizationKey("Error.Unknown")
+            }
         }
     }
 }

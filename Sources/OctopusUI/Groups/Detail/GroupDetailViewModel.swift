@@ -47,6 +47,10 @@ class GroupDetailViewModel: ObservableObject {
     private var topics: [OctopusCore.Topic] = []
     private var hasFetchedTopicsOnce = false
 
+    /// Whether a post was created during the currently-open composer session. Reset when the composer
+    /// opens, set when a `.postCreated` event is received. Used to scroll to top only on a real creation.
+    private var didCreatePostInComposer = false
+
     init(octopus: OctopusSDK, groupId: String, mainFlowPath: MainFlowPath,
          translationStore: ContentTranslationPreferenceStore,
          origin: GroupDetailNavigationOrigin = .sdk) {
@@ -63,10 +67,21 @@ class GroupDetailViewModel: ObservableObject {
             .prepend([])
             .zip(mainFlowPath.$path.removeDuplicates())
             .sink { [unowned self] previous, current in
-                if case .createPost = previous.last, current == [] {
+                if case .createPost = current.last {
+                    // The composer just opened: start tracking whether a post gets created this session.
+                    didCreatePostInComposer = false
+                } else if case .createPost = previous.last, current == [] {
+                    // The composer was dismissed back to the feed: always refresh, but only scroll to top
+                    // if a post was actually created (cancel via Back / swipe-down keeps the scroll).
                     refreshFeed(isManual: false)
-                    scrollToTop = true
+                    scrollToTop = FeedComposerScrollPolicy.shouldScrollToTop(
+                        previousLast: previous.last, current: current, didCreatePost: didCreatePostInComposer)
                 }
+            }.store(in: &storage)
+
+        octopus.core.sdkEventsEmitter.events
+            .sink { [unowned self] event in
+                if case .postCreated = event { didCreatePostInComposer = true }
             }.store(in: &storage)
 
         octopus.core.topicsRepository.$topics

@@ -10,6 +10,9 @@ class MockUserService: UserService {
     /// Fifo of the responses to `getPublicProfile`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var getPublicProfileResponses = [Com_Octopuscommunity_GetPublicProfileResponse]()
+    /// Fifo of the responses to `getPublicProfile(clientUserId:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var getPublicProfileByClientUserIdResponses = [Com_Octopuscommunity_GetPublicProfileResponse]()
     /// Fifo of the responses to `getProfile`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var getPrivateProfileResponses = [Com_Octopuscommunity_GetPrivateProfileResponse]()
@@ -52,6 +55,7 @@ class MockUserService: UserService {
 
     /// Number of times syncFollowTopics has been called. Useful to assert no-network-call behavior.
     private(set) var syncFollowTopicsCallCount = 0
+    private(set) var getGuestJwtCallCount = 0
 
     /// The last actions passed to syncFollowTopics. Useful to assert correct proto mapping.
     private(set) var lastSyncFollowTopicsActions: [Com_Octopuscommunity_SyncFollowTopicAction] = []
@@ -62,6 +66,16 @@ class MockUserService: UserService {
     -> Com_Octopuscommunity_GetPublicProfileResponse {
         guard let response = getPublicProfileResponses.popLast() else {
             let message = "Dev error, injectNextGetPublicProfileResponse must be called before"
+            errorMessage = message
+            throw .unknown(MockError(message))
+        }
+        return response
+    }
+
+    func getPublicProfile(clientUserId: String, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetPublicProfileResponse {
+        guard let response = getPublicProfileByClientUserIdResponses.popLast() else {
+            let message = "Dev error, injectNextGetPublicProfileByClientUserIdResponse must be called before"
             errorMessage = message
             throw .unknown(MockError(message))
         }
@@ -139,6 +153,7 @@ class MockUserService: UserService {
     }
 
     func getGuestJwt() async throws(RemoteClientError) -> Com_Octopuscommunity_GetGuestJwtResponse {
+        getGuestJwtCallCount += 1
         do {
             try await Task.sleep(nanoseconds: UInt64.random(in: 0..<10) * 1_000_000)
         } catch { throw .unknown(MockError("Unknown error")) }
@@ -218,6 +233,10 @@ class MockUserService: UserService {
 extension MockUserService {
     func injectNextGetPublicProfileResponse(_ response: Com_Octopuscommunity_GetPublicProfileResponse) {
         getPublicProfileResponses.insert(response, at: 0)
+    }
+
+    func injectNextGetPublicProfileByClientUserIdResponse(_ response: Com_Octopuscommunity_GetPublicProfileResponse) {
+        getPublicProfileByClientUserIdResponses.insert(response, at: 0)
     }
 
     func injectNextGetPrivateProfileResponse(_ response: Com_Octopuscommunity_GetPrivateProfileResponse) {

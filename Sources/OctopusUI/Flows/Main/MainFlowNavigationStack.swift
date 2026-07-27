@@ -9,6 +9,7 @@ import OctopusCore
 struct MainFlowNavigationStack<RootView: View>: View {
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
     @EnvironmentObject private var gamificationRulesViewManager: GamificationRulesViewManager
+    @Environment(\.octopusTheme) private var theme
 
     let octopus: OctopusSDK
     let bottomSafeAreaInset: CGFloat
@@ -42,6 +43,23 @@ struct MainFlowNavigationStack<RootView: View>: View {
     var body: some View {
         NBNavigationStack(path: $mainFlowPath.path) {
             rootView
+                // The custom createPost slide-up is driven by a `UINavigationControllerDelegate` proxy.
+                // It works with the legacy `NavigationView` (`.automatic`) but must NOT be installed with a
+                // real `NavigationStack` (`.navigationStack`, iOS 16+): SwiftUI's `NavigationStack` needs to
+                // own the nav-controller delegate to animate its pushes, so hijacking it there silently
+                // drops the push animation for every screen (post, profile, …). In that mode we let SwiftUI
+                // animate natively; createPost falls back to the standard horizontal push.
+                .modify {
+                    if navigationMode == .automatic {
+                        $0.installOctopusNavTransitionProxy { [mainFlowPath] operation, _, _ in
+                            guard operation == .push else { return false }
+                            if case .createPost = mainFlowPath.path.last { return true }
+                            return false
+                        }
+                    } else {
+                        $0
+                    }
+                }
                 .hideBackButtonTitle()
                 .nbNavigationDestination(for: MainFlowScreen.self) { screen in
                     Group {
@@ -54,8 +72,16 @@ struct MainFlowNavigationStack<RootView: View>: View {
                             ProfileSummaryView(
                                 octopus: octopus, mainFlowPath: mainFlowPath,
                                 translationStore: translationStore, profileId: profileId)
+                        case let .activity(source):
+                            ActivityView(
+                                octopus: octopus, mainFlowPath: mainFlowPath,
+                                translationStore: translationStore, source: source)
                         case let .createPost(withPoll, defaultTopicId):
-                            CreatePostView(octopus: octopus, withPoll: withPoll, defaultTopicId: defaultTopicId)
+                            // In `.automatic` the editor slides up like a modal, so show a close (X)
+                            // instead of a back chevron. In `.navigationStack` it's a standard horizontal
+                            // push (see the proxy gating above), where a back chevron is more natural.
+                            CreatePostView(octopus: octopus, withPoll: withPoll, defaultTopicId: defaultTopicId,
+                                           canClose: navigationMode == .automatic)
                         case let .groupList(context):
                             GroupListView(octopus: octopus, context: context)
                         case let .groupDetail(groupId):
@@ -78,12 +104,8 @@ struct MainFlowNavigationStack<RootView: View>: View {
                                               reply: reply, replyToScrollTo: replyToScrollTo)
                         case let .editProfile(bioFocused, pictureFocused):
                             EditProfileView(octopus: octopus, bioFocused: bioFocused, photoPickerFocused: pictureFocused)
-                        case .settingsList:
-                            SettingsListView(octopus: octopus, mainFlowPath: mainFlowPath)
                         case .settingsAccount:
                             SettingProfileView(octopus: octopus)
-                        case .settingsAbout:
-                            SettingsAboutView(octopus: octopus)
                         case .reportExplanation:
                             ReportExplanationView(octopus: octopus)
                         case .deleteAccount:
@@ -105,7 +127,7 @@ struct MainFlowNavigationStack<RootView: View>: View {
                 .modify {
                     // do not use presentationBackground on iOS 17 because it breaks the layout when the view is presented
                     if #available(iOS 18.0, *) {
-                        $0.presentationBackground(Color(.systemBackground))
+                        $0.presentationBackground(theme.colors.background)
                     } else { $0 }
                 }
         }

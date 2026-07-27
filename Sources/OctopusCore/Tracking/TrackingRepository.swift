@@ -133,6 +133,20 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
             content: .custom(customEvent)))
     }
 
+    /// Track a custom event, picking the current date, app session and UI session (fire-and-forget).
+    /// Synchronous variant of ``track(customEvent:)`` for internal callers that don't need to await
+    /// persistence (e.g. `OctopusDrivenLoginMonitor`).
+    func trackCustomEvent(_ customEvent: CustomEvent) {
+        track(content: .custom(customEvent))
+    }
+
+    /// Track an Octopus-driven login, picking the current date, app session and UI session
+    /// (fire-and-forget). Emitted via the dedicated `TrackRequest.octopusDrivenLogin` proto field
+    /// (not a custom event), per the SDK convention for Octopus-tracked events.
+    func trackOctopusDrivenLogin(action: OctopusDrivenLoginAction) {
+        track(content: .octopusDrivenLogin(action: action))
+    }
+
     func appSessionStarted() {
         appSessionManager.sessionStarted()
         if octopusUIIsDisplayed {

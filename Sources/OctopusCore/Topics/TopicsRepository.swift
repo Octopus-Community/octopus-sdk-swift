@@ -23,6 +23,11 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
     /// Used by cross-group "create post" entry points to decide whether to render the button at all.
     @Published public private(set) var canCreateAnyPost: Bool = true
 
+    /// Latest topics as delivered by the storage layer, before any debug section override is applied.
+    private var storedTopics: [Topic] = []
+    /// Names of the mock client sections injected by the debug override. Empty means no override.
+    private var debugMockSectionNames: [String] = []
+
     private let topicsDatabase: TopicsDatabase
     private let authCallProvider: AuthenticatedCallProvider
     private let networkMonitor: NetworkMonitor
@@ -44,7 +49,8 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
             .removeDuplicates()
             .sink { [weak self] in
                 guard let self else { return }
-                topics = $0.map { Topic(from: $0, postFeedsStore: self.postFeedsStore) }
+                storedTopics = $0.map { Topic(from: $0, postFeedsStore: self.postFeedsStore) }
+                topics = decoratedWithDebugSections(storedTopics)
             }.store(in: &storage)
 
         $topics
@@ -67,7 +73,7 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
                 octoSections: response.sections
             )
             try await topicsDatabase.replaceAll(topics: topics)
-            return topics.map { Topic(from: $0, postFeedsStore: postFeedsStore) }
+            return decoratedWithDebugSections(topics.map { Topic(from: $0, postFeedsStore: postFeedsStore) })
         } catch {
             if #available(iOS 14, *) { Logger.groups.debug("Error when fetching groups: \(error)") }
             if let error = error as? RemoteClientError {
@@ -75,6 +81,33 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
             } else {
                 throw .other(error)
             }
+        }
+    }
+
+    /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally redistributes the
+    /// published topics into the given mock client sections, so the sample can exercise the sectioned
+    /// group-list rendering (title padding + inter-section separator) without a backend that serves
+    /// client sections. Pass an empty array to clear the override and fall back to the backend values.
+    ///
+    /// The first topic is left section-less (it renders the leading "no section" block, which has no
+    /// separator), and the remaining topics are round-robined across the mock sections so at least two
+    /// blocks render and every block after the first shows its separator.
+    ///
+    /// - Parameter mockSectionNames: the mock section titles to distribute topics into, or `[]` to clear.
+    public func debugOverrideTopicSections(mockSectionNames: [String]) {
+        debugMockSectionNames = mockSectionNames
+        topics = decoratedWithDebugSections(storedTopics)
+    }
+
+    func decoratedWithDebugSections(_ topics: [Topic]) -> [Topic] {
+        guard !debugMockSectionNames.isEmpty, !topics.isEmpty else { return topics }
+        let sections = debugMockSectionNames.enumerated().map {
+            Section(uuid: "debug-section-\($0.offset)", name: $0.element, position: $0.offset)
+        }
+        return topics.enumerated().map { index, topic in
+            guard index > 0 else { return topic }
+            let section = sections[(index - 1) % sections.count]
+            return topic.withSections([section])
         }
     }
 

@@ -9,7 +9,7 @@ struct PostDetailContentView: View {
     let post: PostDetailViewModel.Post
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
-    let displayProfile: (String) -> Void
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openCreateComment: () -> Void
     let deletePost: () -> Void
     let blockAuthor: (String) -> Void
@@ -27,6 +27,9 @@ struct PostDetailContentView: View {
             reactionTapped: reactionTapped,
             voteOnPoll: voteOnPoll,
             displayProfile: displayProfile,
+            // Detail renders its own nav-bar "…" menu (incl. "View group"); the in-header menu is
+            // suppressed in `.detail` context, so this closure is never invoked here.
+            openGroup: { _ in },
             deletePost: deletePost,
             blockAuthor: blockAuthor,
             displayContentModeration: displayContentModeration,

@@ -134,4 +134,20 @@ final class OctoServiceInterceptor: Com_Octopuscommunity_OctoObjectServiceClient
     func makeGetOctoObjectTranslationsInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsRequest, OctopusGrpcModels.Com_Octopuscommunity_GetOctoObjectTranslationsResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
+
+    func makeUnBanPostInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UnBanPostRequest, OctopusGrpcModels.Com_Octopuscommunity_UnBanPostResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeUnBanCommentInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UnBanCommentRequest, OctopusGrpcModels.Com_Octopuscommunity_UnBanCommentResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeUnBanReplyInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UnBanReplyRequest, OctopusGrpcModels.Com_Octopuscommunity_UnBanReplyResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
+    func makeModerateContentInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ModerateContentRequest, OctopusGrpcModels.Com_Octopuscommunity_ModerateContentResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
 }

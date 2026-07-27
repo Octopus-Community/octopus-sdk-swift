@@ -309,6 +309,7 @@ private struct EditProfileFormView: View {
 
 private struct PictureView: View {
     @Environment(\.octopusTheme) private var theme
+    @Environment(\.layoutDirection) private var layoutDirection
     @Binding var picture: EditProfileViewModel.Picture
     let nickname: String
     let pictureSize: CGFloat
@@ -346,7 +347,9 @@ private struct PictureView: View {
                             .background(theme.colors.primary)
                             .clipShape(Circle())
                             .frame(width: 28, height: 28)
-                            .offset(x: 30, y: 30)
+                            // Keep the badge on the avatar's trailing-bottom corner in both directions
+                            // (offset x is physical, so flip it in RTL).
+                            .offset(x: layoutDirection == .rightToLeft ? -30 : 30, y: 30)
                     )
                     .frame(width: pictureSize, height: pictureSize)
             }

@@ -21,6 +21,10 @@ class APITests {
         _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .mainFeed)
         _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .post(.init(postId: "POST_ID")))
         _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .group(.init(groupId: "GROUP_ID")))
+        _ = OctopusHomeScreen(octopus: octopusSdk,
+                              initialScreen: .activity(.init(clientUserId: "CLIENT_USER_ID")))
+        _ = OctopusHomeScreen(octopus: octopusSdk,
+                              initialScreen: .activity(.init(profileId: "PROFILE_ID")))
         _ = OctopusHomeScreen(octopus: octopusSdk, navigationMode: .automatic)
         _ = OctopusHomeScreen(octopus: octopusSdk, navigationMode: .navigationStack)
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingAction: .close(onTap: {}))
@@ -41,7 +45,8 @@ class APITests {
         // check that it is customizable
         theme = OctopusTheme(
             colors: .init(primarySet: .init(main: .red, lowContrast: .blue, highContrast: .yellow),
-                          onPrimary: .white),
+                          onPrimary: .white,
+                          link: .green),
             fonts: .init(
                 title1: Font.custom("Courier New", size: 26),
                 title2: Font.custom("Courier New", size: 20),
@@ -71,6 +76,16 @@ class APITests {
         )
     }
 
+    @Test func testCommonIconsApi() async throws {
+        // Default construction
+        _ = OctopusTheme.Assets.Icons.Common()
+        // Partial override: the Unified Profile activity button icon (shown in place of the
+        // connected user's avatar on the home floating button when Unified Profile is active)
+        _ = OctopusTheme.Assets.Icons.Common(activityButton: UIImage())
+        // Wired into Icons
+        _ = OctopusTheme.Assets.Icons(common: .init(activityButton: UIImage()))
+    }
+
     @Test func testMainFeedTitle() async throws {
         _ = OctopusMainFeedTitle(content: .logo, placement: .center)
         _ = OctopusMainFeedTitle(content: .text(.init(text: "")), placement: .leading)
@@ -93,6 +108,14 @@ class APITests {
         )
     }
 
+    @Test func testThemeWithCustomBackgroundCompiles() {
+        _ = OctopusTheme(colors: OctopusTheme.Colors(
+            primarySet: .init(main: .blue, lowContrast: .blue, highContrast: .blue),
+            onPrimary: .white,
+            link: .blue,
+            background: .green))
+    }
+
     @Test func testOctopusHomeScreenWithCreatePostInitialScreen() throws {
         let sdk = try OctopusSDK(apiKey: "API_KEY")
         let prefill = try OctopusPrefilledPost(
@@ -107,6 +130,19 @@ class APITests {
             octopus: sdk,
             initialScreen: .createPost(.init())
         )
+    }
+
+    @Test func testProfileScreen() throws {
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        _ = OctopusProfileScreen(octopus: octopusSdk)
+        _ = OctopusProfileScreen(octopus: octopusSdk, clientUserId: "CLIENT_USER_ID")
+        _ = OctopusProfileScreen(octopus: octopusSdk, navigationMode: .automatic)
+        _ = OctopusProfileScreen(octopus: octopusSdk, navigationMode: .navigationStack)
+        _ = OctopusProfileScreen(octopus: octopusSdk, navBarLeadingAction: .close(onTap: {}))
+        _ = OctopusProfileScreen(octopus: octopusSdk, navBarLeadingAction: .back(onTap: {}))
+        _ = OctopusProfileScreen(
+            octopus: octopusSdk, clientUserId: "CLIENT_USER_ID",
+            navigationMode: .navigationStack, navBarLeadingAction: .close(onTap: {}))
     }
 
 }

@@ -34,6 +34,7 @@ extension PostDetailViewModel.Post {
         )
         relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())
         self.topic = topic?.name
+        self.groupId = post.parentId
         attachment = .init(from: post)
         canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
         canBeModerated = post.author?.uuid != thisUserProfileId

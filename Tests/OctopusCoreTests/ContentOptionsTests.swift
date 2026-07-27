@@ -71,7 +71,8 @@ final class ContentOptionsTests: XCTestCase {
             reply: .init(enablePictures: false))
         let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
                                      gamificationConfig: nil, displayConfig: nil,
-                                     profileFieldsLock: .allEditable, contentOptions: options)
+                                     profileFieldsLock: .allEditable, contentOptions: options,
+                                     exposeClientUserId: false, termsAcceptanceMode: .implicit)
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())

@@ -55,7 +55,9 @@ struct CreatePostView: View {
 
     var body: some View {
         ContentView(isLoading: viewModel.isLoading,
-                    displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendButtonAvailable,
+                    // Implicit legal footer only in implicit mode; explicit modes use the consent sheet.
+                    displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendButtonAvailable
+                        && !viewModel.termsAcceptanceMode.isExplicit,
                     text: $viewModel.text,
                     attachment: $viewModel.attachment,
                     textError: viewModel.textError,
@@ -91,6 +93,14 @@ struct CreatePostView: View {
             destructiveLabel: "Common.Yes",
             action: { leaveScreen() })
         .emitScreenDisplayed(.createPost, trackingApi: trackingApi)
+        .termsConsentSheet(
+            isPresented: $viewModel.displayConsentSheet,
+            mode: viewModel.termsAcceptanceMode,
+            contribution: .post,
+            termsUrl: viewModel.termsOfUseUrl,
+            privacyUrl: viewModel.privacyPolicyUrl,
+            rulesUrl: viewModel.communityGuidelinesUrl,
+            onAccept: { viewModel.acceptConsentAndSend() })
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
             presentationMode.wrappedValue.dismiss()
@@ -314,7 +324,7 @@ private struct WritingPostForm: View {
                                 if text.isEmpty {
                                     // when there is no attachment displayed, use the remaining part of the screen to
                                     // catch tap
-                                    Color(UIColor.systemBackground)
+                                    theme.colors.background
                                         .frame(height: 150)
                                         .onTapGesture {
                                             textFocused = true
@@ -404,12 +414,12 @@ private struct WritingPostForm: View {
                         .background(RoundedRectangle(cornerRadius: 24)
                             .stroke(theme.colors.gray300, lineWidth: 1)
                             .padding(.horizontal, -1)
-                            .foregroundColor(Color(.systemBackground))
+                            .foregroundColor(theme.colors.background)
                             .overlay(
                                 Rectangle()
                                     .padding(.top, 24)
                                     .padding(.bottom, -1)
-                                    .foregroundColor(Color(.systemBackground))
+                                    .foregroundColor(theme.colors.background)
                             )
                         )
                     }

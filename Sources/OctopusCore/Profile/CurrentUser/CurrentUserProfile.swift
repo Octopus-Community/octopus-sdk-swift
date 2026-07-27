@@ -34,12 +34,17 @@ public struct CurrentUserProfile: Equatable, Sendable {
 
     public let entitlements: Set<String>
 
+    /// The connected user's id in the host app's own system (Unified Profile), from `connectUser`.
+    /// Populated in SSO mode for a non-guest user; `nil` otherwise (guest, or held independently of
+    /// the backend `exposeClientUserId` flag). See `MinimalProfile.clientUserId`.
+    public let clientUserId: String?
+
     public let newestFirstPostsFeed: Feed<Post, Comment>
 }
 
 extension CurrentUserProfile {
     init(storableProfile: StorableCurrentUserProfile, gamificationLevels: [GamificationLevel],
-         postFeedsStore: PostFeedsStore) {
+         postFeedsStore: PostFeedsStore, clientUserId: String? = nil) {
         id = storableProfile.id
         userId = storableProfile.userId
         nickname = storableProfile.nickname
@@ -66,6 +71,7 @@ extension CurrentUserProfile {
         notificationBadgeCount = storableProfile.notificationBadgeCount ?? 0
         blockedProfileIds = storableProfile.blockedProfileIds
         entitlements = storableProfile.entitlements
+        self.clientUserId = clientUserId
         newestFirstPostsFeed = postFeedsStore.getOrCreate(feedId: storableProfile.descPostFeedId)
     }
 }

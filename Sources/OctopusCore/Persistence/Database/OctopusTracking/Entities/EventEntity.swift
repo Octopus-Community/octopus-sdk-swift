@@ -83,6 +83,10 @@ class EventEntity: NSManagedObject, Identifiable {
                 return property
             })
             entity = specializedEntity
+        case let .octopusDrivenLogin(action):
+            let specializedEntity = OctopusDrivenLoginEventEntity(context: context)
+            specializedEntity.action = action.rawValue
+            entity = specializedEntity
         }
         entity.uuid = event.uuid
         entity.timestamp = event.date.timeIntervalSince1970
