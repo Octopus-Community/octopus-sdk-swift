@@ -57,10 +57,16 @@ class ServiceClient {
             }
         }
         let error = lastError!
-        if case let .authenticated(_, authFailed) = authenticationMethod,
+        if case let .authenticated(token, authFailed) = authenticationMethod,
            let grpcStatus = error as? GRPCStatus, grpcStatus.code == .unauthenticated,
-           // do not call authFailed in case of user banned
-           !(grpcStatus.message?.contains("Your account has been blocked") ?? false) {
+           // `unauthenticated` covers two opposite situations: the token is expired (the session must be
+           // renewed) and the server refuses the action for a business reason — a banned user, mainly —
+           // where the session must be kept so that the UI can display the server message.
+           // Only an expired token justifies dropping the session, so ask the token itself instead of
+           // matching the ban wording: that used to be the English sentence only, which logged banned
+           // users out in every other locale. When the token carries no readable expiration, keep the
+           // previous behaviour and renew the session.
+           Jwt.isExpired(token) ?? true {
             authFailed()
         }
         throw RemoteClientError(error: error)

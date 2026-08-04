@@ -44,6 +44,9 @@ private struct ReportView: View {
             moderationInProgress: viewModel.moderationInProgress,
             report: viewModel.report(reasons:)
         )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Also covers iOS < 18, where the sheet's `presentationBackground` is not applied.
+        .largeScreenMarginBackground()
         .navigationBarTitle(
             Text("Moderation.Common.Title", bundle: .module),
             displayMode: .inline

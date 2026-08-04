@@ -67,6 +67,8 @@ struct SettingProfileView: View {
             }
             PoweredByOctopusView()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .largeScreenMarginBackground()
         .navigationBarTitle(Text("Settings.Profile", bundle: .module), displayMode: .inline)
         .emitScreenDisplayed(.settingsAccount, trackingApi: trackingApi)
     }
