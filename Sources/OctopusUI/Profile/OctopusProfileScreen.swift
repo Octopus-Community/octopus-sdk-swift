@@ -90,7 +90,8 @@ public struct OctopusProfileScreen: View {
         .modify {
             // do not use presentationBackground on iOS 17 because it breaks the layout when the view is presented
             if #available(iOS 18.0, *) {
-                $0.presentationBackground(Color(.systemBackground))
+                // Community background, like OctopusHomeScreen does (was hardcoded to the system one).
+                $0.presentationBackground(theme.colors.background)
             } else {
                 $0
             }

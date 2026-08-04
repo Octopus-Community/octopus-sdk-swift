@@ -36,6 +36,8 @@ struct EditProfileView: View {
                     pictureError: viewModel.pictureError, bioFocused: bioFocused, bioMaxLength: viewModel.bioMaxLength,
                     photoPickerFocused: photoPickerFocused
         )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .largeScreenMarginBackground()
         .navigationBarBackButtonHidden(viewModel.hasChanges)
         .navigationBarTitle(Text("Common.Edit", bundle: .module), displayMode: .inline)
         .toolbar(leading: leadingBarItem, trailing: trailingBarItem,

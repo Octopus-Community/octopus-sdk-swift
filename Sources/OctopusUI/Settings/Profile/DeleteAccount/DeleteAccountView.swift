@@ -82,6 +82,8 @@ struct DeleteAccountView: View {
                 LoadingOverlay()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .largeScreenMarginBackground()
         .navigationBarTitle(Text("Settings.Profile.DeleteAccount.Title", bundle: .module), displayMode: .inline)
         .alert(isPresented: $displayDeleteUserAlert) {
             Alert(

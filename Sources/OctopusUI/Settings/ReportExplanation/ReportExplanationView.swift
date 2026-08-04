@@ -51,6 +51,8 @@ struct ReportExplanationView: View {
             }
             PoweredByOctopusView()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .largeScreenMarginBackground()
         .navigationBarTitle(Text("Settings.ReportContent", bundle: .module), displayMode: .inline)
         .emitScreenDisplayed(.reportExplanation, trackingApi: trackingApi)
     }

@@ -71,6 +71,11 @@ struct CreatePostView: View {
                     picturesEnabled: viewModel.picturesEnabled,
                     pollsEnabled: viewModel.pollsEnabled,
                     createPoll: viewModel.createPoll)
+        // Fill the whole screen (including safe areas) with the community background: the form already
+        // paints some of its parts with that color (text-area tap zone, action bar), so without it the
+        // screen mixes the custom color with the system background.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .largeScreenMarginBackground()
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
         .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
         .navigationBarBackButtonHidden(viewModel.hasChanges || canClose || navBarLeadingAction != nil)

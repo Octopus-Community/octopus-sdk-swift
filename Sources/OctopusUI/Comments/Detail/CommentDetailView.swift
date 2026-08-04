@@ -92,6 +92,10 @@ struct CommentDetailView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Fill the whole screen (including safe areas) with the community background so the reply
+            // composer — which paints itself with that color — blends into a uniform background instead
+            // of sitting on the system background, as PostDetailView already does.
+            .largeScreenMarginBackground()
 
             if viewModel.commentDeletion == .inProgress || viewModel.isDeletingReply {
                 LoadingOverlay()

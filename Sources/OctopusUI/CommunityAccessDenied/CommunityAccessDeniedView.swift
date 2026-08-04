@@ -73,5 +73,7 @@ private struct ContentView: View {
             PoweredByOctopusView()
         }
         .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .largeScreenMarginBackground()
     }
 }
