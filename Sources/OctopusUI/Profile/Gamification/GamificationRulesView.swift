@@ -84,7 +84,7 @@ private struct TitleView: View {
 
             Image(uiImage: theme.assets.icons.gamification.rulesHeader)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(height: 40)
                 .accessibilityHidden(true)
         }

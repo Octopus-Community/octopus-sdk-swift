@@ -21,12 +21,12 @@ class UserConfigDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func configPublisher() -> AnyPublisher<UserConfig?, Error> {
+    func configPublisher() -> AnyPublisher<UserConfig?, Never> {
         (context
             .publisher(request: UserConfigEntity.fetch()) {
                 guard let configEntity = $0.first, let config = UserConfig(from: configEntity) else { return [] }
                 return [config]
-            } as AnyPublisher<[UserConfig], Error>
+            } as AnyPublisher<[UserConfig], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)

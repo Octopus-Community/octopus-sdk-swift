@@ -50,10 +50,10 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
 
-    public func getComment(uuid: String) -> AnyPublisher<Comment?, Error> {
+    public func getComment(uuid: String) -> AnyPublisher<Comment?, Never> {
         return Publishers.CombineLatest(
             commentsDatabase.commentPublisher(uuid: uuid),
-            blockedUserIdsProvider.blockedUserIdsPublisher.setFailureType(to: Error.self)
+            blockedUserIdsProvider.blockedUserIdsPublisher
         )
         .map { [unowned self] in
             guard let storableComment = $0 else { return nil }

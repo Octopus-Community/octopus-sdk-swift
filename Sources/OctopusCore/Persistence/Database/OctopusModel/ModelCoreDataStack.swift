@@ -25,7 +25,9 @@ class ModelCoreDataStack: InjectableObject, @unchecked Sendable {
 
     private static let persistentContainerName = "OctopusModel"
     /// Current version of the database. Used to determine which kind of migration is needed
-    private static let currentVersion: Int = 2
+    /// v3: added desc/ascCommentFeedId to Public/PrivateProfile (String, default "") — a
+    /// lightweight, non-resetting migration; the ids populate on the next profile fetch.
+    private static let currentVersion: Int = 3
 
     private let stackManager: CoreDataStackManager
 

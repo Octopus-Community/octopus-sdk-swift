@@ -6,7 +6,7 @@ import SwiftUI
 import OctopusCore
 import UIKit
 
-struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: View {
+struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, CommentsView: View>: View {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.layoutDirection) private var layoutDirection
     let profile: DisplayableCurrentUserProfile
@@ -21,9 +21,13 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
     let openGamificationRules: () -> Void
     @ViewBuilder let postsView: PostsView
     @ViewBuilder let notificationsView: NotificationsView
+    /// The Comments tab content.
+    @ViewBuilder let commentsView: CommentsView
 
     @State private var selectedTab: Int
     @State private var displayStickyHeader = false
+    /// Scroll offset shared by the inline tab row and the pinned pill row that replaces it.
+    @State private var tabsScrollOffset: CGFloat = 0
 
     @State private var displayFullBio = false
 
@@ -41,7 +45,8 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
          openEditionWithPhotoPicker: @escaping () -> Void,
          openGamificationRules: @escaping () -> Void,
          @ViewBuilder postsView: @escaping () -> PostsView,
-         @ViewBuilder notificationsView: @escaping () -> NotificationsView) {
+         @ViewBuilder notificationsView: @escaping () -> NotificationsView,
+         @ViewBuilder commentsView: @escaping () -> CommentsView) {
         self.profile = profile
         self.gamificationConfig = gamificationConfig
         self.displayAccountAge = displayAccountAge
@@ -54,7 +59,9 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
         self.openGamificationRules = openGamificationRules
         self.postsView = postsView()
         self.notificationsView = notificationsView()
-        self._selectedTab = State(wrappedValue: hasInitialNotSeenNotifications ? 1 : 0)
+        self.commentsView = commentsView()
+        // Tabs: Posts(0) / Comments(1) / Notifications(2). Open on Notifications when there are unseen ones.
+        self._selectedTab = State(wrappedValue: hasInitialNotSeenNotifications ? 2 : 0)
     }
 
     var body: some View {
@@ -63,7 +70,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 16) {
                             if !editability.avatarEditable {
-                                // Read-only picture (OCT-1487, Q4): shown bare — no add/edit "+" overlay,
+                                // Read-only picture: shown bare — no add/edit "+" overlay,
                                 // and the tap is disabled.
                                 AuthorAvatarView(avatar: avatar)
                                     .frame(width: 71, height: 71)
@@ -74,7 +81,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                                         .overlay(
                                             Image(uiImage: theme.assets.icons.profile.addPicture)
                                                 .resizable()
-                                                .aspectRatio(contentMode: .fit)
+                                                .scaledToFit()
                                                 .foregroundColor(theme.colors.onPrimary)
                                                 .padding(4)
                                                 .background(theme.colors.primary)
@@ -160,7 +167,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                         ProfileCounterView(totalMessages: profile.totalMessages,
                                            accountCreationDate: displayAccountAge ? profile.accountCreationDate : nil)
 
-                        // OCT-1487: a `disabled` bio is removed entirely (no display even of an
+                        // A `disabled` bio is removed entirely (no display even of an
                         // existing value); "Add a bio" shows only if the bio is editable; the "Edit
                         // profile" button shows as soon as any of the three fields is editable (Q2).
                         if !editability.bioHidden, let bio = profile.bio {
@@ -238,23 +245,27 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
                     }
                     .padding(.horizontal, 16)
 
-                    CustomSegmentedControl(tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],
-                                           tabCount: 2, selectedTab: $selectedTab)
+                    CustomSegmentedControl(tabs: tabs, selectedTab: $selectedTab,
+                                           scrollOffset: $tabsScrollOffset)
                     .background(
                         GeometryReader { geometry in
                             Color.clear
                                 .onValueChanged(of: geometry.frame(in: .named(scrollViewCoordinateSpace))) { frame in
-                                    if frame.minY <= 0, !displayStickyHeader {
-                                        displayStickyHeader = true
-                                    } else if frame.minY > 0, displayStickyHeader {
-                                        displayStickyHeader = false
+                                    let pinnedHeaderShows = frame.minY <= 0
+                                    guard pinnedHeaderShows != displayStickyHeader else { return }
+                                    withAnimation(ProfileTabsLayout.pinnedHeaderAnimation) {
+                                        displayStickyHeader = pinnedHeaderShows
                                     }
                                 }
                         }
                     )
+                    .hiddenWhilePinnedHeaderShows(displayStickyHeader)
                     theme.colors.gray300.frame(height: 1)
+                        .hiddenWhilePinnedHeaderShows(displayStickyHeader)
                     if selectedTab == 0 {
                         postsView
+                    } else if selectedTab == 1 {
+                        commentsView
                     } else {
                         notificationsView
                     }
@@ -281,13 +292,18 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View>: 
         if displayStickyHeader {
             // Instagram-style glass "pills" that float over the blurred content scrolling under the
             // translucent nav bar.
-            ProfileStickyTabsHeader(
-                tabs: ["Profile.Tabs.Posts", "Profile.Tabs.Notifications"],
-                selectedTab: $selectedTab)
+            ProfileStickyTabsHeader(tabs: tabs, selectedTab: $selectedTab, scrollOffset: $tabsScrollOffset)
+                .transition(.opacity)
         }
     }
 
-    /// "Add a bio" is offered only when the bio is editable and there is no bio yet (OCT-1487).
+    /// Posts(0) / Comments(1) / Notifications(2) — one source of truth for both the inline selector
+    /// and the pinned header, so they can never drift apart.
+    private var tabs: [LocalizedStringKey] {
+        ["Profile.Tabs.Posts", "Profile.Tabs.Comments", "Profile.Tabs.Notifications"]
+    }
+
+    /// "Add a bio" is offered only when the bio is editable and there is no bio yet.
     private var canAddBio: Bool {
         editability.bioEditable && !editability.bioHidden && profile.bio == nil
     }

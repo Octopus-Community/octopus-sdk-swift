@@ -15,6 +15,10 @@ Pod::Spec.new do |spec|
   
   spec.source_files = 'Sources/Octopus/**/*.swift'
 
+  spec.resource_bundles = {
+      'Octopus' => ['Sources/Octopus/PrivacyInfo.xcprivacy']
+  }
+
   spec.pod_target_xcconfig = {
     'OTHER_SWIFT_FLAGS' => '-package-name #{SharedPodSpecConfig::PACKAGE_NAME}'
   }

@@ -23,7 +23,7 @@ class RepliesDatabase: ContentsDatabase<ReplyEntity>, InjectableObject, @uncheck
         super.init(injector: injector)
     }
 
-    func repliesPublisher(ids: [String]) -> AnyPublisher<[StorableReply], Error> {
+    func repliesPublisher(ids: [String]) -> AnyPublisher<[StorableReply], Never> {
         return context
             .chunkedPublisher(
                 ids: ids,

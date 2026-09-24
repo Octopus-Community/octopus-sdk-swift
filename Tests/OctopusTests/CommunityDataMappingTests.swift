@@ -139,7 +139,8 @@ struct CommunityDataMappingTests {
             profileFieldsLock: .allEditable,
             contentOptions: .allEnabled,
             exposeClientUserId: false,
-            termsAcceptanceMode: .implicit))
+            termsAcceptanceMode: .implicit,
+            showCommentsOnOtherProfiles: false))
 
         mocks.userService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {

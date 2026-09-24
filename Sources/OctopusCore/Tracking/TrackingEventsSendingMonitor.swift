@@ -49,7 +49,6 @@ final class TrackingEventsSendingMonitor: InjectableObject, @unchecked Sendable 
                 return Just<[Event]>([]).eraseToAnyPublisher()
             }
             return database.eventsPublisher()
-                .replaceError(with: [])
                 .debounce(for: .seconds(2), scheduler: RunLoop.main)
                 .eraseToAnyPublisher()
         }
@@ -104,7 +103,8 @@ final class TrackingEventsSendingMonitor: InjectableObject, @unchecked Sendable 
                 // in case of error, wait before attempting a new time to send events according to `nbFailingAttempts`
                 let waitingTime = getWaitingTime(for: nbFailingAttempts)
                 if #available(iOS 14, *) { Logger.tracking.trace("Waiting for \(waitingTime) seconds before observing events again") }
-                try await Task.sleep(nanoseconds: UInt64(waitingTime * 1_000_000_000))
+                // A cancellation only ends the back-off early: the state below must be reset either way.
+                try? await Task.sleep(nanoseconds: UInt64(waitingTime * 1_000_000_000))
                 nbFailingAttempts += 1
             }
             isSendingEvents = false

@@ -184,6 +184,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     _ request: Com_Octopuscommunity_DeleteRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>
+
+  func getReactionsPage(
+    _ request: Com_Octopuscommunity_GetReactionsPageRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_GetReactionsPageRequest, Com_Octopuscommunity_GetReactionsPageResponse>
 }
 
 extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
@@ -784,6 +789,24 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? []
     )
   }
+
+  /// Unary call to GetReactionsPage
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetReactionsPage.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func getReactionsPage(
+    _ request: Com_Octopuscommunity_GetReactionsPageRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_GetReactionsPageRequest, Com_Octopuscommunity_GetReactionsPageResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getReactionsPage.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetReactionsPageInterceptors() ?? []
+    )
+  }
 }
 
 @available(*, deprecated)
@@ -1012,6 +1035,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     _ request: Com_Octopuscommunity_DeleteRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>
+
+  func makeGetReactionsPageCall(
+    _ request: Com_Octopuscommunity_GetReactionsPageRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetReactionsPageRequest, Com_Octopuscommunity_GetReactionsPageResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1419,6 +1447,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? []
     )
   }
+
+  public func makeGetReactionsPageCall(
+    _ request: Com_Octopuscommunity_GetReactionsPageRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_GetReactionsPageRequest, Com_Octopuscommunity_GetReactionsPageResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getReactionsPage.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetReactionsPageInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1818,6 +1858,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeDeleteReactionInterceptors() ?? []
     )
   }
+
+  public func getReactionsPage(
+    _ request: Com_Octopuscommunity_GetReactionsPageRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_GetReactionsPageResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getReactionsPage.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetReactionsPageInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1937,6 +1989,9 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
 
   /// - Returns: Interceptors to use when invoking 'deleteReaction'.
   func makeDeleteReactionInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getReactionsPage'.
+  func makeGetReactionsPageInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetReactionsPageRequest, Com_Octopuscommunity_GetReactionsPageResponse>]
 }
 
 public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
@@ -1977,6 +2032,7 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putReaction,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReaction,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getReactionsPage,
     ]
   )
 
@@ -2178,6 +2234,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       path: "/com.octopuscommunity.OctoObjectService/DeleteReaction",
       type: GRPCCallType.unary
     )
+
+    public static let getReactionsPage = GRPCMethodDescriptor(
+      name: "GetReactionsPage",
+      path: "/com.octopuscommunity.OctoObjectService/GetReactionsPage",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -2257,6 +2319,8 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
   func putReaction(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutReactionResponse>
 
   func deleteReaction(request: Com_Octopuscommunity_DeleteRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_DeleteReactionResponse>
+
+  func getReactionsPage(request: Com_Octopuscommunity_GetReactionsPageRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetReactionsPageResponse>
 }
 
 extension Com_Octopuscommunity_OctoObjectServiceProvider {
@@ -2568,6 +2632,15 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         userFunction: self.deleteReaction(request:context:)
       )
 
+    case "GetReactionsPage":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetReactionsPageRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetReactionsPageResponse>(),
+        interceptors: self.interceptors?.makeGetReactionsPageInterceptors() ?? [],
+        userFunction: self.getReactionsPage(request:context:)
+      )
+
     default:
       return nil
     }
@@ -2751,6 +2824,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     request: Com_Octopuscommunity_DeleteRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_DeleteReactionResponse
+
+  func getReactionsPage(
+    request: Com_Octopuscommunity_GetReactionsPageRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_GetReactionsPageResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -3069,6 +3147,15 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         wrapping: { try await self.deleteReaction(request: $0, context: $1) }
       )
 
+    case "GetReactionsPage":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_GetReactionsPageRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_GetReactionsPageResponse>(),
+        interceptors: self.interceptors?.makeGetReactionsPageInterceptors() ?? [],
+        wrapping: { try await self.getReactionsPage(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -3208,6 +3295,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   /// - Returns: Interceptors to use when handling 'deleteReaction'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeDeleteReactionInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_DeleteRequest, Com_Octopuscommunity_DeleteReactionResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getReactionsPage'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetReactionsPageInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_GetReactionsPageRequest, Com_Octopuscommunity_GetReactionsPageResponse>]
 }
 
 public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
@@ -3248,6 +3339,7 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteLike,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putReaction,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteReaction,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getReactionsPage,
     ]
   )
 
@@ -3447,6 +3539,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
     public static let deleteReaction = GRPCMethodDescriptor(
       name: "DeleteReaction",
       path: "/com.octopuscommunity.OctoObjectService/DeleteReaction",
+      type: GRPCCallType.unary
+    )
+
+    public static let getReactionsPage = GRPCMethodDescriptor(
+      name: "GetReactionsPage",
+      path: "/com.octopuscommunity.OctoObjectService/GetReactionsPage",
       type: GRPCCallType.unary
     )
   }

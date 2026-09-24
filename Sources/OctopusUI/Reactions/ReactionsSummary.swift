@@ -12,8 +12,10 @@ struct ReactionsSummary: View {
         case trailing
     }
 
+    let contentId: String
     let reactions: [ReactionCount]
     let countPlacement: CountPlacement
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     var maxReactionsKind: Int = 3
 
     @State private var displayReactionsCount = false
@@ -28,7 +30,8 @@ struct ReactionsSummary: View {
                 .buttonStyle(.plain)
                 .accessibilityHintInBundle("Accessibility.Reaction.Summary.SeeAll")
                 .sheet(isPresented: $displayReactionsCount) {
-                    ReactionsCountSheetScreen(reactions: reactions)
+                    ReactionsListSheetScreen(
+                        contentId: contentId, reactions: reactions, displayProfile: displayProfile)
                         .accessibilityFocusOnAppear()
                         .accessibilityAddTraits(.isModal)
                 }
@@ -64,7 +67,7 @@ private struct ContentView: View {
                 ForEach(reactionsToDisplay, id: \.self) { reactionKind in
                     Image(uiImage: theme.assets.icons.content.reaction[reactionKind])
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(width: reactionImageSize, height: reactionImageSize)
                         .shadow(color: theme.colors.background, radius: 0, x: -1, y: 0)
                 }

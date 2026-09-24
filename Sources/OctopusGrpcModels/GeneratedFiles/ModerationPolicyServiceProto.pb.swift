@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct Com_Octopuscommunity_ContentAction: Sendable {
+public nonisolated struct Com_Octopuscommunity_ContentAction: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -53,14 +53,14 @@ public struct Com_Octopuscommunity_ContentAction: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Action: Equatable, Sendable {
+  public nonisolated enum OneOf_Action: Equatable, Sendable {
     case moderate(Com_Octopuscommunity_ContentAction.Moderate)
     case hide(Com_Octopuscommunity_ContentAction.Hide)
     case none(Com_Octopuscommunity_ContentAction.None)
 
   }
 
-  public struct Moderate: Sendable {
+  public nonisolated struct Moderate: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -72,7 +72,7 @@ public struct Com_Octopuscommunity_ContentAction: Sendable {
     public init() {}
   }
 
-  public struct Hide: Sendable {
+  public nonisolated struct Hide: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -84,7 +84,7 @@ public struct Com_Octopuscommunity_ContentAction: Sendable {
     public init() {}
   }
 
-  public struct None: Sendable {
+  public nonisolated struct None: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -97,7 +97,7 @@ public struct Com_Octopuscommunity_ContentAction: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_SendToSupportAction: Sendable {
+public nonisolated struct Com_Octopuscommunity_SendToSupportAction: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -122,13 +122,13 @@ public struct Com_Octopuscommunity_SendToSupportAction: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Action: Equatable, Sendable {
+  public nonisolated enum OneOf_Action: Equatable, Sendable {
     case enable(Com_Octopuscommunity_SendToSupportAction.Enable)
     case disable(Com_Octopuscommunity_SendToSupportAction.Disable)
 
   }
 
-  public struct Enable: Sendable {
+  public nonisolated struct Enable: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -140,7 +140,7 @@ public struct Com_Octopuscommunity_SendToSupportAction: Sendable {
     public init() {}
   }
 
-  public struct Disable: Sendable {
+  public nonisolated struct Disable: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -153,7 +153,7 @@ public struct Com_Octopuscommunity_SendToSupportAction: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_AutoReplyAction: Sendable {
+public nonisolated struct Com_Octopuscommunity_AutoReplyAction: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -178,13 +178,13 @@ public struct Com_Octopuscommunity_AutoReplyAction: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Action: Equatable, Sendable {
+  public nonisolated enum OneOf_Action: Equatable, Sendable {
     case enable(Com_Octopuscommunity_AutoReplyAction.Enable)
     case disable(Com_Octopuscommunity_AutoReplyAction.Disable)
 
   }
 
-  public struct Enable: Sendable {
+  public nonisolated struct Enable: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -200,7 +200,7 @@ public struct Com_Octopuscommunity_AutoReplyAction: Sendable {
     public init() {}
   }
 
-  public struct Disable: Sendable {
+  public nonisolated struct Disable: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -213,7 +213,7 @@ public struct Com_Octopuscommunity_AutoReplyAction: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_RedirectAction: Sendable {
+public nonisolated struct Com_Octopuscommunity_RedirectAction: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -238,13 +238,13 @@ public struct Com_Octopuscommunity_RedirectAction: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Action: Equatable, Sendable {
+  public nonisolated enum OneOf_Action: Equatable, Sendable {
     case enable(Com_Octopuscommunity_RedirectAction.Enable)
     case disable(Com_Octopuscommunity_RedirectAction.Disable)
 
   }
 
-  public struct Enable: Sendable {
+  public nonisolated struct Enable: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -258,7 +258,7 @@ public struct Com_Octopuscommunity_RedirectAction: Sendable {
     public init() {}
   }
 
-  public struct Disable: Sendable {
+  public nonisolated struct Disable: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -272,7 +272,7 @@ public struct Com_Octopuscommunity_RedirectAction: Sendable {
 }
 
 /// --- CreatePolicy (Octopus-admin) ---
-public struct Com_Octopuscommunity_CreatePolicyRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_CreatePolicyRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -335,7 +335,7 @@ public struct Com_Octopuscommunity_CreatePolicyRequest: Sendable {
   fileprivate var _defaultSendToSupport: Com_Octopuscommunity_SendToSupportAction? = nil
 }
 
-public struct Com_Octopuscommunity_CreatePolicyResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_CreatePolicyResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -348,7 +348,7 @@ public struct Com_Octopuscommunity_CreatePolicyResponse: Sendable {
 }
 
 /// --- UpdatePolicy (Octopus-admin): full replace of an existing policy ---
-public struct Com_Octopuscommunity_UpdatePolicyRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_UpdatePolicyRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -413,7 +413,7 @@ public struct Com_Octopuscommunity_UpdatePolicyRequest: Sendable {
   fileprivate var _defaultSendToSupport: Com_Octopuscommunity_SendToSupportAction? = nil
 }
 
-public struct Com_Octopuscommunity_UpdatePolicyResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_UpdatePolicyResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -426,7 +426,7 @@ public struct Com_Octopuscommunity_UpdatePolicyResponse: Sendable {
 }
 
 /// --- DeletePolicy (Octopus-admin) — cascades to all attachments across communities ---
-public struct Com_Octopuscommunity_DeletePolicyRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeletePolicyRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -438,7 +438,7 @@ public struct Com_Octopuscommunity_DeletePolicyRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_DeletePolicyResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeletePolicyResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -449,7 +449,7 @@ public struct Com_Octopuscommunity_DeletePolicyResponse: Sendable {
 }
 
 /// Wraps a repeated field so it can sit inside a oneof.
-public struct Com_Octopuscommunity_CommunityIdList: Sendable {
+public nonisolated struct Com_Octopuscommunity_CommunityIdList: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -464,7 +464,7 @@ public struct Com_Octopuscommunity_CommunityIdList: Sendable {
 /// --- CreateDefaultAttachment (Octopus-admin): attach a policy to N communities with its default values ---
 /// target is required: communityIds (non-empty) OR allCommunities=true. allCommunities resolves to
 /// every distinct communityId known to the api-key config table.
-public struct Com_Octopuscommunity_CreateDefaultAttachmentRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_CreateDefaultAttachmentRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -491,7 +491,7 @@ public struct Com_Octopuscommunity_CreateDefaultAttachmentRequest: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Target: Equatable, Sendable {
+  public nonisolated enum OneOf_Target: Equatable, Sendable {
     case communityIds(Com_Octopuscommunity_CommunityIdList)
     case allCommunities(Bool)
 
@@ -500,7 +500,7 @@ public struct Com_Octopuscommunity_CreateDefaultAttachmentRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_CreateDefaultAttachmentResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_CreateDefaultAttachmentResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -514,7 +514,7 @@ public struct Com_Octopuscommunity_CreateDefaultAttachmentResponse: Sendable {
 }
 
 /// --- UpdateCommunityPolicyAttachment (client BO): full replace of the 4 configs ---
-public struct Com_Octopuscommunity_UpdateCommunityPolicyAttachmentRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_UpdateCommunityPolicyAttachmentRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -567,7 +567,7 @@ public struct Com_Octopuscommunity_UpdateCommunityPolicyAttachmentRequest: Senda
   fileprivate var _redirect: Com_Octopuscommunity_RedirectAction? = nil
 }
 
-public struct Com_Octopuscommunity_UpdateCommunityPolicyAttachmentResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_UpdateCommunityPolicyAttachmentResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -580,7 +580,7 @@ public struct Com_Octopuscommunity_UpdateCommunityPolicyAttachmentResponse: Send
 /// --- DeleteCommunityPolicyAttachments (Octopus-admin): detach N communities ---
 /// target is required: communityIds (non-empty) OR allCommunities=true. allCommunities resolves to
 /// every community currently attached to this policy.
-public struct Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -607,7 +607,7 @@ public struct Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsRequest: Send
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Target: Equatable, Sendable {
+  public nonisolated enum OneOf_Target: Equatable, Sendable {
     case communityIds(Com_Octopuscommunity_CommunityIdList)
     case allCommunities(Bool)
 
@@ -616,7 +616,7 @@ public struct Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsRequest: Send
   public init() {}
 }
 
-public struct Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -630,7 +630,7 @@ public struct Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsResponse: Sen
 }
 
 /// --- ListCommunityPolicyAttachments (Octopus-admin): attachments of a policy across communities ---
-public struct Com_Octopuscommunity_ListCommunityPolicyAttachmentsRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListCommunityPolicyAttachmentsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -642,7 +642,7 @@ public struct Com_Octopuscommunity_ListCommunityPolicyAttachmentsRequest: Sendab
   public init() {}
 }
 
-public struct Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -651,7 +651,7 @@ public struct Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse: Senda
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public struct Attachment: Sendable {
+  public nonisolated struct Attachment: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -671,17 +671,19 @@ public struct Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse: Senda
 }
 
 /// --- ListPolicies (Octopus-admin): full catalog, each entry carrying a community attachment count ---
-public struct Com_Octopuscommunity_ListPoliciesRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListPoliciesRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
+
+  public var communityIds: [String] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
-public struct Com_Octopuscommunity_ListPoliciesResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListPoliciesResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -690,7 +692,7 @@ public struct Com_Octopuscommunity_ListPoliciesResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public struct Policy: Sendable {
+  public nonisolated struct Policy: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -769,7 +771,7 @@ public struct Com_Octopuscommunity_ListPoliciesResponse: Sendable {
 }
 
 /// --- ListAttachedPolicies (client BO): policies attached to the authenticated community ---
-public struct Com_Octopuscommunity_ListAttachedPoliciesRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListAttachedPoliciesRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -779,7 +781,7 @@ public struct Com_Octopuscommunity_ListAttachedPoliciesRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_ListAttachedPoliciesResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListAttachedPoliciesResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -788,7 +790,7 @@ public struct Com_Octopuscommunity_ListAttachedPoliciesResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public struct AttachedPolicy: Sendable {
+  public nonisolated struct AttachedPolicy: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -872,9 +874,9 @@ public struct Com_Octopuscommunity_ListAttachedPoliciesResponse: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_ContentAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ContentAction"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}moderate\0\u{1}hide\0\u{1}none\0")
 
@@ -958,7 +960,7 @@ extension Com_Octopuscommunity_ContentAction: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
-extension Com_Octopuscommunity_ContentAction.Moderate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentAction.Moderate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentAction.protoMessageName + ".Moderate"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}withAudit\0")
 
@@ -988,7 +990,7 @@ extension Com_Octopuscommunity_ContentAction.Moderate: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Com_Octopuscommunity_ContentAction.Hide: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentAction.Hide: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentAction.protoMessageName + ".Hide"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}withAudit\0")
 
@@ -1018,7 +1020,7 @@ extension Com_Octopuscommunity_ContentAction.Hide: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension Com_Octopuscommunity_ContentAction.None: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentAction.None: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentAction.protoMessageName + ".None"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1037,7 +1039,7 @@ extension Com_Octopuscommunity_ContentAction.None: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension Com_Octopuscommunity_SendToSupportAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SendToSupportAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SendToSupportAction"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enable\0\u{1}disable\0")
 
@@ -1104,7 +1106,7 @@ extension Com_Octopuscommunity_SendToSupportAction: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_SendToSupportAction.Enable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SendToSupportAction.Enable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_SendToSupportAction.protoMessageName + ".Enable"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}requiresApproval\0")
 
@@ -1134,7 +1136,7 @@ extension Com_Octopuscommunity_SendToSupportAction.Enable: SwiftProtobuf.Message
   }
 }
 
-extension Com_Octopuscommunity_SendToSupportAction.Disable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SendToSupportAction.Disable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_SendToSupportAction.protoMessageName + ".Disable"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1153,7 +1155,7 @@ extension Com_Octopuscommunity_SendToSupportAction.Disable: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_AutoReplyAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_AutoReplyAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AutoReplyAction"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enable\0\u{1}disable\0")
 
@@ -1220,7 +1222,7 @@ extension Com_Octopuscommunity_AutoReplyAction: SwiftProtobuf.Message, SwiftProt
   }
 }
 
-extension Com_Octopuscommunity_AutoReplyAction.Enable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_AutoReplyAction.Enable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_AutoReplyAction.protoMessageName + ".Enable"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}quickAnswerId\0\u{1}authorProfileId\0\u{1}requiresApproval\0")
 
@@ -1260,7 +1262,7 @@ extension Com_Octopuscommunity_AutoReplyAction.Enable: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Com_Octopuscommunity_AutoReplyAction.Disable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_AutoReplyAction.Disable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_AutoReplyAction.protoMessageName + ".Disable"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1279,7 +1281,7 @@ extension Com_Octopuscommunity_AutoReplyAction.Disable: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_RedirectAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_RedirectAction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RedirectAction"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enable\0\u{1}disable\0")
 
@@ -1346,7 +1348,7 @@ extension Com_Octopuscommunity_RedirectAction: SwiftProtobuf.Message, SwiftProto
   }
 }
 
-extension Com_Octopuscommunity_RedirectAction.Enable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_RedirectAction.Enable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_RedirectAction.protoMessageName + ".Enable"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}targetGroupId\0\u{1}requiresApproval\0")
 
@@ -1381,7 +1383,7 @@ extension Com_Octopuscommunity_RedirectAction.Enable: SwiftProtobuf.Message, Swi
   }
 }
 
-extension Com_Octopuscommunity_RedirectAction.Disable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_RedirectAction.Disable: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_RedirectAction.protoMessageName + ".Disable"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1400,7 +1402,7 @@ extension Com_Octopuscommunity_RedirectAction.Disable: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Com_Octopuscommunity_CreatePolicyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_CreatePolicyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreatePolicyRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}checkstepCode\0\u{1}nameEn\0\u{1}nameFr\0\u{1}descriptionEn\0\u{1}descriptionFr\0\u{1}isSensitive\0\u{1}attachOnCommunityCreation\0\u{1}banExplanationWordings\0\u{1}defaultContentAction\0\u{1}defaultSendToSupport\0")
 
@@ -1479,7 +1481,7 @@ extension Com_Octopuscommunity_CreatePolicyRequest: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_CreatePolicyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_CreatePolicyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreatePolicyResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0")
 
@@ -1509,7 +1511,7 @@ extension Com_Octopuscommunity_CreatePolicyResponse: SwiftProtobuf.Message, Swif
   }
 }
 
-extension Com_Octopuscommunity_UpdatePolicyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_UpdatePolicyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdatePolicyRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}checkstepCode\0\u{1}nameEn\0\u{1}nameFr\0\u{1}descriptionEn\0\u{1}descriptionFr\0\u{1}isSensitive\0\u{1}attachOnCommunityCreation\0\u{1}banExplanationWordings\0\u{1}defaultContentAction\0\u{1}defaultSendToSupport\0")
 
@@ -1593,7 +1595,7 @@ extension Com_Octopuscommunity_UpdatePolicyRequest: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_UpdatePolicyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_UpdatePolicyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdatePolicyResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}checkstepCodeReused\0")
 
@@ -1623,7 +1625,7 @@ extension Com_Octopuscommunity_UpdatePolicyResponse: SwiftProtobuf.Message, Swif
   }
 }
 
-extension Com_Octopuscommunity_DeletePolicyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeletePolicyRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeletePolicyRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0")
 
@@ -1653,7 +1655,7 @@ extension Com_Octopuscommunity_DeletePolicyRequest: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_DeletePolicyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeletePolicyResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeletePolicyResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1672,7 +1674,7 @@ extension Com_Octopuscommunity_DeletePolicyResponse: SwiftProtobuf.Message, Swif
   }
 }
 
-extension Com_Octopuscommunity_CommunityIdList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_CommunityIdList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CommunityIdList"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}ids\0")
 
@@ -1702,7 +1704,7 @@ extension Com_Octopuscommunity_CommunityIdList: SwiftProtobuf.Message, SwiftProt
   }
 }
 
-extension Com_Octopuscommunity_CreateDefaultAttachmentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_CreateDefaultAttachmentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateDefaultAttachmentRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0\u{1}communityIds\0\u{1}allCommunities\0")
 
@@ -1769,7 +1771,7 @@ extension Com_Octopuscommunity_CreateDefaultAttachmentRequest: SwiftProtobuf.Mes
   }
 }
 
-extension Com_Octopuscommunity_CreateDefaultAttachmentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_CreateDefaultAttachmentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateDefaultAttachmentResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}failed\0")
 
@@ -1799,7 +1801,7 @@ extension Com_Octopuscommunity_CreateDefaultAttachmentResponse: SwiftProtobuf.Me
   }
 }
 
-extension Com_Octopuscommunity_UpdateCommunityPolicyAttachmentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_UpdateCommunityPolicyAttachmentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateCommunityPolicyAttachmentRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0\u{1}contentAction\0\u{1}sendToSupport\0\u{1}autoReply\0\u{1}redirect\0")
 
@@ -1853,7 +1855,7 @@ extension Com_Octopuscommunity_UpdateCommunityPolicyAttachmentRequest: SwiftProt
   }
 }
 
-extension Com_Octopuscommunity_UpdateCommunityPolicyAttachmentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_UpdateCommunityPolicyAttachmentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateCommunityPolicyAttachmentResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1872,7 +1874,7 @@ extension Com_Octopuscommunity_UpdateCommunityPolicyAttachmentResponse: SwiftPro
   }
 }
 
-extension Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteCommunityPolicyAttachmentsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0\u{1}communityIds\0\u{1}allCommunities\0")
 
@@ -1939,7 +1941,7 @@ extension Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsRequest: SwiftPro
   }
 }
 
-extension Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteCommunityPolicyAttachmentsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}failed\0")
 
@@ -1969,7 +1971,7 @@ extension Com_Octopuscommunity_DeleteCommunityPolicyAttachmentsResponse: SwiftPr
   }
 }
 
-extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListCommunityPolicyAttachmentsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0")
 
@@ -1999,7 +2001,7 @@ extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsRequest: SwiftProto
   }
 }
 
-extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListCommunityPolicyAttachmentsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}attachments\0")
 
@@ -2029,7 +2031,7 @@ extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse: SwiftProt
   }
 }
 
-extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse.Attachment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse.Attachment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse.protoMessageName + ".Attachment"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0\u{1}communityId\0\u{1}isCustomized\0")
 
@@ -2069,26 +2071,37 @@ extension Com_Octopuscommunity_ListCommunityPolicyAttachmentsResponse.Attachment
   }
 }
 
-extension Com_Octopuscommunity_ListPoliciesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListPoliciesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListPoliciesRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}communityIds\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    // Load everything into unknown fields
-    while try decoder.nextFieldNumber() != nil {}
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedStringField(value: &self.communityIds) }()
+      default: break
+      }
+    }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.communityIds.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.communityIds, fieldNumber: 1)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_ListPoliciesRequest, rhs: Com_Octopuscommunity_ListPoliciesRequest) -> Bool {
+    if lhs.communityIds != rhs.communityIds {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Com_Octopuscommunity_ListPoliciesResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListPoliciesResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListPoliciesResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policies\0")
 
@@ -2118,7 +2131,7 @@ extension Com_Octopuscommunity_ListPoliciesResponse: SwiftProtobuf.Message, Swif
   }
 }
 
-extension Com_Octopuscommunity_ListPoliciesResponse.Policy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListPoliciesResponse.Policy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ListPoliciesResponse.protoMessageName + ".Policy"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}checkstepCode\0\u{1}nameEn\0\u{1}nameFr\0\u{1}descriptionEn\0\u{1}descriptionFr\0\u{1}isSensitive\0\u{1}attachOnCommunityCreation\0\u{1}banExplanationWordings\0\u{1}defaultContentAction\0\u{1}defaultSendToSupport\0\u{1}communitiesCount\0")
 
@@ -2207,7 +2220,7 @@ extension Com_Octopuscommunity_ListPoliciesResponse.Policy: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_ListAttachedPoliciesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListAttachedPoliciesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListAttachedPoliciesRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -2226,7 +2239,7 @@ extension Com_Octopuscommunity_ListAttachedPoliciesRequest: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_ListAttachedPoliciesResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListAttachedPoliciesResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListAttachedPoliciesResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policies\0")
 
@@ -2256,7 +2269,7 @@ extension Com_Octopuscommunity_ListAttachedPoliciesResponse: SwiftProtobuf.Messa
   }
 }
 
-extension Com_Octopuscommunity_ListAttachedPoliciesResponse.AttachedPolicy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListAttachedPoliciesResponse.AttachedPolicy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ListAttachedPoliciesResponse.protoMessageName + ".AttachedPolicy"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}policyId\0\u{1}nameEn\0\u{1}nameFr\0\u{1}descriptionEn\0\u{1}descriptionFr\0\u{1}contentAction\0\u{1}sendToSupport\0\u{1}autoReply\0\u{1}redirect\0\u{1}createdAt\0")
 

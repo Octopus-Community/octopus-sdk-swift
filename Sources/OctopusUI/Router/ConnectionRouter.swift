@@ -18,6 +18,8 @@ struct ConnectionRouter: ViewModifier {
     @State private var displayLoadConfigError = false
     @State private var displaySSOError = false
     @State private var displayableSSOError: DisplayableString?
+    @State private var displayBanned = false
+    @State private var bannedMessage: DisplayableString?
 
     init(octopus: OctopusSDK, noConnectedReplacementAction: Binding<ConnectedActionReplacement?>) {
         self.octopus = octopus
@@ -44,6 +46,20 @@ struct ConnectionRouter: ViewModifier {
                     }
                     Button(action: {}) {
                         Text("Common.Cancel", bundle: .module)
+                    }
+                },
+                message: { error in
+                    error.textView
+                })
+            // No Retry: a ban is the server's settled answer, and the exchange that would be retried is
+            // SSO-only — in magic-link mode calling it traps.
+            .compatAlert(
+                "Common.Error",
+                isPresented: $displayBanned,
+                presenting: bannedMessage,
+                actions: { _ in
+                    Button(action: {}) {
+                        Text("Common.Ok", bundle: .module)
                     }
                 },
                 message: { error in
@@ -82,6 +98,9 @@ struct ConnectionRouter: ViewModifier {
                     displayableSSOError = error
                     displaySSOError = true
                     viewModel.linkClientUserToOctopusUser()
+                case let .banned(message):
+                    bannedMessage = message
+                    displayBanned = true
                 case .none: break
                 }
             }
@@ -117,6 +136,12 @@ class ConnectionRouterViewModel: ObservableObject {
     }
 
     private func linkClientUserToOctopusUser() async {
+        // There is no client user to link outside SSO, and the magic-link repository answers this call
+        // with a `preconditionFailure` — so a replacement that reaches here in `.octopus` mode would trap
+        // the host app. `ConnectedActionChecker.decision` only ever asks for it behind an `isSSO` check,
+        // but that is a convention its callers cannot see: a branch added above that check would crash,
+        // which is exactly how the ban replacement did before it was split into its own case.
+        guard case .sso = octopus.core.connectionRepository.connectionMode else { return }
         do {
             try await octopus.core.connectionRepository.linkClientUserToOctopusUser()
             ssoError = nil

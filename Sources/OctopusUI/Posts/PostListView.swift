@@ -9,6 +9,7 @@ import Octopus
 import OctopusCore
 
 struct PostListView: View {
+    @Environment(\.octopusTheme) private var theme
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.trackingApi) var trackingApi
     @Compat.StateObject private var viewModel: PostListViewModel
@@ -21,10 +22,15 @@ struct PostListView: View {
 
     private let mainFlowPath: MainFlowPath
     private let topContentInset: CGFloat
+    /// Set when the feeds themselves failed to load, so there is no feed to show posts in.
+    private let rootFeedLoadFailure: ScreenStateFailure?
+    private let retryRootFeedLoad: () -> Void
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          selectedRootFeed: Binding<RootFeed?>, zoomableImageInfo: Binding<ZoomableImageInfo?>,
          isScrollingDown: Binding<Bool> = .constant(false),
+         rootFeedLoadFailure: ScreenStateFailure? = nil,
+         retryRootFeedLoad: @escaping () -> Void = {},
          topContentInset: CGFloat = 0) {
         _viewModel = Compat.StateObject(wrappedValue: PostListViewModel(
             octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore))
@@ -33,6 +39,8 @@ struct PostListView: View {
         _isScrollingDown = isScrollingDown
         self.mainFlowPath = mainFlowPath
         self.topContentInset = topContentInset
+        self.rootFeedLoadFailure = rootFeedLoadFailure
+        self.retryRootFeedLoad = retryRootFeedLoad
     }
 
     var body: some View {
@@ -67,17 +75,30 @@ struct PostListView: View {
                             displayContentModeration: {
                                 mainFlowPath.reportTarget = .content(contentId: $0)
                             }) {
-                                DefaultEmptyPostsView()
+                                ScreenState(
+                                    image: theme.assets.icons.screenStates.emptyContent,
+                                    // Already shipped in 24 languages as "Soyez le premier à publier !"
+                                    title: .localizationKey("Post.List.Default.Empty"),
+                                    verticalPadding: ScreenState.feedEmptyPadding)
                             }
+                    } else if let rootFeedLoadFailure {
+                        rootFeedLoadFailure.screenState(verticalPadding: ScreenState.feedErrorPadding,
+                                                        icons: theme.assets.icons, retry: retryRootFeedLoad)
                     } else {
-                        EmptyView()
+                        // No feed yet and no failure: the feeds are still loading.
+                        Compat.ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 200)
                     }
                 }
                 .id(viewModel.postFeedViewModel?.feed.id) // rebuild the content if feedId changes (makes scroll view goes to top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
-        .toastContainer(octopus: viewModel.octopus)
+        // Same inset the feed gives its first row: the explore-groups bar floats over both.
+        .toastContainer(octopus: viewModel.octopus,
+                        retryFailedFetch: { Task { await viewModel.refresh() } },
+                        topInset: topContentInset)
         .modify {
             if #available(iOS 15.0, *) {
                 $0.safeAreaInset(edge: .bottom, content: {

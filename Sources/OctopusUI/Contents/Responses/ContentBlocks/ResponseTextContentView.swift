@@ -17,7 +17,7 @@ struct ResponseTextContentView: View {
     }
 
     var body: some View {
-        textView
+        RichText(text.getFullText(translated: displayTranslation), truncation: text.truncation)
             .font(theme.fonts.body2)
             .octopusBodyContentLineHeight()
             .foregroundColor(theme.colors.gray900)
@@ -28,18 +28,6 @@ struct ResponseTextContentView: View {
             .padding(.trailing, 8)
             .padding(.bottom, 2)
     }
-
-    @ViewBuilder
-    private var textView: some View {
-        if text.getIsEllipsized(translated: displayTranslation) {
-            Text(verbatim: "\(text.getText(translated: displayTranslation))... ") +
-            Text("Common.ReadMore", bundle: .module)
-                .fontWeight(.medium)
-                .foregroundColor(theme.colors.gray500)
-        } else {
-            RichText(text.getText(translated: displayTranslation))
-        }
-    }
 }
 
 #Preview("Full") {
@@ -49,6 +37,21 @@ struct ResponseTextContentView: View {
             text: TranslatableText(originalText: "A comment with some text content.",
                                    originalLanguage: nil),
             ellipsize: false))
+    .padding()
+    .mockEnvironmentForPreviews()
+}
+
+#Preview("Ellipsized") {
+    ResponseTextContentView(
+        contentId: "r1",
+        text: EllipsizableTranslatedText(
+            text: TranslatableText(
+                originalText: "This is a much longer sample comment body that exists purely to push " +
+                    "past the two hundred character truncation threshold so the preview finally shows " +
+                    "the See more suffix and a clipped link. " +
+                    "https://example.com/a-really-long-article-slug-for-testing",
+                originalLanguage: nil),
+            ellipsize: true))
     .padding()
     .mockEnvironmentForPreviews()
 }

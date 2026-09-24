@@ -27,7 +27,7 @@ struct PoweredByOctopusView: View {
 
                         Image(res: .poweredByOctopus)
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            .scaledToFit()
                             // *1.4 because the image is bigger than its text (due to the word Community around)
                             .frame(height: textHeight * 1.4)
                     }
@@ -39,7 +39,7 @@ struct PoweredByOctopusView: View {
                         cache: .interface) { cachedImage in
                             Image(uiImage: cachedImage.fullSizeImage)
                                 .resizable()
-                                .aspectRatio(contentMode: .fit)
+                                .scaledToFit()
                                 .frame(height: 24)
                         }
                         .padding(.top, 21)

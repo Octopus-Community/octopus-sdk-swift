@@ -150,13 +150,13 @@ private struct RecipeView: View {
                         case let .local(img):
                             Image(img)
                                 .resizable()
-                                .aspectRatio(contentMode: .fit)
+                                .scaledToFit()
                         case let .remote(url):
                             if #available(iOS 15.0, *) {
                                 AsyncImage(url: url) { image in
                                     image
                                         .resizable()
-                                        .aspectRatio(contentMode: .fit)
+                                        .scaledToFit()
                                 } placeholder: {
                                     let width = geometry.size.width
                                     let aspectRatio = 1936.0 / 2592.0

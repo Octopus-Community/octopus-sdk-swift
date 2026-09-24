@@ -5,7 +5,7 @@
 import Foundation
 import OctopusGrpcModels
 
-/// Per-content-type creation options for the current community (OCT-1426), driven by the community
+/// Per-content-type creation options for the current community, driven by the community
 /// configuration. Each flag governs whether members can use a creation affordance (picture / poll).
 ///
 /// Highest-priority invariant: every flag defaults to `true`. Absent config — or absent fields —

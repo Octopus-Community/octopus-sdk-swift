@@ -21,7 +21,7 @@ class EventsDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func eventsPublisher() -> AnyPublisher<[Event], Error> {
+    func eventsPublisher() -> AnyPublisher<[Event], Never> {
         return context
             .publisher(request: EventEntity.fetchAll()) {
                 $0.compactMap { Event(from: $0) }

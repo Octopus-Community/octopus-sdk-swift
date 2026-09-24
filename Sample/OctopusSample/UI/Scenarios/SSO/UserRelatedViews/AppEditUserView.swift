@@ -80,7 +80,7 @@ struct AppEditUserView: View {
                 if let picture, let image = UIImage(data: picture) {
                     Image(uiImage: image)
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
+                        .scaledToFill()
                         .frame(width: 90, height: 90)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }

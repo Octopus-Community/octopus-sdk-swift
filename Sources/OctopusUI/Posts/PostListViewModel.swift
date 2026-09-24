@@ -54,12 +54,12 @@ class PostListViewModel: ObservableObject {
                     didCreatePostInComposer = false
                 } else if case .currentUserProfile = previous.last, current == [] {
                     // refresh automatically when the user profile is dismissed
-                    refreshFeed(isManual: false)
+                    refreshFeed()
                     refreshCurrentUserProfile()
                 } else if case .createPost = previous.last, current == [] {
                     // The composer was dismissed back to the feed: always refresh, but only scroll to top
                     // if a post was actually created (cancel via Back / swipe-down keeps the scroll).
-                    refreshFeed(isManual: false)
+                    refreshFeed()
                     scrollToTop = FeedComposerScrollPolicy.shouldScrollToTop(
                         previousLast: previous.last, current: current, didCreatePost: didCreatePostInComposer)
                 }
@@ -82,7 +82,7 @@ class PostListViewModel: ObservableObject {
             .sink { [unowned self] internalEvent in
                 switch internalEvent {
                 case .groupFollowingChanged, .entitlementsChanged:
-                    refreshFeed(isManual: false)
+                    refreshFeed()
                     scrollToTop = true
                 default: break
                 }
@@ -126,7 +126,7 @@ class PostListViewModel: ObservableObject {
         Task { try? await profileRepository.fetchCurrentUserProfile() }
     }
 
-    private func refreshFeed(isManual: Bool) {
-        postFeedViewModel?.refreshFeed(isManual: isManual)
+    private func refreshFeed() {
+        postFeedViewModel?.refreshFeed()
     }
 }

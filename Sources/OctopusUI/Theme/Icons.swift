@@ -281,6 +281,42 @@ extension OctopusTheme.Assets {
             public let listCellNavIndicator: UIImage
         }
 
+        /// Group of icons shown when a content area has nothing to display, or when its first load failed
+        /// Illustrations of the screen states.
+        ///
+        /// Unlike the other icons these are kept in their own colors rather than tinted: they are
+        /// illustrations, drawn on a transparent background so they sit on whatever background the
+        /// community picked.
+        public struct ScreenStates: Sendable {
+            /// Displayed on an empty list of posts or comments
+            public let emptyContent: UIImage
+            /// Displayed on an empty list of notifications
+            public let emptyNotifications: UIImage
+            /// Displayed when a first load failed because the device is offline
+            public let networkError: UIImage
+            /// Displayed when a first load failed for any other reason
+            public let error: UIImage
+
+            /// Constructor of the screen state illustrations
+            /// - Parameters:
+            ///   - emptyContent: Displayed on an empty list of posts or comments
+            ///   - emptyNotifications: Displayed on an empty list of notifications
+            ///   - networkError: Displayed when a first load failed because the device is offline
+            ///   - error: Displayed when a first load failed for any other reason
+            public init(
+                emptyContent: UIImage? = nil,
+                emptyNotifications: UIImage? = nil,
+                networkError: UIImage? = nil,
+                error: UIImage? = nil
+            ) {
+                self.emptyContent = emptyContent?.prepareAsIllustration() ?? .Gen.screenStateEmptyContent
+                self.emptyNotifications = emptyNotifications?.prepareAsIllustration()
+                    ?? .Gen.screenStateEmptyNotifications
+                self.networkError = networkError?.prepareAsIllustration() ?? .Gen.screenStateNetworkError
+                self.error = error?.prepareAsIllustration() ?? .Gen.screenStateError
+            }
+        }
+
         /// Group of icons used for groups
         public let groups: Groups
         /// Group of icons used for content (posts, comments, replies...)
@@ -293,12 +329,19 @@ extension OctopusTheme.Assets {
         public let settings: Settings
         /// Common icons
         public let common: Common
+        /// Group of icons used for the screen states (empty lists, failed first loads)
+        public let screenStates: ScreenStates
     }
 }
 
 private extension UIImage {
     func prepareForSdkUsage() -> UIImage {
         withRenderingMode(.alwaysTemplate)
+    }
+
+    /// Keeps the image's own colors: screen state illustrations are not glyphs to be tinted.
+    func prepareAsIllustration() -> UIImage {
+        withRenderingMode(.alwaysOriginal)
     }
 }
 
@@ -824,6 +867,7 @@ extension OctopusTheme.Assets.Icons {
         gamification: Gamification = .init(),
         settings: Settings = .init(),
         common: Common = .init(),
+        screenStates: ScreenStates = .init(),
         defaultReport: UIImage? = nil
     ) {
         self.groups = groups
@@ -832,6 +876,7 @@ extension OctopusTheme.Assets.Icons {
         self.gamification = gamification
         self.settings = settings
         self.common = common
+        self.screenStates = screenStates
 
         if let defaultReport {
             if content.reportIsDefault {

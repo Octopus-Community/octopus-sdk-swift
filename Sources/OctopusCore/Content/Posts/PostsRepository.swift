@@ -53,10 +53,10 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
 
-    public func getPost(uuid: String) -> AnyPublisher<Post?, Error> {
+    public func getPost(uuid: String) -> AnyPublisher<Post?, Never> {
         return Publishers.CombineLatest(
             postsDatabase.postPublisher(uuid: uuid),
-            blockedUserIdsProvider.blockedUserIdsPublisher.setFailureType(to: Error.self)
+            blockedUserIdsProvider.blockedUserIdsPublisher
         )
         .map { [unowned self] in
             guard let storablePost = $0 else { return nil }
@@ -76,7 +76,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         return Post(storablePost: storablePost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
     }
 
-    public func getClientObjectRelatedPost(clientObjectId: String) -> AnyPublisher<Post?, Error> {
+    public func getClientObjectRelatedPost(clientObjectId: String) -> AnyPublisher<Post?, Never> {
         postsDatabase.clientObjectRelatedPostPublisher(objectId: clientObjectId)
             .map { [unowned self] in
                 guard let storablePost = $0 else { return nil }
@@ -165,7 +165,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 imageIsCompressed = isCompressed
             }
 
-            // OCT-1426: for a prefilled (bridge) share carrying an image, sign the content so the
+            // For a prefilled (bridge) share carrying an image, sign the content so the
             // server accepts the image even in a pictures-off community. The fingerprint is computed on
             // the RESIZED/uploaded bytes (must match the backend PrefilledShareVerifier — doc #60).
             var clientToken: String?

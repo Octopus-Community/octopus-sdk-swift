@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct Com_Octopuscommunity_GetRootFeedsInfoRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetRootFeedsInfoRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -30,7 +30,7 @@ public struct Com_Octopuscommunity_GetRootFeedsInfoRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_GetRootFeedsInfoResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetRootFeedsInfoResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -42,7 +42,7 @@ public struct Com_Octopuscommunity_GetRootFeedsInfoResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_FeedInfo: Sendable {
+public nonisolated struct Com_Octopuscommunity_FeedInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -67,7 +67,7 @@ public struct Com_Octopuscommunity_FeedInfo: Sendable {
   fileprivate var _relatedTopicID: String? = nil
 }
 
-public struct Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -91,7 +91,7 @@ public struct Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: Sendable
   fileprivate var _pageSize: Int32? = nil
 }
 
-public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -125,7 +125,7 @@ public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: Sendable {
   fileprivate var _fetchAggregates: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -145,6 +145,11 @@ public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: Sendable {
   ///Same order than feed
   public var aggregates: [Com_Octopuscommunity_FeedAggregate] = []
 
+  /// parents of feed items (deduped); correlate via parentId
+  public var relatedObjects: [Com_Octopuscommunity_OctoObject] = []
+
+  public var relatedAggregates: [Com_Octopuscommunity_FeedAggregate] = []
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -152,7 +157,7 @@ public struct Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: Sendable {
   fileprivate var _nextPageCursor: String? = nil
 }
 
-public struct Com_Octopuscommunity_FeedAggregate: Sendable {
+public nonisolated struct Com_Octopuscommunity_FeedAggregate: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -175,7 +180,7 @@ public struct Com_Octopuscommunity_FeedAggregate: Sendable {
   fileprivate var _aggregate: Com_Octopuscommunity_Aggregate? = nil
 }
 
-public struct Com_Octopuscommunity_InitializeFeedRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_InitializeFeedRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -192,14 +197,25 @@ public struct Com_Octopuscommunity_InitializeFeedRequest: Sendable {
   /// Clears the value of `pageSize`. Subsequent reads from it will return its default value.
   public mutating func clearPageSize() {self._pageSize = nil}
 
+  /// BO only: include shadowbanned/refused content in latestChildren feeds
+  public var showAll: Bool {
+    get {_showAll ?? false}
+    set {_showAll = newValue}
+  }
+  /// Returns true if `showAll` has been explicitly set.
+  public var hasShowAll: Bool {self._showAll != nil}
+  /// Clears the value of `showAll`. Subsequent reads from it will return its default value.
+  public mutating func clearShowAll() {self._showAll = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _pageSize: Int32? = nil
+  fileprivate var _showAll: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_GetFeedPageRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetFeedPageRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -223,7 +239,7 @@ public struct Com_Octopuscommunity_GetFeedPageRequest: Sendable {
   fileprivate var _pageSize: Int32? = nil
 }
 
-public struct Com_Octopuscommunity_GetFeedPageResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetFeedPageResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -247,7 +263,7 @@ public struct Com_Octopuscommunity_GetFeedPageResponse: Sendable {
   fileprivate var _nextPageCursor: String? = nil
 }
 
-public struct Com_Octopuscommunity_FeedItemInfo: Sendable {
+public nonisolated struct Com_Octopuscommunity_FeedItemInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -275,9 +291,9 @@ public struct Com_Octopuscommunity_FeedItemInfo: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_GetRootFeedsInfoRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetRootFeedsInfoRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRootFeedsInfoRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -296,7 +312,7 @@ extension Com_Octopuscommunity_GetRootFeedsInfoRequest: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_GetRootFeedsInfoResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetRootFeedsInfoResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRootFeedsInfoResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedsInfo\0")
 
@@ -326,7 +342,7 @@ extension Com_Octopuscommunity_GetRootFeedsInfoResponse: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_FeedInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_FeedInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeedInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}label\0\u{1}relatedTopicId\0")
 
@@ -370,7 +386,7 @@ extension Com_Octopuscommunity_FeedInfo: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 }
 
-extension Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InitializeFeedWithOctoObjectRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedId\0\u{1}pageSize\0")
 
@@ -409,7 +425,7 @@ extension Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest: SwiftProtobu
   }
 }
 
-extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedWithOctoObjectPageRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pageCursor\0\u{1}pageSize\0\u{1}fetchAggregates\0")
 
@@ -453,9 +469,9 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest: SwiftProtobuf.M
   }
 }
 
-extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedWithOctoObjectPageResponse"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feed\0\u{1}nextPageCursor\0\u{1}aggregates\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feed\0\u{1}nextPageCursor\0\u{1}aggregates\0\u{1}relatedObjects\0\u{1}relatedAggregates\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -466,6 +482,8 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.feed) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._nextPageCursor) }()
       case 3: try { try decoder.decodeRepeatedMessageField(value: &self.aggregates) }()
+      case 4: try { try decoder.decodeRepeatedMessageField(value: &self.relatedObjects) }()
+      case 5: try { try decoder.decodeRepeatedMessageField(value: &self.relatedAggregates) }()
       default: break
       }
     }
@@ -485,6 +503,12 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.
     if !self.aggregates.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.aggregates, fieldNumber: 3)
     }
+    if !self.relatedObjects.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.relatedObjects, fieldNumber: 4)
+    }
+    if !self.relatedAggregates.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.relatedAggregates, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -492,12 +516,14 @@ extension Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse: SwiftProtobuf.
     if lhs.feed != rhs.feed {return false}
     if lhs._nextPageCursor != rhs._nextPageCursor {return false}
     if lhs.aggregates != rhs.aggregates {return false}
+    if lhs.relatedObjects != rhs.relatedObjects {return false}
+    if lhs.relatedAggregates != rhs.relatedAggregates {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Com_Octopuscommunity_FeedAggregate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_FeedAggregate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeedAggregate"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}itemId\0\u{1}aggregate\0")
 
@@ -536,9 +562,9 @@ extension Com_Octopuscommunity_FeedAggregate: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
-extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InitializeFeedRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedId\0\u{1}pageSize\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedId\0\u{1}pageSize\0\u{1}showAll\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -548,6 +574,7 @@ extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.Message, Swi
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.feedID) }()
       case 2: try { try decoder.decodeSingularInt32Field(value: &self._pageSize) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self._showAll) }()
       default: break
       }
     }
@@ -564,18 +591,22 @@ extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.Message, Swi
     try { if let v = self._pageSize {
       try visitor.visitSingularInt32Field(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._showAll {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_InitializeFeedRequest, rhs: Com_Octopuscommunity_InitializeFeedRequest) -> Bool {
     if lhs.feedID != rhs.feedID {return false}
     if lhs._pageSize != rhs._pageSize {return false}
+    if lhs._showAll != rhs._showAll {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Com_Octopuscommunity_GetFeedPageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetFeedPageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedPageRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pageCursor\0\u{1}pageSize\0")
 
@@ -614,7 +645,7 @@ extension Com_Octopuscommunity_GetFeedPageRequest: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedPageResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}items\0\u{1}nextPageCursor\0")
 
@@ -653,7 +684,7 @@ extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_FeedItemInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_FeedItemInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeedItemInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0\u{1}octoObjectUpdatedAt\0\u{1}highlightedChildId\0")
 

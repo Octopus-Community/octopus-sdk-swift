@@ -5,7 +5,7 @@
 import Foundation
 import OctopusCore
 
-/// A read-only snapshot of a member's public Octopus community activity (Unified Profile, OCT-1374).
+/// A read-only snapshot of a member's public Octopus community activity (Unified Profile).
 ///
 /// A dedicated, additive type so a host app can surface community stats (message count, gamification
 /// level) inside its **own** profile screen, consuming them à la carte — without rendering any
@@ -38,7 +38,7 @@ public struct OctopusCommunityData: Sendable {
     }
 }
 
-/// A member's read-only gamification standing (Unified Profile, OCT-1374).
+/// A member's read-only gamification standing (Unified Profile).
 public struct OctopusGamification: Sendable {
     /// The member's gamification level (0-based index).
     public let level: Int

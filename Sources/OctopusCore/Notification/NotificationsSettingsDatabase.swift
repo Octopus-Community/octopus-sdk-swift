@@ -22,11 +22,11 @@ class NotificationSettingsDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func notificationSettingsPublisher() -> AnyPublisher<NotificationSettings?, Error> {
+    func notificationSettingsPublisher() -> AnyPublisher<NotificationSettings?, Never> {
         (context
             .publisher(request: NotificationSettingsEntity.fetchOne()) {
                 return $0.map { NotificationSettings(from: $0) }
-            } as AnyPublisher<[NotificationSettings], Error>
+            } as AnyPublisher<[NotificationSettings], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)

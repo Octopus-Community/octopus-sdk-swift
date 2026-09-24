@@ -343,7 +343,7 @@ private struct PictureView: View {
                     .overlay(
                         Image(uiImage: theme.assets.icons.profile.editPicture)
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            .scaledToFit()
                             .foregroundColor(theme.colors.onPrimary)
                             .padding(8)
                             .background(theme.colors.primary)

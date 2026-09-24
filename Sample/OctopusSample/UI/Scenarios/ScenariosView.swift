@@ -37,9 +37,11 @@ struct ScenariosView: View {
                     ProfileFieldsLockCell()
                     UnifiedProfileCell()
                     ProfileDirectOpenCell()
+                    CommunityDataCell()
                 }
                 Section(header: Text("Content")) {
                     ContentOptionsCell()
+                    ScreenStatesCell()
                 }
                 Section(header: Text("Consent")) {
                     TermsAcceptanceModeCell()
@@ -51,6 +53,13 @@ struct ScenariosView: View {
                 Section(header: Text("Configuration")) {
                     SwitchCommunityCell(showFullScreen: showFullScreen)
                     LanguageCell()
+                    // Internal only: needs the directory secrets AND internal demo mode. Outside demo mode
+                    // the SDK is built by the hardcoded `initializeSdkInSSO…` path and no `SDKConfig` is
+                    // ever stored, so applying an env would abort on `fatalError("SDK config should be
+                    // set…")` — the same guard `SwitchCommunityViewModel` already applies.
+                    if DefaultValuesProvider.internalDemoMode && DefaultValuesProvider.featureEnvsConfigured {
+                        FeatureEnvsCell()
+                    }
                 }
             }
             .listStyle(.grouped)

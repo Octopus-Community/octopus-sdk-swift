@@ -140,7 +140,14 @@ public class GrpcClient: OctopusRemoteClient {
     }
 
     deinit {
-        Task { [group] in
+        // The channel has to be closed, and closed *before* the group: `GRPCChannelPool` keeps a
+        // reference to itself through its HTTP/2 delegate, so a pool nobody closes outlives its client
+        // for the whole run of the app — with its event loop, its TLS context and its connection to the
+        // host this client was targeting. Shutting the group down alone does not do it either: the
+        // shutdown fails while a channel is still open, and the error used to be swallowed by `try?`.
+        // A community switch releases one client per switch, so each of them used to leave that behind.
+        Task { [unaryChannel, group] in
+            try? await unaryChannel.close().get()
             try? await group.shutdownGracefully()
         }
     }

@@ -54,7 +54,7 @@ private struct PostTagBadge: View {
         HStack(spacing: 0) {
             Image(uiImage: icon)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: iconSize, height: iconSize)
                 .foregroundColor(foreground)
             text

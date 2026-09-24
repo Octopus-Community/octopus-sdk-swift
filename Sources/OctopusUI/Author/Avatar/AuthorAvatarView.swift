@@ -65,7 +65,7 @@ extension Author {
 extension Author {
     /// Whether the viewing user is allowed to block this author client-side.
     /// Returns `false` for deleted authors (no profileId), admin authors, and the current user themself.
-    /// Matches the UI-side gate introduced in OCT-1298 (`DisplayableProfile.canBeBlocked`).
+    /// Kept in step with the other UI-side gate, `DisplayableProfile.canBeBlocked`.
     func canBeBlocked(currentUserId: String?) -> Bool {
         guard let profileId else { return false }
         if tags.contains(.admin) { return false }
@@ -106,20 +106,20 @@ struct AuthorAvatarView: View {
                 }, content: { cachedImage in
                     Image(uiImage: cachedImage.fullSizeImage)
                         .resizable()
-                        .aspectRatio(contentMode: .fill)
+                        .scaledToFill()
                 })
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .mask(Circle())
             case let .localImage(image):
                 Image(uiImage: image)
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .scaledToFill()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .mask(Circle())
             case .notConnected, .none:
                 Image(uiImage: theme.assets.icons.profile.notConnected)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .padding(max(width * 0.24, 4))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(

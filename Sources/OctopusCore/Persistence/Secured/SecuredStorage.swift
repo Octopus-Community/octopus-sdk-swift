@@ -23,10 +23,14 @@ class SecuredStorageDefault: SecuredStorage, InjectableObject {
     init(apiKey: String, isNewInstall: Bool) {
         keychain = Keychain(service: "com.octopus.keychain\(Bundle.main.bundleIdentifier.map { ".\($0)" } ?? "")")
         // delete the content of the keychain if the app has been re-installed
+        //
+        // Only the session lives here (user id, token, pending magic link), so a reinstall still starts
+        // logged out, exactly as before. The install id is deliberately NOT in this service: it
+        // has to outlive a reinstall for a device ban to hold, so it sits in its own Keychain service that
+        // this never touches — see `KeychainInstallIdStorage`.
         if isNewInstall {
             try? keychain.removeAll()
         }
-
     }
 
     func set(_ value: String?, key: String) throws {

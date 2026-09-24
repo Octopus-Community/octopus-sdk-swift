@@ -33,7 +33,7 @@ struct CreateChildInteractionView: View {
         HStack(spacing: 4) {
             Image(uiImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: imageSize, height: imageSize)
                 .scaleEffect(animate ? 1.4 : 1.0)
                 .opacity(animate ? 0.9 : 1.0)

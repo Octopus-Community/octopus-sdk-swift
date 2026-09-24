@@ -73,7 +73,7 @@ class GroupDetailViewModel: ObservableObject {
                 } else if case .createPost = previous.last, current == [] {
                     // The composer was dismissed back to the feed: always refresh, but only scroll to top
                     // if a post was actually created (cancel via Back / swipe-down keeps the scroll).
-                    refreshFeed(isManual: false)
+                    refreshFeed()
                     scrollToTop = FeedComposerScrollPolicy.shouldScrollToTop(
                         previousLast: previous.last, current: current, didCreatePost: didCreatePostInComposer)
                 }
@@ -94,7 +94,7 @@ class GroupDetailViewModel: ObservableObject {
             .sink { [weak self] in self?.canCreateAnyPost = $0 }
             .store(in: &storage)
 
-        fetchTopics(isManual: false)
+        fetchTopics()
     }
 
     func toggleFollowGroup() {
@@ -172,24 +172,28 @@ class GroupDetailViewModel: ObservableObject {
             })
     }
 
-    private func refreshFeed(isManual: Bool) {
-        postFeedViewModel?.refreshFeed(isManual: isManual)
+    private func refreshFeed() {
+        postFeedViewModel?.refreshFeed()
     }
 
-    private func fetchTopics(isManual: Bool) {
+    private func fetchTopics() {
         Task {
-            await fetchTopics(isManual: isManual)
+            await fetchTopics()
         }
     }
 
-    private func fetchTopics(isManual: Bool) async {
+    private func fetchTopics() async {
         do {
             _ = try await octopus.core.topicsRepository.fetchTopics()
         } catch {
-            if isManual {
-                self.error = error.displayableMessage
-            } else if case .noNetwork = error {
-                octopus.core.toastsRepository.display(errorToast: .noNetwork)
+            // The feed carries its own screen state for the same outage, so a toast here would report
+            // it twice — the state under the toast saying exactly what the toast says.
+            if case .toast = LoadFailureChannel(hasVisibleContent: postFeedViewModel?.posts?.isEmpty == false) {
+                if case .noNetwork = error {
+                    octopus.core.toastsRepository.display(errorToast: .noNetwork)
+                } else {
+                    octopus.core.toastsRepository.display(errorToast: .unknown)
+                }
             }
         }
         hasFetchedTopicsOnce = true

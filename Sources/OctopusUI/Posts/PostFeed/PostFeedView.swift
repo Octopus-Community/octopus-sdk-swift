@@ -10,6 +10,10 @@ import OctopusCore
 import os
 
 struct PostFeedView<EmptyPostView: View>: View {
+    /// Vertical padding of the failure state and top offset of the first-load spinner. Both are
+    /// per-screen in the design, so the screen embedding the feed states them.
+    var screenStatePadding: CGFloat = ScreenState.feedErrorPadding
+    var loaderTopPadding: CGFloat = 200
     @Environment(\.presentationMode) private var presentationMode
     @Compat.StateObject private var viewModel: PostFeedViewModel
 
@@ -25,7 +29,9 @@ struct PostFeedView<EmptyPostView: View>: View {
 
     @State private var displayReactionCount = false
 
-    init(viewModel: PostFeedViewModel,
+    init(screenStatePadding: CGFloat = ScreenState.feedErrorPadding,
+         loaderTopPadding: CGFloat = 200,
+         viewModel: PostFeedViewModel,
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
          displayPostDetail: @escaping (_ postId: String, _ comment: Bool, _ scrollToLatestComment: Bool, _ scrollToComment: String?, _ hasFeaturedComment: Bool) -> Void,
          displayCommentDetail: @escaping (_ id: String, _ reply: Bool) -> Void,
@@ -33,6 +39,8 @@ struct PostFeedView<EmptyPostView: View>: View {
          openGroup: @escaping (String) -> Void,
          displayContentModeration: @escaping (String) -> Void,
          @ViewBuilder _ emptyPostView: () -> EmptyPostView) {
+        self.screenStatePadding = screenStatePadding
+        self.loaderTopPadding = loaderTopPadding
         _viewModel = Compat.StateObject(wrappedValue: viewModel)
         _zoomableImageInfo = zoomableImageInfo
         self.displayPostDetail = displayPostDetail
@@ -67,6 +75,11 @@ struct PostFeedView<EmptyPostView: View>: View {
                     }
                 },
                 displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId: $0) } : nil),
+                loadFailure: viewModel.loadFailure,
+                hasLoadedOnce: viewModel.hasLoadedOnce,
+                retryFirstLoad: viewModel.retryFirstLoad,
+                screenStatePadding: screenStatePadding,
+                loaderTopPadding: loaderTopPadding,
                 emptyPostView: { emptyPostView }
             )
             if viewModel.isDeletingContent {
@@ -90,6 +103,8 @@ struct PostFeedView<EmptyPostView: View>: View {
 }
 
 private struct ContentView<EmptyPostView: View>: View {
+    @Environment(\.octopusTheme) private var theme
+
     let posts: [DisplayablePost]?
     let displayGroup: Bool
     let hasMoreData: Bool
@@ -107,12 +122,27 @@ private struct ContentView<EmptyPostView: View>: View {
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
+    let loadFailure: ScreenStateFailure?
+    let hasLoadedOnce: Bool
+    let retryFirstLoad: () -> Void
+    let screenStatePadding: CGFloat
+    let loaderTopPadding: CGFloat
     @ViewBuilder var emptyPostView: EmptyPostView
 
     var body: some View {
         Group {
-            if let posts {
-                PostsView(posts: posts,
+            switch contentAreaState(itemCount: posts?.count, hasLoadedOnce: hasLoadedOnce,
+                                    loadFailure: loadFailure) {
+            case let .failure(loadFailure):
+                loadFailure.screenState(verticalPadding: screenStatePadding, icons: theme.assets.icons,
+                                        retry: retryFirstLoad)
+            case .loader:
+                Compat.ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, loaderTopPadding)
+            // `PostsView` renders the empty state itself when the list is empty, so both share a branch.
+            case .empty, .content:
+                PostsView(posts: posts ?? [],
                           displayGroup: displayGroup,
                           hasMoreData: hasMoreData,
                           zoomableImageInfo: $zoomableImageInfo,
@@ -130,10 +160,6 @@ private struct ContentView<EmptyPostView: View>: View {
                           displayContentModeration: displayContentModeration,
                           displayClientObject: displayClientObject,
                           emptyPostView: { emptyPostView })
-            } else {
-                Compat.ProgressView()
-                    .frame(width: 100)
-                    .padding(.top, 20)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

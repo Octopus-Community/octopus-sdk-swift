@@ -51,7 +51,7 @@ enum PostsFeedManager {
             try await postsDatabase.getMissingPosts(infos: infos)
         }
 
-        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Post], any Error> {
+        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Post], Never> {
             let featuredChildByPostId: [String: String] = Dictionary(ids.compactMap {
                 guard let featuredChildId = $0.featuredChildId else { return nil }
                 return ($0.itemId, featuredChildId)
@@ -59,7 +59,7 @@ enum PostsFeedManager {
             return Publishers.CombineLatest3(
                 postsDatabase.postsPublisher(ids: ids.map { $0.itemId }),
                 commentsDatabase.commentsPublisher(ids: ids.compactMap { $0.featuredChildId }),
-                blockedUserIdsProvider.blockedUserIdsPublisher.setFailureType(to: Error.self)
+                blockedUserIdsProvider.blockedUserIdsPublisher
             )
             .map { [commentFeedsStore, replyFeedsStore] posts, featuredComments, blockedUserIds in
                 posts.compactMap {
@@ -138,10 +138,10 @@ enum CommentsFeedManager {
             try await commentsDatabase.getMissingComments(infos: infos)
         }
 
-        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Comment], any Error> {
+        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Comment], Never> {
             Publishers.CombineLatest(
                 commentsDatabase.commentsPublisher(ids: ids.map { $0.itemId }),
-                blockedUserIdsProvider.blockedUserIdsPublisher.setFailureType(to: Error.self)
+                blockedUserIdsProvider.blockedUserIdsPublisher
             )
             .map { [replyFeedsStore] comments, blockedUserIds in
                 comments.compactMap {
@@ -205,10 +205,10 @@ enum RepliesFeedManager {
             try await repliesDatabase.getMissingReplies(infos: infos)
         }
 
-        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Reply], any Error> {
+        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Reply], Never> {
             Publishers.CombineLatest(
                 repliesDatabase.repliesPublisher(ids: ids.map { $0.itemId }),
-                blockedUserIdsProvider.blockedUserIdsPublisher.setFailureType(to: Error.self)
+                blockedUserIdsProvider.blockedUserIdsPublisher
             )
             .map { replies, blockedUserIds in
                 replies.compactMap {

@@ -45,7 +45,6 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
 
         topicsDatabase.topicsPublisher()
-            .replaceError(with: [])
             .removeDuplicates()
             .sink { [weak self] in
                 guard let self else { return }

@@ -40,7 +40,7 @@ extension SdkEvent.ScreenDisplayedContext {
 
     }
 
-    /// Context of the otherUserPosts Screen (Unified Profile, OCT-1374): the posts-only member
+    /// Context of the otherUserPosts Screen (Unified Profile): the posts-only member
     /// activity screen, iOS's counterpart of Android's `ScreenDisplayed.OtherUserPosts`.
     public struct OtherUserPostsContext: Sendable {
         /// The id of the profile whose posts are displayed

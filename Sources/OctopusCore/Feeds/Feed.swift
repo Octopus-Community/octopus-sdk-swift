@@ -169,9 +169,9 @@ public class Feed<Item: FeedItem, ChildItem: FeedItem>: @MainActor Hashable {
         }
     }
 
-    private func listenForItems(publisher: AnyPublisher<[Item], Error>) {
+    private func listenForItems(publisher: AnyPublisher<[Item], Never>) {
         feedItemsCancellable = Publishers.CombineLatest(
-            publisher.replaceError(with: []),
+            publisher,
             $canPublishItems
         ).sink { [unowned self] feedItems, canPublishItems in
             if canPublishItems {

@@ -16,14 +16,14 @@ struct PostTextContentView: View {
 
     private let content: Content
 
-    /// Renders user-generated text with ellipsization. The translation toggle (when applicable)
-    /// is a separate block rendered by `PostTranslationToggleView`.
+    /// Renders user-generated text, honouring the truncation policy carried by `text`. The
+    /// translation toggle (when applicable) is a separate block rendered by `PostTranslationToggleView`.
     init(contentId: String, text: EllipsizableTranslatedText) {
         self.content = .translatable(contentId: contentId, text: text)
     }
 
     /// Renders a system-owned localized string key (e.g. the moderated-post reasons line).
-    /// No translation toggle or ellipsization.
+    /// No translation toggle or truncation.
     init(localizedKey: LocalizedStringKey) {
         self.content = .localizedKey(localizedKey)
     }
@@ -45,14 +45,7 @@ struct PostTextContentView: View {
         switch content {
         case let .translatable(contentId, text):
             let displayTranslation = translationStore.displayTranslation(for: contentId)
-            if text.getIsEllipsized(translated: displayTranslation) {
-                Text(verbatim: "\(text.getText(translated: displayTranslation))... ") +
-                Text("Common.ReadMore", bundle: .module)
-                    .fontWeight(.medium)
-                    .foregroundColor(theme.colors.gray500)
-            } else {
-                RichText(text.getText(translated: displayTranslation))
-            }
+            RichText(text.getFullText(translated: displayTranslation), truncation: text.truncation)
         case let .localizedKey(key):
             Text(key, bundle: .module)
         }
@@ -73,9 +66,13 @@ struct PostTextContentView: View {
     PostTextContentView(
         contentId: "p1",
         text: EllipsizableTranslatedText(
-            text: TranslatableText(originalText: "Un texte",
-                                   originalLanguage: "fr",
-                                   translatedText: "A text"),
+            text: TranslatableText(
+                originalText: "Un texte",
+                originalLanguage: "fr",
+                translatedText: "This is a much longer sample body text that exists purely to push " +
+                    "past the two hundred character truncation threshold so the preview finally shows " +
+                    "the See more suffix and a clipped link. " +
+                    "https://example.com/a-really-long-article-slug-for-testing"),
             ellipsize: true))
     .mockEnvironmentForPreviews()
 }

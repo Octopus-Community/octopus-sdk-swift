@@ -6,7 +6,7 @@ import Foundation
 import OctopusCore
 
 /// Derived, per-field editability for the current-user profile UI, computed from the community
-/// per-field lock (OCT-1487). Drives which affordances the profile/edit screens display.
+/// per-field lock. Drives which affordances the profile/edit screens display.
 ///
 /// This is the community-config lock only; the SSO `appManagedFields` redirect is handled
 /// separately (and wins per field — see PRD Q4). With `.allEditable` every flag is `true`, so the

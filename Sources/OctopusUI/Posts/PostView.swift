@@ -170,7 +170,8 @@ private struct PostContentView: View {
             onReaction: onReaction,
             onVote: onVote,
             onOpenCreateComment: onOpenCreateComment,
-            displayClientObject: displayClientObject)
+            displayClientObject: displayClientObject,
+            displayProfile: displayProfile)
     }
 
     @ViewBuilder
@@ -223,6 +224,7 @@ private struct PublishedContentView: View {
     let onVote: (String) -> Bool
     let onOpenCreateComment: () -> Void
     let displayClientObject: ((String) -> Void)?
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
 
     @State private var liveMeasures: LiveMeasures
 
@@ -234,7 +236,8 @@ private struct PublishedContentView: View {
          onReaction: @escaping (ReactionKind?) -> Void,
          onVote: @escaping (String) -> Bool,
          onOpenCreateComment: @escaping () -> Void,
-         displayClientObject: ((String) -> Void)?) {
+         displayClientObject: ((String) -> Void)?,
+         displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void) {
         self.post = post
         self.content = content
         self.context = context
@@ -244,6 +247,7 @@ private struct PublishedContentView: View {
         self.onVote = onVote
         self.onOpenCreateComment = onOpenCreateComment
         self.displayClientObject = displayClientObject
+        self.displayProfile = displayProfile
         self._liveMeasures = State(initialValue: content.liveMeasuresValue)
     }
 
@@ -315,6 +319,7 @@ private struct PublishedContentView: View {
         }
 
         PostAggregatedInfoView(
+            contentId: post.uuid,
             aggregatedInfo: liveMeasures.aggregatedInfo,
             reactionTapped: onReaction,
             // The `XX Comments` CTA is intentionally different from `onOpenCreateComment`:
@@ -327,7 +332,8 @@ private struct PublishedContentView: View {
             // inside `PostAggregatedInfoView` which blocks the parent's
             // `.onTapGesture(perform: onCardTap)`, so we forward the card tap here. In
             // `.detail` context — no-op.
-            viewCountTapped: cardTap ?? {})
+            viewCountTapped: cardTap ?? {},
+            displayProfile: displayProfile)
             .padding(.horizontal, theme.sizes.horizontalPadding)
 
         theme.colors.gray300

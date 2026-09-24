@@ -96,7 +96,7 @@ private struct ContentView: View {
 
                     Image(res: .congrats)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(maxHeight: 144)
                         .accessibilityHidden(true)
 

@@ -21,6 +21,10 @@ import SwiftUI
 struct ResponseCardView<Content: View>: View {
     @Environment(\.octopusTheme) private var theme
 
+    /// Background color of the rounded card. `nil` (the default) uses the standard `gray200`, so
+    /// every existing caller (feed, post detail) keeps its look. The profile Comments tab passes a
+    /// tint (`primaryLowContrast`) to highlight the connected user's own comment/reply.
+    var backgroundColor: Color?
     @ViewBuilder let content: () -> Content
 
     /// 6pt vertical offset used both for the invisible tap-area strip above the gray background
@@ -34,7 +38,7 @@ struct ResponseCardView<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(theme.colors.gray200)
+                .fill(backgroundColor ?? theme.colors.gray200)
                 .padding(.top, topInvisibleInset)
         )
         .mask(

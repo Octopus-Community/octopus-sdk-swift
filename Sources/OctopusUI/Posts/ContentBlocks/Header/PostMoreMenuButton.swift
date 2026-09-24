@@ -75,7 +75,7 @@ struct PostMoreMenuButton: View {
     private var moreIcon: some View {
         Image(uiImage: theme.assets.icons.common.moreActions)
             .resizable()
-            .aspectRatio(contentMode: .fit)
+            .scaledToFit()
             .frame(width: max(iconSize, 24), height: max(iconSize, 24))
             .foregroundColor(theme.colors.gray500)
             // Visual inset: the icon sits `horizontalPadding` pt from the trailing edge of the hit

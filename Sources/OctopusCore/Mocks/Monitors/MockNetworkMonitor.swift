@@ -15,4 +15,8 @@ class MockNetworkMonitor: NetworkMonitor, InjectableObject {
     func start() { }
 
     func stop() { }
+
+    func debugOverrideConnectionAvailable(_ available: Bool?) {
+        connectionAvailable = available ?? true
+    }
 }

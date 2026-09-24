@@ -5,7 +5,7 @@
 import Foundation
 import OctopusGrpcModels
 
-/// Per-field editability status of a profile field, driven by the community configuration (OCT-1487).
+/// Per-field editability status of a profile field, driven by the community configuration.
 ///
 /// `disabled` is only meaningful for the bio (the field disappears entirely); `nickname` and `avatar`
 /// can only be `editable` or `readOnly`.

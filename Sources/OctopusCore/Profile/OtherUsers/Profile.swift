@@ -7,7 +7,7 @@ import OctopusGrpcModels
 
 public struct Profile: Equatable, Sendable {
     // Public so OctopusUI / Octopus can read the resolved Octopus id of a member fetched by client
-    // user id (Unified Profile, OCT-1374). Matches the already-public `CurrentUserProfile.id`.
+    // user id (Unified Profile). Matches the already-public `CurrentUserProfile.id`.
     public let id: String
     public let nickname: String?
     public let bio: String?
@@ -24,6 +24,11 @@ public struct Profile: Equatable, Sendable {
     public let clientUserId: String?
 
     public let newestFirstPostsFeed: Feed<Post, Comment>
+
+    /// Backend feed id of the member's authored comments & replies, newest-first. Consumed by
+    /// `UserCommentsRepository` to drive the profile "Comments" tab. Empty for profiles cached before the
+    /// feature landed (repopulated on the next fetch).
+    public let descCommentFeedId: String
 }
 
 extension Profile {
@@ -38,5 +43,6 @@ extension Profile {
         gamificationLevel = gamificationLevels.first { $0.level == storableProfile.gamificationLevel }
         clientUserId = storableProfile.clientUserId
         newestFirstPostsFeed = postFeedsStore.getOrCreate(feedId: storableProfile.descPostFeedId)
+        descCommentFeedId = storableProfile.descCommentFeedId
     }
 }

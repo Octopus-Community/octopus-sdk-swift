@@ -223,6 +223,12 @@ public nonisolated struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable
     set {_uniqueStorage()._termsAcceptanceMode = newValue}
   }
 
+  /// false when unset
+  public var showCommentsOnOtherProfiles: Bool {
+    get {_storage._showCommentsOnOtherProfiles}
+    set {_uniqueStorage()._showCommentsOnOtherProfiles = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -679,7 +685,7 @@ nonisolated extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Mess
 
 nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ApiKeyConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0\u{1}exposeClientUserId\0\u{1}termsAcceptanceMode\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0\u{1}exposeClientUserId\0\u{1}termsAcceptanceMode\0\u{1}showCommentsOnOtherProfiles\0")
 
   fileprivate class _StorageClass {
     var _clientLoginMandatory: Bool = false
@@ -691,6 +697,7 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
     var _contentOptions: Com_Octopuscommunity_ContentOptions? = nil
     var _exposeClientUserID: Bool = false
     var _termsAcceptanceMode: Com_Octopuscommunity_TermsAcceptanceMode = .implicit
+    var _showCommentsOnOtherProfiles: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -710,6 +717,7 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
       _contentOptions = source._contentOptions
       _exposeClientUserID = source._exposeClientUserID
       _termsAcceptanceMode = source._termsAcceptanceMode
+      _showCommentsOnOtherProfiles = source._showCommentsOnOtherProfiles
     }
   }
 
@@ -737,6 +745,7 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
         case 7: try { try decoder.decodeSingularMessageField(value: &_storage._contentOptions) }()
         case 8: try { try decoder.decodeSingularBoolField(value: &_storage._exposeClientUserID) }()
         case 9: try { try decoder.decodeSingularEnumField(value: &_storage._termsAcceptanceMode) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._showCommentsOnOtherProfiles) }()
         default: break
         }
       }
@@ -776,6 +785,9 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
       if _storage._termsAcceptanceMode != .implicit {
         try visitor.visitSingularEnumField(value: _storage._termsAcceptanceMode, fieldNumber: 9)
       }
+      if _storage._showCommentsOnOtherProfiles != false {
+        try visitor.visitSingularBoolField(value: _storage._showCommentsOnOtherProfiles, fieldNumber: 10)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -794,6 +806,7 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
         if _storage._contentOptions != rhs_storage._contentOptions {return false}
         if _storage._exposeClientUserID != rhs_storage._exposeClientUserID {return false}
         if _storage._termsAcceptanceMode != rhs_storage._termsAcceptanceMode {return false}
+        if _storage._showCommentsOnOtherProfiles != rhs_storage._showCommentsOnOtherProfiles {return false}
         return true
       }
       if !storagesAreEqual {return false}

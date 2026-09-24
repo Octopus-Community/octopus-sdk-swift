@@ -19,15 +19,19 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
     }
 
     @Published var profile: DisplayableCurrentUserProfile?
+    /// Set when the profile's first load failed with nothing cached to show. Without it the screen
+    /// spins forever: nothing else on it can report the failure (Screen states spec).
+    @Published private(set) var loadFailure: ScreenStateFailure?
     @Published var gamificationConfig: GamificationConfig?
     @Published var displayAccountAge = false
     @Published private(set) var editability = ProfileFieldsEditability(lock: .allEditable)
-    /// Whether the community allows poll creation (OCT-1426). Default `true`.
+    /// Whether the community allows poll creation. Default `true`.
     @Published private(set) var pollsEnabled = true
     @Published private(set) var dismiss = false
     @Published var error: DisplayableString?
 
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
+    @Published private(set) var commentsViewModel: ProfileCommentsListViewModel?
     @Published private(set) var canCreatePost: Bool = true
 
     @Published private var isFetchingProfile: Bool = false
@@ -148,6 +152,11 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
                                                       translationStore: translationStore,
                                                       ensureConnected: { _ in true })
             }
+            // Comments tab — always shown on the connected user's own profile.
+            if commentsViewModel?.feedId != profile.descCommentFeedId {
+                commentsViewModel = ProfileCommentsListViewModel(
+                    octopus: octopus, feedId: profile.descCommentFeedId, isOwnProfile: true)
+            }
         }.store(in: &storage)
 
         octopus.core.sdkEventsEmitter.internalEvents
@@ -184,18 +193,33 @@ class CurrentUserProfileSummaryViewModel: ObservableObject {
         }
     }
 
+    /// Re-runs the first load, from the error state's CTA.
+    func retryFirstLoad() {
+        loadFailure = nil
+        fetchProfile(manual: false)
+    }
+
     @discardableResult
     private func fetchProfile(manual: Bool) async -> Bool {
         isFetchingProfile = true
         defer { isFetchingProfile = false }
         do {
             try await octopus.core.profileRepository.fetchCurrentUserProfile()
+            loadFailure = nil
         } catch {
+            if profile == nil {
+                loadFailure = ScreenStateFailure(error)
+                return false
+            }
             if manual {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
-            } else if case .noNetwork = error {
+            } else if case .noNetwork = error,
+                      case .toast = LoadFailureChannel(
+                        hasVisibleContent: postFeedViewModel?.posts?.isEmpty == false) {
+                // The feed shows its own screen state for the same outage; a toast over it would say
+                // the same thing twice.
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
             return false

@@ -21,7 +21,7 @@ class RootFeedsDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func rootFeedsPublisher() -> AnyPublisher<[StorableRootFeed], Error> {
+    func rootFeedsPublisher() -> AnyPublisher<[StorableRootFeed], Never> {
         return context
             .publisher(request: RootFeedEntity.fetchAllSorted()) {
                 $0.map { StorableRootFeed(from: $0) }

@@ -61,9 +61,12 @@ struct GroupListView: View {
                 }
             },
             changeFollowStatus: viewModel.changeFollowStatus(groupId:follow:),
+            loadFailure: viewModel.loadFailure,
+            retryFirstLoad: viewModel.retryFirstLoad
         )
         .navigationBarTitle(Text(navBarTitleKey, bundle: .module), displayMode: .inline)
-        .toastContainer(octopus: viewModel.octopus)
+        .toastContainer(octopus: viewModel.octopus,
+                        retryFailedFetch: { Task { await viewModel.refresh() } })
         .modify {
             switch viewModel.context {
             case .displayFeed:
@@ -84,6 +87,8 @@ struct GroupListView: View {
 }
 
 private struct ContentView: View {
+    @Environment(\.octopusTheme) private var theme
+
     let context: GroupListContext
     let groups: GroupList?
     let canChangeFollowStatusByGroupId: [String: Bool]
@@ -92,6 +97,8 @@ private struct ContentView: View {
     let refresh: @Sendable () async -> Void
     let selectGroup: (GroupList.Group) -> Void
     let changeFollowStatus: (String, Bool) -> Void
+    let loadFailure: ScreenStateFailure?
+    let retryFirstLoad: () -> Void
 
     @State private var selectedGroupId: String?
 
@@ -100,12 +107,18 @@ private struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // On iOS 26 the navigation bar uses its default translucent (glass) behavior, matching
-            // the other screens of the SDK (OCT-1532 — product confirmed the group list should not
+            // the other screens of the SDK (product confirmed the group list should not
             // opt out of the iOS 26 nav bar style).
             GeometryReader { geometry in
                 Compat.ScrollView(refreshAction: refresh) {
                     VStack(alignment: .leading, spacing: 0) {
-                        if let groups {
+                        if let loadFailure {
+                            loadFailure.screenState(verticalPadding: ScreenState.explorePadding,
+                                                    icons: theme.assets.icons, retry: retryFirstLoad)
+                            // The column is stretched to the screen's height, which would otherwise
+                            // center the state instead of leaving it at the design's top offset.
+                            Spacer(minLength: 0)
+                        } else if let groups {
                             ForEach(groups.sections.indices, id: \.self) { sectionIdx in
                                 let section = groups.sections[sectionIdx]
                                 if let currentSectionGroups = groups.groupsBySection[section],
@@ -139,14 +152,16 @@ private struct ContentView: View {
                                 .padding(.top, 20)
                                 .padding(.bottom, 30)
                         } else {
+                            // First load with nothing listed yet: a bare loader, at the design's offset.
                             Compat.ProgressView()
-                                .frame(width: 100)
-                                .padding(.top, 20)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 200)
+                            Spacer(minLength: 0)
                         }
                     }
                     .frame(minHeight: geometry.size.height)
                     // Cap & center the list column on large screens so the follow CTA stays close to
-                    // the group name instead of being pushed to the far edge in landscape (OCT-1532).
+                    // the group name instead of being pushed to the far edge in landscape.
                     .constrainedContentColumn()
                 }
                 .onValueChanged(of: context, initial: true) { context in

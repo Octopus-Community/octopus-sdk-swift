@@ -200,7 +200,6 @@ class ProfileTests: XCTestCase {
 
         var profile: Profile?
         profileRepository.getProfile(profileId: "authorProfileId")
-            .replaceError(with: nil)
             .sink {
                 profile = $0
                 guard profile?.id == "authorProfileId" else { return }
@@ -269,7 +268,8 @@ class ProfileTests: XCTestCase {
             profileFieldsLock: .allEditable,
             contentOptions: .allEnabled,
             exposeClientUserId: false,
-            termsAcceptanceMode: .implicit))
+            termsAcceptanceMode: .implicit,
+            showCommentsOnOtherProfiles: false))
 
         mockUserService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {
@@ -335,7 +335,7 @@ class ProfileTests: XCTestCase {
             id: "cachedId", nickname: "cached", bio: nil, pictureUrl: nil, tags: [],
             totalMessages: nil, accountCreationDate: nil,
             gamificationLevel: nil,
-            descPostFeedId: "", ascPostFeedId: "", clientUserId: nil))
+            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil))
 
         // Empty response (no member for that client user id).
         mockUserService.injectNextGetPublicProfileByClientUserIdResponse(
@@ -367,7 +367,8 @@ class ProfileTests: XCTestCase {
             profileFieldsLock: .allEditable,
             contentOptions: .allEnabled,
             exposeClientUserId: true,
-            termsAcceptanceMode: .implicit))
+            termsAcceptanceMode: .implicit,
+            showCommentsOnOtherProfiles: false))
 
         mockUserService.injectNextGetPublicProfileByClientUserIdResponse(.with {
             $0.profile = .with {
@@ -446,7 +447,7 @@ class ProfileTests: XCTestCase {
             tags: .admin,
             totalMessages: nil, accountCreationDate: nil,
             gamificationLevel: nil,
-            descPostFeedId: "", ascPostFeedId: "", clientUserId: nil))
+            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil))
 
         let fetched = try await publicProfileDatabase.getProfile(profileId: "adminProfileId")
         XCTAssertEqual(fetched?.id, "adminProfileId")
@@ -516,14 +517,9 @@ class ProfileTests: XCTestCase {
             tags: .admin,
             totalMessages: nil, accountCreationDate: nil,
             gamificationLevel: nil,
-            descPostFeedId: "", ascPostFeedId: "", clientUserId: nil))
+            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil))
 
-        // Wait for current-user profile to be published
-        let currentUserReady = XCTestExpectation(description: "Current user profile ready")
-        profileRepository.profilePublisher.sink {
-            if $0?.id == "profileId" { currentUserReady.fulfill() }
-        }.store(in: &storage)
-        await fulfillment(of: [currentUserReady], timeout: 5)
+        await waitForReadableCurrentUserProfile(id: "profileId")
 
         // Intentionally DO NOT call mockUserService.injectNextBlockUserResponse:
         // if the guard fails, the mock will throw a "Dev error" which the test will surface.
@@ -546,11 +542,7 @@ class ProfileTests: XCTestCase {
                                                 descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
         userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
 
-        let currentUserReady = XCTestExpectation(description: "Current user profile ready")
-        profileRepository.profilePublisher.sink {
-            if $0?.id == "profileId" { currentUserReady.fulfill() }
-        }.store(in: &storage)
-        await fulfillment(of: [currentUserReady], timeout: 5)
+        await waitForReadableCurrentUserProfile(id: "profileId")
 
         // Target the current user's own profile id — existing guard must reject.
         await assertBlockUserThrowsInvalidArgument(profileId: "profileId")
@@ -716,6 +708,30 @@ class ProfileTests: XCTestCase {
         if let errorMessage = mockUserService.errorMessage {
             XCTFail(errorMessage)
         }
+    }
+
+    /// Waits until the connected user's profile is not only *published* but *readable* from
+    /// `profileRepository.profile`.
+    ///
+    /// `profilePublisher` is `@Published`'s projected value, and `@Published` emits from `willSet` —
+    /// before the stored property is written. Fulfilling straight from the sink therefore wakes the
+    /// awaiting test while `profile` is still nil: the repository's own sink is still mid-assignment on
+    /// the main queue when the continuation resumes elsewhere. Anything that then reads the property
+    /// rather than the emission — `blockUser`'s `guard let profile else { throw .userNotAuthenticated }`
+    /// — sees no connected user, and the test fails on an error it never asked for. Hopping one main
+    /// queue turn lands after that sink has returned, so the write has happened.
+    ///
+    /// `assertForOverFulfill` is off because the same profile can legitimately be published more than
+    /// once (a save landing while a database publisher is being subscribed replays its value by design),
+    /// and a second `fulfill()` would otherwise be an API violation rather than a no-op.
+    private func waitForReadableCurrentUserProfile(id: String, timeout: TimeInterval = 5) async {
+        let readable = XCTestExpectation(description: "Current user profile readable")
+        readable.assertForOverFulfill = false
+        profileRepository.profilePublisher.sink {
+            guard $0?.id == id else { return }
+            DispatchQueue.main.async { readable.fulfill() }
+        }.store(in: &storage)
+        await fulfillment(of: [readable], timeout: timeout)
     }
 
     private func assertBlockUserThrowsInvalidArgument(profileId: String,

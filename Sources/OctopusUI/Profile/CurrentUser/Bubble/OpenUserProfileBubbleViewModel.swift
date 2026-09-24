@@ -12,7 +12,7 @@ class OpenUserProfileBubbleViewModel: ObservableObject {
 
     @Published private(set) var avatar: Author.Avatar = .notConnected
     @Published private(set) var badgeCount: String?
-    /// Whether Unified Profile is active (OCT-1374). When `true`, the home floating button shows the
+    /// Whether Unified Profile is active. When `true`, the home floating button shows the
     /// activity-button glyph instead of the connected user's avatar and opens the Activity screen (same
     /// gate as the profile-tap routing — see `unifiedProfileActive`).
     @Published private(set) var isUnifiedProfileActive = false

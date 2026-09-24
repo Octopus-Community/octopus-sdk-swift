@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public enum Com_Octopuscommunity_ContentReviewTab: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Com_Octopuscommunity_ContentReviewTab: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case toReview // = 0
   case resolved // = 1
@@ -54,15 +54,22 @@ public enum Com_Octopuscommunity_ContentReviewTab: SwiftProtobuf.Enum, Swift.Cas
 
 }
 
-public enum Com_Octopuscommunity_ContentReviewAction: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Com_Octopuscommunity_ContentReviewAction: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
   case banned // = 1
   case hidden // = 2
   case sentToSupport // = 3
   case autoReplied // = 4
+
+  /// NOTE: This enum value was marked as deprecated in the .proto file
   case displayed // = 5
   case redirected // = 6
+  case banWithAudit // = 7
+  case hideWithAudit // = 8
+  case sendToSupportRequiresApproval // = 9
+  case replyRequiresApproval // = 10
+  case redirectRequiresApproval // = 11
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -78,6 +85,11 @@ public enum Com_Octopuscommunity_ContentReviewAction: SwiftProtobuf.Enum, Swift.
     case 4: self = .autoReplied
     case 5: self = .displayed
     case 6: self = .redirected
+    case 7: self = .banWithAudit
+    case 8: self = .hideWithAudit
+    case 9: self = .sendToSupportRequiresApproval
+    case 10: self = .replyRequiresApproval
+    case 11: self = .redirectRequiresApproval
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -91,6 +103,11 @@ public enum Com_Octopuscommunity_ContentReviewAction: SwiftProtobuf.Enum, Swift.
     case .autoReplied: return 4
     case .displayed: return 5
     case .redirected: return 6
+    case .banWithAudit: return 7
+    case .hideWithAudit: return 8
+    case .sendToSupportRequiresApproval: return 9
+    case .replyRequiresApproval: return 10
+    case .redirectRequiresApproval: return 11
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -104,11 +121,16 @@ public enum Com_Octopuscommunity_ContentReviewAction: SwiftProtobuf.Enum, Swift.
     .autoReplied,
     .displayed,
     .redirected,
+    .banWithAudit,
+    .hideWithAudit,
+    .sendToSupportRequiresApproval,
+    .replyRequiresApproval,
+    .redirectRequiresApproval,
   ]
 
 }
 
-public struct Com_Octopuscommunity_ListContentReviewRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListContentReviewRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -155,6 +177,15 @@ public struct Com_Octopuscommunity_ListContentReviewRequest: Sendable {
   /// Clears the value of `toDate`. Subsequent reads from it will return its default value.
   public mutating func clearToDate() {self._toDate = nil}
 
+  public var noPolicy: Bool {
+    get {_noPolicy ?? false}
+    set {_noPolicy = newValue}
+  }
+  /// Returns true if `noPolicy` has been explicitly set.
+  public var hasNoPolicy: Bool {self._noPolicy != nil}
+  /// Clears the value of `noPolicy`. Subsequent reads from it will return its default value.
+  public mutating func clearNoPolicy() {self._noPolicy = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -163,9 +194,10 @@ public struct Com_Octopuscommunity_ListContentReviewRequest: Sendable {
   fileprivate var _pageSize: Int32? = nil
   fileprivate var _fromDate: UInt64? = nil
   fileprivate var _toDate: UInt64? = nil
+  fileprivate var _noPolicy: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_ListContentReviewResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListContentReviewResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -198,7 +230,7 @@ public struct Com_Octopuscommunity_ListContentReviewResponse: Sendable {
   fileprivate var _nextPageDate: UInt64? = nil
 }
 
-public struct Com_Octopuscommunity_ValidateContentReviewRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_ValidateContentReviewRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -251,7 +283,7 @@ public struct Com_Octopuscommunity_ValidateContentReviewRequest: Sendable {
   fileprivate var _approveRedirect: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_AutoReplyValidation: Sendable {
+public nonisolated struct Com_Octopuscommunity_AutoReplyValidation: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -284,7 +316,7 @@ public struct Com_Octopuscommunity_AutoReplyValidation: Sendable {
   fileprivate var _editedAuthorProfileID: String? = nil
 }
 
-public struct Com_Octopuscommunity_ValidateContentReviewResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_ValidateContentReviewResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -309,7 +341,44 @@ public struct Com_Octopuscommunity_ValidateContentReviewResponse: Sendable {
   fileprivate var _item: Com_Octopuscommunity_OctoObject? = nil
 }
 
-public struct Com_Octopuscommunity_BulkValidateContentReviewRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_SendToSupportRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var objectID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_SendToSupportResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var item: Com_Octopuscommunity_OctoObject {
+    get {_item ?? Com_Octopuscommunity_OctoObject()}
+    set {_item = newValue}
+  }
+  /// Returns true if `item` has been explicitly set.
+  public var hasItem: Bool {self._item != nil}
+  /// Clears the value of `item`. Subsequent reads from it will return its default value.
+  public mutating func clearItem() {self._item = nil}
+
+  public var resolved: Bool = false
+
+  public var errors: [Com_Octopuscommunity_AxisError] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _item: Com_Octopuscommunity_OctoObject? = nil
+}
+
+public nonisolated struct Com_Octopuscommunity_BulkValidateContentReviewRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -321,7 +390,7 @@ public struct Com_Octopuscommunity_BulkValidateContentReviewRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_BulkValidateContentReviewResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_BulkValidateContentReviewResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -333,7 +402,7 @@ public struct Com_Octopuscommunity_BulkValidateContentReviewResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_BulkValidateItemResult: Sendable {
+public nonisolated struct Com_Octopuscommunity_BulkValidateItemResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -353,7 +422,7 @@ public struct Com_Octopuscommunity_BulkValidateItemResult: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum ItemError: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum ItemError: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
     case itemNotFound // = 1
@@ -396,7 +465,7 @@ public struct Com_Octopuscommunity_BulkValidateItemResult: Sendable {
   fileprivate var _itemError: Com_Octopuscommunity_BulkValidateItemResult.ItemError? = nil
 }
 
-public struct Com_Octopuscommunity_AxisError: Sendable {
+public nonisolated struct Com_Octopuscommunity_AxisError: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -409,7 +478,7 @@ public struct Com_Octopuscommunity_AxisError: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum Axis: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Axis: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
     case content // = 1
@@ -455,7 +524,7 @@ public struct Com_Octopuscommunity_AxisError: Sendable {
 
   }
 
-  public enum Code: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Code: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
     case quickAnswerNotFound // = 1
@@ -465,6 +534,12 @@ public struct Com_Octopuscommunity_AxisError: Sendable {
     case supportSendFailed // = 5
     case targetTopicNotFound // = 6
     case redirectMoveFailed // = 7
+
+    /// The community has no support email. Distinct from MISSING_ACTION_CONFIG:
+    /// the matching RULE is configured correctly, the missing piece is the
+    /// community's support address, which lives on a different screen. Sharing a
+    /// code sent operators to Moderation Rules to fix something that was not there.
+    case supportEmailNotConfigured // = 8
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -481,6 +556,7 @@ public struct Com_Octopuscommunity_AxisError: Sendable {
       case 5: self = .supportSendFailed
       case 6: self = .targetTopicNotFound
       case 7: self = .redirectMoveFailed
+      case 8: self = .supportEmailNotConfigured
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -495,6 +571,7 @@ public struct Com_Octopuscommunity_AxisError: Sendable {
       case .supportSendFailed: return 5
       case .targetTopicNotFound: return 6
       case .redirectMoveFailed: return 7
+      case .supportEmailNotConfigured: return 8
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -509,6 +586,7 @@ public struct Com_Octopuscommunity_AxisError: Sendable {
       .supportSendFailed,
       .targetTopicNotFound,
       .redirectMoveFailed,
+      .supportEmailNotConfigured,
     ]
 
   }
@@ -518,19 +596,19 @@ public struct Com_Octopuscommunity_AxisError: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_ContentReviewTab: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ContentReviewTab: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0TO_REVIEW\0\u{1}RESOLVED\0")
 }
 
-extension Com_Octopuscommunity_ContentReviewAction: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CONTENT_REVIEW_ACTION_UNSPECIFIED\0\u{1}BANNED\0\u{1}HIDDEN\0\u{1}SENT_TO_SUPPORT\0\u{1}AUTO_REPLIED\0\u{1}DISPLAYED\0\u{1}REDIRECTED\0")
+nonisolated extension Com_Octopuscommunity_ContentReviewAction: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CONTENT_REVIEW_ACTION_UNSPECIFIED\0\u{1}BANNED\0\u{1}HIDDEN\0\u{1}SENT_TO_SUPPORT\0\u{1}AUTO_REPLIED\0\u{1}DISPLAYED\0\u{1}REDIRECTED\0\u{1}BAN_WITH_AUDIT\0\u{1}HIDE_WITH_AUDIT\0\u{1}SEND_TO_SUPPORT_REQUIRES_APPROVAL\0\u{1}REPLY_REQUIRES_APPROVAL\0\u{1}REDIRECT_REQUIRES_APPROVAL\0")
 }
 
-extension Com_Octopuscommunity_ListContentReviewRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListContentReviewRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListContentReviewRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tab\0\u{1}pageCursor\0\u{1}pageSize\0\u{1}actions\0\u{1}policyIds\0\u{1}fromDate\0\u{1}toDate\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tab\0\u{1}pageCursor\0\u{1}pageSize\0\u{1}actions\0\u{1}policyIds\0\u{1}fromDate\0\u{1}toDate\0\u{1}noPolicy\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -545,6 +623,7 @@ extension Com_Octopuscommunity_ListContentReviewRequest: SwiftProtobuf.Message, 
       case 5: try { try decoder.decodeRepeatedStringField(value: &self.policyIds) }()
       case 6: try { try decoder.decodeSingularUInt64Field(value: &self._fromDate) }()
       case 7: try { try decoder.decodeSingularUInt64Field(value: &self._toDate) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self._noPolicy) }()
       default: break
       }
     }
@@ -576,6 +655,9 @@ extension Com_Octopuscommunity_ListContentReviewRequest: SwiftProtobuf.Message, 
     try { if let v = self._toDate {
       try visitor.visitSingularUInt64Field(value: v, fieldNumber: 7)
     } }()
+    try { if let v = self._noPolicy {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -587,12 +669,13 @@ extension Com_Octopuscommunity_ListContentReviewRequest: SwiftProtobuf.Message, 
     if lhs.policyIds != rhs.policyIds {return false}
     if lhs._fromDate != rhs._fromDate {return false}
     if lhs._toDate != rhs._toDate {return false}
+    if lhs._noPolicy != rhs._noPolicy {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension Com_Octopuscommunity_ListContentReviewResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListContentReviewResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListContentReviewResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectIds\0\u{1}nextPageCursor\0\u{1}nextPageDate\0")
 
@@ -636,7 +719,7 @@ extension Com_Octopuscommunity_ListContentReviewResponse: SwiftProtobuf.Message,
   }
 }
 
-extension Com_Octopuscommunity_ValidateContentReviewRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ValidateContentReviewRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ValidateContentReviewRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0\u{1}keepContentAction\0\u{1}approveSendToSupport\0\u{1}autoReply\0\u{1}approveRedirect\0")
 
@@ -690,7 +773,7 @@ extension Com_Octopuscommunity_ValidateContentReviewRequest: SwiftProtobuf.Messa
   }
 }
 
-extension Com_Octopuscommunity_AutoReplyValidation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_AutoReplyValidation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AutoReplyValidation"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}approve\0\u{1}editedMessage\0\u{1}editedAuthorProfileId\0")
 
@@ -734,7 +817,7 @@ extension Com_Octopuscommunity_AutoReplyValidation: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_ValidateContentReviewResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ValidateContentReviewResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ValidateContentReviewResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}item\0\u{1}resolved\0\u{1}errors\0")
 
@@ -778,7 +861,81 @@ extension Com_Octopuscommunity_ValidateContentReviewResponse: SwiftProtobuf.Mess
   }
 }
 
-extension Com_Octopuscommunity_BulkValidateContentReviewRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SendToSupportRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SendToSupportRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.objectID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.objectID.isEmpty {
+      try visitor.visitSingularStringField(value: self.objectID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_SendToSupportRequest, rhs: Com_Octopuscommunity_SendToSupportRequest) -> Bool {
+    if lhs.objectID != rhs.objectID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_SendToSupportResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SendToSupportResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}item\0\u{1}resolved\0\u{1}errors\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._item) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.resolved) }()
+      case 3: try { try decoder.decodeRepeatedMessageField(value: &self.errors) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._item {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if self.resolved != false {
+      try visitor.visitSingularBoolField(value: self.resolved, fieldNumber: 2)
+    }
+    if !self.errors.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.errors, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_SendToSupportResponse, rhs: Com_Octopuscommunity_SendToSupportResponse) -> Bool {
+    if lhs._item != rhs._item {return false}
+    if lhs.resolved != rhs.resolved {return false}
+    if lhs.errors != rhs.errors {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_BulkValidateContentReviewRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BulkValidateContentReviewRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectIds\0")
 
@@ -808,7 +965,7 @@ extension Com_Octopuscommunity_BulkValidateContentReviewRequest: SwiftProtobuf.M
   }
 }
 
-extension Com_Octopuscommunity_BulkValidateContentReviewResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_BulkValidateContentReviewResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BulkValidateContentReviewResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
@@ -838,7 +995,7 @@ extension Com_Octopuscommunity_BulkValidateContentReviewResponse: SwiftProtobuf.
   }
 }
 
-extension Com_Octopuscommunity_BulkValidateItemResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_BulkValidateItemResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BulkValidateItemResult"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0\u{1}itemError\0\u{1}axisErrors\0")
 
@@ -882,11 +1039,11 @@ extension Com_Octopuscommunity_BulkValidateItemResult: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Com_Octopuscommunity_BulkValidateItemResult.ItemError: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_BulkValidateItemResult.ItemError: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ITEM_ERROR_UNSPECIFIED\0\u{1}ITEM_NOT_FOUND\0\u{1}ITEM_NO_DIGEST\0")
 }
 
-extension Com_Octopuscommunity_AxisError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_AxisError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AxisError"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}axis\0\u{1}code\0\u{1}message\0")
 
@@ -926,10 +1083,10 @@ extension Com_Octopuscommunity_AxisError: SwiftProtobuf.Message, SwiftProtobuf._
   }
 }
 
-extension Com_Octopuscommunity_AxisError.Axis: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_AxisError.Axis: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0AXIS_UNSPECIFIED\0\u{1}CONTENT\0\u{1}SEND_TO_SUPPORT\0\u{1}AUTO_REPLY\0\u{1}REDIRECT\0")
 }
 
-extension Com_Octopuscommunity_AxisError.Code: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CODE_UNSPECIFIED\0\u{1}QUICK_ANSWER_NOT_FOUND\0\u{1}PARENT_NOT_FOUND\0\u{1}UNSUPPORTED_CONTENT_TYPE\0\u{1}MISSING_ACTION_CONFIG\0\u{1}SUPPORT_SEND_FAILED\0\u{1}TARGET_TOPIC_NOT_FOUND\0\u{1}REDIRECT_MOVE_FAILED\0")
+nonisolated extension Com_Octopuscommunity_AxisError.Code: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CODE_UNSPECIFIED\0\u{1}QUICK_ANSWER_NOT_FOUND\0\u{1}PARENT_NOT_FOUND\0\u{1}UNSUPPORTED_CONTENT_TYPE\0\u{1}MISSING_ACTION_CONFIG\0\u{1}SUPPORT_SEND_FAILED\0\u{1}TARGET_TOPIC_NOT_FOUND\0\u{1}REDIRECT_MOVE_FAILED\0\u{1}SUPPORT_EMAIL_NOT_CONFIGURED\0")
 }

@@ -10,26 +10,33 @@ struct ResponseActionBarView: View {
     @Environment(\.octopusTheme) private var theme
 
     let kind: ResponseKind
+    let contentId: String
     let displayReplyButton: Bool
     let liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>
     let initialLiveMeasures: LiveMeasures
     let reactionTapped: (ReactionKind?) -> Void
     let openCreateReply: () -> Void
+    /// Needed by the "who reacted" sheet, which lists profiles and lets them be opened.
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
 
     @State private var liveMeasures: LiveMeasures
 
     init(kind: ResponseKind,
+         contentId: String,
          displayReplyButton: Bool,
          liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>,
          initialLiveMeasures: LiveMeasures,
          reactionTapped: @escaping (ReactionKind?) -> Void,
-         openCreateReply: @escaping () -> Void) {
+         openCreateReply: @escaping () -> Void,
+         displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void) {
         self.kind = kind
+        self.contentId = contentId
         self.displayReplyButton = displayReplyButton
         self.liveMeasuresPublisher = liveMeasuresPublisher
         self.initialLiveMeasures = initialLiveMeasures
         self.reactionTapped = reactionTapped
         self.openCreateReply = openCreateReply
+        self.displayProfile = displayProfile
         self._liveMeasures = State(initialValue: initialLiveMeasures)
     }
 
@@ -62,8 +69,10 @@ struct ResponseActionBarView: View {
 
             if !liveMeasures.aggregatedInfo.reactions.isEmpty {
                 ReactionsSummary(
+                    contentId: contentId,
                     reactions: liveMeasures.aggregatedInfo.reactions,
-                    countPlacement: .leading)
+                    countPlacement: .leading,
+                    displayProfile: displayProfile)
             }
         }
         // No outer `.padding(.top, ...)`: `ReactionToggleView` already has an internal

@@ -75,6 +75,11 @@ struct PostDetailView: View {
                     post: viewModel.post, postNotAvailable: viewModel.postNotAvailable,
                     lockedState: viewModel.lockedState,
                     comments: viewModel.comments,
+                    commentsLoadFailure: viewModel.commentsLoadFailure,
+                    contentLoadFailure: viewModel.contentLoadFailure,
+                    retryFirstLoad: viewModel.retryFirstLoad,
+                    hasLoadedComments: viewModel.hasLoadedComments,
+                    retryCommentsFirstLoad: viewModel.retryCommentsFirstLoad,
                     hasMoreComments: viewModel.hasMoreData,
                     hideLoadMoreCommentsLoader: viewModel.hideLoadMoreCommentsLoader,
                     width: width,
@@ -107,7 +112,8 @@ struct PostDetailView: View {
                     },
                     displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId: $0) } : nil)
                 )
-                .toastContainer(octopus: viewModel.octopus)
+                .toastContainer(octopus: viewModel.octopus,
+                                retryFailedFetch: { Task { await viewModel.refresh() } })
 
                 if viewModel.lockedState == .unlocked {
                     CreateCommentView(octopus: viewModel.octopus, postId: viewModel.postUuid,
@@ -119,7 +125,7 @@ struct PostDetailView: View {
                     // the home-indicator area stay white. On large screens (where side margins
                     // appear) the top is rounded (radius 24) so the gray margin background follows
                     // the bar's rounded top curve; on narrow screens (e.g. iPhone portrait, no
-                    // margins) it stays square so no gray shows behind the corners (OCT-1532).
+                    // margins) it stays square so no gray shows behind the corners.
                     .background(
                         theme.colors.background
                             .cornerRadius(width > OctopusContentLayout.maxContentWidth ? 24 : 0,
@@ -320,6 +326,11 @@ private struct ContentView: View {
     let postNotAvailable: Bool
     let lockedState: LockedContentState
     let comments: [DisplayableFeedResponse]?
+    var commentsLoadFailure: ScreenStateFailure?
+    var contentLoadFailure: ScreenStateFailure?
+    var retryFirstLoad: () -> Void = {}
+    var hasLoadedComments = false
+    var retryCommentsFirstLoad: () -> Void = {}
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
     let width: CGFloat
@@ -343,7 +354,7 @@ private struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
 #if compiler(>=6.2)
-            // On iOS 26 the navigation bar uses its default translucent (glass) behavior (OCT-1532).
+            // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
             // The near-invisible top spacer is kept only for pre-iOS-16 scroll behavior.
             if #unavailable(iOS 16.0) {
                 Color.white.opacity(0.0001)
@@ -357,7 +368,7 @@ private struct ContentView: View {
                     if let post {
                         PostDetailContentView(post: post,
                                               // Clamp to the content cap so media is sized to the
-                                              // constrained column width, not the full screen (OCT-1532).
+                                              // constrained column width, not the full screen.
                                               width: min(width, OctopusContentLayout.maxContentWidth),
                                               zoomableImageInfo: $zoomableImageInfo,
                                               displayProfile: displayProfile,
@@ -373,8 +384,20 @@ private struct ContentView: View {
                         Spacer().frame(height: 10)
 
                         if lockedState != .lockedOwnContent {
-                            if let comments {
-                                PostDetailCommentsView(comments: comments,
+                            switch contentAreaState(itemCount: comments?.count,
+                                                    hasLoadedOnce: hasLoadedComments,
+                                                    loadFailure: commentsLoadFailure) {
+                            case let .failure(commentsLoadFailure):
+                                commentsLoadFailure.screenState(verticalPadding: ScreenState.postErrorPadding,
+                                                               icons: theme.assets.icons,
+                                                               retry: retryCommentsFirstLoad)
+                            case .loader:
+                                Compat.ProgressView()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, ScreenState.postEmptyPadding)
+                            // The list view renders the empty state itself, so both share a branch.
+                            case .empty, .content:
+                                PostDetailCommentsView(comments: comments ?? [],
                                              hasMoreData: hasMoreComments,
                                              hideLoader: hideLoadMoreCommentsLoader,
                                              zoomableImageInfo: $zoomableImageInfo,
@@ -390,8 +413,6 @@ private struct ContentView: View {
                                 // `ResponseView`, which applies `.padding(.horizontal, 16)` itself.
                                 // Adding an outer inset on top of that doubles the padding (10+16
                                 // leading, 16+16 trailing = 32 on the right).
-                            } else {
-                                Compat.ProgressView()
                             }
                         }
                     } else if postNotAvailable {
@@ -405,6 +426,10 @@ private struct ContentView: View {
                                 .multilineTextAlignment(.center)
                         }
                         .foregroundColor(theme.colors.gray500)
+                    } else if let contentLoadFailure {
+                        contentLoadFailure.screenState(verticalPadding: ScreenState.postErrorPadding,
+                                                       icons: theme.assets.icons,
+                                                       retry: retryFirstLoad)
                     } else {
                         VStack {
                             Spacer()

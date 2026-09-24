@@ -115,15 +115,15 @@ struct PostViewDataMappingTests {
         #expect(viewData.canBeModerated == true)
     }
 
-    @Test func detailMapping_wrapsTextAsNonEllipsized() async throws {
+    @Test func detailMapping_wrapsTextAsNonTruncated() async throws {
         let post = Self.makeDetailPost(text: "Long detail body text.")
         let viewData = PostViewData(from: post)
         guard case let .published(content) = viewData.content else {
             Issue.record("expected published content")
             return
         }
-        #expect(content.text.getText(translated: false) == "Long detail body text.")
-        #expect(content.text.getIsEllipsized(translated: false) == false)
+        #expect(content.text.getFullText(translated: false) == "Long detail body text.")
+        #expect(content.text.truncation == nil)
     }
 
     @Test func detailMapping_bridgeCTA_takesPrecedenceOverCustomAction() async throws {
@@ -209,9 +209,11 @@ struct PostViewDataMappingTests {
             Issue.record("expected published content")
             return
         }
-        #expect(truncatedContent.text.getIsEllipsized(translated: false) == true)
-        #expect(expandedContent.text.getIsEllipsized(translated: false) == false)
-        #expect(expandedContent.text.getText(translated: false) == longText)
+        #expect(truncatedContent.text.truncation != nil)
+        #expect(truncatedContent.text.getTruncatedText(translated: false).isTruncated == true)
+        #expect(truncatedContent.text.getFullText(translated: false) == longText)
+        #expect(expandedContent.text.truncation == nil)
+        #expect(expandedContent.text.getFullText(translated: false) == longText)
     }
 
     // MARK: - canBeBlockedByUser forwarding

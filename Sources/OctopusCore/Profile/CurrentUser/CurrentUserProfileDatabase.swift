@@ -22,12 +22,12 @@ class CurrentUserProfileDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func profilePublisher(userId: String) -> AnyPublisher<StorableCurrentUserProfile?, Error> {
+    func profilePublisher(userId: String) -> AnyPublisher<StorableCurrentUserProfile?, Never> {
         (context
             .publisher(request: PrivateProfileEntity.fetchByUserId(userId: userId)) {
                 guard let profileEntity = $0.first else { return [] }
                 return [StorableCurrentUserProfile(from: profileEntity)]
-            } as AnyPublisher<[StorableCurrentUserProfile], Error>
+            } as AnyPublisher<[StorableCurrentUserProfile], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)
@@ -71,6 +71,8 @@ class CurrentUserProfileDatabase: InjectableObject {
             })
             profileEntity.descPostFeedId = profile.descPostFeedId
             profileEntity.ascPostFeedId = profile.ascPostFeedId
+            profileEntity.descCommentFeedId = profile.descCommentFeedId
+            profileEntity.ascCommentFeedId = profile.ascCommentFeedId
             profileEntity.setEntitlements(profile.entitlements)
 
             try context.save()

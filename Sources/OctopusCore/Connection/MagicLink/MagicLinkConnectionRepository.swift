@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import OctopusRemoteClient
 import OctopusDependencyInjection
 import OctopusGrpcModels
@@ -264,22 +265,28 @@ class MagicLinkConnectionRepository: ConnectionRepository, InjectableObject, @un
             switch response.result {
             case .success(let success):
                 let profile = StorableCurrentUserProfile(from: success.profile, userId: success.userID)
-                Task {
-                    try await userProfileDatabase.upsert(profile: profile)
-                    // wait for the db to be sure to have all information about the profile in the db to avoid
-                    // a race condition where the user data is here but not yet the profile.
-                    // In this case, the create profile is displayed and at the next run loop since the profile is
-                    // here, the screen is popped and the magic link screen is displayed
-                    userInDbCancellable = userProfileDatabase.profilePublisher(userId: success.userID)
-                        .replaceError(with: nil)
-                        .first { $0 != nil }
-                        .receive(on: DispatchQueue.main)
-                        .sink { [weak self] _ in
-                            guard let self else { return }
-                            userDataStorage.store(userData: .init(id: success.userID, jwtToken: success.jwt))
-                            userDataStorage.store(magicLinkData: nil)
-                            userInDbCancellable = nil
+                Task { [weak self] in
+                    guard let self else { return }
+                    do {
+                        try await userProfileDatabase.upsert(profile: profile)
+                        // wait for the db to be sure to have all information about the profile in the db to avoid
+                        // a race condition where the user data is here but not yet the profile.
+                        // In this case, the create profile is displayed and at the next run loop since the profile
+                        // is here, the screen is popped and the magic link screen is displayed
+                        userInDbCancellable = userProfileDatabase.profilePublisher(userId: success.userID)
+                            .first { $0 != nil }
+                            .receive(on: DispatchQueue.main)
+                            .sink { [weak self] _ in
+                                guard let self else { return }
+                                userDataStorage.store(userData: .init(id: success.userID, jwtToken: success.jwt))
+                                userDataStorage.store(magicLinkData: nil)
+                                userInDbCancellable = nil
+                            }
+                    } catch {
+                        if #available(iOS 14, *) {
+                            Logger.connection.debug("Error while storing the connected user profile: \(error)")
                         }
+                    }
                 }
                 return true
             case .error(let error):

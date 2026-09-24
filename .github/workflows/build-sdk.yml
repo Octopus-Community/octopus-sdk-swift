@@ -9,9 +9,32 @@ on:
   pull_request:
     branches: [ ] # build on all branches
 
+# Least-privilege default: every job here checks the repo out and builds it, none of them writes
+# through GITHUB_TOKEN. The checkouts below pass their own token, so tightening GITHUB_TOKEN does
+# not affect them. Any future step that needs to write (a comment, a commit, a release) gets a
+# commented job-level elevation rather than widening this line.
+permissions:
+  contents: read
+
+# At most one run pending per pull request: a new run supersedes a pending one, and a run already in
+# progress is left to finish. On a push the group falls back to the run id, so pushes never group
+# and every commit on main/next/hotfix keeps its own result.
+#
+# Deliberately no `cancel-in-progress`: a build that reuses DerivedData across runs can be left
+# with a half-written folder when `xcodebuild` is killed mid-flight, and the next run picks that
+# folder up. Letting an in-progress run finish costs less than the corruption it avoids, which is
+# the same reason publishing lanes are carved out of cancellation.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+
 jobs:
   lint:
+    name: SwiftLint
     runs-on: macos-26
+    # Installs SwiftLint via brew on a cold runner, then lints; observed runs sit
+    # well under this. The cap exists so a wedged brew or a hung lint releases the
+    # runner instead of holding it for the 6h default.
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v6
       with:
@@ -25,7 +48,12 @@ jobs:
       run: swiftlint lint --strict --reporter github-actions-logging
 
   build:
+    name: Build and test the package
     runs-on: macos-26
+    # A cold `xcodebuild test` on the package (simulator boot + full test suite)
+    # is the longest PR-time job here; 60 min leaves headroom over a cache miss
+    # while still bounding a hung simulator.
+    timeout-minutes: 60
 
     steps:
     - uses: actions/checkout@v6
@@ -35,7 +63,8 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: 26.4
+        # Quoted, or YAML would read a future 26.10 as 26.1.
+        xcode-version: '26.4'
 
     - name: Get active Xcode version
       id: xcode-version
@@ -45,18 +74,9 @@ jobs:
         available_runtimes="$(xcrun simctl list runtimes)"
         echo "Runtimes available: $available_runtimes"
 
-    - name: Get Swift version
-      id: swift-version
-      run: |
-        swift_version=$(xcrun swiftc -version | head -n1 | awk '{print $4}')
-        echo "version=$swift_version" >> $GITHUB_OUTPUT
-
-    - uses: irgaly/xcode-cache@v1
-      with:
-        swiftpm-cache-key: swiftpm-${{ runner.os }}-${{ steps.swift-version.outputs.version }}-${{ hashFiles('**/Package.resolved') }}
-        swiftpm-cache-restore-keys: |
-          swiftpm-${{ runner.os }}-${{ steps.swift-version.outputs.version }}-
-
+    # No dependency cache step: where the runner keeps DerivedData between jobs the build already
+    # reuses it, and where it does not, a cold build is the expected cost. Either way, clearing
+    # DerivedData is the way out of an incremental build gone wrong.
     - name: Build Package and run tests
       run: |
         xcodebuild test \

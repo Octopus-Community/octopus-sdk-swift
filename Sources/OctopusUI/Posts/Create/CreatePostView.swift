@@ -297,7 +297,7 @@ private struct WritingPostForm: View {
                                 ZStack(alignment: .topTrailing) {
                                     Image(uiImage: imageAndData.image)
                                         .resizable()
-                                        .aspectRatio(contentMode: .fit)
+                                        .scaledToFit()
                                     Button(action: {
                                         attachment = nil
                                         selectedItems = []
@@ -387,7 +387,7 @@ private struct WritingPostForm: View {
                 VStack(spacing: 0) {
                     if !(attachment?.hasPoll ?? false) {
                         HStack(spacing: 8) {
-                            // OCT-1426: hide the picture-add entry when the community disables post pictures.
+                            // Hide the picture-add entry when the community disables post pictures.
                             if picturesEnabled, !(attachment?.hasPoll ?? false) {
                                 Button(action: { openPhotosPicker = true }) {
                                     HStack(spacing: 4) {
@@ -398,7 +398,7 @@ private struct WritingPostForm: View {
                                 .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
                                                                 externalVerticalPadding: 16))
                             }
-                            // OCT-1426: hide the poll-creation entry when the community disables polls.
+                            // Hide the poll-creation entry when the community disables polls.
                             if pollsEnabled, attachment == nil {
                                 Button(action: {
                                     withAnimation {

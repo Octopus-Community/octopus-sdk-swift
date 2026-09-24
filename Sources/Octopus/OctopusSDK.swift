@@ -375,9 +375,25 @@ extension OctopusSDK {
         try await core.configRepository.overrideCommunityAccess(access)
     }
 
+    /// Internal test affordance: pretend the device is offline, whatever the real connection says.
+    ///
+    /// A simulator reports a connection unconditionally, so the offline behaviour — the screen states,
+    /// their retry, the no-connection toast — cannot be reached there at all, and only a device in
+    /// airplane mode exercises it. This lets the sample app do it.
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter available: `false` to act offline, `true` to act online, `nil` to follow the device.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideConnectionAvailable(_ available: Bool?) {
+        core.debugOverrideConnectionAvailable(available)
+    }
+
     /// Internal test affordance: locally override the per-field profile lock of the community config,
     /// without a backend-driven config. Pass `nil` to clear the override and fall back to the backend
-    /// value. Used by the sample app to exercise the per-field profile lock (OCT-1487).
+    /// value. Used by the sample app to exercise the per-field profile lock.
     ///
     /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
     /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it; a normal
@@ -392,7 +408,7 @@ extension OctopusSDK {
 
     /// Internal test affordance: locally override the per-content-type content options of the
     /// community config, without a backend-driven config. Pass `nil` to clear the override and fall
-    /// back to the backend value. Used by the sample app to exercise content options (OCT-1426).
+    /// back to the backend value. Used by the sample app to exercise content options.
     ///
     /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
     /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
@@ -437,7 +453,7 @@ extension OctopusSDK {
     /// Profile activation flag — applied on top of the backend-driven community config, without a
     /// backend-driven config. Pass `nil` to clear the override and fall back to the backend value.
     /// Used by the sample app to exercise the Unified Profile activation flag before the backend
-    /// serves it (OCT-1374).
+    /// serves it.
     ///
     /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
     /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
@@ -501,7 +517,6 @@ extension OctopusSDK {
     /// - Returns: a publishers of an optional OctopusPost.
     public func getClientObjectRelatedPostPublisher(clientObjectId: String) -> AnyPublisher<(any OctopusPost)?, Never> {
         core.postsRepository.getClientObjectRelatedPost(clientObjectId: clientObjectId)
-            .replaceError(with: nil)
             .map { $0 as (any OctopusPost)? }
             .eraseToAnyPublisher()
     }

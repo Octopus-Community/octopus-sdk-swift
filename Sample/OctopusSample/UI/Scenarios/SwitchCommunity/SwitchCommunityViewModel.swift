@@ -24,6 +24,9 @@ class SwitchCommunityViewModel: ObservableObject {
     }
 
     private func switchCommunity() async {
+        // A second save while this screen's switch is in flight is a no-op rather than an error.
+        // Overlapping switches are refused by `OctopusSDKProvider`, which is where that rule lives.
+        guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
         do {

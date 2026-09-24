@@ -60,7 +60,7 @@ struct VideoPlayerView: View {
                     content: { cachedImage in
                         Image(uiImage: cachedImage.fullSizeImage)
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            .scaledToFit()
                             .frame(maxWidth: .infinity)
                     }
                 )
@@ -178,7 +178,7 @@ private struct VideoControlsBottomBar: View {
             Button(action: togglePlayPause) {
                 Image(uiImage: togglePlayPauseIcon)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(width: iconSize, height: iconSize)
                     .foregroundColor(theme.colors.hover)
                     .accessibilityLabelInBundle(togglePlayPauseAccessibilityKey)
@@ -214,7 +214,7 @@ private struct VideoControlsBottomBar: View {
             Button(action: toggleSound) {
                 Image(uiImage: isMuted ? theme.assets.icons.content.video.muted : theme.assets.icons.content.video.notMuted)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(width: iconSize, height: iconSize)
                     .foregroundColor(theme.colors.hover)
                     .accessibilityLabelInBundle(isMuted ? "Accessibility.Video.Unmute" : "Accessibility.Video.Mute")

@@ -4,6 +4,7 @@
 
 import Foundation
 import Combine
+import os
 import Octopus
 import OctopusCore
 import UIKit
@@ -19,7 +20,7 @@ class EditProfileViewModel: ObservableObject {
     enum FieldEditConfig {
         case editInOctopus
         case editInApp(() -> Void)
-        /// Community-locked (read-only / disabled): the field is not shown in the edit screen (OCT-1487).
+        /// Community-locked (read-only / disabled): the field is not shown in the edit screen.
         case hidden
 
         var fieldIsEditable: Bool {
@@ -309,6 +310,11 @@ class EditProfileViewModel: ObservableObject {
                 case .other:
                     alertError = .localizationKey("Error.Unknown")
                 }
+            } catch {
+                if #available(iOS 14, *) {
+                    Logger.profile.debug("Error while updating the profile: \(error)")
+                }
+                alertError = .localizationKey("Error.Unknown")
             }
             isLoading = false
         }

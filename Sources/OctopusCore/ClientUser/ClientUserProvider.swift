@@ -31,7 +31,6 @@ class ClientUserProvider: InjectableObject, @unchecked Sendable {
                         return Just<ClientUser?>(nil).eraseToAnyPublisher()
                     }
                     return clientUserProfileDatabase.profilePublisher(clientUserId: clientUserData.id)
-                        .replaceError(with: nil)
                         .map {
                             guard let clientUserProfile = $0 else { return nil }
                             return ClientUser(userId: clientUserData.id,

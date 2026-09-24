@@ -95,6 +95,11 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
+    // Back-office only: the SDK never calls it, but the generated factory protocol requires the method.
+    func makeSetProfileBoDeclarationInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SetProfileBoDeclarationRequest, OctopusGrpcModels.Com_Octopuscommunity_SetProfileBoDeclarationResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
     func makeEnteringOctopusInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusRequest, OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }

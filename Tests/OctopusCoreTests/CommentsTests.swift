@@ -44,7 +44,6 @@ class CommentsTests: XCTestCase {
         let sendExpectation = XCTestExpectation(description: "Comment DB updated")
 
         commentsDatabase.commentsPublisher(ids: ["newComment"])
-            .replaceError(with: [])
             .sink { comments in
                 guard !comments.isEmpty else { return }
                 sendExpectation.fulfill()

@@ -35,7 +35,7 @@ class TrackingCoreDataStack: InjectableObject, @unchecked Sendable {
         if latestVersion != Self.currentVersion {
             resetDb = resetDb || Migrator.shouldResetDb(latestVersion: latestVersion, targetVersion: Self.currentVersion)
             if resetDb {
-                UserDefaults.standard.set(latestVersion, forKey: Self.latestVersionKey)
+                UserDefaults.standard.set(Self.currentVersion, forKey: Self.latestVersionKey)
             }
             stackManager = try CoreDataStackManager(
                 persistentContainerName: Self.persistentContainerName,

@@ -19,7 +19,7 @@ class CreateCommentViewModel: ObservableObject {
     @Published private(set) var pictureError: DisplayableString?
     @Published private(set) var hasChanges = false
     @Published private(set) var userHasAcceptedCgu = false
-    /// Whether comment pictures are enabled for this community (OCT-1426). Default `true`.
+    /// Whether comment pictures are enabled for this community. Default `true`.
     @Published private(set) var picturesEnabled = true
     /// How the community requires legal acceptance. Default `.implicit` until the config loads.
     @Published private(set) var termsAcceptanceMode: TermsAcceptanceMode = .implicit
@@ -225,7 +225,6 @@ class CreateCommentViewModel: ObservableObject {
             let commentId = createdComment.uuid
             // only stop loading when the new comment has been received in the feed
             commentReceivedCancellable = octopus.core.postsRepository.getPost(uuid: postId)
-                .replaceError(with: nil)
                 .map { post in
                     guard let post else { return Empty<Void, Never>().eraseToAnyPublisher() }
                     return post.oldestFirstCommentsFeed?.$items

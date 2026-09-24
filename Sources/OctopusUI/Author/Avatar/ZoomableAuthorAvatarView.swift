@@ -20,7 +20,7 @@ struct ZoomableAuthorAvatarView: View {
             }, content: { cachedImage in
                 Image(uiImage: cachedImage.fullSizeImage)
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .scaledToFill()
                     .modify {
                         if zoomableImageInfo?.url != url {
                             $0.namespacedMatchedGeometryEffect(id: url, isSource: true)

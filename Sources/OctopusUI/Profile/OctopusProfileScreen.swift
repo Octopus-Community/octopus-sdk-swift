@@ -24,6 +24,7 @@ public struct OctopusProfileScreen: View {
     @State private var trackingApi: DefaultTrackingApi
     @Compat.StateObject private var gamificationRulesViewManager: GamificationRulesViewManager
     @Compat.StateObject private var displayConfigManager: DisplayConfigManager
+    @Compat.StateObject private var reactionsListManager: ReactionsListManager
     @Compat.StateObject private var videoManager: VideoManager
     @State private var urlOpener: URLOpener
     @Compat.StateObject private var languageManager: LanguageManager
@@ -72,6 +73,7 @@ public struct OctopusProfileScreen: View {
         _trackingApi = State(wrappedValue: DefaultTrackingApi(octopus: octopus))
         _gamificationRulesViewManager = Compat.StateObject(wrappedValue: GamificationRulesViewManager(octopus: octopus))
         _displayConfigManager = Compat.StateObject(wrappedValue: DisplayConfigManager(octopus: octopus))
+        _reactionsListManager = Compat.StateObject(wrappedValue: ReactionsListManager(octopus: octopus))
         _videoManager = Compat.StateObject(wrappedValue: VideoManager(octopus: octopus))
         _urlOpener = State(wrappedValue: URLOpener(octopus: octopus))
         _languageManager = Compat.StateObject(wrappedValue: LanguageManager(octopus: octopus))
@@ -120,6 +122,7 @@ public struct OctopusProfileScreen: View {
         .environment(\.trackingApi, trackingApi)
         .environmentObject(gamificationRulesViewManager)
         .environmentObject(displayConfigManager)
+        .environmentObject(reactionsListManager)
         .environmentObject(videoManager)
         .environment(\.urlOpener, urlOpener)
         .environmentObject(languageManager)

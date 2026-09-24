@@ -34,6 +34,9 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
     let descPostFeedId: String
     let ascPostFeedId: String
 
+    let descCommentFeedId: String
+    let ascCommentFeedId: String
+
     let blockedProfileIds: [String]
 
     let entitlements: Set<String>
@@ -47,6 +50,7 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
          hasConfirmedBio: Bool?, hasConfirmedPicture: Bool?,
          isGuest: Bool, notificationBadgeCount: Int?,
          descPostFeedId: String, ascPostFeedId: String,
+         descCommentFeedId: String = "", ascCommentFeedId: String = "",
          blockedProfileIds: [String],
          entitlements: Set<String> = []) {
         self.id = id
@@ -70,6 +74,8 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
         self.notificationBadgeCount = notificationBadgeCount
         self.descPostFeedId = descPostFeedId
         self.ascPostFeedId = ascPostFeedId
+        self.descCommentFeedId = descCommentFeedId
+        self.ascCommentFeedId = ascCommentFeedId
         self.blockedProfileIds = blockedProfileIds
         self.entitlements = entitlements
     }
@@ -98,6 +104,8 @@ extension StorableCurrentUserProfile {
         notificationBadgeCount = entity.notificationBadgeCount
         descPostFeedId = entity.descPostFeedId
         ascPostFeedId = entity.ascPostFeedId
+        descCommentFeedId = entity.descCommentFeedId
+        ascCommentFeedId = entity.ascCommentFeedId
         blockedProfileIds = entity.blockedProfileIds
         entitlements = entity.entitlements
     }
@@ -137,6 +145,8 @@ extension StorableCurrentUserProfile {
         }
         descPostFeedId = profile.descPostFeedID
         ascPostFeedId = profile.ascPostFeedID
+        descCommentFeedId = profile.descCommentFeedID
+        ascCommentFeedId = profile.ascCommentFeedID
         blockedProfileIds = profile.usersBlockList
         entitlements = Set(profile.entitlements)
     }

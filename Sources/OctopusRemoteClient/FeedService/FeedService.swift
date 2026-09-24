@@ -22,6 +22,18 @@ public protocol FeedService {
     func getNextFeedPage(pageCursor: String, pageSize: Int32, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetFeedPageResponse
+
+    /// Initializes a feed and returns the first page with the octo objects already hydrated **and** their
+    /// parents in `relatedObjects` / `relatedAggregates` (used by the profile comments feed, which needs
+    /// the parent post/comment context that the id-only `initializeFeed` does not provide).
+    func initializeFeedWithOctoObject(feedId: String, pageSize: Int32, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse
+
+    func getFeedWithOctoObjectPage(pageCursor: String, pageSize: Int32, fetchAggregates: Bool,
+                                   authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError)
+    -> Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse
 }
 
 class FeedServiceClient: ServiceClient, FeedService {
@@ -68,6 +80,34 @@ class FeedServiceClient: ServiceClient, FeedService {
 
         return try await callRemote(authenticationMethod) {
             try await client.getFeedPage(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func initializeFeedWithOctoObject(feedId: String, pageSize: Int32, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse {
+        let request = Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest.with {
+            $0.feedID = feedId
+            $0.pageSize = pageSize
+        }
+
+        return try await callRemote(authenticationMethod) {
+            try await client.initializeFeedWithOctoObject(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func getFeedWithOctoObjectPage(pageCursor: String, pageSize: Int32, fetchAggregates: Bool,
+                                   authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse {
+        let request = Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest.with {
+            $0.pageCursor = pageCursor
+            $0.pageSize = pageSize
+            $0.fetchAggregates = fetchAggregates
+        }
+
+        return try await callRemote(authenticationMethod) {
+            try await client.getFeedWithOctoObjectPage(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

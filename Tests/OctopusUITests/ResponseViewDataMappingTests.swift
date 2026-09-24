@@ -34,7 +34,7 @@ struct ResponseViewDataMappingTests {
     @Test func mapDisplayable_preservesTextWhenPresent() async throws {
         let source = Self.makeDisplayableResponse(kind: .comment, text: "Hello world")
         let mapped = ResponseViewData(from: source)
-        #expect(mapped.text?.getText(translated: false) == "Hello world")
+        #expect(mapped.text?.getFullText(translated: false) == "Hello world")
     }
 
     @Test func mapDisplayable_nilTextStaysNil() async throws {
@@ -65,11 +65,11 @@ struct ResponseViewDataMappingTests {
         #expect(mapped.uuid == "comment-42")
     }
 
-    @Test func mapCommentDetail_wrapsTextAsNonEllipsized() async throws {
+    @Test func mapCommentDetail_wrapsTextAsNonTruncated() async throws {
         let source = Self.makeCommentDetail(text: "Detail text")
         let mapped = ResponseViewData(from: source)
-        #expect(mapped.text?.getText(translated: false) == "Detail text")
-        #expect(mapped.text?.getIsEllipsized(translated: false) == false)
+        #expect(mapped.text?.getFullText(translated: false) == "Detail text")
+        #expect(mapped.text?.truncation == nil)
     }
 
     @Test func mapCommentDetail_nilTextStaysNil() async throws {

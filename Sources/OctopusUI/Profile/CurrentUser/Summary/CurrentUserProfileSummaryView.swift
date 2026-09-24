@@ -45,6 +45,8 @@ struct CurrentUserProfileSummaryView: View {
     var body: some View {
         ContentView(
             profile: viewModel.profile,
+            loadFailure: viewModel.loadFailure,
+            retryFirstLoad: viewModel.retryFirstLoad,
             gamificationConfig: viewModel.gamificationConfig,
             displayAccountAge: viewModel.displayAccountAge,
             editability: viewModel.editability,
@@ -62,6 +64,8 @@ struct CurrentUserProfileSummaryView: View {
             postsView: {
                 if let postFeedViewModel = viewModel.postFeedViewModel {
                     PostFeedView(
+                        screenStatePadding: ScreenState.profilePadding,
+                        loaderTopPadding: 130,
                         viewModel: postFeedViewModel,
                         zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
@@ -81,12 +85,21 @@ struct CurrentUserProfileSummaryView: View {
                         displayContentModeration: {
                             mainFlowPath.reportTarget = .content(contentId: $0)
                         }) {
+                            // One CTA now, not the previous post/poll pair (Screen states spec).
                             if viewModel.canCreatePost {
-                                CreatePostEmptyPostView(
-                                    createPost: { navigator.push(.createPost(withPoll: $0, defaultTopicId: nil)) },
-                                    pollsEnabled: viewModel.pollsEnabled)
+                                ScreenState(
+                                    image: theme.assets.icons.screenStates.emptyContent,
+                                    title: .localizationKey("Profile.Posts.EmptyState.Title.Self"),
+                                    action: .init(title: "Profile.Posts.EmptyState.CTA.Self") {
+                                        navigator.push(.createPost(withPoll: false, defaultTopicId: nil))
+                                    },
+                                    verticalPadding: ScreenState.profilePadding)
                             } else {
-                                DefaultEmptyPostsView()
+                                // Nothing to offer when the member cannot post: neutral wording, no CTA.
+                                ScreenState(
+                                    image: theme.assets.icons.screenStates.emptyContent,
+                                    title: .localizationKey("Profile.Posts.EmptyState.Other"),
+                                    verticalPadding: ScreenState.profilePadding)
                             }
                         }
                 } else {
@@ -94,12 +107,14 @@ struct CurrentUserProfileSummaryView: View {
                 }
             }, notificationsView: {
                 NotificationCenterView(viewModel: viewModel.notifCenterViewModel)
-            })
+            },
+            commentsView: { commentsView })
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarTitle: Text("Profile.Title", bundle: .module))
-        .toastContainer(octopus: viewModel.octopus)
+        .toastContainer(octopus: viewModel.octopus,
+                        retryFailedFetch: { Task { await viewModel.refresh() } })
         .gamificationRulesSheet(
             isPresented: $showGamificationRules,
             gamificationConfig: viewModel.gamificationConfig,
@@ -156,6 +171,28 @@ struct CurrentUserProfileSummaryView: View {
         .emitScreenDisplayed(.profile, trackingApi: trackingApi)
         .onDisappear {
             isDisplayed = false
+        }
+    }
+
+    /// The Comments tab content. Reuses the same navigation closures (and `.postClicked`
+    /// tracking) as the Posts tab, so tapping into a comment/post behaves identically from either tab.
+    @ViewBuilder
+    private var commentsView: some View {
+        if let commentsViewModel = viewModel.commentsViewModel {
+            ProfileCommentsListView(
+                viewModel: commentsViewModel,
+                displayPostDetail: {
+                    if !$1 && !$2 && $3 == nil {
+                        trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
+                    }
+                    navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
+                                               scrollToMostRecentComment: $2, origin: .sdk,
+                                               hasFeaturedComment: $4))
+                },
+                displayCommentDetail: {
+                    navigator.push(.commentDetail(
+                        commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: $2))
+                })
         }
     }
 
@@ -234,8 +271,12 @@ struct CurrentUserProfileSummaryView: View {
     }
 }
 
-private struct ContentView<PostsView: View, NotificationsView: View>: View {
+private struct ContentView<PostsView: View, NotificationsView: View, CommentsView: View>: View {
+    @Environment(\.octopusTheme) private var theme
+
     let profile: DisplayableCurrentUserProfile?
+    let loadFailure: ScreenStateFailure?
+    let retryFirstLoad: () -> Void
     let gamificationConfig: GamificationConfig?
     let displayAccountAge: Bool
     let editability: ProfileFieldsEditability
@@ -249,11 +290,12 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
 
     @ViewBuilder let postsView: PostsView
     @ViewBuilder let notificationsView: NotificationsView
+    @ViewBuilder let commentsView: CommentsView
 
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
-                // On iOS 26 the navigation bar uses its default translucent (glass) behavior (OCT-1532).
+                // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
                 CurrentUserProfileContentView(profile: profile,
                                    gamificationConfig: gamificationConfig,
                                    displayAccountAge: displayAccountAge,
@@ -265,13 +307,18 @@ private struct ContentView<PostsView: View, NotificationsView: View>: View {
                                    openEditionWithPhotoPicker: openEditionWithPhotoPicker,
                                    openGamificationRules: openGamificationRules,
                                    postsView: { postsView },
-                                   notificationsView: { notificationsView })
+                                   notificationsView: { notificationsView },
+                                   commentsView: { commentsView })
                 PoweredByOctopusView()
             }
             .largeScreenMarginBackground()
+        } else if let loadFailure {
+            loadFailure.screenState(verticalPadding: ScreenState.profilePadding,
+                                    icons: theme.assets.icons, retry: retryFirstLoad)
         } else {
             Compat.ProgressView()
-                .frame(width: 60)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 130)
         }
     }
 }

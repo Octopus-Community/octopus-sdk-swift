@@ -46,6 +46,15 @@ public class RepliesRepository: InjectableObject, @unchecked Sendable {
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
     }
 
+    /// Observes a single reply from the local database (mirrors `CommentsRepository.getComment(uuid:)`).
+    /// Emits `nil` while the reply is absent from the cache. Used by the profile Comments tab
+    /// to reflect live measures / reaction changes on the member's own replies.
+    public func getReply(uuid: String) -> AnyPublisher<Reply?, Never> {
+        repliesDatabase.repliesPublisher(ids: [uuid])
+            .map { $0.first.map { Reply(storableComment: $0) } }
+            .eraseToAnyPublisher()
+    }
+
     @discardableResult
     public func send(_ reply: WritableReply, parentIsTranslated: Bool) async throws(SendReply.Error) -> (Reply, Data?) {
         guard Validators.Reply.validate(reply: reply) else {

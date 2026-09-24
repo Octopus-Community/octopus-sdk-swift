@@ -107,6 +107,10 @@ final class OctoServiceInterceptor: Com_Octopuscommunity_OctoObjectServiceClient
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }
 
+    func makeGetReactionsPageInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetReactionsPageRequest, OctopusGrpcModels.Com_Octopuscommunity_GetReactionsPageResponse>] {
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+    }
+
     func makeShadowbanPostInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ShadowbanPostRequest, OctopusGrpcModels.Com_Octopuscommunity_ShadowbanPostResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }

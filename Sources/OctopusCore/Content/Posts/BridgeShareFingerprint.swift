@@ -5,7 +5,7 @@
 import Foundation
 import CryptoKit
 
-/// Computes the bridge "Share" image fingerprint (OCT-1426 / Q5).
+/// Computes the bridge "Share" image fingerprint.
 ///
 /// When a community forbids member pictures, a prefilled (host-app) share that carries an image is
 /// rejected server-side unless the post is signed. The SDK computes this fingerprint, the host signs

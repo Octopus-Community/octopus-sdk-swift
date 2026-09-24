@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_PutLikeResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -45,13 +45,13 @@ public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Result: Equatable, Sendable {
+  public nonisolated enum OneOf_Result: Equatable, Sendable {
     case success(Com_Octopuscommunity_PutLikeResponse.Success)
     case fail(Com_Octopuscommunity_PutLikeResponse.Fail)
 
   }
 
-  public struct Success: Sendable {
+  public nonisolated struct Success: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -72,7 +72,7 @@ public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
     fileprivate var _like: Com_Octopuscommunity_OctoObject? = nil
   }
 
-  public struct Fail: Sendable {
+  public nonisolated struct Fail: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -84,7 +84,7 @@ public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
     public init() {}
   }
 
-  public struct Error: Sendable {
+  public nonisolated struct Error: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -112,12 +112,12 @@ public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum OneOf_Details: Equatable, Sendable {
+    public nonisolated enum OneOf_Details: Equatable, Sendable {
       case missingParent(Com_Octopuscommunity_ErrorDetails.MissingParent)
 
     }
 
-    public enum Field: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Field: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case unknown // = 0
 
@@ -161,7 +161,7 @@ public struct Com_Octopuscommunity_PutLikeResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_DeleteLikeRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteLikeRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -173,7 +173,7 @@ public struct Com_Octopuscommunity_DeleteLikeRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_DeleteLikeResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteLikeResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -183,7 +183,7 @@ public struct Com_Octopuscommunity_DeleteLikeResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_PutReactionResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -208,13 +208,13 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Result: Equatable, Sendable {
+  public nonisolated enum OneOf_Result: Equatable, Sendable {
     case success(Com_Octopuscommunity_PutReactionResponse.Success)
     case fail(Com_Octopuscommunity_PutReactionResponse.Fail)
 
   }
 
-  public struct Success: Sendable {
+  public nonisolated struct Success: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -246,7 +246,7 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
     fileprivate var _hasTargetVideoContent_p: Bool? = nil
   }
 
-  public struct Fail: Sendable {
+  public nonisolated struct Fail: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -258,7 +258,7 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
     public init() {}
   }
 
-  public struct Error: Sendable {
+  public nonisolated struct Error: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -286,12 +286,12 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum OneOf_Details: Equatable, Sendable {
+    public nonisolated enum OneOf_Details: Equatable, Sendable {
       case missingParent(Com_Octopuscommunity_ErrorDetails.MissingParent)
 
     }
 
-    public enum Field: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Field: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case unknown // = 0
 
@@ -335,7 +335,7 @@ public struct Com_Octopuscommunity_PutReactionResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_DeleteRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -347,7 +347,7 @@ public struct Com_Octopuscommunity_DeleteRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_DeleteReactionResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteReactionResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -357,11 +357,99 @@ public struct Com_Octopuscommunity_DeleteReactionResponse: Sendable {
   public init() {}
 }
 
+public nonisolated struct Com_Octopuscommunity_GetReactionsPageRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// post / comment / reply
+  public var parentID: String = String()
+
+  /// absent → tab "All"; set → only that reaction type
+  public var unicode: String {
+    get {_unicode ?? String()}
+    set {_unicode = newValue}
+  }
+  /// Returns true if `unicode` has been explicitly set.
+  public var hasUnicode: Bool {self._unicode != nil}
+  /// Clears the value of `unicode`. Subsequent reads from it will return its default value.
+  public mutating func clearUnicode() {self._unicode = nil}
+
+  /// absent → first page; pass the previous response's nextPageCursor for the next page
+  public var pageCursor: String {
+    get {_pageCursor ?? String()}
+    set {_pageCursor = newValue}
+  }
+  /// Returns true if `pageCursor` has been explicitly set.
+  public var hasPageCursor: Bool {self._pageCursor != nil}
+  /// Clears the value of `pageCursor`. Subsequent reads from it will return its default value.
+  public mutating func clearPageCursor() {self._pageCursor = nil}
+
+  /// 0/unset → server default; clamped to a server maximum
+  public var pageSize: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _unicode: String? = nil
+  fileprivate var _pageCursor: String? = nil
+}
+
+public nonisolated struct Com_Octopuscommunity_GetReactionsPageResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// sorted by most recent reaction first
+  public var reactions: [Com_Octopuscommunity_GetReactionsPageResponse.UserReaction] = []
+
+  /// null if there is no more page
+  public var nextPageCursor: String {
+    get {_nextPageCursor ?? String()}
+    set {_nextPageCursor = newValue}
+  }
+  /// Returns true if `nextPageCursor` has been explicitly set.
+  public var hasNextPageCursor: Bool {self._nextPageCursor != nil}
+  /// Clears the value of `nextPageCursor`. Subsequent reads from it will return its default value.
+  public mutating func clearNextPageCursor() {self._nextPageCursor = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated struct UserReaction: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    /// Empty when user is deleted or banned
+    public var profile: Com_Octopuscommunity_MinimalProfile {
+      get {_profile ?? Com_Octopuscommunity_MinimalProfile()}
+      set {_profile = newValue}
+    }
+    /// Returns true if `profile` has been explicitly set.
+    public var hasProfile: Bool {self._profile != nil}
+    /// Clears the value of `profile`. Subsequent reads from it will return its default value.
+    public mutating func clearProfile() {self._profile = nil}
+
+    public var unicode: String = String()
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _profile: Com_Octopuscommunity_MinimalProfile? = nil
+  }
+
+  public init() {}
+
+  fileprivate var _nextPageCursor: String? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_PutLikeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutLikeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutLikeResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
@@ -428,7 +516,7 @@ extension Com_Octopuscommunity_PutLikeResponse: SwiftProtobuf.Message, SwiftProt
   }
 }
 
-extension Com_Octopuscommunity_PutLikeResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutLikeResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutLikeResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}like\0")
 
@@ -462,7 +550,7 @@ extension Com_Octopuscommunity_PutLikeResponse.Success: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_PutLikeResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutLikeResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutLikeResponse.protoMessageName + ".Fail"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
@@ -492,7 +580,7 @@ extension Com_Octopuscommunity_PutLikeResponse.Fail: SwiftProtobuf.Message, Swif
   }
 }
 
-extension Com_Octopuscommunity_PutLikeResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutLikeResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutLikeResponse.protoMessageName + ".Error"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0")
 
@@ -548,11 +636,11 @@ extension Com_Octopuscommunity_PutLikeResponse.Error: SwiftProtobuf.Message, Swi
   }
 }
 
-extension Com_Octopuscommunity_PutLikeResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutLikeResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0")
 }
 
-extension Com_Octopuscommunity_DeleteLikeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteLikeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteLikeRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
@@ -582,7 +670,7 @@ extension Com_Octopuscommunity_DeleteLikeRequest: SwiftProtobuf.Message, SwiftPr
   }
 }
 
-extension Com_Octopuscommunity_DeleteLikeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteLikeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteLikeResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -601,7 +689,7 @@ extension Com_Octopuscommunity_DeleteLikeResponse: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension Com_Octopuscommunity_PutReactionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutReactionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PutReactionResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
 
@@ -668,7 +756,7 @@ extension Com_Octopuscommunity_PutReactionResponse: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Success"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reaction\0\u{1}hasTargetVideoContent\0")
 
@@ -707,7 +795,7 @@ extension Com_Octopuscommunity_PutReactionResponse.Success: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_PutReactionResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutReactionResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Fail"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
 
@@ -737,7 +825,7 @@ extension Com_Octopuscommunity_PutReactionResponse.Fail: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_PutReactionResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutReactionResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutReactionResponse.protoMessageName + ".Error"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0")
 
@@ -793,11 +881,11 @@ extension Com_Octopuscommunity_PutReactionResponse.Error: SwiftProtobuf.Message,
   }
 }
 
-extension Com_Octopuscommunity_PutReactionResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_PutReactionResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0")
 }
 
-extension Com_Octopuscommunity_DeleteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObjectId\0")
 
@@ -827,7 +915,7 @@ extension Com_Octopuscommunity_DeleteRequest: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
-extension Com_Octopuscommunity_DeleteReactionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteReactionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteReactionResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -841,6 +929,133 @@ extension Com_Octopuscommunity_DeleteReactionResponse: SwiftProtobuf.Message, Sw
   }
 
   public static func ==(lhs: Com_Octopuscommunity_DeleteReactionResponse, rhs: Com_Octopuscommunity_DeleteReactionResponse) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_GetReactionsPageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GetReactionsPageRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parentId\0\u{1}unicode\0\u{1}pageCursor\0\u{1}pageSize\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.parentID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._unicode) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._pageCursor) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.pageSize) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.parentID.isEmpty {
+      try visitor.visitSingularStringField(value: self.parentID, fieldNumber: 1)
+    }
+    try { if let v = self._unicode {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._pageCursor {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
+    if self.pageSize != 0 {
+      try visitor.visitSingularUInt32Field(value: self.pageSize, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_GetReactionsPageRequest, rhs: Com_Octopuscommunity_GetReactionsPageRequest) -> Bool {
+    if lhs.parentID != rhs.parentID {return false}
+    if lhs._unicode != rhs._unicode {return false}
+    if lhs._pageCursor != rhs._pageCursor {return false}
+    if lhs.pageSize != rhs.pageSize {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_GetReactionsPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".GetReactionsPageResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reactions\0\u{1}nextPageCursor\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.reactions) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._nextPageCursor) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.reactions.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.reactions, fieldNumber: 1)
+    }
+    try { if let v = self._nextPageCursor {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_GetReactionsPageResponse, rhs: Com_Octopuscommunity_GetReactionsPageResponse) -> Bool {
+    if lhs.reactions != rhs.reactions {return false}
+    if lhs._nextPageCursor != rhs._nextPageCursor {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_GetReactionsPageResponse.UserReaction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_GetReactionsPageResponse.protoMessageName + ".UserReaction"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profile\0\u{1}unicode\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._profile) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.unicode) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._profile {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    if !self.unicode.isEmpty {
+      try visitor.visitSingularStringField(value: self.unicode, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_GetReactionsPageResponse.UserReaction, rhs: Com_Octopuscommunity_GetReactionsPageResponse.UserReaction) -> Bool {
+    if lhs._profile != rhs._profile {return false}
+    if lhs.unicode != rhs.unicode {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

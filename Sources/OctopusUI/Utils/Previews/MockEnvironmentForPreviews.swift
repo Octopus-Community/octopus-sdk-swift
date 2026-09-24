@@ -19,6 +19,7 @@ extension View {
             .environmentObject(ContentTranslationPreferenceStore.forPreviews())
             .environmentObject(GamificationRulesViewManager.forPreviews())
             .environmentObject(DisplayConfigManager.forPreviews())
+            .environmentObject(ReactionsListManager.forPreviews())
             .environmentObject(VideoManager.forPreviews())
             .environmentObject(LanguageManager.forPreviews())
     }

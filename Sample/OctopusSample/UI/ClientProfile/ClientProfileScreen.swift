@@ -48,9 +48,19 @@ struct ClientProfileScreen: View {
             .navigationBarTitle("Host App Profile", displayMode: .inline)
             .navigationBarItems(
                 trailing:
+                    // Tagged so the QA pipeline has a deterministic in-app way back from here: preset
+                    // 6 of the `communityData` scenario leaves the scenario screen, and walking back
+                    // with repeated system Back is a documented Tester trap. On iOS 14+ this screen is
+                    // presented as a full-screen cover, so there is no swipe-to-dismiss either — this
+                    // button is the only way out. The id is NOT in the shared catalog yet and matches
+                    // an Android sample change that is still unmerged; propagating it to the catalog
+                    // and to Flutter is a follow-up. The accessibility label matters as much as the id:
+                    // an icon-only button otherwise has no textual handle in a dump.
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Image(systemName: "xmark")
                     }
+                    .accessibilityLabelCompat("Close")
+                    .accessibilityId("clientProfile-back")
             )
             .sheet(isPresented: $presentCommunityActivity) {
                 OctopusUIView(
@@ -71,33 +81,55 @@ struct ClientProfileScreen: View {
             Text("Octopus community data")
                 .font(.caption)
                 .foregroundColor(.secondary)
+                // This id used to sit on the enclosing VStack. SwiftUI propagates a container's
+                // identifier onto every descendant text, which SHADOWED the three state ids below:
+                // an on-simulator `idb ui describe-all` dump showed zero `clientProfile-data` and five
+                // `clientProfile-communityData` instead. Moved onto the heading so the id still
+                // resolves — nothing in pm-tools consumes it, unlike the state ids, which are the
+                // documented assertion target for the `communityData` scenario's preset 6.
+                .accessibilityId("clientProfile-communityData")
             switch viewModel.state {
             case .loading:
-                if #available(iOS 14.0, *) {
-                    ProgressView()
-                } else {
-                    Text("Loading…")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                }
+                // Carries an id of its own so a dump taken mid-fetch is distinguishable from "the
+                // feature is missing" — the Tester's documented conclusion when no id matches. Not in
+                // the shared catalog yet; adding it there and to the other platforms is a follow-up.
+                loadingIndicator
+                    .accessibilityId("clientProfile-loading")
             case let .loaded(communityData):
                 communityDataContent(communityData)
             case let .error(message):
                 Text("Error: \(message)")
                     .font(.footnote)
                     .foregroundColor(.red)
+                    .accessibilityId("clientProfile-error")
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-        .accessibilityId("clientProfile-communityData")
     }
 
+    @ViewBuilder
+    private var loadingIndicator: some View {
+        if #available(iOS 14.0, *) {
+            // Labelled: a bare ProgressView contributes no text to an accessibility dump.
+            ProgressView()
+                .accessibilityLabel("Loading community data")
+        } else {
+            Text("Loading…")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+        }
+    }
+
+    // The three outcomes carry the cross-platform test ids from the shared pm-tools scenario catalog
+    // (`clientProfile-data` / `clientProfile-error` / `clientProfile-unknown`), so the QA pipeline can
+    // tell "rendered the stats" from "member unknown" from "fetch failed" without reading pixels.
     @ViewBuilder
     private func communityDataContent(_ communityData: OctopusCommunityData?) -> some View {
         if let communityData {
             VStack(alignment: .leading, spacing: 4) {
+                Text(verbatim: "Profile id: \(communityData.profileId)")
                 Text("Messages: \(communityData.messageCount.map(String.init) ?? "-")")
                 if let gamification = communityData.gamification {
                     Text("Gamification level: \(gamification.level)")
@@ -109,10 +141,16 @@ struct ClientProfileScreen: View {
                 }
             }
             .font(.system(.footnote, design: .monospaced))
+            // `.combine` so the four rows surface as ONE element whose text a dump-driven pipeline can
+            // read, instead of four elements each repeating the identifier.
+            .accessibilityElement(children: .combine)
+            .accessibilityId("clientProfile-data")
         } else {
-            Text("Unknown member (client user id not resolved)")
+            Text("Unknown member (client user id not resolved). Either the member has never used the " +
+                 "community, or the community is not configured to expose client user ids.")
                 .font(.footnote)
                 .foregroundColor(.secondary)
+                .accessibilityId("clientProfile-unknown")
         }
     }
 }

@@ -16,7 +16,7 @@ struct ResponseSeeRepliesView: View {
                 Image(uiImage: theme.assets.icons.content.comment.seeReply)
                     .resizable()
                     .flipsForRightToLeftLayoutDirection(true)
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(width: 18, height: 18)
                     .foregroundColor(theme.colors.primary)
                 Text("Reply.See_count:\(childCount)", bundle: .module)

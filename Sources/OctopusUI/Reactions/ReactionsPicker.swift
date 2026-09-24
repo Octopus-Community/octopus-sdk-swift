@@ -71,7 +71,7 @@ private struct ReactionButton: View {
         }) {
             Image(uiImage: theme.assets.icons.content.reaction[reaction])
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: effectiveSize, height: effectiveSize)
                 .scaleEffect(animate ? 1.4 : 1.0)
                 .opacity(animate ? 0.9 : 1.0)

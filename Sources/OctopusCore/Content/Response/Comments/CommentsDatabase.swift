@@ -23,20 +23,20 @@ class CommentsDatabase: ContentsDatabase<CommentEntity>, InjectableObject, @unch
         super.init(injector: injector)
     }
 
-    func commentPublisher(uuid: String) -> AnyPublisher<StorableComment?, Error> {
+    func commentPublisher(uuid: String) -> AnyPublisher<StorableComment?, Never> {
         (context
             .publisher(request: CommentEntity.fetchById(id: uuid),
                        relatedTypes: [MinimalProfileEntity.self]) {
                 guard let commentEntity = $0.first else { return [] }
                 return [StorableComment(from: commentEntity)]
-            } as AnyPublisher<[StorableComment], Error>
+            } as AnyPublisher<[StorableComment], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
 
-    func commentsPublisher(ids: [String]) -> AnyPublisher<[StorableComment], Error> {
+    func commentsPublisher(ids: [String]) -> AnyPublisher<[StorableComment], Never> {
         return context
             .chunkedPublisher(ids: ids, requestBuilder: { CommentEntity.fetchAllByIds(ids: $0) }) {
                 $0.map { StorableComment(from: $0) }

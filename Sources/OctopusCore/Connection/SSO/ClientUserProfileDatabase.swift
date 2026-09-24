@@ -30,12 +30,12 @@ class ClientUserProfileDatabase: InjectableObject {
         }
     }
 
-    func profilePublisher(clientUserId: String) -> AnyPublisher<ClientUserProfile?, Error> {
+    func profilePublisher(clientUserId: String) -> AnyPublisher<ClientUserProfile?, Never> {
         (context
             .publisher(request: ClientUserEntity.fetchByClientUserId(clientUserId)) {
                 guard let profileEntity = $0.first?.profile else { return [] }
                 return [ClientUserProfile(from: profileEntity)]
-            }  as AnyPublisher<[ClientUserProfile], Error>
+            }  as AnyPublisher<[ClientUserProfile], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)

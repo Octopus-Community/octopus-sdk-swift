@@ -23,18 +23,18 @@ public protocol ConfigRepository: Sendable {
 
     /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the
     /// per-field profile lock of the published community config, without a backend-driven config.
-    /// Pass `nil` to clear and fall back to the backend value. Used by the sample app (OCT-1487).
+    /// Pass `nil` to clear and fall back to the backend value. Used by the sample app.
     func debugOverrideProfileFieldsLock(_ lock: ProfileFieldsLock?)
 
     /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the
     /// per-content-type content options of the published community config, without a backend-driven
-    /// config. Pass `nil` to clear and fall back to the backend value. Used by the sample app (OCT-1426).
+    /// config. Pass `nil` to clear and fall back to the backend value. Used by the sample app.
     func debugOverrideContentOptions(_ options: ContentOptions?)
 
     /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the Unified
     /// Profile activation flag (`exposeClientUserId`) of the published community config, applied on top
     /// of the backend-driven config. Pass `nil` to clear and fall back to the backend value. Used by
-    /// the sample app to exercise the feature before the backend serves it (OCT-1374).
+    /// the sample app to exercise the feature before the backend serves it.
     func debugOverrideExposeClientUserId(_ enabled: Bool?)
     /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the
     /// terms-acceptance mode of the published community config, without a backend-driven config.
@@ -98,7 +98,6 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
 
         communityConfigDatabase
             .configPublisher()
-            .replaceError(with: nil)
             .sink { [unowned self] config in
                 storedCommunityConfig = config
                 publishCommunityConfig()
@@ -106,7 +105,6 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
 
         userConfigDatabase
             .configPublisher()
-            .replaceError(with: nil)
             .sink { [unowned self] config in
                 userConfig = config
                 if let config {
@@ -121,7 +119,13 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
         .first(where: { $0 && $1 == .active })
         .sink { [unowned self] _ in
             Task {
-                try await refreshCommunityConfig()
+                do {
+                    try await refreshCommunityConfig()
+                } catch {
+                    if #available(iOS 14, *) {
+                        Logger.config.debug("Error while refreshing the community config: \(error)")
+                    }
+                }
             }
         }.store(in: &storage)
     }

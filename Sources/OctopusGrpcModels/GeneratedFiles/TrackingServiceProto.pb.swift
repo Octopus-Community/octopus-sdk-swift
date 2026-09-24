@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -23,7 +23,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 ///userId -> deduced from Jwt from headers
 ///installId / appSessionId / 8pusSessionId found in headers
-public struct Com_Octopuscommunity_TrackRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_TrackRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -33,7 +33,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public struct Event: Sendable {
+  public nonisolated struct Event: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -220,7 +220,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum OneOf_EventType: Equatable, Sendable {
+    public nonisolated enum OneOf_EventType: Equatable, Sendable {
       case enteringApp(Com_Octopuscommunity_TrackRequest.EnteringApp)
       case leavingApp(Com_Octopuscommunity_TrackRequest.LeavingApp)
       case enteringOctopus(Com_Octopuscommunity_TrackRequest.EnteringOctopus)
@@ -252,7 +252,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _octoSessionID: String? = nil
   }
 
-  public struct CustomEvent: Sendable {
+  public nonisolated struct CustomEvent: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -266,7 +266,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct PropertyValue: Sendable {
+  public nonisolated struct PropertyValue: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -278,7 +278,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct EnteringApp: Sendable {
+  public nonisolated struct EnteringApp: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -300,7 +300,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _firstSession: Bool? = nil
   }
 
-  public struct LeavingApp: Sendable {
+  public nonisolated struct LeavingApp: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -321,7 +321,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _sessionSummary: Com_Octopuscommunity_TrackRequest.SessionSummary? = nil
   }
 
-  public struct EnteringOctopus: Sendable {
+  public nonisolated struct EnteringOctopus: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -343,7 +343,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _firstSession: Bool? = nil
   }
 
-  public struct LeavingOctopus: Sendable {
+  public nonisolated struct LeavingOctopus: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -364,7 +364,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _sessionSummary: Com_Octopuscommunity_TrackRequest.SessionSummary? = nil
   }
 
-  public struct BridgePostOpened: Sendable {
+  public nonisolated struct BridgePostOpened: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -376,7 +376,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct PostOpened: Sendable {
+  public nonisolated struct PostOpened: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -399,7 +399,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _origin: Com_Octopuscommunity_TrackRequest.Origin? = nil
   }
 
-  public struct Origin: Sendable {
+  public nonisolated struct Origin: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -424,7 +424,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum OneOf_From: Equatable, Sendable {
+    public nonisolated enum OneOf_From: Equatable, Sendable {
       case fromClientApp(Com_Octopuscommunity_TrackRequest.ClientApp)
       case fromOctopusSdk(Com_Octopuscommunity_TrackRequest.Sdk)
 
@@ -433,7 +433,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ClientApp: Sendable {
+  public nonisolated struct ClientApp: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -443,7 +443,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct Sdk: Sendable {
+  public nonisolated struct Sdk: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -455,7 +455,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct OpenClientObjectFromBridge: Sendable {
+  public nonisolated struct OpenClientObjectFromBridge: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -465,7 +465,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct SessionSummary: Sendable {
+  public nonisolated struct SessionSummary: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -493,7 +493,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     fileprivate var _firstSession: Bool? = nil
   }
 
-  public struct ClientContentSharingStarted: Sendable {
+  public nonisolated struct ClientContentSharingStarted: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -503,7 +503,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ClientContentSharingCanceled: Sendable {
+  public nonisolated struct ClientContentSharingCanceled: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -513,7 +513,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ViewTopic: Sendable {
+  public nonisolated struct ViewTopic: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -541,20 +541,20 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum OneOf_From: Equatable, Sendable {
+    public nonisolated enum OneOf_From: Equatable, Sendable {
       case search(Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton)
       case carousel(Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel)
 
     }
 
-    public struct ViewTopicFrom: Sendable {
+    public nonisolated struct ViewTopicFrom: Sendable {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
 
       public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-      public struct SearchButton: Sendable {
+      public nonisolated struct SearchButton: Sendable {
         // SwiftProtobuf.Message conformance is added in an extension below. See the
         // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
         // methods supported on all messages.
@@ -564,7 +564,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
         public init() {}
       }
 
-      public struct Carousel: Sendable {
+      public nonisolated struct Carousel: Sendable {
         // SwiftProtobuf.Message conformance is added in an extension below. See the
         // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
         // methods supported on all messages.
@@ -580,7 +580,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ViewProfile: Sendable {
+  public nonisolated struct ViewProfile: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -595,7 +595,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct SearchTopicButtonHit: Sendable {
+  public nonisolated struct SearchTopicButtonHit: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -605,7 +605,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ViewTranslationButtonHit: Sendable {
+  public nonisolated struct ViewTranslationButtonHit: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -618,7 +618,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct VideoPlayed: Sendable {
+  public nonisolated struct VideoPlayed: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -636,7 +636,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ClickOnCta: Sendable {
+  public nonisolated struct ClickOnCta: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -648,7 +648,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ClickOnTopicCta: Sendable {
+  public nonisolated struct ClickOnTopicCta: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -660,7 +660,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
     public init() {}
   }
 
-  public struct ClientSetABTestInfo: Sendable {
+  public nonisolated struct ClientSetABTestInfo: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -673,7 +673,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
   }
 
   ///Login attributed to Octopus: the user hit a login-gated action in the SDK and then logged in during the same app run
-  public struct OctopusDrivenLogin: Sendable {
+  public nonisolated struct OctopusDrivenLogin: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -683,7 +683,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum Action: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Action: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case unspecified // = 0
       case post // = 1
@@ -751,7 +751,7 @@ public struct Com_Octopuscommunity_TrackRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_TrackResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_TrackResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -763,9 +763,9 @@ public struct Com_Octopuscommunity_TrackResponse: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_TrackRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TrackRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}events\0")
 
@@ -795,7 +795,7 @@ extension Com_Octopuscommunity_TrackRequest: SwiftProtobuf.Message, SwiftProtobu
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Event"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}timestamp\0\u{1}appSessionId\0\u{1}octoSessionId\0\u{2}\u{9}enteringApp\0\u{1}leavingApp\0\u{1}enteringOctopus\0\u{1}leavingOctopus\0\u{1}customEvent\0\u{1}bridgePostOpened\0\u{1}openClientObjectFromBridge\0\u{1}postOpened\0\u{1}clientContentSharingStarted\0\u{1}clientContentSharingCanceled\0\u{1}viewTopic\0\u{1}viewProfile\0\u{1}searchTopicButtonHit\0\u{1}viewTranslationButtonHit\0\u{1}videoPlayed\0\u{1}clickOnCta\0\u{1}clientSetABTestInfo\0\u{1}clickOnTopicCta\0\u{1}octopusDrivenLogin\0")
 
@@ -1166,7 +1166,7 @@ extension Com_Octopuscommunity_TrackRequest.Event: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.CustomEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.CustomEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".CustomEvent"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}properties\0")
 
@@ -1201,7 +1201,7 @@ extension Com_Octopuscommunity_TrackRequest.CustomEvent: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.PropertyValue: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.PropertyValue: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".PropertyValue"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}value\0")
 
@@ -1231,7 +1231,7 @@ extension Com_Octopuscommunity_TrackRequest.PropertyValue: SwiftProtobuf.Message
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.EnteringApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.EnteringApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".EnteringApp"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}firstSession\0")
 
@@ -1265,7 +1265,7 @@ extension Com_Octopuscommunity_TrackRequest.EnteringApp: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.LeavingApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.LeavingApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".LeavingApp"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{a}sessionSummary\0")
 
@@ -1299,7 +1299,7 @@ extension Com_Octopuscommunity_TrackRequest.LeavingApp: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.EnteringOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.EnteringOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".EnteringOctopus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}firstSession\0")
 
@@ -1333,7 +1333,7 @@ extension Com_Octopuscommunity_TrackRequest.EnteringOctopus: SwiftProtobuf.Messa
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.LeavingOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.LeavingOctopus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".LeavingOctopus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{a}sessionSummary\0")
 
@@ -1367,7 +1367,7 @@ extension Com_Octopuscommunity_TrackRequest.LeavingOctopus: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.BridgePostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.BridgePostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".BridgePostOpened"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0")
 
@@ -1397,7 +1397,7 @@ extension Com_Octopuscommunity_TrackRequest.BridgePostOpened: SwiftProtobuf.Mess
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.PostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.PostOpened: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".PostOpened"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}origin\0\u{1}success\0")
 
@@ -1436,7 +1436,7 @@ extension Com_Octopuscommunity_TrackRequest.PostOpened: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.Origin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.Origin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Origin"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}fromClientApp\0\u{1}fromOctopusSdk\0")
 
@@ -1503,7 +1503,7 @@ extension Com_Octopuscommunity_TrackRequest.Origin: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ClientApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ClientApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientApp"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1522,7 +1522,7 @@ extension Com_Octopuscommunity_TrackRequest.ClientApp: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.Sdk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.Sdk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".Sdk"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}hasFeaturedComment\0")
 
@@ -1552,7 +1552,7 @@ extension Com_Octopuscommunity_TrackRequest.Sdk: SwiftProtobuf.Message, SwiftPro
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".OpenClientObjectFromBridge"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1571,7 +1571,7 @@ extension Com_Octopuscommunity_TrackRequest.OpenClientObjectFromBridge: SwiftPro
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.SessionSummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.SessionSummary: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".SessionSummary"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}startedAt\0\u{1}endedAt\0\u{1}duration\0\u{1}firstSession\0")
 
@@ -1620,7 +1620,7 @@ extension Com_Octopuscommunity_TrackRequest.SessionSummary: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientContentSharingStarted"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1639,7 +1639,7 @@ extension Com_Octopuscommunity_TrackRequest.ClientContentSharingStarted: SwiftPr
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientContentSharingCanceled"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1658,7 +1658,7 @@ extension Com_Octopuscommunity_TrackRequest.ClientContentSharingCanceled: SwiftP
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ViewTopic: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ViewTopic: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewTopic"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}value\0\u{2}\u{9}search\0\u{1}carousel\0")
 
@@ -1730,7 +1730,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewTopic: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.ViewTopic.protoMessageName + ".ViewTopicFrom"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1749,7 +1749,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom: SwiftProtob
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.protoMessageName + ".SearchButton"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1768,7 +1768,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.SearchButton
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.protoMessageName + ".Carousel"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1787,7 +1787,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewTopic.ViewTopicFrom.Carousel: Sw
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ViewProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ViewProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewProfile"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}self\0\u{1}target\0")
 
@@ -1822,7 +1822,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewProfile: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".SearchTopicButtonHit"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1841,7 +1841,7 @@ extension Com_Octopuscommunity_TrackRequest.SearchTopicButtonHit: SwiftProtobuf.
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ViewTranslationButtonHit"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}viewTranslated\0")
 
@@ -1871,7 +1871,7 @@ extension Com_Octopuscommunity_TrackRequest.ViewTranslationButtonHit: SwiftProto
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.VideoPlayed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.VideoPlayed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".VideoPlayed"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0\u{1}watchTimeSec\0\u{1}videoDurationSec\0\u{1}videoId\0")
 
@@ -1916,7 +1916,7 @@ extension Com_Octopuscommunity_TrackRequest.VideoPlayed: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ClickOnCta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ClickOnCta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClickOnCta"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0")
 
@@ -1946,7 +1946,7 @@ extension Com_Octopuscommunity_TrackRequest.ClickOnCta: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ClickOnTopicCta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ClickOnTopicCta: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClickOnTopicCta"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}objectId\0")
 
@@ -1976,7 +1976,7 @@ extension Com_Octopuscommunity_TrackRequest.ClickOnTopicCta: SwiftProtobuf.Messa
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".ClientSetABTestInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}hasAccessToCommunity\0")
 
@@ -2006,7 +2006,7 @@ extension Com_Octopuscommunity_TrackRequest.ClientSetABTestInfo: SwiftProtobuf.M
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_TrackRequest.protoMessageName + ".OctopusDrivenLogin"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}action\0")
 
@@ -2036,11 +2036,11 @@ extension Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin: SwiftProtobuf.Me
   }
 }
 
-extension Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin.Action: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackRequest.OctopusDrivenLogin.Action: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ACTION_UNSPECIFIED\0\u{1}POST\0\u{1}COMMENT\0\u{1}REPLY\0\u{1}REACTION\0\u{1}VOTE\0\u{1}MODERATION\0\u{1}BLOCK_USER\0\u{1}VIEW_OWN_PROFILE\0")
 }
 
-extension Com_Octopuscommunity_TrackResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_TrackResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TrackResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 

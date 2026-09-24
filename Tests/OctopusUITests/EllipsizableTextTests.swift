@@ -19,7 +19,10 @@ class EllipsizableTextTests {
         let text = "12345\n6\n\n\n78\n\n9"
         #expect(EllipsizableText(text: text, maxLength: Int.max, maxLines: 2)?.fullText == text)
         #expect(EllipsizableText(text: text, maxLength: Int.max, maxLines: 2)?.ellipsizedText == "12345\n6")
-        #expect(EllipsizableText(text: text, maxLength: Int.max, maxLines: 6)?.ellipsizedText == "12345\n6\n\n\n78\n")
+        // `TextTruncation` now trims whitespace off both ends of the cut result: `prefix(6)` of
+        // the split keeps "12345", "6", "", "", "78", "" (the 6th of the sample's 7 segments),
+        // joined as "12345\n6\n\n\n78\n" before trimming the trailing "\n".
+        #expect(EllipsizableText(text: text, maxLength: Int.max, maxLines: 6)?.ellipsizedText == "12345\n6\n\n\n78")
     }
 
     @Test func testEllipsizeOnCharsAndLines() async throws {

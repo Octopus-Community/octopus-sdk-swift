@@ -85,14 +85,3 @@ struct ReactionToggleView: View {
             .accessibilityValue(locale: languageManager.overridenLocale)
     }
 }
-
-/// `ButtonStyle` that dims the label to 60% opacity while pressed. Exists so the reaction
-/// button can show touch-down feedback without resorting to a raw `DragGesture` that would
-/// steal the enclosing `ScrollView`'s swipe — `ButtonStyle`'s `isPressed` is what SwiftUI
-/// uses internally for exactly this scroll-cooperation.
-private struct PressOpacityButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .opacity(configuration.isPressed ? 0.6 : 1.0)
-    }
-}
