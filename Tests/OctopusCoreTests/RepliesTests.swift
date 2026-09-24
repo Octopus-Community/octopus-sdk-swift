@@ -43,7 +43,6 @@ class RepliesTests: XCTestCase {
         let sendExpectation = XCTestExpectation(description: "Reply DB updated")
 
         repliesDatabase.repliesPublisher(ids: ["newReply"])
-            .replaceError(with: [])
             .sink { replies in
                 guard !replies.isEmpty else { return }
                 sendExpectation.fulfill()
@@ -85,6 +84,36 @@ class RepliesTests: XCTestCase {
         try await assertWithTimeout {
             try await repliesDatabase.getReplies(ids: ["1"]).isEmpty
         }
+    }
+
+    func testGetReplyObservesDatabase() async throws {
+        // OCT-1067: the profile Comments tab observes a single reply via `getReply(uuid:)` to reflect
+        // live measures / reaction changes. It should emit whatever the local database holds and update
+        // when the database changes.
+        let emitted = XCTestExpectation(description: "getReply emitted the stored reply")
+
+        repliesRepository.getReply(uuid: "r1")
+            .sink { reply in
+                guard let reply, reply.uuid == "r1",
+                      reply.userInteractions.reaction?.kind == .heart else { return }
+                emitted.fulfill()
+            }.store(in: &storage)
+
+        try await repliesDatabase.upsert(replies: [
+            StorableReply(uuid: "r1",
+                          text: .init(originalText: "A reply", originalLanguage: nil, translatedText: nil),
+                          medias: [],
+                          author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
+                          creationDate: Date(), updateDate: Date(),
+                          status: .published, statusReasons: [],
+                          parentId: "commentId",
+                          aggregatedInfo: .init(reactions: [.init(reactionKind: .heart, count: 1)],
+                                                childCount: 0, viewCount: 0, pollResult: nil),
+                          userInteractions: UserInteractions(reaction: UserReaction(kind: .heart, id: "reaction1"),
+                                                             pollVoteId: nil))
+        ])
+
+        await fulfillment(of: [emitted], timeout: 5)
     }
 
     func injectPutReply(_ reply: StorableReply) {

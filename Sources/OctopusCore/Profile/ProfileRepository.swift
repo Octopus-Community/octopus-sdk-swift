@@ -123,8 +123,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                     return Just<(CurrentUserProfile, String?)?>(nil).eraseToAnyPublisher()
                 }
                 return Publishers.CombineLatest(
-                    userProfileDatabase.profilePublisher(userId: userData.id)
-                        .replaceError(with: nil),
+                    userProfileDatabase.profilePublisher(userId: userData.id),
                     configRepository.communityConfigPublisher.map { $0?.gamificationConfig?.gamificationLevels }
                         .removeDuplicates()
                 )
@@ -251,7 +250,7 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
 
     public func getProfile(profileId: String) -> AnyPublisher<Profile?, Never> {
         Publishers.CombineLatest(
-            publicProfileDatabase.profilePublisher(profileId: profileId).replaceError(with: nil),
+            publicProfileDatabase.profilePublisher(profileId: profileId),
             configRepository.communityConfigPublisher.map { $0?.gamificationConfig?.gamificationLevels }
                 .removeDuplicates()
         )

@@ -38,6 +38,8 @@ class GroupListViewModel: ObservableObject {
     @Published private(set) var canChangeFollowStatusByGroupId: [String: Bool] = [:]
     @Published private(set) var isFollowedByGroupId: [String: Bool] = [:]
     @Published private(set) var error: DisplayableString?
+    /// Set when the very first fetch fails, i.e. when there is no group to show in place of the error.
+    @Published private(set) var loadFailure: ScreenStateFailure?
 
     let octopus: OctopusSDK
 
@@ -58,8 +60,17 @@ class GroupListViewModel: ObservableObject {
         fetchTopics()
     }
 
+    /// Retries the first load, from the error state's CTA.
+    func retryFirstLoad() {
+        loadFailure = nil
+        // The failure path left an empty list behind to hide the loader; clearing it brings the loader
+        // back for the retry, instead of a bare page until the outcome lands.
+        groups = nil
+        fetchTopics()
+    }
+
     func refresh() async {
-        let refreshTopicsTask = Task { await fetchTopics(isManual: true) }
+        let refreshTopicsTask = Task { await fetchTopics() }
         await refreshTopicsTask.value
     }
 
@@ -85,26 +96,30 @@ class GroupListViewModel: ObservableObject {
         }
     }
 
-    private func fetchTopics(isManual: Bool = false) {
+    private func fetchTopics() {
         Task {
-            await fetchTopics(isManual: isManual)
+            await fetchTopics()
         }
     }
 
-    private func fetchTopics(isManual: Bool) async {
+    private func fetchTopics() async {
         do {
             let topics = try await octopus.core.topicsRepository.fetchTopics()
             computeCanChangeFollowStatusAndIsFollowed(topics: topics)
             groups = .init(from: filtered(topics))
+            loadFailure = nil
         } catch {
-            if groups == nil {
-                // set to non nil value to remove the loader
+            // Nothing listed yet: the error takes the list's place instead of an empty screen.
+            if groups?.sections.isEmpty ?? true {
+                loadFailure = ScreenStateFailure(error)
                 groups = .init(from: [])
+                return
             }
-            if isManual {
-                self.error = error.displayableMessage
-            } else if case .noNetwork = error {
+            if case .noNetwork = error {
+                // Groups are already listed: a toast says so without replacing them (Screen states spec).
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
+            } else {
+                octopus.core.toastsRepository.display(errorToast: .unknown)
             }
        }
     }

@@ -15,13 +15,13 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 /// Possible statuses when confirming a magic link.
-public enum Com_Octopuscommunity_ConfirmLinkStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Com_Octopuscommunity_ConfirmLinkStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecifiedLinkStatus // = 0
 
@@ -88,7 +88,7 @@ public enum Com_Octopuscommunity_ConfirmLinkStatus: SwiftProtobuf.Enum, Swift.Ca
 }
 
 /// Possible error codes for authentication failures.
-public enum Com_Octopuscommunity_ErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Com_Octopuscommunity_ErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   /// An unknown error occurred.
@@ -157,7 +157,7 @@ public enum Com_Octopuscommunity_ErrorCode: SwiftProtobuf.Enum, Swift.CaseIterab
 }
 
 /// Request to generate a magic link.
-public struct Com_Octopuscommunity_GenerateLinkRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_GenerateLinkRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -183,7 +183,7 @@ public struct Com_Octopuscommunity_GenerateLinkRequest: Sendable {
 }
 
 /// Response after generating a magic link.
-public struct Com_Octopuscommunity_GenerateLinkResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_GenerateLinkResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -210,7 +210,7 @@ public struct Com_Octopuscommunity_GenerateLinkResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Result: Equatable, Sendable {
+  public nonisolated enum OneOf_Result: Equatable, Sendable {
     /// The generated id for the magic link.
     case magicLinkID(String)
     /// Error details if authentication failed.
@@ -219,7 +219,7 @@ public struct Com_Octopuscommunity_GenerateLinkResponse: Sendable {
   }
 
   /// Possible error codes for magic link request failures.
-  public enum GenerateLinkErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum GenerateLinkErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     /// An unknown error occurred.
@@ -258,7 +258,7 @@ public struct Com_Octopuscommunity_GenerateLinkResponse: Sendable {
   }
 
   /// Detailed error information.
-  public struct GenerateLinkErrorDetail: Sendable {
+  public nonisolated struct GenerateLinkErrorDetail: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -279,7 +279,7 @@ public struct Com_Octopuscommunity_GenerateLinkResponse: Sendable {
 
 /// Request to confirm a magic link. This message is intentionally empty as the magicLinkId
 /// is typically included in the headers of the request.
-public struct Com_Octopuscommunity_ConfirmLinkRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_ConfirmLinkRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -290,7 +290,7 @@ public struct Com_Octopuscommunity_ConfirmLinkRequest: Sendable {
 }
 
 /// Response after confirming a magic link.
-public struct Com_Octopuscommunity_ConfirmLinkResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_ConfirmLinkResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -330,7 +330,7 @@ public struct Com_Octopuscommunity_ConfirmLinkResponse: Sendable {
 }
 
 /// Request to check if a user has been authenticated with a magic link.
-public struct Com_Octopuscommunity_IsAuthenticatedRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_IsAuthenticatedRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -347,7 +347,7 @@ public struct Com_Octopuscommunity_IsAuthenticatedRequest: Sendable {
 }
 
 /// Response to an authentication check.
-public struct Com_Octopuscommunity_IsAuthenticatedResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_IsAuthenticatedResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -374,7 +374,7 @@ public struct Com_Octopuscommunity_IsAuthenticatedResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Result: Equatable, Sendable {
+  public nonisolated enum OneOf_Result: Equatable, Sendable {
     /// The response if authentication was successful.
     case success(Com_Octopuscommunity_AuthenticationSuccess)
     /// Error details if authentication failed.
@@ -386,7 +386,7 @@ public struct Com_Octopuscommunity_IsAuthenticatedResponse: Sendable {
 }
 
 ///Response after successful authentication
-public struct Com_Octopuscommunity_AuthenticationSuccess: Sendable {
+public nonisolated struct Com_Octopuscommunity_AuthenticationSuccess: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -415,7 +415,7 @@ public struct Com_Octopuscommunity_AuthenticationSuccess: Sendable {
 }
 
 /// Detailed error information.
-public struct Com_Octopuscommunity_ErrorDetail: Sendable {
+public nonisolated struct Com_Octopuscommunity_ErrorDetail: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -433,17 +433,17 @@ public struct Com_Octopuscommunity_ErrorDetail: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_ConfirmLinkStatus: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ConfirmLinkStatus: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSPECIFIED_LINK_STATUS\0\u{1}EXPIRED_STRONG\0\u{1}EXPIRED_WEAK\0\u{1}ALREADY_USED\0\u{1}AUTHENTICATED\0\u{1}UNAUTHORIZED\0\u{1}INVALID_TOKEN\0")
 }
 
-extension Com_Octopuscommunity_ErrorCode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ErrorCode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0\u{1}NOT_AUTHENTICATED_YET\0\u{1}LINK_NOT_FOUND\0\u{1}USER_NOT_FOUND\0\u{1}INVALID_LINK\0\u{1}EXPIRED_LINK\0\u{1}USER_BANNED\0")
 }
 
-extension Com_Octopuscommunity_GenerateLinkRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GenerateLinkRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GenerateLinkRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}email\0\u{1}deeplink\0")
 
@@ -482,7 +482,7 @@ extension Com_Octopuscommunity_GenerateLinkRequest: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_GenerateLinkResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GenerateLinkResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GenerateLinkResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}magicLinkId\0\u{1}error\0")
 
@@ -544,11 +544,11 @@ extension Com_Octopuscommunity_GenerateLinkResponse: SwiftProtobuf.Message, Swif
   }
 }
 
-extension Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorCode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorCode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_ERROR\0\u{1}USER_BANNED\0")
 }
 
-extension Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GenerateLinkResponse.protoMessageName + ".GenerateLinkErrorDetail"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errorCode\0\u{1}message\0")
 
@@ -583,7 +583,7 @@ extension Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorDetail: Swi
   }
 }
 
-extension Com_Octopuscommunity_ConfirmLinkRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ConfirmLinkRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ConfirmLinkRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -602,7 +602,7 @@ extension Com_Octopuscommunity_ConfirmLinkRequest: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension Com_Octopuscommunity_ConfirmLinkResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ConfirmLinkResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ConfirmLinkResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}deeplink\0\u{3}user_nickname\0\u{1}status\0\u{1}banReasons\0")
 
@@ -651,7 +651,7 @@ extension Com_Octopuscommunity_ConfirmLinkResponse: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_IsAuthenticatedRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_IsAuthenticatedRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".IsAuthenticatedRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}magicLinkId\0\u{1}email\0")
 
@@ -686,7 +686,7 @@ extension Com_Octopuscommunity_IsAuthenticatedRequest: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Com_Octopuscommunity_IsAuthenticatedResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_IsAuthenticatedResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".IsAuthenticatedResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}error\0")
 
@@ -753,7 +753,7 @@ extension Com_Octopuscommunity_IsAuthenticatedResponse: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_AuthenticationSuccess: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_AuthenticationSuccess: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AuthenticationSuccess"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}jwt\0\u{1}userId\0\u{1}profile\0")
 
@@ -797,7 +797,7 @@ extension Com_Octopuscommunity_AuthenticationSuccess: SwiftProtobuf.Message, Swi
   }
 }
 
-extension Com_Octopuscommunity_ErrorDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ErrorDetail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ErrorDetail"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}error_code\0\u{1}message\0")
 

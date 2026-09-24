@@ -10,6 +10,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         UNUserNotificationCenter.current().delegate = self
+        // The `-featureEnvTicket` launch argument is deliberately NOT handled here: touching
+        // `OctopusSDKProvider.instance` at this point forces the singleton's `init` before any UI has
+        // run, and in internal demo mode that aborts on `fatalError("SDK config should be set…")`
+        // because only `SDKConfigScreen` ever populates the config. `SampleRootView` applies it instead,
+        // once a config exists.
         return true
     }
 

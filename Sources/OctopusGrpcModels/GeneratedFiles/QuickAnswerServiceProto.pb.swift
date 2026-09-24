@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct Com_Octopuscommunity_QuickAnswer: Sendable {
+public nonisolated struct Com_Octopuscommunity_QuickAnswer: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -38,7 +38,7 @@ public struct Com_Octopuscommunity_QuickAnswer: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_ListQuickAnswersRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListQuickAnswersRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -48,7 +48,7 @@ public struct Com_Octopuscommunity_ListQuickAnswersRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_ListQuickAnswersResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_ListQuickAnswersResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -60,7 +60,7 @@ public struct Com_Octopuscommunity_ListQuickAnswersResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_CreateQuickAnswerRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_CreateQuickAnswerRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -74,7 +74,7 @@ public struct Com_Octopuscommunity_CreateQuickAnswerRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_UpdateQuickAnswerRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_UpdateQuickAnswerRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -90,7 +90,7 @@ public struct Com_Octopuscommunity_UpdateQuickAnswerRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_DeleteQuickAnswerRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteQuickAnswerRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -102,7 +102,7 @@ public struct Com_Octopuscommunity_DeleteQuickAnswerRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_QuickAnswerResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_QuickAnswerResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -123,7 +123,7 @@ public struct Com_Octopuscommunity_QuickAnswerResponse: Sendable {
   fileprivate var _quickAnswer: Com_Octopuscommunity_QuickAnswer? = nil
 }
 
-public struct Com_Octopuscommunity_DeleteQuickAnswerResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_DeleteQuickAnswerResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -135,9 +135,9 @@ public struct Com_Octopuscommunity_DeleteQuickAnswerResponse: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_QuickAnswer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_QuickAnswer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".QuickAnswer"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}name\0\u{1}message\0\u{3}dependent_policy_ids\0")
 
@@ -182,7 +182,7 @@ extension Com_Octopuscommunity_QuickAnswer: SwiftProtobuf.Message, SwiftProtobuf
   }
 }
 
-extension Com_Octopuscommunity_ListQuickAnswersRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListQuickAnswersRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListQuickAnswersRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -201,7 +201,7 @@ extension Com_Octopuscommunity_ListQuickAnswersRequest: SwiftProtobuf.Message, S
   }
 }
 
-extension Com_Octopuscommunity_ListQuickAnswersResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_ListQuickAnswersResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListQuickAnswersResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}quickAnswers\0")
 
@@ -231,7 +231,7 @@ extension Com_Octopuscommunity_ListQuickAnswersResponse: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_CreateQuickAnswerRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_CreateQuickAnswerRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateQuickAnswerRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}name\0\u{1}message\0")
 
@@ -266,7 +266,7 @@ extension Com_Octopuscommunity_CreateQuickAnswerRequest: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_UpdateQuickAnswerRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_UpdateQuickAnswerRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateQuickAnswerRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}name\0\u{1}message\0")
 
@@ -306,7 +306,7 @@ extension Com_Octopuscommunity_UpdateQuickAnswerRequest: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_DeleteQuickAnswerRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteQuickAnswerRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteQuickAnswerRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0")
 
@@ -336,7 +336,7 @@ extension Com_Octopuscommunity_DeleteQuickAnswerRequest: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_QuickAnswerResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_QuickAnswerResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".QuickAnswerResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}quickAnswer\0")
 
@@ -370,7 +370,7 @@ extension Com_Octopuscommunity_QuickAnswerResponse: SwiftProtobuf.Message, Swift
   }
 }
 
-extension Com_Octopuscommunity_DeleteQuickAnswerResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_DeleteQuickAnswerResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeleteQuickAnswerResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 

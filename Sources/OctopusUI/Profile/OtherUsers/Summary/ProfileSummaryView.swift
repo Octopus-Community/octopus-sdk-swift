@@ -39,10 +39,17 @@ struct ProfileSummaryView: View {
     var body: some View {
         VStack {
             ContentView(profile: viewModel.profile,
+                        loadFailure: viewModel.loadFailure,
+                        retryFirstLoad: viewModel.retryFirstLoad,
                         displayAccountAge: viewModel.displayAccountAge,
-                        zoomableImageInfo: $zoomableImageInfo, refresh: viewModel.refresh) {
+                        zoomableImageInfo: $zoomableImageInfo,
+                        refresh: viewModel.refresh,
+                        showsCommentsTab: viewModel.showCommentsTab,
+                        commentsView: { commentsView }) {
                 if let postFeedViewModel = viewModel.postFeedViewModel {
                     PostFeedView(
+                        screenStatePadding: ScreenState.profilePadding,
+                        loaderTopPadding: 130,
                         viewModel: postFeedViewModel,
                         zoomableImageInfo: $zoomableImageInfo,
                         displayPostDetail: {
@@ -62,7 +69,10 @@ struct ProfileSummaryView: View {
                         displayContentModeration: {
                             mainFlowPath.reportTarget = .content(contentId: $0)
                         }) {
-                            OtherUserEmptyPostView()
+                            ScreenState(
+                                image: theme.assets.icons.screenStates.emptyContent,
+                                title: .localizationKey("Profile.Posts.EmptyState.Other"),
+                                verticalPadding: ScreenState.profilePadding)
                         }
                 } else {
                     EmptyView()
@@ -73,7 +83,8 @@ struct ProfileSummaryView: View {
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem,
                                 defaultNavigationBarTitle: Text("Profile.Title", bundle: .module))
-        .toastContainer(octopus: viewModel.octopus)
+        .toastContainer(octopus: viewModel.octopus,
+                        retryFailedFetch: { Task { await viewModel.refresh() } })
         .errorAlert(viewModel.$error)
         .emitScreenDisplayed(.otherUserProfile(.init(profileId: viewModel.profileId)), trackingApi: trackingApi)
         .onReceive(viewModel.$dismiss) { shouldDismiss in
@@ -108,6 +119,28 @@ struct ProfileSummaryView: View {
             }
         }
         .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+    }
+
+    /// The Comments tab content. Reuses the same navigation closures (and `.postClicked`
+    /// tracking) as the Posts tab above, so tapping into a comment/post behaves identically from either tab.
+    @ViewBuilder
+    private var commentsView: some View {
+        if let commentsViewModel = viewModel.commentsViewModel {
+            ProfileCommentsListView(
+                viewModel: commentsViewModel,
+                displayPostDetail: {
+                    if !$1 && !$2 && $3 == nil {
+                        trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
+                    }
+                    navigator.push(.postDetail(postId: $0, comment: $1, commentToScrollTo: $3,
+                                               scrollToMostRecentComment: $2, origin: .sdk,
+                                               hasFeaturedComment: $4))
+                },
+                displayCommentDetail: {
+                    navigator.push(.commentDetail(
+                        commentId: $0, displayGoToParentButton: false, reply: $1, replyToScrollTo: $2))
+                })
+        }
     }
 
     private var actionSheetButtons: [ActionSheet.Button] {
@@ -183,45 +216,64 @@ struct ProfileSummaryView: View {
     }
 }
 
-private struct ContentView<PostsView: View>: View {
+private struct ContentView<CommentsView: View, PostsView: View>: View {
+    @Environment(\.octopusTheme) private var theme
+
     let profile: DisplayableProfile?
+    let loadFailure: ScreenStateFailure?
+    let retryFirstLoad: () -> Void
     let displayAccountAge: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
+    /// Whether the Comments tab should be shown (`showCommentsOnOtherProfiles`).
+    let showsCommentsTab: Bool
 
+    /// The Comments tab content.
+    @ViewBuilder let commentsView: CommentsView
     @ViewBuilder let postsView: PostsView
 
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
-                // On iOS 26 the navigation bar uses its default translucent (glass) behavior (OCT-1532).
+                // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
                 ProfileContentView(
                     profile: profile,
                     displayAccountAge: displayAccountAge,
-                    zoomableImageInfo: $zoomableImageInfo, refresh: refresh) {
+                    zoomableImageInfo: $zoomableImageInfo, refresh: refresh,
+                    showsCommentsTab: showsCommentsTab,
+                    commentsView: { commentsView }) {
                         postsView
                 }
                 PoweredByOctopusView()
             }
             .largeScreenMarginBackground()
+        } else if let loadFailure {
+            loadFailure.screenState(verticalPadding: ScreenState.profilePadding,
+                                    icons: theme.assets.icons, retry: retryFirstLoad)
         } else {
             Compat.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 130)
         }
     }
 }
 
-private struct ProfileContentView<PostsView: View>: View {
+private struct ProfileContentView<CommentsView: View, PostsView: View>: View {
     @Environment(\.octopusTheme) private var theme
     let profile: DisplayableProfile
     let displayAccountAge: Bool
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let refresh: @Sendable () async -> Void
+    let showsCommentsTab: Bool
+    @ViewBuilder let commentsView: CommentsView
     @ViewBuilder let postsView: PostsView
 
     @State private var selectedTab = 0
 
     @State private var displayFullBio = false
     @State private var displayStickyHeader = false
+    /// Scroll offset shared by the inline tab row and the pinned pill row that replaces it.
+    @State private var tabsScrollOffset: CGFloat = 0
 
     private let scrollViewCoordinateSpace = "otherUserProfileScrollViewCoordinateSpace"
 
@@ -289,21 +341,28 @@ private struct ProfileContentView<PostsView: View>: View {
                 }
                 .padding(.horizontal, 20)
 
-                CustomSegmentedControl(tabs: ["Profile.Tabs.Posts"], tabCount: 3, selectedTab: $selectedTab)
+                CustomSegmentedControl(tabs: tabs, selectedTab: $selectedTab,
+                                       scrollOffset: $tabsScrollOffset)
                     .background(
                         GeometryReader { geometry in
                             Color.clear
                                 .onValueChanged(of: geometry.frame(in: .named(scrollViewCoordinateSpace))) { frame in
-                                    if frame.minY <= 0, !displayStickyHeader {
-                                        displayStickyHeader = true
-                                    } else if frame.minY > 0, displayStickyHeader {
-                                        displayStickyHeader = false
+                                    let pinnedHeaderShows = frame.minY <= 0
+                                    guard pinnedHeaderShows != displayStickyHeader else { return }
+                                    withAnimation(ProfileTabsLayout.pinnedHeaderAnimation) {
+                                        displayStickyHeader = pinnedHeaderShows
                                     }
                                 }
                         }
                     )
+                    .hiddenWhilePinnedHeaderShows(displayStickyHeader)
                 theme.colors.gray300.frame(height: 1)
-                postsView
+                    .hiddenWhilePinnedHeaderShows(displayStickyHeader)
+                if selectedTab == 1 {
+                    commentsView
+                } else {
+                    postsView
+                }
             }
             // Top gap moved inside the scroll content (was `.padding(.top, 8)` wrapping the whole
             // scroll view, which pinned it below the safe area and blocked the under-bar bleed).
@@ -319,6 +378,18 @@ private struct ProfileContentView<PostsView: View>: View {
         // view's safe area, so it stays below the nav bar while the scroll view bleeds under it —
         // mirroring the feed's explore-bar overlay in MainRootFeedView.
         .overlay(stickyTabHeader, alignment: .top)
+        // If the Comments tab disappears (config flip / feed refused) while it's selected, fall back to
+        // Posts rather than leaving the selection pointing at a now-hidden tab.
+        .onValueChanged(of: showsCommentsTab) { showsCommentsTab in
+            if !showsCommentsTab, selectedTab == 1 {
+                selectedTab = 0
+            }
+        }
+    }
+
+    /// Posts(0) / Comments(1, gated by `showsCommentsTab`).
+    private var tabs: [LocalizedStringKey] {
+        showsCommentsTab ? ["Profile.Tabs.Posts", "Profile.Tabs.Comments"] : ["Profile.Tabs.Posts"]
     }
 
     // Pinned tab header (mirrors CurrentUserProfileContentView): Instagram-style glass "pills" that
@@ -326,7 +397,8 @@ private struct ProfileContentView<PostsView: View>: View {
     @ViewBuilder
     private var stickyTabHeader: some View {
         if displayStickyHeader {
-            ProfileStickyTabsHeader(tabs: ["Profile.Tabs.Posts"], selectedTab: $selectedTab)
+            ProfileStickyTabsHeader(tabs: tabs, selectedTab: $selectedTab, scrollOffset: $tabsScrollOffset)
+                .transition(.opacity)
         }
     }
 

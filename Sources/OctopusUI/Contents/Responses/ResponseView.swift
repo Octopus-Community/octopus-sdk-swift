@@ -19,6 +19,9 @@ struct ResponseView: View {
     /// When false, the "See X replies" row is hidden even if childCount > 0. Used by callers
     /// that embed a response inside a compact container (e.g. featured comment in a post summary).
     let showsRepliesRow: Bool
+    /// Background color of the response card. `nil` (default) keeps the standard `gray200`; the
+    /// profile Comments tab passes a tint to highlight the connected user's own comment/reply.
+    let cardBackgroundColor: Color?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
     let reactionTapped: (ReactionKind?) -> Void
@@ -37,6 +40,7 @@ struct ResponseView: View {
         response: ResponseViewData,
         context: ResponseViewContext,
         showsRepliesRow: Bool = true,
+        cardBackgroundColor: Color? = nil,
         zoomableImageInfo: Binding<ZoomableImageInfo?>,
         reactionTapped: @escaping (ReactionKind?) -> Void,
         displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void,
@@ -49,6 +53,7 @@ struct ResponseView: View {
         self.response = response
         self.context = context
         self.showsRepliesRow = showsRepliesRow
+        self.cardBackgroundColor = cardBackgroundColor
         self._zoomableImageInfo = zoomableImageInfo
         self.reactionTapped = reactionTapped
         self.displayProfile = displayProfile
@@ -64,6 +69,7 @@ struct ResponseView: View {
             response: response,
             context: context,
             showsRepliesRow: showsRepliesRow,
+            cardBackgroundColor: cardBackgroundColor,
             zoomableImageInfo: $zoomableImageInfo,
             iOS13ActionSheetIsPresented: $iOS13ActionSheetIsPresented,
             onDelete: { displayDeleteAlert = true },
@@ -125,6 +131,7 @@ private struct ResponseContentView: View {
     let response: ResponseViewData
     let context: ResponseViewContext
     let showsRepliesRow: Bool
+    let cardBackgroundColor: Color?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     @Binding var iOS13ActionSheetIsPresented: Bool
 
@@ -169,7 +176,7 @@ private struct ResponseContentView: View {
             }
 
             VStack(alignment: .leading, spacing: 0) {
-                ResponseCardView {
+                ResponseCardView(backgroundColor: cardBackgroundColor) {
                     ResponseHeaderView(
                         kind: response.kind,
                         author: response.author,
@@ -209,11 +216,13 @@ private struct ResponseContentView: View {
 
                 ResponseActionBarView(
                     kind: response.kind,
+                    contentId: response.uuid,
                     displayReplyButton: response.displayReplyButton,
                     liveMeasuresPublisher: response.liveMeasuresPublisher,
                     initialLiveMeasures: response.liveMeasuresValue,
                     reactionTapped: reactionTapped,
-                    openCreateReply: openCreateReply)
+                    openCreateReply: openCreateReply,
+                    displayProfile: displayProfile)
 
                 // Never show the "See X replies" row in `.detail`: the replies are already
                 // rendered inline below by CommentDetailRepliesView, so the row would be

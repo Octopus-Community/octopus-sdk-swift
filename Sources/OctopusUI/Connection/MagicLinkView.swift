@@ -123,7 +123,7 @@ private struct ContentView: View {
             Spacer().frame(height: 12)
             Image(uiImage: theme.assets.logo)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(height: 44)
                 .accessibilityHidden(true)
             switch state {

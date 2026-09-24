@@ -19,6 +19,10 @@ class SDKConfigViewModel: ObservableObject {
     @Published var pictureIsAssociated = false
     @Published var forceLoginOnStringAction = false
     @Published var canSave = false
+    /// Debug: what the SDK believes about connectivity. Stored here rather than read from the SDK
+    /// provider — touching the provider would build the SDK before a config exists, which is fatal on
+    /// a first launch.
+    @Published var forceOffline = SampleDebugSettings.forceOffline
 
     private var storage = [AnyCancellable]()
 
@@ -43,6 +47,13 @@ class SDKConfigViewModel: ObservableObject {
             }
 
         }.store(in: &storage)
+    }
+
+    func setForceOffline(_ forceOffline: Bool) {
+        self.forceOffline = forceOffline
+        SampleDebugSettings.forceOffline = forceOffline
+        // Applies to a live SDK when there is one, and is picked up at creation otherwise.
+        OctopusSDKProvider.applyDebugSettingsIfLoaded()
     }
 
     func save() {

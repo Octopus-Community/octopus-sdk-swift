@@ -20,13 +20,13 @@ struct OpenUserProfileBubbleView: View {
         Button(action: userProfileTapped) {
             ZStack(alignment: .topTrailing) {
                 if viewModel.isUnifiedProfileActive {
-                    // Unified Profile (OCT-1374): the home floating button opens the community Activity
+                    // Unified Profile: the home floating button opens the community Activity
                     // screen, so it shows a community-activity glyph (client-overridable via
                     // `common.activityButton`) on a primary-filled circle instead of the user's avatar.
                     // The unread-notification badge overlay stays the same as the avatar case.
                     Image(uiImage: theme.assets.icons.common.activityButton)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .foregroundColor(theme.colors.onPrimary)
                         .padding(10)
                         .frame(width: 50, height: 50)

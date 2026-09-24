@@ -50,7 +50,8 @@ struct GroupDetailView: View {
                 postFeedView
             }
             .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
-            .toastContainer(octopus: viewModel.octopus)
+            .toastContainer(octopus: viewModel.octopus,
+                            retryFailedFetch: { Task { await viewModel.refresh() } })
             .modify {
                 if #available(iOS 15.0, *) {
                     $0.safeAreaInset(edge: .bottom, content: {
@@ -111,6 +112,8 @@ struct GroupDetailView: View {
     private var postFeedView: some View {
         if let postFeedViewModel = viewModel.postFeedViewModel {
             PostFeedView(
+                screenStatePadding: ScreenState.feedErrorPadding,
+                loaderTopPadding: 140,
                 viewModel: postFeedViewModel,
                 zoomableImageInfo: $zoomableImageInfo,
                 displayPostDetail: {
@@ -134,7 +137,17 @@ struct GroupDetailView: View {
                 displayContentModeration: {
                     mainFlowPath.reportTarget = .content(contentId: $0)
                 }) {
-                    DefaultEmptyPostsView()
+                    if viewModel.canCreateAnyPost {
+                        ScreenState(
+                            image: theme.assets.icons.screenStates.emptyContent,
+                            title: .localizationKey("Post.List.Default.Empty"),
+                            verticalPadding: ScreenState.feedEmptyPadding)
+                    } else {
+                        ScreenState(
+                            image: theme.assets.icons.screenStates.emptyContent,
+                            title: .localizationKey("Profile.Posts.EmptyState.Other"),
+                            verticalPadding: ScreenState.feedEmptyPadding)
+                    }
                 }
         } else {
             EmptyView()
@@ -176,7 +189,7 @@ private struct ContentView<PostsView: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // On iOS 26 the navigation bar uses its default translucent (glass) behavior (OCT-1532).
+            // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
             Compat.ScrollView(
                 showIndicators: false,
                 scrollToTop: $scrollToTop,

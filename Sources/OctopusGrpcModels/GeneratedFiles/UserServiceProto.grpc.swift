@@ -115,6 +115,11 @@ public protocol Com_Octopuscommunity_UserServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>
 
+  func setProfileBoDeclaration(
+    _ request: Com_Octopuscommunity_SetProfileBoDeclarationRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_SetProfileBoDeclarationRequest, Com_Octopuscommunity_SetProfileBoDeclarationResponse>
+
   func enteringOctopus(
     _ request: Com_Octopuscommunity_EnteringOctopusRequest,
     callOptions: CallOptions?
@@ -483,6 +488,24 @@ extension Com_Octopuscommunity_UserServiceClientProtocol {
     )
   }
 
+  ///For BO user only
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to SetProfileBoDeclaration.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func setProfileBoDeclaration(
+    _ request: Com_Octopuscommunity_SetProfileBoDeclarationRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_SetProfileBoDeclarationRequest, Com_Octopuscommunity_SetProfileBoDeclarationResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileBoDeclaration.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetProfileBoDeclarationInterceptors() ?? []
+    )
+  }
+
   /// Unary call to EnteringOctopus
   ///
   /// - Parameters:
@@ -712,6 +735,11 @@ public protocol Com_Octopuscommunity_UserServiceAsyncClientProtocol: GRPCClient 
     _ request: Com_Octopuscommunity_SetProfileTagRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>
+
+  func makeSetProfileBoDeclarationCall(
+    _ request: Com_Octopuscommunity_SetProfileBoDeclarationRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SetProfileBoDeclarationRequest, Com_Octopuscommunity_SetProfileBoDeclarationResponse>
 
   func makeEnteringOctopusCall(
     _ request: Com_Octopuscommunity_EnteringOctopusRequest,
@@ -969,6 +997,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeSetProfileTagInterceptors() ?? []
+    )
+  }
+
+  public func makeSetProfileBoDeclarationCall(
+    _ request: Com_Octopuscommunity_SetProfileBoDeclarationRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SetProfileBoDeclarationRequest, Com_Octopuscommunity_SetProfileBoDeclarationResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileBoDeclaration.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetProfileBoDeclarationInterceptors() ?? []
     )
   }
 
@@ -1251,6 +1291,18 @@ extension Com_Octopuscommunity_UserServiceAsyncClientProtocol {
     )
   }
 
+  public func setProfileBoDeclaration(
+    _ request: Com_Octopuscommunity_SetProfileBoDeclarationRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_SetProfileBoDeclarationResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileBoDeclaration.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSetProfileBoDeclarationInterceptors() ?? []
+    )
+  }
+
   public func enteringOctopus(
     _ request: Com_Octopuscommunity_EnteringOctopusRequest,
     callOptions: CallOptions? = nil
@@ -1376,6 +1428,9 @@ public protocol Com_Octopuscommunity_UserServiceClientInterceptorFactoryProtocol
   /// - Returns: Interceptors to use when invoking 'setProfileTag'.
   func makeSetProfileTagInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'setProfileBoDeclaration'.
+  func makeSetProfileBoDeclarationInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_SetProfileBoDeclarationRequest, Com_Octopuscommunity_SetProfileBoDeclarationResponse>]
+
   /// - Returns: Interceptors to use when invoking 'enteringOctopus'.
   func makeEnteringOctopusInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_EnteringOctopusRequest, Com_Octopuscommunity_EnteringOctopusResponse>]
 
@@ -1413,6 +1468,7 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.canAccessCommunity,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.byPassAbTesting,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileTag,
+      Com_Octopuscommunity_UserServiceClientMetadata.Methods.setProfileBoDeclaration,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.enteringOctopus,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.followTopic,
       Com_Octopuscommunity_UserServiceClientMetadata.Methods.unfollowTopic,
@@ -1535,6 +1591,12 @@ public enum Com_Octopuscommunity_UserServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
+    public static let setProfileBoDeclaration = GRPCMethodDescriptor(
+      name: "SetProfileBoDeclaration",
+      path: "/com.octopuscommunity.UserService/SetProfileBoDeclaration",
+      type: GRPCCallType.unary
+    )
+
     public static let enteringOctopus = GRPCMethodDescriptor(
       name: "EnteringOctopus",
       path: "/com.octopuscommunity.UserService/EnteringOctopus",
@@ -1607,6 +1669,9 @@ public protocol Com_Octopuscommunity_UserServiceProvider: CallHandlerProvider {
   func byPassAbTesting(request: Com_Octopuscommunity_ByPassAbTestingRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ByPassAbTestingResponse>
 
   func setProfileTag(request: Com_Octopuscommunity_SetProfileTagRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_SetProfileTagResponse>
+
+  ///For BO user only
+  func setProfileBoDeclaration(request: Com_Octopuscommunity_SetProfileBoDeclarationRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_SetProfileBoDeclarationResponse>
 
   func enteringOctopus(request: Com_Octopuscommunity_EnteringOctopusRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_EnteringOctopusResponse>
 
@@ -1800,6 +1865,15 @@ extension Com_Octopuscommunity_UserServiceProvider {
         userFunction: self.setProfileTag(request:context:)
       )
 
+    case "SetProfileBoDeclaration":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SetProfileBoDeclarationRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SetProfileBoDeclarationResponse>(),
+        interceptors: self.interceptors?.makeSetProfileBoDeclarationInterceptors() ?? [],
+        userFunction: self.setProfileBoDeclaration(request:context:)
+      )
+
     case "EnteringOctopus":
       return UnaryServerHandler(
         context: context,
@@ -1947,6 +2021,12 @@ public protocol Com_Octopuscommunity_UserServiceAsyncProvider: CallHandlerProvid
     request: Com_Octopuscommunity_SetProfileTagRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_SetProfileTagResponse
+
+  ///For BO user only
+  func setProfileBoDeclaration(
+    request: Com_Octopuscommunity_SetProfileBoDeclarationRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_SetProfileBoDeclarationResponse
 
   func enteringOctopus(
     request: Com_Octopuscommunity_EnteringOctopusRequest,
@@ -2159,6 +2239,15 @@ extension Com_Octopuscommunity_UserServiceAsyncProvider {
         wrapping: { try await self.setProfileTag(request: $0, context: $1) }
       )
 
+    case "SetProfileBoDeclaration":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SetProfileBoDeclarationRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SetProfileBoDeclarationResponse>(),
+        interceptors: self.interceptors?.makeSetProfileBoDeclarationInterceptors() ?? [],
+        wrapping: { try await self.setProfileBoDeclaration(request: $0, context: $1) }
+      )
+
     case "EnteringOctopus":
       return GRPCAsyncServerHandler(
         context: context,
@@ -2279,6 +2368,10 @@ public protocol Com_Octopuscommunity_UserServiceServerInterceptorFactoryProtocol
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeSetProfileTagInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_SetProfileTagRequest, Com_Octopuscommunity_SetProfileTagResponse>]
 
+  /// - Returns: Interceptors to use when handling 'setProfileBoDeclaration'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSetProfileBoDeclarationInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_SetProfileBoDeclarationRequest, Com_Octopuscommunity_SetProfileBoDeclarationResponse>]
+
   /// - Returns: Interceptors to use when handling 'enteringOctopus'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeEnteringOctopusInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_EnteringOctopusRequest, Com_Octopuscommunity_EnteringOctopusResponse>]
@@ -2320,6 +2413,7 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.canAccessCommunity,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.byPassAbTesting,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.setProfileTag,
+      Com_Octopuscommunity_UserServiceServerMetadata.Methods.setProfileBoDeclaration,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.enteringOctopus,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.followTopic,
       Com_Octopuscommunity_UserServiceServerMetadata.Methods.unfollowTopic,
@@ -2439,6 +2533,12 @@ public enum Com_Octopuscommunity_UserServiceServerMetadata {
     public static let setProfileTag = GRPCMethodDescriptor(
       name: "SetProfileTag",
       path: "/com.octopuscommunity.UserService/SetProfileTag",
+      type: GRPCCallType.unary
+    )
+
+    public static let setProfileBoDeclaration = GRPCMethodDescriptor(
+      name: "SetProfileBoDeclaration",
+      path: "/com.octopuscommunity.UserService/SetProfileBoDeclaration",
       type: GRPCCallType.unary
     )
 

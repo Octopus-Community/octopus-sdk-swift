@@ -1,0 +1,127 @@
+{
+  "generatedAt": "2026-08-04T14:38:21.695Z",
+  "count": 9,
+  "featureEnvs": [
+    {
+      "name": "feat-alpha",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/example-a",
+      "ticket": null,
+      "createdAt": "2026-07-31T06:51:17.131Z",
+      "expiresAt": "2026-08-14T06:51:17.131Z",
+      "expiresInDays": 10,
+      "endpoints": {
+        "api": "https://api-feat-alpha.example.com",
+        "backoffice": "https://backoffice-feat-alpha.example.com"
+      },
+      "communities": [
+        { "communityId": "C1", "communityName": "Seed Community", "apiKey": "key-c1", "description": "client key" }
+      ]
+    },
+    {
+      "name": "feat-beta",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/example-b",
+      "ticket": "OCT-1000",
+      "createdAt": "2026-08-03T22:55:19.366Z",
+      "expiresAt": "2026-08-10T22:55:19.366Z",
+      "expiresInDays": 7,
+      "endpoints": { "api": "https://api-feat-beta.example.com" },
+      "communities": [
+        { "communityId": "C2", "communityName": "Sandbox A", "apiKey": "key-c2", "description": "client key" },
+        { "communityId": "C3", "communityName": "Sandbox B", "apiKey": "key-c3" }
+      ]
+    },
+    {
+      "name": "feat-alpha",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/example-a-duplicate",
+      "ticket": null,
+      "expiresAt": "2026-08-14T06:51:17.131Z",
+      "expiresInDays": 10,
+      "endpoints": { "api": "https://api-feat-alpha.example.com" },
+      "communities": [
+        { "communityId": "C1", "communityName": "Seed Community", "apiKey": "key-c1" }
+      ]
+    },
+    {
+      "name": "feat-no-endpoint",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/broken",
+      "ticket": "OCT-1001",
+      "expiresAt": "2026-08-20T00:00:00.000Z",
+      "expiresInDays": 16,
+      "endpoints": {},
+      "communities": [
+        { "communityId": "C4", "communityName": "Whatever", "apiKey": "key-c4" }
+      ]
+    },
+    {
+      "name": "feat-no-community",
+      "status": "expired",
+      "owner": "owner",
+      "branch": "feat/empty",
+      "ticket": "OCT-1002",
+      "expiresAt": "2026-08-20T00:00:00.000Z",
+      "expiresInDays": 0,
+      "endpoints": { "api": "https://api-feat-gamma.example.com" },
+      "communities": []
+    },
+    {
+      "name": "feat-expired",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/expired",
+      "ticket": "OCT-1003",
+      "expiresAt": "2026-07-15T00:00:00.000Z",
+      "expiresInDays": 0,
+      "endpoints": { "api": "https://api-feat-expired.example.com" },
+      "communities": [
+        { "communityId": "C5", "communityName": "Whatever", "apiKey": "key-c5" }
+      ]
+    },
+    {
+      "name": "feat-bad-host",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/bad-host",
+      "ticket": "OCT-1004",
+      "expiresAt": "2026-08-20T00:00:00.000Z",
+      "expiresInDays": 16,
+      "endpoints": { "api": "https://api-feat-bad-host.example.com/v1" },
+      "communities": [
+        { "communityId": "C6", "communityName": "Whatever", "apiKey": "key-c6" }
+      ]
+    },
+    {
+      "name": "feat-keyless",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/keyless",
+      "ticket": "OCT-1005",
+      "expiresAt": "2026-08-20T00:00:00.000Z",
+      "expiresInDays": 16,
+      "endpoints": { "api": "https://api-feat-keyless.example.com" },
+      "communities": [
+        { "communityId": "C7", "communityName": "Whatever", "apiKey": "" }
+      ]
+    },
+    {
+      "name": "feat-broken-date",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/broken-date",
+      "ticket": "OCT-1006",
+      "expiresAt": "2026-08-20",
+      "expiresInDays": 16,
+      "endpoints": { "api": "https://api-feat-broken-date.example.com" },
+      "communities": [
+        { "communityId": "C8", "communityName": "Whatever", "apiKey": "key-c8" }
+      ]
+    }
+  ]
+}

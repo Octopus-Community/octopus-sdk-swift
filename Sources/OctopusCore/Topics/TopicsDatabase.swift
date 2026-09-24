@@ -21,7 +21,7 @@ class TopicsDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func topicsPublisher() -> AnyPublisher<[StorableTopic], Error> {
+    func topicsPublisher() -> AnyPublisher<[StorableTopic], Never> {
         return context
             .publisher(request: TopicEntity.fetchAllAndSorted()) {
                 $0.map { StorableTopic(from: $0) }

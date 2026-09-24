@@ -22,11 +22,11 @@ class NotificationsDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func notificationsPublisher() -> AnyPublisher<[OctoNotification], Error> {
+    func notificationsPublisher() -> AnyPublisher<[OctoNotification], Never> {
         (context
             .publisher(request: NotificationEntity.fetchAllSorted()) {
                 return $0.map { OctoNotification(from: $0) }
-            } as AnyPublisher<[OctoNotification], Error>
+            } as AnyPublisher<[OctoNotification], Never>
         )
         .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()

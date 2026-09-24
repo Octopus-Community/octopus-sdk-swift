@@ -7,7 +7,7 @@ import Foundation
 enum MainFlowScreen: NBScreen {
     case currentUserProfile
     case publicProfile(profileId: String)
-    /// Posts-only "user posts" screen (Unified Profile, OCT-1374). No profile header, no tabs, no
+    /// Posts-only "user posts" screen (Unified Profile). No profile header, no tabs, no
     /// overflow menu. Opened either with a resolved Octopus profile id (in-community profile tap on a
     /// member with no client user id — guest / BO / admin) or with the host's own client user id (the
     /// `OctopusInitialScreen.activity` entry point, resolved asynchronously). See `ActivitySource`.

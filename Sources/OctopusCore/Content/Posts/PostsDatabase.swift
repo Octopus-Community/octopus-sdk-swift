@@ -26,20 +26,20 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject, @unchecked 
         super.init(injector: injector)
     }
 
-    func postPublisher(uuid: String) -> AnyPublisher<StorablePost?, Error> {
+    func postPublisher(uuid: String) -> AnyPublisher<StorablePost?, Never> {
         (context
             .publisher(request: PostEntity.fetchById(id: uuid),
                        relatedTypes: [MinimalProfileEntity.self]) {
                 guard let postEntity = $0.first else { return [] }
                 return [StorablePost(from: postEntity)]
-            } as AnyPublisher<[StorablePost], Error>
+            } as AnyPublisher<[StorablePost], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
 
-    func postsPublisher(ids: [String]) -> AnyPublisher<[StorablePost], Error> {
+    func postsPublisher(ids: [String]) -> AnyPublisher<[StorablePost], Never> {
         return context
             .chunkedPublisher(ids: ids, requestBuilder: { PostEntity.fetchAllByIds(ids: $0) }) {
                 $0.map { StorablePost(from: $0) }
@@ -62,7 +62,7 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject, @unchecked 
             .map { StorablePost(from: $0) }
     }
 
-    func clientObjectRelatedPostPublisher(objectId: String) -> AnyPublisher<StorablePost?, Error> {
+    func clientObjectRelatedPostPublisher(objectId: String) -> AnyPublisher<StorablePost?, Never> {
         (context
             .publisher(request: PostEntity.fetchByClientObjectId(id: objectId)) { posts in
                 let mostRecentPost = posts.max { $0.updateTimestamp < $1.updateTimestamp }
@@ -70,7 +70,7 @@ class PostsDatabase: ContentsDatabase<PostEntity>, InjectableObject, @unchecked 
                     return []
                 }
                 return [StorablePost(from: mostRecentPost)]
-            } as AnyPublisher<[StorablePost], Error>
+            } as AnyPublisher<[StorablePost], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)

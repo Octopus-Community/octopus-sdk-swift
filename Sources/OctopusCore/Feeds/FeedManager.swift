@@ -17,7 +17,7 @@ class FeedManager<Item: FeedItem, ChildItem: FeedItem>: @unchecked Sendable {
         let currentPageCursor: String?
         let nextPageCursor: String?
         let idsInfos: [FeedItemInfoData]
-        let itemsPublisher: AnyPublisher<[Item], Error>
+        let itemsPublisher: AnyPublisher<[Item], Never>
     }
 
     private let feedsDatabase: FeedItemInfosDatabase

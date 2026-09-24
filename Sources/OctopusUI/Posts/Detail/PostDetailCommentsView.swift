@@ -57,20 +57,12 @@ struct PostDetailCommentsView: View {
                     }
             }
         } else {
+            // The whole state stays tappable, as it was before the Screen states migration: it is the
+            // fastest way into the composer from a post nobody has commented yet.
             Button(action: openCreateComment) {
-                VStack {
-                    Spacer().frame(height: 54)
-                    Image(uiImage: theme.assets.icons.content.comment.emptyFeed)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 32)
-                        .accessibilityHidden(true)
-                    Text("Post.Detail.NoComments", bundle: .module)
-                        .font(theme.fonts.body2)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                }
-                .foregroundColor(theme.colors.gray500)
+                ScreenState(image: theme.assets.icons.screenStates.emptyContent,
+                            title: .localizationKey("Post.Detail.NoComments"),
+                            verticalPadding: ScreenState.postEmptyPadding)
             }.buttonStyle(.plain)
         }
     }

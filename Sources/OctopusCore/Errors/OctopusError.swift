@@ -49,6 +49,8 @@ public enum ServerError: Error {
     case cancelled
     case timeout
     case notAuthenticated(reason: String?)
+    /// The server refused the action on a rights basis. `reason` is the server's own explanation.
+    case permissionDenied(reason: String?)
     case notFound
     case unknown(Error)
 
@@ -58,6 +60,7 @@ public enum ServerError: Error {
         case .cancelled:                    self = .cancelled
         case .timeout:                      self = .timeout
         case let .notAuthenticated(reason): self = .notAuthenticated(reason: reason)
+        case let .permissionDenied(reason): self = .permissionDenied(reason: reason)
         case .notFound:                     self = .notFound
         case let .unknown(error):           self = .unknown(error)
         }

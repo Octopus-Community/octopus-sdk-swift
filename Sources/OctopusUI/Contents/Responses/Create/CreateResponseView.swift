@@ -11,7 +11,7 @@ struct CreateResponseView: View {
     let isLoading: Bool
     let sendAvailable: Bool
     let displayCguText: Bool
-    /// Whether the picture-add affordance is shown (OCT-1426). The caller resolves it from the
+    /// Whether the picture-add affordance is shown. The caller resolves it from the
     /// community config for the relevant content type (comment vs reply) so the two gate independently.
     let picturesEnabled: Bool
     @Binding var text: String
@@ -105,7 +105,7 @@ private struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .bottom, spacing: 6) {
-                // OCT-1426: hide the picture-add entry when the community disables pictures for this
+                // Hide the picture-add entry when the community disables pictures for this
                 // content type (comment / reply gate independently via `picturesEnabled`).
                 if picturesEnabled {
                     Button(action: {
@@ -114,7 +114,7 @@ private struct ContentView: View {
                     }) {
                         Image(uiImage: responseKind == .comment ? theme.assets.icons.content.comment.creation.addPicture : theme.assets.icons.content.reply.creation.addPicture)
                             .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            .scaledToFit()
                             .frame(width: 24, height: 24)
                             .accessibilityLabelInBundle("Accessibility.Content.AddPicture")
                     }
@@ -139,7 +139,7 @@ private struct ContentView: View {
                             ZStack(alignment: .topTrailing) {
                                 Image(uiImage: imageAndData.image)
                                     .resizable()
-                                    .aspectRatio(contentMode: .fit)
+                                    .scaledToFit()
                                     .frame(height: 150)
                                     .cornerRadius(12)
                                 Button(action: {
@@ -179,7 +179,7 @@ private struct ContentView: View {
                         } else {
                             Image(uiImage: responseKind == .comment ? theme.assets.icons.content.comment.creation.create : theme.assets.icons.content.reply.creation.create)
                                 .resizable()
-                                .aspectRatio(contentMode: .fit)
+                                .scaledToFit()
                                 .frame(width: 24, height: 24)
                         }
                     }

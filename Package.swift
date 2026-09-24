@@ -34,6 +34,11 @@ let package = Package(
             dependencies: [
                 "OctopusCore",
                 "OctopusDependencyInjection",
+            ],
+            resources: [
+                // Lives here because `Octopus` is on every integration path
+                // (OctopusUI depends on it), so declaring it once is enough to reach any integrator.
+                .process("PrivacyInfo.xcprivacy"),
             ]),
         .target(
             name: "OctopusCore",

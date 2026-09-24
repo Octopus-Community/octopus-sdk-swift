@@ -52,7 +52,7 @@ struct ZoomableImageView: View {
 
                 image
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .background(
                         GeometryReader { imageGeo in
                             Color.clear

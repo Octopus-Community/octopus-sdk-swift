@@ -29,6 +29,29 @@ public enum ConnectionState {
         default: return nil
         }
     }
+
+    /// The server's explanation when the connection carries a ban, `nil` for every other state or error.
+    ///
+    /// The backend localizes that message from `Accept-Language`, so it is meant to be displayed as-is:
+    /// it is the only connection failure that says something the SDK cannot say better itself.
+    public var userBannedMessage: String? {
+        switch self {
+        case let .notConnected(error): Self.userBannedMessage(from: error)
+        case let .connected(_, error): Self.userBannedMessage(from: error)
+        }
+    }
+
+    private static func userBannedMessage(from error: Error?) -> String? {
+        if let connectionError = error as? ConnectionError,
+           case let .detailedErrors(errors) = connectionError {
+            return errors.first { $0.reason == .userBanned }?.message
+        }
+        if let exchangeTokenError = error as? ExchangeTokenError,
+           case let .detailedErrors(errors) = exchangeTokenError {
+            return errors.first { $0.reason == .userBanned }?.message
+        }
+        return nil
+    }
 }
 
 extension Injected {
@@ -182,6 +205,8 @@ public enum ConnectionError: Error {
         init(from error: Com_Octopuscommunity_GetGuestJwtResponse.Error) {
             message = error.message
             reason = switch error.errorCode {
+            case .userBanned:
+                .userBanned
             case .unknownError, .UNRECOGNIZED:
                 .unknown
             }

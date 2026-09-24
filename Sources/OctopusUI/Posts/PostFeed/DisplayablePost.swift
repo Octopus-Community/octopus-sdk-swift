@@ -27,9 +27,9 @@ struct DisplayablePost: Equatable {
             case video(VideoMedia)
             case poll(DisplayablePoll)
         }
-        let text: EllipsizableTranslatedText
-        /// Full (non-truncated) version of the post text. Used when the cell is expanded inline.
-        let expandedText: EllipsizableTranslatedText
+        /// The whole post text. Truncation is decided by the cell (whether it is expanded) and
+        /// applied at render time, so no shortened copy is kept here.
+        let text: TranslatableText
         let attachment: Attachment?
         let bridgeInfo: BridgeInfo?
         let customAction: CustomAction?
@@ -47,8 +47,7 @@ struct DisplayablePost: Equatable {
              bridgeInfo: BridgeInfo?, customAction: CustomAction?,
              featuredComment: DisplayableFeedResponse?,
              liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
-            self.text = EllipsizableTranslatedText(text: text)
-            self.expandedText = EllipsizableTranslatedText(text: text, ellipsize: false)
+            self.text = text
             self.attachment = attachment
             self.bridgeInfo = bridgeInfo
             self.customAction = customAction
@@ -61,8 +60,6 @@ struct DisplayablePost: Equatable {
             lhs.attachment == rhs.attachment &&
             lhs.bridgeInfo == rhs.bridgeInfo &&
             lhs.featuredComment == rhs.featuredComment
-            // `expandedText` is intentionally excluded: it is derived from the same
-            // underlying text as `text` and does not carry additional identity.
         }
     }
     let uuid: String

@@ -28,6 +28,12 @@ class PostFeedViewModel: ObservableObject {
     @Published private(set) var posts: [DisplayablePost]?
     @Published private(set) var hasMoreData = true
     @Published private(set) var error: DisplayableString?
+    /// Set when the *first* load failed with nothing on screen, so the feed shows a retry instead of an
+    /// empty list. With content already displayed a toast is used instead, which does not hide it.
+    @Published private(set) var loadFailure: ScreenStateFailure?
+    /// Whether the first load has settled. The list is fed from the local store before the server
+    /// answers, so until this turns true an empty list means "still loading", not "nothing to show".
+    @Published private(set) var hasLoadedOnce = false
     @Published private(set) var isDeletingContent = false
     @Published var contentDeleted = false
 
@@ -66,17 +72,17 @@ class PostFeedViewModel: ObservableObject {
         loadRemoteTopics()
 
         octopus.core.profileRepository.onCurrentUserProfileUpdated.sink { [unowned self] _ in
-            refreshFeed(isManual: false)
+            refreshFeed()
             loadRemoteTopics()
         }.store(in: &storage)
 
         octopus.core.postsRepository.postDeletedPublisher.sink { [unowned self] in
-            refreshFeed(isManual: false)
+            refreshFeed()
             loadRemoteTopics()
         }.store(in: &storage)
 
         octopus.core.postsRepository.postSentPublisher.sink { [unowned self] in
-            refreshFeed(isManual: false)
+            refreshFeed()
             loadRemoteTopics()
         }.store(in: &storage)
 
@@ -203,7 +209,7 @@ class PostFeedViewModel: ObservableObject {
             await feed.populateWithLocalData(pageSize: 10)
         }
 
-        refreshFeed(isManual: false)
+        refreshFeed()
     }
 
     func refresh() async {
@@ -213,7 +219,7 @@ class PostFeedViewModel: ObservableObject {
             let topicsRepository = octopus.core.topicsRepository
             let postsRepository = octopus.core.postsRepository
             group.addTask { _ = try? await topicsRepository.fetchTopics() }
-            group.addTask { [self] in await refreshFeed(isManual: true) }
+            group.addTask { [self] in await refreshFeed() }
             group.addTask { [self] in
                 try? await postsRepository.fetchAdditionalData(ids: Array(visiblePostIds.map { ($0.id, $0.hasVideo) }),
                                                                incrementViewCount: false)
@@ -423,10 +429,10 @@ class PostFeedViewModel: ObservableObject {
         }
     }
 
-    func refreshFeed(isManual: Bool) {
+    func refreshFeed() {
         if #available(iOS 14, *) { Logger.posts.trace("Refresh feed") }
         Task {
-            await refreshFeed(isManual: isManual)
+            await refreshFeed()
         }
     }
 
@@ -442,19 +448,34 @@ class PostFeedViewModel: ObservableObject {
         additionalDataToFetch.send(currentValue)
     }
 
-    private func refreshFeed(isManual: Bool) async {
+    private func refreshFeed() async {
+        defer { hasLoadedOnce = true }
         do {
             try await feed.refresh(pageSize: 10)
+            loadFailure = nil
         } catch {
             if #available(iOS 14, *) { Logger.posts.debug("Error while refreshing posts feed: \(error)") }
-            if isManual {
-                self.error = error.displayableMessage
+            // Nothing on screen yet: the failure takes the place of the list, with a retry. Anything else
+            // would leave the member on a blank feed with no way to act (Screen states spec).
+            if posts?.isEmpty ?? true {
+                loadFailure = ScreenStateFailure(error)
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
             } else if case .noNetwork = error {
+                // Posts are already on screen: a toast says so without replacing them (Screen states spec).
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
+            } else {
+                octopus.core.toastsRepository.display(errorToast: .unknown)
             }
         }
+    }
+
+    /// Re-runs the first load after a failure.
+    func retryFirstLoad() {
+        loadFailure = nil
+        // Hold the loader until the retry settles: without this the empty state shows through the gap.
+        hasLoadedOnce = false
+        Task { await refreshFeed() }
     }
 
     func loadPreviousItems() {
@@ -469,7 +490,13 @@ class PostFeedViewModel: ObservableObject {
 
     private func loadRemoteTopics() {
         Task { [octopus] in
-            try await octopus.core.topicsRepository.fetchTopics()
+            do {
+                try await octopus.core.topicsRepository.fetchTopics()
+            } catch {
+                if #available(iOS 14, *) {
+                    Logger.posts.debug("Error while fetching the topics: \(error)")
+                }
+            }
         }
     }
 

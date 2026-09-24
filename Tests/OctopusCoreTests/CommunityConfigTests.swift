@@ -67,7 +67,7 @@ final class CommunityConfigTests: XCTestCase {
         let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
                                      gamificationConfig: nil, displayConfig: nil, profileFieldsLock: lock,
                                      contentOptions: .allEnabled, exposeClientUserId: false,
-                                     termsAcceptanceMode: .implicit)
+                                     termsAcceptanceMode: .implicit, showCommentsOnOtherProfiles: false)
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -78,7 +78,7 @@ final class CommunityConfigTests: XCTestCase {
         let base = CommunityConfig(forceLoginOnStrongActions: true, displayAccountAge: true,
                                    gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
                                    contentOptions: .allEnabled, exposeClientUserId: false,
-                                   termsAcceptanceMode: .implicit)
+                                   termsAcceptanceMode: .implicit, showCommentsOnOtherProfiles: false)
         let clue = ProfileFieldsLock(nickname: .readOnly, avatar: .readOnly, bio: .disabled)
 
         let overridden = base.withProfileFieldsLock(clue)
@@ -119,7 +119,7 @@ final class CommunityConfigTests: XCTestCase {
         let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: .allEnabled,
-                                     exposeClientUserId: true, termsAcceptanceMode: .implicit)
+                                     exposeClientUserId: true, termsAcceptanceMode: .implicit, showCommentsOnOtherProfiles: false)
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -130,7 +130,7 @@ final class CommunityConfigTests: XCTestCase {
         let base = CommunityConfig(forceLoginOnStrongActions: true, displayAccountAge: true,
                                    gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
                                    contentOptions: .allEnabled, exposeClientUserId: false,
-                                   termsAcceptanceMode: .implicit)
+                                   termsAcceptanceMode: .implicit, showCommentsOnOtherProfiles: false)
 
         let overridden = base.withExposeClientUserId(true)
 
@@ -160,7 +160,7 @@ final class CommunityConfigTests: XCTestCase {
         try await communityConfigDatabase.upsert(config: CommunityConfig(
             forceLoginOnStrongActions: false, displayAccountAge: false,
             gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
-            contentOptions: .allEnabled, exposeClientUserId: true, termsAcceptanceMode: .implicit))
+            contentOptions: .allEnabled, exposeClientUserId: true, termsAcceptanceMode: .implicit, showCommentsOnOtherProfiles: false))
         try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
 
         // Override OFF on top of the backend value.
@@ -209,16 +209,71 @@ final class CommunityConfigTests: XCTestCase {
         let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: .allEnabled,
-                                     exposeClientUserId: false, termsAcceptanceMode: .explicitSingleCheckbox)
+                                     exposeClientUserId: false, termsAcceptanceMode: .explicitSingleCheckbox,
+                                     showCommentsOnOtherProfiles: false)
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
         XCTAssertEqual(stored.termsAcceptanceMode, .explicitSingleCheckbox)
     }
 
+    // MARK: showCommentsOnOtherProfiles (profile Comments tab on other profiles, OCT-1067)
+
+    func testShowCommentsOnOtherProfilesMappedFromProto() {
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.showCommentsOnOtherProfiles = true
+        }
+
+        XCTAssertTrue(CommunityConfig(from: config).showCommentsOnOtherProfiles)
+    }
+
+    func testShowCommentsOnOtherProfilesAbsentDefaultsToFalse() {
+        // Plain proto3 bool: false when unset (no has-guard). Comments tab stays own-profile-only.
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.displayAccountAge = true
+        }
+
+        XCTAssertFalse(CommunityConfig(from: config).showCommentsOnOtherProfiles)
+    }
+
+    func testShowCommentsOnOtherProfilesPersistsThroughDatabase() async throws {
+        let injector = Injector()
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+
+        let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
+                                     gamificationConfig: nil, displayConfig: nil,
+                                     profileFieldsLock: .allEditable, contentOptions: .allEnabled,
+                                     exposeClientUserId: false, termsAcceptanceMode: .implicit,
+                                     showCommentsOnOtherProfiles: true)
+        try await db.upsert(config: config)
+
+        let stored = try await firstNonNil(db.configPublisher())
+        XCTAssertTrue(stored.showCommentsOnOtherProfiles)
+    }
+
+    func testWithShowCommentsOnOtherProfilesReplacesOnlyTheFlag() {
+        let base = CommunityConfig(forceLoginOnStrongActions: true, displayAccountAge: true,
+                                   gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
+                                   contentOptions: .allEnabled, exposeClientUserId: true,
+                                   termsAcceptanceMode: .explicitSingleCheckbox,
+                                   showCommentsOnOtherProfiles: false)
+
+        let overridden = base.withShowCommentsOnOtherProfiles(true)
+
+        XCTAssertTrue(overridden.showCommentsOnOtherProfiles)
+        // every other field is preserved
+        XCTAssertEqual(overridden.forceLoginOnStrongActions, base.forceLoginOnStrongActions)
+        XCTAssertEqual(overridden.exposeClientUserId, base.exposeClientUserId)
+        XCTAssertEqual(overridden.termsAcceptanceMode, base.termsAcceptanceMode)
+        XCTAssertEqual(overridden.profileFieldsLock, base.profileFieldsLock)
+        XCTAssertEqual(overridden.contentOptions, base.contentOptions)
+    }
+
     /// Awaits the first non-nil value of a config publisher (the stored config after an upsert).
     /// Combine-based (iOS 13 compatible — `AsyncPublisher.values` needs iOS 15).
-    private func firstNonNil(_ publisher: AnyPublisher<CommunityConfig?, Error>) async throws -> CommunityConfig {
+    private func firstNonNil(_ publisher: AnyPublisher<CommunityConfig?, Never>) async throws -> CommunityConfig {
         var cancellable: AnyCancellable?
         var resumed = false
         return try await withCheckedThrowingContinuation { continuation in

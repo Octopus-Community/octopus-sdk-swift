@@ -70,7 +70,13 @@ class CommunityAccessMonitor: InjectableObject, @unchecked Sendable {
             .filter { $0 != nil }
             .sink { [unowned self] _ in
                 Task { [weak self] in
-                    try await self?.getCommunityAccess()
+                    do {
+                        try await self?.getCommunityAccess()
+                    } catch {
+                        if #available(iOS 14, *) {
+                            Logger.config.debug("Error while getting the community access: \(error)")
+                        }
+                    }
                 }
             }
     }

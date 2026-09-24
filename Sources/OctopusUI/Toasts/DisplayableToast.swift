@@ -5,6 +5,7 @@
 import Foundation
 import OctopusCore
 import SwiftUI
+import UIKit
 
 struct DisplayableToast: Identifiable, Equatable {
     enum Category {
@@ -18,6 +19,17 @@ struct DisplayableToast: Identifiable, Equatable {
     let message: DisplayableString
     let category: Category
     var isManual = false
+
+    /// Whether the toast stays until something removes it, instead of fading after a few seconds.
+    /// Only the lost-connection one does: it is the state itself, not a one-off notice.
+    var isPersistent: Bool { toast == .error(.noNetwork) }
+
+    /// Whether the toast offers a "Retry" CTA, when the screen gave the container something to retry.
+    var isRetriable: Bool { toast == .error(.unknown) }
+
+    /// The glyph the design puts before the wording. Only the lost-connection toast has one: it names
+    /// a device state the member can recognise at a glance.
+    var leadingIcon: UIImage? { toast == .error(.noNetwork) ? .Gen.toastNoNetwork : nil }
 
     init(toast: Toast) {
         self.toast = toast
@@ -94,12 +106,14 @@ extension ErrorToast {
     var localizedKey: LocalizedStringKey {
         switch self {
         case .noNetwork: "Error.NoNetwork"
+        case .unknown: "Error.Unknown"
         }
     }
 
     func localizedString(locale: Locale?) -> String {
         switch self {
         case .noNetwork: L10n("Error.NoNetwork", locale: locale)
+        case .unknown: L10n("Error.Unknown", locale: locale)
         }
     }
 }

@@ -90,6 +90,10 @@ struct ProfileFieldsLockView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        // `.combine` BEFORE the id: without it SwiftUI propagates the identifier onto every child
+        // `Text` instead of collapsing the panel, so the query returns two elements and a pipeline
+        // reading the first match gets the constant "Applied lock" heading rather than the outcome.
+        .accessibilityElement(children: .combine)
         .accessibilityId("profileFieldsLock-result")
     }
 }

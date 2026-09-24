@@ -26,6 +26,11 @@ public struct CommunityConfig: Equatable, Sendable {
     /// How users must accept the legal documents at their first contribution. Absent ⇒ `.implicit`
     /// ⇒ today's behaviour (implicit acceptance, no consent sheet).
     public let termsAcceptanceMode: TermsAcceptanceMode
+    /// Whether the profile "Comments" tab is shown on *other* users' profiles. The tab is
+    /// always shown on the connected user's own profile; this flag only gates it on other members'
+    /// profiles. Set internally per-community in the back-office at the client's request. Absent /
+    /// unseeded ⇒ `false` ⇒ the Comments tab stays private (own profile only).
+    public let showCommentsOnOtherProfiles: Bool
 }
 
 extension CommunityConfig {
@@ -38,6 +43,7 @@ extension CommunityConfig {
         self.contentOptions = ContentOptions(from: entity)
         self.exposeClientUserId = entity.exposeClientUserId
         self.termsAcceptanceMode = TermsAcceptanceMode(storageValue: entity.termsAcceptanceMode)
+        self.showCommentsOnOtherProfiles = entity.showCommentsOnOtherProfiles
     }
 
     init(from config: Com_Octopuscommunity_ApiKeyConfig) {
@@ -63,13 +69,15 @@ extension CommunityConfig {
         exposeClientUserId = config.exposeClientUserID
         // ApiKeyConfig.termsAcceptanceMode is a plain proto3 enum (.implicit when unset).
         termsAcceptanceMode = TermsAcceptanceMode(from: config.termsAcceptanceMode)
+        // ApiKeyConfig.showCommentsOnOtherProfiles is a plain proto3 bool (false when unset).
+        showCommentsOnOtherProfiles = config.showCommentsOnOtherProfiles
     }
 }
 
 extension CommunityConfig {
     /// Returns a copy with only `profileFieldsLock` replaced. Internal test affordance used (via an
     /// `@_spi` SDK entry point) by the sample app to exercise the per-field lock without a
-    /// backend-driven config (OCT-1487).
+    /// backend-driven config.
     func withProfileFieldsLock(_ lock: ProfileFieldsLock) -> CommunityConfig {
         CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
                         displayAccountAge: displayAccountAge,
@@ -78,12 +86,13 @@ extension CommunityConfig {
                         profileFieldsLock: lock,
                         contentOptions: contentOptions,
                         exposeClientUserId: exposeClientUserId,
-                        termsAcceptanceMode: termsAcceptanceMode)
+                        termsAcceptanceMode: termsAcceptanceMode,
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
     }
 
     /// Returns a copy with only `contentOptions` replaced. Internal test affordance used (via an
     /// `@_spi` SDK entry point) by the sample app to exercise the content options without a
-    /// backend-driven config (OCT-1426).
+    /// backend-driven config.
     func withContentOptions(_ options: ContentOptions) -> CommunityConfig {
         CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
                         displayAccountAge: displayAccountAge,
@@ -92,12 +101,13 @@ extension CommunityConfig {
                         profileFieldsLock: profileFieldsLock,
                         contentOptions: options,
                         exposeClientUserId: exposeClientUserId,
-                        termsAcceptanceMode: termsAcceptanceMode)
+                        termsAcceptanceMode: termsAcceptanceMode,
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
     }
 
     /// Returns a copy with only `exposeClientUserId` replaced. Internal test affordance used (via an
     /// `@_spi` SDK entry point) by the sample app to exercise the Unified Profile activation flag
-    /// without a backend-driven config (OCT-1374).
+    /// without a backend-driven config.
     func withExposeClientUserId(_ enabled: Bool) -> CommunityConfig {
         CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
                         displayAccountAge: displayAccountAge,
@@ -106,7 +116,8 @@ extension CommunityConfig {
                         profileFieldsLock: profileFieldsLock,
                         contentOptions: contentOptions,
                         exposeClientUserId: enabled,
-                        termsAcceptanceMode: termsAcceptanceMode)
+                        termsAcceptanceMode: termsAcceptanceMode,
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
     }
 
     /// Returns a copy with only `termsAcceptanceMode` replaced. Internal test affordance used (via an
@@ -120,6 +131,22 @@ extension CommunityConfig {
                         profileFieldsLock: profileFieldsLock,
                         contentOptions: contentOptions,
                         exposeClientUserId: exposeClientUserId,
-                        termsAcceptanceMode: mode)
+                        termsAcceptanceMode: mode,
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
+    }
+
+    /// Returns a copy with only `showCommentsOnOtherProfiles` replaced. Internal test affordance used
+    /// (via an `@_spi` SDK entry point) by the sample app to exercise the profile Comments tab on other
+    /// users' profiles without a backend-driven config.
+    func withShowCommentsOnOtherProfiles(_ enabled: Bool) -> CommunityConfig {
+        CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
+                        displayAccountAge: displayAccountAge,
+                        gamificationConfig: gamificationConfig,
+                        displayConfig: displayConfig,
+                        profileFieldsLock: profileFieldsLock,
+                        contentOptions: contentOptions,
+                        exposeClientUserId: exposeClientUserId,
+                        termsAcceptanceMode: termsAcceptanceMode,
+                        showCommentsOnOtherProfiles: enabled)
     }
 }

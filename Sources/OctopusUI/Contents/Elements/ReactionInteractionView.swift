@@ -30,11 +30,11 @@ struct ReactionInteractionView: View {
                 if let reaction {
                     Image(uiImage: theme.assets.icons.content.reaction[reaction])
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                 } else {
                     Image(uiImage: defaultImage)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .foregroundColor(textColor)
                 }
             }

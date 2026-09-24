@@ -51,6 +51,9 @@ struct CommentDetailView: View {
                     comment: viewModel.comment,
                     lockedState: viewModel.lockedState,
                     replies: viewModel.replies,
+                    repliesLoadFailure: viewModel.repliesLoadFailure,
+                    hasLoadedReplies: viewModel.hasLoadedReplies,
+                    retryRepliesFirstLoad: viewModel.retryRepliesFirstLoad,
                     hasMoreReplies: viewModel.hasMoreData,
                     hideLoadMoreRepliesLoader: viewModel.hideLoadMoreRepliesLoader,
                     displayGoToParentButton: displayGoToParentButton,
@@ -81,7 +84,8 @@ struct CommentDetailView: View {
                                                    scrollToMostRecentComment: false, origin: .sdk,
                                                    hasFeaturedComment: false))
                     })
-                .toastContainer(octopus: viewModel.octopus)
+                .toastContainer(octopus: viewModel.octopus,
+                                retryFailedFetch: { Task { await viewModel.refresh() } })
 
                 if viewModel.lockedState == .unlocked {
                     CreateReplyView(octopus: viewModel.octopus, commentId: viewModel.commentUuid,
@@ -196,6 +200,9 @@ private struct ContentView: View {
     let comment: CommentDetailViewModel.CommentDetail?
     let lockedState: LockedContentState
     let replies: [DisplayableFeedResponse]?
+    var repliesLoadFailure: ScreenStateFailure?
+    var hasLoadedReplies = false
+    var retryRepliesFirstLoad: () -> Void = {}
     let hasMoreReplies: Bool
     let hideLoadMoreRepliesLoader: Bool
     let displayGoToParentButton: Bool
@@ -232,8 +239,20 @@ private struct ContentView: View {
                                                  displayParentPost: displayParentPost)
 
                         if lockedState != .lockedOwnContent {
-                            if let replies {
-                                CommentDetailRepliesView(replies: replies,
+                            switch contentAreaState(itemCount: replies?.count,
+                                                    hasLoadedOnce: hasLoadedReplies,
+                                                    loadFailure: repliesLoadFailure) {
+                            case let .failure(repliesLoadFailure):
+                                repliesLoadFailure.screenState(verticalPadding: ScreenState.commentPadding,
+                                                               icons: theme.assets.icons,
+                                                               retry: retryRepliesFirstLoad)
+                            case .loader:
+                                Compat.ProgressView()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, ScreenState.commentPadding)
+                            // The list view renders the empty state itself, so both share a branch.
+                            case .empty, .content:
+                                CommentDetailRepliesView(replies: replies ?? [],
                                             hasMoreData: hasMoreReplies,
                                             hideLoader: hideLoadMoreRepliesLoader,
                                             zoomableImageInfo: $zoomableImageInfo,
@@ -243,8 +262,6 @@ private struct ContentView: View {
                                             blockAuthor: blockAuthor,
                                             reactionTapped: replyReactionTapped,
                                             displayContentModeration: displayContentModeration)
-                            } else {
-                                Compat.ProgressView()
                             }
                         }
                     } else {

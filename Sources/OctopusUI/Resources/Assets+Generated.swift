@@ -127,6 +127,12 @@ extension GenColorResource {
 
 extension GenImageResource {
     static let activity = GenImageResource(name: "activity", bundle: resourceBundle)
+    static let activityMenuCommunityGuidelines = GenImageResource(name: "activityMenuCommunityGuidelines", bundle: resourceBundle)
+    static let activityMenuEditProfile = GenImageResource(name: "activityMenuEditProfile", bundle: resourceBundle)
+    static let activityMenuPrivacyPolicy = GenImageResource(name: "activityMenuPrivacyPolicy", bundle: resourceBundle)
+    static let activityMenuReportContent = GenImageResource(name: "activityMenuReportContent", bundle: resourceBundle)
+    static let activityMenuTermsOfUse = GenImageResource(name: "activityMenuTermsOfUse", bundle: resourceBundle)
+    static let activityMenuViewProfile = GenImageResource(name: "activityMenuViewProfile", bundle: resourceBundle)
     static let add = GenImageResource(name: "add", bundle: resourceBundle)
     static let addMedia = GenImageResource(name: "addMedia", bundle: resourceBundle)
     static let arrowRight = GenImageResource(name: "arrowRight", bundle: resourceBundle)
@@ -151,8 +157,13 @@ extension GenImageResource {
     static let notConnected = GenImageResource(name: "notConnected", bundle: resourceBundle)
     static let poll = GenImageResource(name: "poll", bundle: resourceBundle)
     static let poweredByOctopus = GenImageResource(name: "poweredByOctopus", bundle: resourceBundle)
+    static let screenStateEmptyContent = GenImageResource(name: "screenStateEmptyContent", bundle: resourceBundle)
+    static let screenStateEmptyNotifications = GenImageResource(name: "screenStateEmptyNotifications", bundle: resourceBundle)
+    static let screenStateError = GenImageResource(name: "screenStateError", bundle: resourceBundle)
+    static let screenStateNetworkError = GenImageResource(name: "screenStateNetworkError", bundle: resourceBundle)
     static let search = GenImageResource(name: "search", bundle: resourceBundle)
     static let send = GenImageResource(name: "send", bundle: resourceBundle)
+    static let toastNoNetwork = GenImageResource(name: "toastNoNetwork", bundle: resourceBundle)
     static let trash = GenImageResource(name: "trash", bundle: resourceBundle)
     static let viewGroup = GenImageResource(name: "viewGroup", bundle: resourceBundle)
     enum AggregatedInfo {
@@ -261,6 +272,12 @@ extension UIKit.UIColor {
 extension UIKit.UIImage {
     enum Gen {
         static var activity: UIKit.UIImage { .init(res: .activity) }
+        static var activityMenuCommunityGuidelines: UIKit.UIImage { .init(res: .activityMenuCommunityGuidelines) }
+        static var activityMenuEditProfile: UIKit.UIImage { .init(res: .activityMenuEditProfile) }
+        static var activityMenuPrivacyPolicy: UIKit.UIImage { .init(res: .activityMenuPrivacyPolicy) }
+        static var activityMenuReportContent: UIKit.UIImage { .init(res: .activityMenuReportContent) }
+        static var activityMenuTermsOfUse: UIKit.UIImage { .init(res: .activityMenuTermsOfUse) }
+        static var activityMenuViewProfile: UIKit.UIImage { .init(res: .activityMenuViewProfile) }
         static var add: UIKit.UIImage { .init(res: .add) }
         static var addMedia: UIKit.UIImage { .init(res: .addMedia) }
         static var arrowRight: UIKit.UIImage { .init(res: .arrowRight) }
@@ -285,8 +302,13 @@ extension UIKit.UIImage {
         static var notConnected: UIKit.UIImage { .init(res: .notConnected) }
         static var poll: UIKit.UIImage { .init(res: .poll) }
         static var poweredByOctopus: UIKit.UIImage { .init(res: .poweredByOctopus) }
+        static var screenStateEmptyContent: UIKit.UIImage { .init(res: .screenStateEmptyContent) }
+        static var screenStateEmptyNotifications: UIKit.UIImage { .init(res: .screenStateEmptyNotifications) }
+        static var screenStateError: UIKit.UIImage { .init(res: .screenStateError) }
+        static var screenStateNetworkError: UIKit.UIImage { .init(res: .screenStateNetworkError) }
         static var search: UIKit.UIImage { .init(res: .search) }
         static var send: UIKit.UIImage { .init(res: .send) }
+        static var toastNoNetwork: UIKit.UIImage { .init(res: .toastNoNetwork) }
         static var trash: UIKit.UIImage { .init(res: .trash) }
         static var viewGroup: UIKit.UIImage { .init(res: .viewGroup) }
         enum AggregatedInfo {

@@ -21,12 +21,12 @@ class CommunityConfigDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func configPublisher() -> AnyPublisher<CommunityConfig?, Error> {
+    func configPublisher() -> AnyPublisher<CommunityConfig?, Never> {
         (context
             .publisher(request: CommunityConfigEntity.fetch()) {
                 guard let configEntity = $0.first else { return [] }
                 return [CommunityConfig(from: configEntity)]
-            } as AnyPublisher<[CommunityConfig], Error>
+            } as AnyPublisher<[CommunityConfig], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)

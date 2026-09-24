@@ -72,14 +72,15 @@ final class ContentOptionsTests: XCTestCase {
         let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: options,
-                                     exposeClientUserId: false, termsAcceptanceMode: .implicit)
+                                     exposeClientUserId: false, termsAcceptanceMode: .implicit,
+                                     showCommentsOnOtherProfiles: false)
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
         XCTAssertEqual(stored.contentOptions, options)
     }
 
-    private func firstNonNil(_ publisher: AnyPublisher<CommunityConfig?, Error>) async throws -> CommunityConfig {
+    private func firstNonNil(_ publisher: AnyPublisher<CommunityConfig?, Never>) async throws -> CommunityConfig {
         var cancellable: AnyCancellable?
         var resumed = false
         return try await withCheckedThrowingContinuation { continuation in

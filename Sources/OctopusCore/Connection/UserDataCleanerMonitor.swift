@@ -45,7 +45,13 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
             .sink { userData in
                 guard userData == nil else { return }
                 Task { [self] in
-                    try await clean()
+                    do {
+                        try await clean()
+                    } catch {
+                        if #available(iOS 14, *) {
+                            Logger.connection.debug("Error while cleaning the user data: \(error)")
+                        }
+                    }
                 }
             }.store(in: &storage)
     }

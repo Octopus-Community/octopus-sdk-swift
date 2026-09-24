@@ -34,6 +34,11 @@ public protocol Com_Octopuscommunity_ContentReviewServiceClientProtocol: GRPCCli
     _ request: Com_Octopuscommunity_BulkValidateContentReviewRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_BulkValidateContentReviewRequest, Com_Octopuscommunity_BulkValidateContentReviewResponse>
+
+  func sendToSupport(
+    _ request: Com_Octopuscommunity_SendToSupportRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_SendToSupportRequest, Com_Octopuscommunity_SendToSupportResponse>
 }
 
 extension Com_Octopuscommunity_ContentReviewServiceClientProtocol {
@@ -92,6 +97,24 @@ extension Com_Octopuscommunity_ContentReviewServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeBulkValidateContentReviewInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to SendToSupport
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to SendToSupport.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func sendToSupport(
+    _ request: Com_Octopuscommunity_SendToSupportRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_SendToSupportRequest, Com_Octopuscommunity_SendToSupportResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_ContentReviewServiceClientMetadata.Methods.sendToSupport.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendToSupportInterceptors() ?? []
     )
   }
 }
@@ -172,6 +195,11 @@ public protocol Com_Octopuscommunity_ContentReviewServiceAsyncClientProtocol: GR
     _ request: Com_Octopuscommunity_BulkValidateContentReviewRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_BulkValidateContentReviewRequest, Com_Octopuscommunity_BulkValidateContentReviewResponse>
+
+  func makeSendToSupportCall(
+    _ request: Com_Octopuscommunity_SendToSupportRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SendToSupportRequest, Com_Octopuscommunity_SendToSupportResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -219,6 +247,18 @@ extension Com_Octopuscommunity_ContentReviewServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeBulkValidateContentReviewInterceptors() ?? []
     )
   }
+
+  public func makeSendToSupportCall(
+    _ request: Com_Octopuscommunity_SendToSupportRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_SendToSupportRequest, Com_Octopuscommunity_SendToSupportResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_ContentReviewServiceClientMetadata.Methods.sendToSupport.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendToSupportInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -258,6 +298,18 @@ extension Com_Octopuscommunity_ContentReviewServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeBulkValidateContentReviewInterceptors() ?? []
     )
   }
+
+  public func sendToSupport(
+    _ request: Com_Octopuscommunity_SendToSupportRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_SendToSupportResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_ContentReviewServiceClientMetadata.Methods.sendToSupport.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendToSupportInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -287,6 +339,9 @@ public protocol Com_Octopuscommunity_ContentReviewServiceClientInterceptorFactor
 
   /// - Returns: Interceptors to use when invoking 'bulkValidateContentReview'.
   func makeBulkValidateContentReviewInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_BulkValidateContentReviewRequest, Com_Octopuscommunity_BulkValidateContentReviewResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'sendToSupport'.
+  func makeSendToSupportInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_SendToSupportRequest, Com_Octopuscommunity_SendToSupportResponse>]
 }
 
 public enum Com_Octopuscommunity_ContentReviewServiceClientMetadata {
@@ -297,6 +352,7 @@ public enum Com_Octopuscommunity_ContentReviewServiceClientMetadata {
       Com_Octopuscommunity_ContentReviewServiceClientMetadata.Methods.listContentReview,
       Com_Octopuscommunity_ContentReviewServiceClientMetadata.Methods.validateContentReview,
       Com_Octopuscommunity_ContentReviewServiceClientMetadata.Methods.bulkValidateContentReview,
+      Com_Octopuscommunity_ContentReviewServiceClientMetadata.Methods.sendToSupport,
     ]
   )
 
@@ -318,6 +374,12 @@ public enum Com_Octopuscommunity_ContentReviewServiceClientMetadata {
       path: "/com.octopuscommunity.ContentReviewService/BulkValidateContentReview",
       type: GRPCCallType.unary
     )
+
+    public static let sendToSupport = GRPCMethodDescriptor(
+      name: "SendToSupport",
+      path: "/com.octopuscommunity.ContentReviewService/SendToSupport",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -330,6 +392,8 @@ public protocol Com_Octopuscommunity_ContentReviewServiceProvider: CallHandlerPr
   func validateContentReview(request: Com_Octopuscommunity_ValidateContentReviewRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_ValidateContentReviewResponse>
 
   func bulkValidateContentReview(request: Com_Octopuscommunity_BulkValidateContentReviewRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_BulkValidateContentReviewResponse>
+
+  func sendToSupport(request: Com_Octopuscommunity_SendToSupportRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_SendToSupportResponse>
 }
 
 extension Com_Octopuscommunity_ContentReviewServiceProvider {
@@ -371,6 +435,15 @@ extension Com_Octopuscommunity_ContentReviewServiceProvider {
         userFunction: self.bulkValidateContentReview(request:context:)
       )
 
+    case "SendToSupport":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SendToSupportRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SendToSupportResponse>(),
+        interceptors: self.interceptors?.makeSendToSupportInterceptors() ?? [],
+        userFunction: self.sendToSupport(request:context:)
+      )
+
     default:
       return nil
     }
@@ -397,6 +470,11 @@ public protocol Com_Octopuscommunity_ContentReviewServiceAsyncProvider: CallHand
     request: Com_Octopuscommunity_BulkValidateContentReviewRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_BulkValidateContentReviewResponse
+
+  func sendToSupport(
+    request: Com_Octopuscommunity_SendToSupportRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_SendToSupportResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -445,6 +523,15 @@ extension Com_Octopuscommunity_ContentReviewServiceAsyncProvider {
         wrapping: { try await self.bulkValidateContentReview(request: $0, context: $1) }
       )
 
+    case "SendToSupport":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_SendToSupportRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_SendToSupportResponse>(),
+        interceptors: self.interceptors?.makeSendToSupportInterceptors() ?? [],
+        wrapping: { try await self.sendToSupport(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -464,6 +551,10 @@ public protocol Com_Octopuscommunity_ContentReviewServiceServerInterceptorFactor
   /// - Returns: Interceptors to use when handling 'bulkValidateContentReview'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeBulkValidateContentReviewInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_BulkValidateContentReviewRequest, Com_Octopuscommunity_BulkValidateContentReviewResponse>]
+
+  /// - Returns: Interceptors to use when handling 'sendToSupport'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSendToSupportInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_SendToSupportRequest, Com_Octopuscommunity_SendToSupportResponse>]
 }
 
 public enum Com_Octopuscommunity_ContentReviewServiceServerMetadata {
@@ -474,6 +565,7 @@ public enum Com_Octopuscommunity_ContentReviewServiceServerMetadata {
       Com_Octopuscommunity_ContentReviewServiceServerMetadata.Methods.listContentReview,
       Com_Octopuscommunity_ContentReviewServiceServerMetadata.Methods.validateContentReview,
       Com_Octopuscommunity_ContentReviewServiceServerMetadata.Methods.bulkValidateContentReview,
+      Com_Octopuscommunity_ContentReviewServiceServerMetadata.Methods.sendToSupport,
     ]
   )
 
@@ -493,6 +585,12 @@ public enum Com_Octopuscommunity_ContentReviewServiceServerMetadata {
     public static let bulkValidateContentReview = GRPCMethodDescriptor(
       name: "BulkValidateContentReview",
       path: "/com.octopuscommunity.ContentReviewService/BulkValidateContentReview",
+      type: GRPCCallType.unary
+    )
+
+    public static let sendToSupport = GRPCMethodDescriptor(
+      name: "SendToSupport",
+      path: "/com.octopuscommunity.ContentReviewService/SendToSupport",
       type: GRPCCallType.unary
     )
   }

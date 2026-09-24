@@ -40,6 +40,11 @@ public struct CurrentUserProfile: Equatable, Sendable {
     public let clientUserId: String?
 
     public let newestFirstPostsFeed: Feed<Post, Comment>
+
+    /// Backend feed id of the connected user's authored comments & replies, newest-first.
+    /// Consumed by `UserCommentsRepository` for the profile "Comments" tab. Empty for profiles cached
+    /// before the feature landed (repopulated on the next fetch).
+    public let descCommentFeedId: String
 }
 
 extension CurrentUserProfile {
@@ -73,5 +78,6 @@ extension CurrentUserProfile {
         entitlements = storableProfile.entitlements
         self.clientUserId = clientUserId
         newestFirstPostsFeed = postFeedsStore.getOrCreate(feedId: storableProfile.descPostFeedId)
+        descCommentFeedId = storableProfile.descCommentFeedId
     }
 }

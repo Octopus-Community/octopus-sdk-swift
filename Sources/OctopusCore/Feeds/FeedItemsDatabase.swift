@@ -10,7 +10,7 @@ protocol FeedItemsDatabase<FeedItem> {
 
     func getMissingFeedItems(infos: [FeedItemInfo]) async throws -> [String]
     func getFeedItems(ids: [FeedItemInfoData]) async throws -> [FeedItem]
-    func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[FeedItem], Error>
+    func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[FeedItem], Never>
     func upsert(feedItems: [FeedItem]) async throws
     func deleteAll(except ids: [String]) async throws
 }

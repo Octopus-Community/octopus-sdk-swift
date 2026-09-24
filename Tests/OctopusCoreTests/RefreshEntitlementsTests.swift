@@ -209,7 +209,6 @@ final class RefreshEntitlementsTests: XCTestCase {
         try await userProfileDatabase.upsert(profile: profile)
         let inDb = XCTestExpectation(description: "Guest profile in db")
         userProfileDatabase.profilePublisher(userId: profile.userId)
-            .replaceError(with: nil)
             .sink {
                 if let stored = $0, stored.isGuest { inDb.fulfill() }
             }.store(in: &storage)
@@ -242,11 +241,16 @@ final class RefreshEntitlementsTests: XCTestCase {
         })
 
         let repo = SSOConnectionRepository(connectionMode: ssoConnectionMode(), injector: injector)
+        // The callers act on `repo` — `refreshEntitlements()` reads the `connectionState` *property* —
+        // so waiting for the state to be published is not enough: `@Published` emits from `willSet`,
+        // before the property is written. Fulfilling one main queue turn later lands after the write.
+        // `assertForOverFulfill` is off because the same state can legitimately be published twice.
+        // Both points are spelled out on `ProfileTests.waitForReadableCurrentUserProfile(id:timeout:)`.
         let connected = XCTestExpectation(description: "User connected (non-guest)")
+        connected.assertForOverFulfill = false
         repo.$connectionState.sink { state in
-            if case let .connected(user, _) = state, !user.profile.isGuest {
-                connected.fulfill()
-            }
+            guard case let .connected(user, _) = state, !user.profile.isGuest else { return }
+            DispatchQueue.main.async { connected.fulfill() }
         }.store(in: &storage)
 
         try await repo.connectUser(

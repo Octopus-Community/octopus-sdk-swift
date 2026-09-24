@@ -25,18 +25,9 @@ struct EllipsizableText: Equatable {
     init(text: String, maxLength: Int = 200, maxLines: Int = 4) {
         self.fullText = text
 
-        // Display max `maxLength` chars and `maxLines` new lines.
-        let ellipsizedText = text
-            .prefix(maxLength)
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .prefix(maxLines)
-            .joined(separator: "\n")
-
-        if ellipsizedText != text {
-            _ellipsizedText = ellipsizedText
-        } else {
-            _ellipsizedText = nil
-        }
+        // Delegate to `TextTruncation`, the single definition of the truncation rule.
+        let truncated = TextTruncation(maxLength: maxLength, maxLines: maxLines).truncate(text)
+        _ellipsizedText = truncated.isTruncated ? truncated.text : nil
     }
 
     func getText(ellipsized: Bool) -> String {

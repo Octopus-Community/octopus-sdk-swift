@@ -21,6 +21,9 @@ struct NotificationCenterView: View {
             showPushNotificationSetting: viewModel.showPushNotificationSetting,
             pushNotificationEnabled: $viewModel.pushNotificationEnabled,
             notifications: viewModel.notifications,
+            hasLoadedOnce: viewModel.hasLoadedOnce,
+            loadFailure: viewModel.loadFailure,
+            retryFirstLoad: viewModel.retryFirstLoad,
             action: { notification in
                 viewModel.markNotificationAsRead(notifId: notification.uuid)
                 trackingApi.emit(event: .notificationClicked(.init(notificationId: notification.uuid,
@@ -48,6 +51,9 @@ private struct ContentView: View {
     let showPushNotificationSetting: Bool
     @Binding var pushNotificationEnabled: Bool
     let notifications: [DisplayableNotification]
+    let hasLoadedOnce: Bool
+    let loadFailure: ScreenStateFailure?
+    let retryFirstLoad: () -> Void
     let action: (DisplayableNotification) -> Void
 
     var body: some View {
@@ -56,10 +62,22 @@ private struct ContentView: View {
                 PushNotificationSettingView(pushNotificationEnabled: $pushNotificationEnabled)
                 theme.colors.gray300.frame(height: 1)
             }
-            if !notifications.isEmpty {
+            switch contentAreaState(itemCount: notifications.count, hasLoadedOnce: hasLoadedOnce,
+                                    loadFailure: loadFailure) {
+            case .content:
                 NotificationListView(notifications: notifications, action: action)
-            } else {
-                NoNotificationView()
+            case let .failure(loadFailure):
+                loadFailure.screenState(verticalPadding: ScreenState.profilePadding,
+                                        icons: theme.assets.icons, retry: retryFirstLoad)
+            case .loader:
+                Compat.ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 130)
+            case .empty:
+                ScreenState(
+                    image: theme.assets.icons.screenStates.emptyNotifications,
+                    title: .localizationKey("Profile.Notifications.EmptyState.Title.Self"),
+                    verticalPadding: ScreenState.profilePadding)
             }
         }
     }
@@ -157,23 +175,5 @@ private struct ThumbnailImageView: View {
         case let .profile(profile):
             AuthorAvatarView(avatar: Author(profile: profile, gamificationLevel: nil).avatar)
         }
-    }
-}
-
-private struct NoNotificationView: View {
-    @Environment(\.octopusTheme) private var theme
-
-    var body: some View {
-        VStack {
-            Spacer().frame(height: 54)
-            Image(uiImage: theme.assets.icons.profile.emptyNotifications)
-                .resizable()
-                .frame(width: 32, height: 32)
-            Text("Notifications.List.Empty", bundle: .module)
-                .font(theme.fonts.body2)
-                .fontWeight(.medium)
-                .multilineTextAlignment(.center)
-        }
-        .foregroundColor(theme.colors.gray500)
     }
 }

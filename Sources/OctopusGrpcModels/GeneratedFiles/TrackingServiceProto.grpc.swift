@@ -15,7 +15,7 @@ import NIOConcurrencyHelpers
 import SwiftProtobuf
 
 
-///Service for calls that are used only for analytics purpose, no read, no write
+///Service for the calls the SDKs make to report analytics events
 ///
 /// Usage: instantiate `Com_Octopuscommunity_TrackingServiceClient`, then call methods of this protocol to make API calls.
 public protocol Com_Octopuscommunity_TrackingServiceClientProtocol: GRPCClient {
@@ -109,7 +109,7 @@ public struct Com_Octopuscommunity_TrackingServiceNIOClient: Com_Octopuscommunit
   }
 }
 
-///Service for calls that are used only for analytics purpose, no read, no write
+///Service for the calls the SDKs make to report analytics events
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public protocol Com_Octopuscommunity_TrackingServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
@@ -200,7 +200,7 @@ public enum Com_Octopuscommunity_TrackingServiceClientMetadata {
   }
 }
 
-///Service for calls that are used only for analytics purpose, no read, no write
+///Service for the calls the SDKs make to report analytics events
 ///
 /// To build a server, implement a class that conforms to this protocol.
 public protocol Com_Octopuscommunity_TrackingServiceProvider: CallHandlerProvider {
@@ -236,7 +236,7 @@ extension Com_Octopuscommunity_TrackingServiceProvider {
   }
 }
 
-///Service for calls that are used only for analytics purpose, no read, no write
+///Service for the calls the SDKs make to report analytics events
 ///
 /// To implement a server, implement an object which conforms to this protocol.
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)

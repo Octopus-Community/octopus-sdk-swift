@@ -26,7 +26,7 @@ extension PostViewData {
             self.tags = []
             self.content = .published(PostPublishedContent(
                 catchPhrase: published.bridgeInfo?.catchPhrase,
-                text: ellipsize ? published.text : published.expandedText,
+                text: EllipsizableTranslatedText(text: published.text, ellipsize: ellipsize),
                 attachment: Self.mapAttachment(published.attachment),
                 cta: Self.mapCTA(bridgeInfo: published.bridgeInfo, customAction: published.customAction),
                 liveMeasuresPublisher: published.liveMeasures,

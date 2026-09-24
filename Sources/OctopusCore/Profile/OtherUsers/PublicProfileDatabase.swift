@@ -21,12 +21,12 @@ class PublicProfileDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
-    func profilePublisher(profileId: String) -> AnyPublisher<StorableProfile?, Error> {
+    func profilePublisher(profileId: String) -> AnyPublisher<StorableProfile?, Never> {
         (context
             .publisher(request: PublicProfileEntity.fetchById(id: profileId)) {
                 guard let profileEntity = $0.first else { return [] }
                 return [StorableProfile(from: profileEntity)]
-            } as AnyPublisher<[StorableProfile], Error>
+            } as AnyPublisher<[StorableProfile], Never>
         )
         .map(\.first)
         .receive(on: DispatchQueue.main)
@@ -52,6 +52,8 @@ class PublicProfileDatabase: InjectableObject {
             profileEntity.gamificationLevelOptional = profile.gamificationLevel.map { NSNumber(integerLiteral: $0) }
             profileEntity.descPostFeedId = profile.descPostFeedId
             profileEntity.ascPostFeedId = profile.ascPostFeedId
+            profileEntity.descCommentFeedId = profile.descCommentFeedId
+            profileEntity.ascCommentFeedId = profile.ascCommentFeedId
             profileEntity.clientUserId = profile.clientUserId
 
             try context.save()

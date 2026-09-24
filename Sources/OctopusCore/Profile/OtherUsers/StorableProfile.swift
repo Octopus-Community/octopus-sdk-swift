@@ -21,6 +21,9 @@ struct StorableProfile: Sendable {
     let descPostFeedId: String
     let ascPostFeedId: String
 
+    let descCommentFeedId: String
+    let ascCommentFeedId: String
+
     let clientUserId: String?
 }
 
@@ -36,6 +39,8 @@ extension StorableProfile {
         gamificationLevel = entity.gamificationLevel
         descPostFeedId = entity.descPostFeedId
         ascPostFeedId = entity.ascPostFeedId
+        descCommentFeedId = entity.descCommentFeedId
+        ascCommentFeedId = entity.ascCommentFeedId
         clientUserId = entity.clientUserId
     }
 
@@ -54,6 +59,9 @@ extension StorableProfile {
 
         descPostFeedId = profile.descPostFeedID
         ascPostFeedId = profile.ascPostFeedID
+
+        descCommentFeedId = profile.descCommentFeedID
+        ascCommentFeedId = profile.ascCommentFeedID
 
         clientUserId = profile.hasClientUserID ? profile.clientUserID.nilIfEmpty : nil
     }

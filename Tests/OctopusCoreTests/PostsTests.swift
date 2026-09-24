@@ -46,7 +46,6 @@ class PostsTests: XCTestCase {
         let sendExpectation = XCTestExpectation(description: "Comment DB updated")
 
         postsDatabase.postPublisher(uuid: "newPost")
-            .replaceError(with: nil)
             .sink { post in
                 if post != nil {
                     sendExpectation.fulfill()
@@ -108,7 +107,6 @@ class PostsTests: XCTestCase {
         let sendExpectation = XCTestExpectation(description: "Comment DB updated")
 
         postsDatabase.postPublisher(uuid: "newPost")
-            .replaceError(with: nil)
             .sink { post in
                 if let post, !post.permissions.canCreateChildren {
                     sendExpectation.fulfill()
@@ -137,7 +135,6 @@ class PostsTests: XCTestCase {
         let localExpectation = XCTestExpectation(description: "DB updated")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if post != nil {
                     localExpectation.fulfill()
@@ -178,7 +175,6 @@ class PostsTests: XCTestCase {
         let postPresentExpectation = XCTestExpectation(description: "Post is present")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if post != nil {
                     postPresentExpectation.fulfill()
@@ -193,7 +189,6 @@ class PostsTests: XCTestCase {
         let postFilteredOutExpectation = XCTestExpectation(description: "Post is filtered out")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if post == nil {
                     postFilteredOutExpectation.fulfill()
@@ -220,7 +215,6 @@ class PostsTests: XCTestCase {
         let localExpectation = XCTestExpectation(description: "DB updated")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if post == nil {
                     localExpectation.fulfill()
@@ -406,7 +400,6 @@ class PostsTests: XCTestCase {
         let postPresentExpectation = XCTestExpectation(description: "Post is present")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if post != nil {
                     postPresentExpectation.fulfill()
@@ -444,7 +437,6 @@ class PostsTests: XCTestCase {
         tokenProvider: { _ in return nil })
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if let post, post.text.originalText == "new Text",
                    post.aggregatedInfo.reactions == [
@@ -485,7 +477,6 @@ class PostsTests: XCTestCase {
         let postPresentExpectation = XCTestExpectation(description: "Post is present and no user interaction")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if post != nil && post?.userInteractions.reaction == nil {
                     postPresentExpectation.fulfill()
@@ -514,7 +505,6 @@ class PostsTests: XCTestCase {
         _ = try await postsRepository.set(reaction: .heart, postId: "1")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if let post, post.userInteractions.reaction == UserReaction(kind: .heart, id: "REACT_ID") {
                     reactionSetExpectation.fulfill()
@@ -529,7 +519,6 @@ class PostsTests: XCTestCase {
         let postNotPresentExpectation = XCTestExpectation(description: "Post is not present in the db")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if post == nil {
                     postNotPresentExpectation.fulfill()
@@ -578,7 +567,6 @@ class PostsTests: XCTestCase {
         _ = try await postsRepository.set(reaction: .heart, postId: "1")
 
         postsRepository.getPost(uuid: "1")
-            .replaceError(with: nil)
             .sink { post in
                 if let post, post.userInteractions.reaction == UserReaction(kind: .heart, id: "REACT_ID") {
                     reactionSetExpectation.fulfill()
@@ -609,7 +597,6 @@ class PostsTests: XCTestCase {
         let postPresentExpectation = XCTestExpectation(description: "Community post is present, no reaction")
 
         postsRepository.getPost(uuid: "2")
-            .replaceError(with: nil)
             .sink { post in
                 if post != nil && post?.userInteractions.reaction == nil {
                     postPresentExpectation.fulfill()
@@ -639,7 +626,6 @@ class PostsTests: XCTestCase {
         _ = try await postsRepository.set(reaction: .heart, postId: "2")
 
         postsRepository.getPost(uuid: "2")
-            .replaceError(with: nil)
             .sink { post in
                 if let post, post.userInteractions.reaction == UserReaction(kind: .heart, id: "REACT_ID") {
                     reactionSetExpectation.fulfill()

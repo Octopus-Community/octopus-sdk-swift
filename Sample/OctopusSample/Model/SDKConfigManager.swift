@@ -36,6 +36,16 @@ struct SDKConfig: Codable {
 
     let authKind: AuthKind
 
+    /// Feature env the Sample targets, when the developer picked one. `nil` → default community.
+    /// Optional so configs persisted before this feature still decode.
+    var featureEnv: FeatureEnvSelection?
+
+    func with(featureEnv: FeatureEnvSelection?) -> SDKConfig {
+        var copy = self
+        copy.featureEnv = featureEnv
+        return copy
+    }
+
     var displayableString: String {
         authKind.displayableString
     }
@@ -67,5 +77,11 @@ class SDKConfigManager {
     func set(config: SDKConfig) {
         UserDefaults.standard.setEnum(config, forKey: sdkConfigKey)
         sdkConfig = config
+    }
+
+    /// Stores (or clears) the selected feature env, keeping the rest of the config untouched.
+    func setFeatureEnv(_ selection: FeatureEnvSelection?) {
+        guard let sdkConfig else { return }
+        set(config: sdkConfig.with(featureEnv: selection))
     }
 }

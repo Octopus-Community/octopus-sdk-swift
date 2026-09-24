@@ -20,7 +20,7 @@ struct OctopusToggleStyle: ToggleStyle {
                 .overlay(
                     Image(uiImage: configuration.isOn ? theme.assets.icons.common.toggle.on : theme.assets.icons.common.toggle.off)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .padding(2)
                         .background(Circle().fill(theme.colors.gray100))
                         .foregroundColor(configuration.isOn ? theme.colors.primary : theme.colors.gray700)

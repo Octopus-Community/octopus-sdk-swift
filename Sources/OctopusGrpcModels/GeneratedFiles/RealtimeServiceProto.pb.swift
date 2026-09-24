@@ -15,13 +15,13 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 ///TODO use more generic name to avoid leaking the implementation details
-public enum Com_Octopuscommunity_Origin: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Com_Octopuscommunity_Origin: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecifiedOrigin // = 0
 
@@ -63,7 +63,7 @@ public enum Com_Octopuscommunity_Origin: SwiftProtobuf.Enum, Swift.CaseIterable 
 
 }
 
-public struct Com_Octopuscommunity_SubscribeRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_SubscribeRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -75,7 +75,7 @@ public struct Com_Octopuscommunity_SubscribeRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_SubscribeResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_SubscribeResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -108,7 +108,7 @@ public struct Com_Octopuscommunity_SubscribeResponse: Sendable {
   fileprivate var _newMsg: Com_Octopuscommunity_SubscribeNewMsg? = nil
 }
 
-public struct Com_Octopuscommunity_SubscribeNewMsg: Sendable {
+public nonisolated struct Com_Octopuscommunity_SubscribeNewMsg: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -131,7 +131,7 @@ public struct Com_Octopuscommunity_SubscribeNewMsg: Sendable {
   fileprivate var _octoObject: Com_Octopuscommunity_OctoObject? = nil
 }
 
-public struct Com_Octopuscommunity_SubscribeWelcome: Sendable {
+public nonisolated struct Com_Octopuscommunity_SubscribeWelcome: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -143,13 +143,13 @@ public struct Com_Octopuscommunity_SubscribeWelcome: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_Origin: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_Origin: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSPECIFIED_ORIGIN\0\u{1}KINESIS\0\u{1}REDIS\0")
 }
 
-extension Com_Octopuscommunity_SubscribeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SubscribeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SubscribeRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}parentId\0")
 
@@ -179,7 +179,7 @@ extension Com_Octopuscommunity_SubscribeRequest: SwiftProtobuf.Message, SwiftPro
   }
 }
 
-extension Com_Octopuscommunity_SubscribeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SubscribeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SubscribeResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}welcome\0\u{1}newMsg\0")
 
@@ -218,7 +218,7 @@ extension Com_Octopuscommunity_SubscribeResponse: SwiftProtobuf.Message, SwiftPr
   }
 }
 
-extension Com_Octopuscommunity_SubscribeNewMsg: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SubscribeNewMsg: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SubscribeNewMsg"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}octoObject\0\u{1}origin\0")
 
@@ -257,7 +257,7 @@ extension Com_Octopuscommunity_SubscribeNewMsg: SwiftProtobuf.Message, SwiftProt
   }
 }
 
-extension Com_Octopuscommunity_SubscribeWelcome: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SubscribeWelcome: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SubscribeWelcome"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 

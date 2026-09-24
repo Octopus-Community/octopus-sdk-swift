@@ -6,6 +6,15 @@ import Combine
 import SwiftUI
 import OctopusCore
 
+/// The post body as VoiceOver reads it: the displayed rendition, with an audible ellipsis when
+/// the cell is showing a shortened version. Pure function so the expansion-following behavior
+/// stays testable — `PostSummaryView.accessibilityDescription` cannot be exercised directly
+/// (no SwiftUI test harness in this repo).
+func accessibilityTextToRead(text: TranslatableText, ellipsize: Bool) -> String {
+    let displayed = EllipsizableTranslatedText(text: text, ellipsize: ellipsize).getTruncatedText(translated: true)
+    return "\(displayed.text)\(displayed.isTruncated ? "..." : "")"
+}
+
 struct PostSummaryView: View {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.trackingApi) private var trackingApi
@@ -28,17 +37,23 @@ struct PostSummaryView: View {
     let voteOnPoll: (String, String) -> Bool
     let displayContentModeration: (String) -> Void
     let displayClientObject: ((String) -> Void)?
+    /// The 2pt separator closing the summary (used between posts in the feed). Set `false` when the post
+    /// is shown as context for something below it (e.g. the profile Comments cell), where it's redundant.
+    var showsBottomSeparator = true
 
     @State private var groupedForAccessibility = true
     /// Tracks whether the truncated post text has been expanded inline.
     /// Only relevant when `post.canCreateChildren == false`: in that case tapping the card
     /// toggles expansion rather than navigating to the detail screen.
     @State private var isTextExpanded = false
+    /// Whether the body is shown shortened. Read by both the rendered cell and its VoiceOver
+    /// label so the two cannot disagree.
+    private var ellipsizeText: Bool { !isTextExpanded }
 
     var body: some View {
         VStack(spacing: 0) {
             PostView(
-                post: PostViewData(from: post, ellipsize: !isTextExpanded),
+                post: PostViewData(from: post, ellipsize: ellipsizeText),
                 context: .summary(
                     onCardTap: {
                         if post.canCreateChildren || post.hasChildren {
@@ -71,7 +86,8 @@ struct PostSummaryView: View {
                     displayPostDetail(post.uuid, true, true, nil, post.hasFeaturedComment)
                 })
 
-            // Featured comment (non-goal of OCT-1277 — kept in the wrapper; belongs to the comment ticket)
+            // Featured comment: deliberately kept in the wrapper rather than in the post card itself,
+            // since it belongs to the comment layer and not to the post's own content.
             if case let .published(published) = post.content,
                let featuredComment = published.featuredComment {
                 ResponseFeedItemView(
@@ -97,8 +113,10 @@ struct PostSummaryView: View {
                     // so adding it at the call site doubles the inset (16 + 16 = 32).
             }
 
-            theme.colors.gray300
-                .frame(height: 2)
+            if showsBottomSeparator {
+                theme.colors.gray300
+                    .frame(height: 2)
+            }
         }
         // `canCreateChildren` is in the id to work around a SwiftUI rendering quirk: when the
         // permission flips from `true` to `false` (e.g. just-created post in a no-comments
@@ -144,8 +162,7 @@ struct PostSummaryView: View {
         let topic = post.topic ?? ""
         switch post.content {
         case let .published(postContent):
-            let text = postContent.text.getText(translated: true)
-            var textToRead = "\(text)\(postContent.text.getIsEllipsized(translated: true) ? "..." : "")"
+            var textToRead = accessibilityTextToRead(text: postContent.text, ellipsize: ellipsizeText)
             switch postContent.attachment {
             case .image: return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
             case .video: return "Accessibility.Post.Summary.TextAndVideo_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"

@@ -6,7 +6,7 @@ import SwiftUI
 import UIKit
 
 /// Top-right overflow menu of the connected user's own screens — the Activity screen (Unified
-/// Profile, OCT-1374) and the legacy profile summary (whose "…" used to push a separate
+/// Profile) and the legacy profile summary (whose "…" used to push a separate
 /// "Community settings" screen; it now opens this same menu — PO feedback, 2026-07-17). Organised
 /// in four visually-separated blocks (mirrors Android's `ActivityOverflowMenu` and the Figma menu
 /// design, node 17130-844):
@@ -211,7 +211,7 @@ struct ActivityOverflowMenuButton: View {
         } else {
             Image(uiImage: theme.assets.icons.common.moreActions)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(width: max(iconSize, 24), height: max(iconSize, 24))
                 .foregroundColor(theme.colors.gray900)
                 .frame(minWidth: 44, minHeight: 44)

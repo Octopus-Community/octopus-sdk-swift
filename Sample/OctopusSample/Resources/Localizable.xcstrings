@@ -4,6 +4,29 @@
     "" : {
 
     },
+    "· %@" : {
+
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@"
+          }
+        }
+      }
+    },
     "%lld comments" : {
 
     },
@@ -30,10 +53,16 @@
         }
       }
     },
+    "A connection (or the device's own)" : {
+
+    },
     "A/B Testing" : {
 
     },
     "Account" : {
+
+    },
+    "Act as if offline" : {
 
     },
     "Action date" : {
@@ -46,6 +75,9 @@
 
     },
     "Analytics" : {
+
+    },
+    "APNs device token" : {
 
     },
     "App Login Flow" : {
@@ -127,6 +159,21 @@
         }
       }
     },
+    "Applied lock" : {
+
+    },
+    "Applied mode" : {
+
+    },
+    "Applied options" : {
+
+    },
+    "Applied override" : {
+
+    },
+    "Applied sections" : {
+
+    },
     "Ask for notification permission" : {
 
     },
@@ -143,6 +190,12 @@
 
     },
     "Avatar 2" : {
+
+    },
+    "Back to the default community" : {
+
+    },
+    "Background" : {
 
     },
     "Batch follow/unfollow groups with per-action timestamps." : {
@@ -169,16 +222,46 @@
     "Clear image" : {
 
     },
+    "Clear override (backend default)" : {
+
+    },
+    "Client user id" : {
+
+    },
+    "clientUserId" : {
+
+    },
+    "Community Data" : {
+
+    },
     "Configuration" : {
 
     },
     "Connection Error (displayed by the app)" : {
 
     },
+    "Consent" : {
+
+    },
+    "Content" : {
+
+    },
+    "Content Options" : {
+
+    },
+    "Copied!" : {
+
+    },
+    "Copy token" : {
+
+    },
     "CTA" : {
 
     },
     "Current entitlements (from SDK)" : {
+
+    },
+    "Current environment" : {
 
     },
     "Custom events" : {
@@ -188,6 +271,9 @@
 
     },
     "Customize the theme of the Octopus UI" : {
+
+    },
+    "Debug" : {
 
     },
     "Edit entitlements" : {
@@ -208,7 +294,26 @@
     "Error" : {
 
     },
+    "Error: %@" : {
+
+    },
     "Events" : {
+
+    },
+    "expires in %lld d" : {
+
+    },
+    "Feature env: %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Feature env: %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "Feature Environments" : {
 
     },
     "Followed" : {
@@ -220,16 +325,31 @@
     "Force Octopus A/B Tests Cohort" : {
 
     },
+    "Gamification level: %lld" : {
+
+    },
+    "Gamification score: %@" : {
+
+    },
+    "Gamification: disabled for this community" : {
+
+    },
     "Group" : {
 
     },
     "Group not accessible" : {
 
     },
+    "Group Sections" : {
+
+    },
     "Groups" : {
 
     },
     "Have a post directly linked to a specific object (article, product, item...) of your app" : {
+
+    },
+    "Host App Profile" : {
 
     },
     "Host app screen" : {
@@ -262,10 +382,25 @@
     "Label" : {
 
     },
+    "Live environments" : {
+
+    },
+    "Live state" : {
+
+    },
+    "Loading community data" : {
+
+    },
+    "Loading…" : {
+
+    },
     "Login" : {
 
     },
     "Logout" : {
+
+    },
+    "Messages: %@" : {
 
     },
     "Modal" : {
@@ -280,7 +415,16 @@
     "Navigation Bar" : {
 
     },
+    "Navigation mode (internal)" : {
+
+    },
     "Nickname" : {
+
+    },
+    "No connection" : {
+
+    },
+    "No device token yet. Grant the notification permission, then come back to this screen." : {
 
     },
     "No events yet" : {
@@ -289,10 +433,16 @@
     "No existing community to match this configuration" : {
 
     },
+    "No live feature env right now." : {
+
+    },
     "No unseen notifications" : {
 
     },
     "None" : {
+
+    },
+    "none (backend default)" : {
 
     },
     "Not existing Group" : {
@@ -319,6 +469,9 @@
     "Octopus" : {
 
     },
+    "Octopus community data" : {
+
+    },
     "Octopus SDK lets you override the language use in the UI." : {
 
     },
@@ -328,7 +481,28 @@
     "OK" : {
 
     },
+    "Once offline — open with nothing cached: the state replaces the list, with a Retry. Tap Retry: it passes through the loader, never through the empty state. A list that already has content keeps it and reports through a toast." : {
+
+    },
+    "onNavigateToProfile wired" : {
+
+    },
+    "onNavigateToProfile: %@" : {
+
+    },
+    "onNavigateToProfileEdit wired" : {
+
+    },
+    "onNavigateToProfileEdit: %@" : {
+
+    },
     "Open a specific post or group directly" : {
+
+    },
+    "Open community" : {
+
+    },
+    "Open my profile" : {
 
     },
     "Open Octopus" : {
@@ -341,6 +515,15 @@
 
     },
     "Open Post" : {
+
+    },
+    "Open profile" : {
+
+    },
+    "Open profile by clientUserId" : {
+
+    },
+    "Open Profile Directly" : {
 
     },
     "Open the Octopus Community" : {
@@ -364,6 +547,9 @@
     "Picture" : {
 
     },
+    "Point the sample at a live backend feature env (per ticket) instead of the default community." : {
+
+    },
     "Post text" : {
 
     },
@@ -373,13 +559,31 @@
     "Presentation" : {
 
     },
+    "Profile" : {
+
+    },
+    "Profile Field Lock" : {
+
+    },
+    "Push Device Token" : {
+
+    },
+    "Push Token" : {
+
+    },
     "Random identifier" : {
 
     },
     "Replace image" : {
 
     },
+    "Result" : {
+
+    },
     "Results" : {
+
+    },
+    "Retry" : {
 
     },
     "Save" : {
@@ -397,13 +601,25 @@
     "Scenarios" : {
 
     },
+    "Screen states" : {
+
+    },
+    "Screen states (offline)" : {
+
+    },
     "SDK Configuration" : {
 
     },
     "SDK configured with: %@" : {
 
     },
+    "SDK currently sees" : {
+
+    },
     "Security" : {
+
+    },
+    "See their Octopus posts" : {
 
     },
     "Select a group" : {
@@ -419,6 +635,9 @@
 
     },
     "Send Purchase event" : {
+
+    },
+    "Show and copy the APNs device token registered for this build" : {
 
     },
     "Some App Managed Fields" : {
@@ -439,6 +658,9 @@
     "Sync Follow Groups" : {
 
     },
+    "Terms Acceptance" : {
+
+    },
     "Testing" : {
 
     },
@@ -449,6 +671,9 @@
 
     },
     "The following switch will permanently override the internal cohort attribution for the current user." : {
+
+    },
+    "The token value does not reveal whether it is a sandbox or production token — that depends on the build's aps-environment entitlement (Debug = development, Release/TestFlight = production)." : {
 
     },
     "This group is not accessible to your current entitlements. Adjust them below to gain access." : {
@@ -466,10 +691,16 @@
     "Track A/B Tests" : {
 
     },
+    "Unified Profile" : {
+
+    },
     "Unique Identifier" : {
 
     },
     "URL (https:// or custom scheme)" : {
+
+    },
+    "Use custom community background color" : {
 
     },
     "Use logo on nav bar" : {

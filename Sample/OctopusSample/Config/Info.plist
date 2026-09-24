@@ -21,6 +21,10 @@
 	<string>12.0</string>
 	<key>OCTOPUS_API_KEY</key>
 	<string>$(OCTOPUS_API_KEY)</string>
+	<key>OCTOPUS_FEATURE_ENVS_HOST</key>
+	<string>$(OCTOPUS_FEATURE_ENVS_HOST)</string>
+	<key>OCTOPUS_FEATURE_ENVS_TOKEN</key>
+	<string>$(OCTOPUS_FEATURE_ENVS_TOKEN)</string>
 	<key>OCTOPUS_INTERNAL_DEMO_MODE</key>
 	<string>$(OCTOPUS_INTERNAL_DEMO_MODE)</string>
 	<key>OCTOPUS_MAGICLINK_FORCED_LOGIN_API_KEY</key>

@@ -78,17 +78,18 @@ class SSOConnectionTests: XCTestCase {
         try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
             id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             switch state {
             case let .connected(user, nil) where user.profile.isGuest:
                 guestExpectation.fulfill()
             default:
                 break
             }
-        }.store(in: &storage)
+        }
 
         await fulfillment(of: [guestExpectation], timeout: 5)
+        // The repository is only observed through its publisher, so it must be kept alive until the end.
+        withExtendedLifetime(connectionRepository) { }
     }
 
     func testFromNonConnectedToGuest() async throws {
@@ -114,19 +115,20 @@ class SSOConnectionTests: XCTestCase {
             })
         })
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             switch state {
             case .notConnected(nil):
                 notConnectedExpectation.fulfill()
             case let .connected(user, nil) where user.profile.isGuest:
                 guestExpectation.fulfill()
             default:
-                XCTFail("State is \(connectionRepository.connectionState).")
+                XCTFail("State is \(state).")
             }
-        }.store(in: &storage)
+        }
 
         await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 5, enforceOrder: true)
+        // The repository is only observed through its publisher, so it must be kept alive until the end.
+        withExtendedLifetime(connectionRepository) { }
     }
 
     func testFromNonConnectedToGuestWithError() async throws {
@@ -144,20 +146,21 @@ class SSOConnectionTests: XCTestCase {
             })
         })
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             switch state {
             case .notConnected(nil):
                 notConnectedExpectation.fulfill()
             case .notConnected:
                 notConnectedWithErrorExpectation.fulfill()
             default:
-                XCTFail("State is \(connectionRepository.connectionState).")
+                XCTFail("State is \(state).")
             }
-        }.store(in: &storage)
+        }
 
         await fulfillment(of: [notConnectedExpectation, notConnectedWithErrorExpectation], timeout: 5,
                           enforceOrder: true)
+        // The repository is only observed through its publisher, so it must be kept alive until the end.
+        withExtendedLifetime(connectionRepository) { }
     }
 
     func testFromGuestToNonGuestAfterClientUserConnected() async throws {
@@ -169,8 +172,7 @@ class SSOConnectionTests: XCTestCase {
         try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
             id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             switch state {
             case .notConnected(nil):
                 notConnectedExpectation.fulfill()
@@ -179,9 +181,9 @@ class SSOConnectionTests: XCTestCase {
             case let .connected(user, nil) where !user.profile.isGuest:
                 authProfileExpectation.fulfill()
             default:
-                XCTFail("State is \(connectionRepository.connectionState).")
+                XCTFail("State is \(state).")
             }
-        }.store(in: &storage)
+        }
 
         await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 5,
                           enforceOrder: true)
@@ -224,8 +226,7 @@ class SSOConnectionTests: XCTestCase {
         try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
             id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             switch state {
             case .notConnected(nil):
                 notConnectedExpectation.fulfill()
@@ -234,9 +235,9 @@ class SSOConnectionTests: XCTestCase {
             case let .connected(user, _) where user.profile.isGuest:
                 guestWithErrorExpectation.fulfill()
             default:
-                XCTFail("State is \(connectionRepository.connectionState).")
+                XCTFail("State is \(state).")
             }
-        }.store(in: &storage)
+        }
 
         await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 5,
                           enforceOrder: true)
@@ -276,8 +277,7 @@ class SSOConnectionTests: XCTestCase {
             id: "profileId", userId: "firstUserId", nickname: "ClientUser1", isGuest: false),
         clientUserId: "clientUser1")
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             switch state {
             case .notConnected(nil):
                 notConnectedExpectation.fulfill()
@@ -286,9 +286,9 @@ class SSOConnectionTests: XCTestCase {
             case let .connected(user, nil) where user.profile.userId == "newUserId":
                 connected2Expectation.fulfill()
             default:
-                XCTFail("State is \(connectionRepository.connectionState).")
+                XCTFail("State is \(state).")
             }
-        }.store(in: &storage)
+        }
 
         await fulfillment(of: [notConnectedExpectation, connected1Expectation], timeout: 5,
                           enforceOrder: true)
@@ -364,6 +364,101 @@ class SSOConnectionTests: XCTestCase {
         } catch {
             XCTFail("Unexpected error type: \(error)")
         }
+    }
+
+    /// A guest can be banned on its own, with no client user in the picture: the backend refuses the
+    /// guest exchange itself. Until `GetGuestJwtResponse.ErrorCode` carried `USER_BANNED` the SDK could
+    /// only see an unknown failure — the reason travelled in the human-readable `message`, which is not
+    /// something to match on (matching the English sentence is what logged banned users out in every
+    /// other locale). With the code in place the ban is now legible from the guest exchange too.
+    func testBannedGuestSurfacesTheServerMessage() async throws {
+        // Precondition: no client user data, no user id, no profile in db
+        try await setupWithNonConnectedWithoutErrorState()
+
+        mockUserService.injectNextGetGuestJwtResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [.with {
+                    $0.errorCode = .userBanned
+                    $0.message = "Your account has been blocked."
+                }]
+            })
+        })
+
+        let bannedExpectation = XCTestExpectation(description: "Not connected, carrying the ban message")
+        let connectionRepository = makeConnectionRepository { state in
+            switch state {
+            case .notConnected(nil):
+                break
+            case .notConnected:
+                if state.userBannedMessage == "Your account has been blocked." {
+                    bannedExpectation.fulfill()
+                }
+            default:
+                XCTFail("State is \(state). A banned guest must not end up connected.")
+            }
+        }
+
+        await fulfillment(of: [bannedExpectation], timeout: 5)
+        XCTAssertEqual(connectionRepository.connectionState.userBannedMessage, "Your account has been blocked.")
+    }
+
+    /// A refused client-user exchange normally falls back to a guest session, so the community stays
+    /// browsable through a passing failure. A ban must not take that exit: answering the server's refusal
+    /// with a brand-new guest identity both hands the banned user a way around it and throws away the only
+    /// explanation there was, leaving the UI with nothing to say but "try again in a few moments" — advice
+    /// a banned user can only follow forever. The ban travels up to the caller instead.
+    func testBanIsNotAnsweredWithAGuestSession() async throws {
+        // Precondition: no client user data, no user id, no profile in db
+        try await setupWithNonConnectedWithoutErrorState()
+
+        // The guest connection attempted right after init fails, leaving the repository not connected:
+        // this is the state in which the client-user exchange below would otherwise fall back to a guest.
+        mockUserService.injectNextGetGuestJwtResponse(.with {
+            $0.result = .fail(.with { $0.errors = [] })
+        })
+
+        let notConnectedWithErrorExpectation = XCTestExpectation(description: "State is not connected with error")
+        let connectionRepository = makeConnectionRepository { state in
+            switch state {
+            case .notConnected(nil):
+                break
+            case .notConnected:
+                notConnectedWithErrorExpectation.fulfill()
+            default:
+                XCTFail("State is \(state). A banned user must not end up on a guest session.")
+            }
+        }
+
+        await fulfillment(of: [notConnectedWithErrorExpectation], timeout: 5)
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 1)
+
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [.with {
+                    $0.errorCode = .userBanned
+                    $0.message = "You have been banned"
+                }]
+            })
+        })
+
+        do {
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUserId", profile: .init(nickname: "Nick", bio: nil, picture: nil)),
+                tokenProvider: { "CLIENT_TOKEN" }
+            )
+            XCTFail("connectUser should have thrown the ban instead of connecting a guest")
+        } catch let error as ConnectionError {
+            guard case let .detailedErrors(errors) = error else {
+                XCTFail("Expected detailedErrors, got \(error)")
+                return
+            }
+            XCTAssertEqual(errors.first?.reason, .userBanned)
+            XCTAssertEqual(errors.first?.message, "You have been banned")
+        }
+
+        // No second guest exchange was attempted, and the state still carries the server's own wording.
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 1)
+        XCTAssertEqual(connectionRepository.connectionState.userBannedMessage, "You have been banned")
     }
 
     func testConnectUserThrowsProfileErrorWhenNicknameAlreadyTaken() async throws {
@@ -560,6 +655,30 @@ class SSOConnectionTests: XCTestCase {
         XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
     }
 
+    /// Builds the repository and starts observing its state without letting the main queue run in between.
+    ///
+    /// `connectionState` starts at `.notConnected(nil)` and every change to it is delivered on the main
+    /// queue, while `@Published` replays only the *current* value to a new subscriber. Building the
+    /// repository and subscribing on the next line therefore races the queue: when it drains in that window
+    /// — routine on a loaded CI machine — the subscriber's first value is already `.connected`, the initial
+    /// state is lost and the ordered waits below fail. Parking a block on the main queue first puts the
+    /// whole window behind it: the queue is serial and FIFO, so nothing the initialiser schedules there can
+    /// be delivered until the subscription is in place.
+    ///
+    /// Safe whichever thread the test body runs on: the parked block is released before this returns, so a
+    /// test that happens to run on the main queue simply finds the semaphore already signalled.
+    private func makeConnectionRepository(observingState observe: @escaping (ConnectionState) -> Void)
+    -> SSOConnectionRepository {
+        let mainQueueHeld = DispatchSemaphore(value: 0)
+        DispatchQueue.main.async { mainQueueHeld.wait() }
+        defer { mainQueueHeld.signal() }
+
+        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil),
+                                                          injector: injector)
+        connectionRepository.$connectionState.sink(receiveValue: observe).store(in: &storage)
+        return connectionRepository
+    }
+
     private func setupWithNonConnectedWithoutErrorState(previousProfileId: String? = nil) async throws {
         userDataStorage.store(clientUserData: nil)
         userDataStorage.store(userData: nil)
@@ -579,7 +698,6 @@ class SSOConnectionTests: XCTestCase {
         let guestInDbExpectation = XCTestExpectation(description: "Guest profile present in db")
 
         userProfileDatabase.profilePublisher(userId: profile.userId)
-            .replaceError(with: nil)
             .sink { profile in
                 if let profile, profile.isGuest {
                     guestInDbExpectation.fulfill()
@@ -601,7 +719,6 @@ class SSOConnectionTests: XCTestCase {
         let profileInDbExpectation = XCTestExpectation(description: "Profile present in db")
 
         userProfileDatabase.profilePublisher(userId: profile.userId)
-            .replaceError(with: nil)
             .sink { profile in
                 if let profile, !profile.isGuest {
                     profileInDbExpectation.fulfill()

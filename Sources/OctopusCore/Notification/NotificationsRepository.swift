@@ -76,13 +76,22 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
         }.store(in: &storage)
 
         // When the push notification permission infos and the deviceTokenSetOnce changes,
-        // update the canHandlePushNotifications
+        // update the canHandlePushNotifications.
+        // Both inputs are moved onto the main queue before being combined, because they are written from
+        // different threads: `pushNotifPermissionGranted` on the main actor, `deviceTokenSetOnce` on
+        // whichever thread calls `set(notificationDeviceToken:)`. `CombineLatest` stores an incoming value
+        // under its lock but delivers the combination after releasing it, so two values arriving at once can
+        // be delivered in the wrong order and leave the result latched on the stale pair — here, "permission
+        // granted but no device token" once both are actually true, with no further input to correct it.
+        // Feeding it from a single queue removes that concurrency; delivering on the main queue also keeps
+        // the UI observers of `canHandlePushNotifications` on the main thread.
         Publishers.CombineLatest(
-            $pushNotifPermissionGranted.removeDuplicates(),
-            $deviceTokenSetOnce.removeDuplicates()
+            $pushNotifPermissionGranted.removeDuplicates().receive(on: DispatchQueue.main),
+            $deviceTokenSetOnce.removeDuplicates().receive(on: DispatchQueue.main)
         )
-        .sink { [unowned self] pushNotifPermissionGranted, deviceTokenSetOnce in
-            canHandlePushNotifications = pushNotifPermissionGranted && deviceTokenSetOnce
+        // weak, not unowned: delivery is asynchronous now, so it can outlive this repository
+        .sink { [weak self] pushNotifPermissionGranted, deviceTokenSetOnce in
+            self?.canHandlePushNotifications = pushNotifPermissionGranted && deviceTokenSetOnce
         }.store(in: &storage)
     }
 
@@ -106,7 +115,7 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
     }
 
     // MARK: Internal Notifications
-    public func getNotifications() -> AnyPublisher<[OctoNotification], Error> {
+    public func getNotifications() -> AnyPublisher<[OctoNotification], Never> {
         return notificationsDatabase.notificationsPublisher()
     }
 
@@ -141,7 +150,7 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
 
     // MARK: Settings
 
-    public func getSettings() -> AnyPublisher<NotificationSettings, Error> {
+    public func getSettings() -> AnyPublisher<NotificationSettings, Never> {
         return settingsDatabase.notificationSettingsPublisher()
             .replaceNil(with: .defaultValue)
             .eraseToAnyPublisher()

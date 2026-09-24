@@ -18,8 +18,10 @@ public class OctopusSDKCore: ObservableObject {
     public let postsRepository: PostsRepository
     public let commentsRepository: CommentsRepository
     public let repliesRepository: RepliesRepository
+    public let userCommentsRepository: UserCommentsRepository
     public let topicsRepository: TopicsRepository
     public let moderationRepository: ModerationRepository
+    public let reactionsRepository: ReactionsRepository
     public let externalLinksRepository: ExternalLinksRepository
     public let trackingRepository: TrackingRepository
     public let notificationsRepository: NotificationsRepository
@@ -34,6 +36,24 @@ public class OctopusSDKCore: ObservableObject {
     public let validators: Validators
 
     public let sdkConfig: OctopusSDKConfiguration
+
+    /// Whether the device currently has a network connection. The UI keeps its "no connection" toast up
+    /// until this turns back to `true` (Screen states spec).
+    public var connectionAvailablePublisher: AnyPublisher<Bool, Never> {
+        injector.getInjected(identifiedBy: Injected.networkMonitor).connectionAvailablePublisher
+    }
+
+    /// See `OctopusSDK.debugOverrideConnectionAvailable(_:)`.
+    ///
+    /// Not behind `#if DEBUG`, unlike an earlier revision: the public wrapper is gated by
+    /// `@_spi(OctopusInternalTesting)` — like the five other `debugOverride*` affordances — and the
+    /// Sample calls it unguarded. A DEBUG-only member broke the Release archive of the internal
+    /// TestFlight build, which is precisely the build that needs it: a simulator always reports a
+    /// connection, so only a real device can exercise the offline states.
+    public func debugOverrideConnectionAvailable(_ available: Bool?) {
+        injector.getInjected(identifiedBy: Injected.networkMonitor)
+            .debugOverrideConnectionAvailable(available)
+    }
 
     private let injector: Injector
     private let connectionMode: ConnectionMode
@@ -88,6 +108,8 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { PostsRepository(injector: $0) }
         injector.register { CommentsRepository(injector: $0) }
         injector.register { RepliesRepository(injector: $0) }
+        injector.register { UserCommentsRepository(injector: $0) }
+        injector.register { ReactionsRepository(injector: $0) }
         injector.register { TopicsRepository(injector: $0) }
         injector.register { ModerationRepository(injector: $0) }
         injector.register { ExternalLinksRepository(injector: $0, apiKey: apiKey) }
@@ -176,10 +198,12 @@ public class OctopusSDKCore: ObservableObject {
         postsRepository = injector.getInjected(identifiedBy: Injected.postsRepository)
         commentsRepository = injector.getInjected(identifiedBy: Injected.commentsRepository)
         repliesRepository = injector.getInjected(identifiedBy: Injected.repliesRepository)
+        userCommentsRepository = injector.getInjected(identifiedBy: Injected.userCommentsRepository)
         topicsRepository = injector.getInjected(identifiedBy: Injected.topicsRepository)
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
         validators = injector.getInjected(identifiedBy: Injected.validators)
         moderationRepository = injector.getInjected(identifiedBy: Injected.moderationRepository)
+        reactionsRepository = injector.getInjected(identifiedBy: Injected.reactionsRepository)
         externalLinksRepository = injector.getInjected(identifiedBy: Injected.externalLinksRepository)
         trackingRepository = injector.getInjected(identifiedBy: Injected.trackingRepository)
         notificationsRepository = injector.getInjected(identifiedBy: Injected.notificationsRepository)
@@ -195,12 +219,16 @@ public class OctopusSDKCore: ObservableObject {
         // close sessions
         injector.getInjected(identifiedBy: Injected.appSessionMonitor).stop()
 
-        // send remaining events
+        // send remaining events, then stop the monitor: the tracking store is torn down at the end of
+        // this function while this core is still alive (it is only released once the caller replaces it),
+        // and a send in flight would then `save()` on a coordinator whose store is gone. CoreData raises
+        // an ObjC exception there, which `try` cannot catch — the app aborts.
         do {
             try await injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).sendAllEvents()
         } catch {
             if #available(iOS 14, *) { Logger.other.debug("Sending all pending events failed: \(error)") }
         }
+        injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).stop()
 
         // disconnecting user
         do {
@@ -247,9 +275,27 @@ public class OctopusSDKCore: ObservableObject {
         } catch {
             if #available(iOS 14, *) { Logger.other.debug("Cleaning tracking db files failed: \(error)") }
         }
+
+        // Last, so the steps above still run against monitors that are alive, exactly as before.
+        stopAllMonitors()
     }
 
     deinit {
+        stopAllMonitors()
+    }
+
+    /// Cancels every monitor's subscriptions.
+    ///
+    /// Called from `deinit`, and from `cleanupBeforeCommunitySwitch()` because `deinit` is not
+    /// guaranteed to come: a switch replaces this core, but replacing it does not release it. A screen
+    /// built on it can still be held by SwiftUI — a view model whose Combine subscription keeps a
+    /// profile, its feed, its feed manager and, at the end of that chain, this core's remote client —
+    /// and a core kept alive that way keeps monitors subscribed to the community it was built for.
+    /// Stopping them during the switch makes the previous core silent whoever still holds it.
+    ///
+    /// Every `stop()` is idempotent, so the two monitors the cleanup stops earlier, for sequencing
+    /// reasons of their own, are safely stopped again here.
+    private func stopAllMonitors() {
         injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).stop()
         injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).stop()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).stop()

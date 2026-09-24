@@ -14,14 +14,31 @@ extension View {
         transform(self)
     }
 
-    /// Sets an accessibility identifier (used as a QA test id), gated for iOS 13 where the modifier
-    /// is unavailable.
+    /// Sets an accessibility identifier (used as a QA test id).
+    ///
+    /// On iOS 13 `accessibilityIdentifier` does not exist, but its predecessor
+    /// `accessibility(identifier:)` does — so the identifier is preserved across the whole supported
+    /// range rather than silently dropped on the minimum deployment target, which would make every QA
+    /// test id unresolvable there.
     @ViewBuilder
     func accessibilityId(_ identifier: String) -> some View {
         if #available(iOS 14.0, *) {
             self.accessibilityIdentifier(identifier)
         } else {
-            self
+            self.accessibility(identifier: identifier)
+        }
+    }
+
+    /// Sets an accessibility label, using the iOS 13 predecessor below iOS 14.
+    ///
+    /// Named `…Compat` rather than shadowing SwiftUI's own `accessibilityLabel`, which would make the
+    /// iOS 14+ branch recurse into itself.
+    @ViewBuilder
+    func accessibilityLabelCompat(_ label: String) -> some View {
+        if #available(iOS 14.0, *) {
+            self.accessibilityLabel(label)
+        } else {
+            self.accessibility(label: Text(label))
         }
     }
 }

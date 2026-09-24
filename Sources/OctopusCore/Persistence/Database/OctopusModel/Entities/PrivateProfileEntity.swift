@@ -24,6 +24,8 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
 
     @NSManaged public var descPostFeedId: String
     @NSManaged public var ascPostFeedId: String
+    @NSManaged public var descCommentFeedId: String
+    @NSManaged public var ascCommentFeedId: String
     @NSManaged public var notificationBadgeCount: Int
     @NSManaged public var blocking: NSOrderedSet
     @NSManaged public var hasSeenOnboardingOptional: NSNumber?

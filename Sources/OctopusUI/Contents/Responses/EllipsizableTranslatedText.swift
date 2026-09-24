@@ -5,53 +5,48 @@
 import Foundation
 import OctopusCore
 
+/// A translatable user-generated text, plus how to shorten it when it is displayed.
+///
+/// The text is kept whole: truncation is applied by `RichText` at render time, after the markdown
+/// has been parsed, so that link detection always sees the entire text and a link cut by the
+/// truncation still points at its complete URL.
 struct EllipsizableTranslatedText: Equatable {
     private let translatableText: TranslatableText
-    private let textIsEllipsized: Bool
-    private let translatedTextIsEllipsized: Bool
+    /// The truncation to apply when rendering, or `nil` to render the text in full.
+    let truncation: TextTruncation?
 
     var hasTranslation: Bool { translatableText.hasTranslation }
     var originalLanguage: String? { translatableText.originalLanguage }
 
-    init?(text: TranslatableText?, ellipsize: Bool = true, maxLength: Int = 200, maxLines: Int = 4) {
+    init?(text: TranslatableText?, ellipsize: Bool = true) {
         guard let text else { return nil }
-        self.init(text: text, ellipsize: ellipsize, maxLength: maxLength, maxLines: maxLines)
+        self.init(text: text, ellipsize: ellipsize)
     }
 
-    init(text: TranslatableText, ellipsize: Bool = true, maxLength: Int = 200, maxLines: Int = 4) {
-        guard ellipsize else {
-            translatableText = text
-            textIsEllipsized = false
-            translatedTextIsEllipsized = false
-            return
-        }
-        // Display max `maxLength` chars and `maxLines` new lines.
-        let displayableText = text.originalText
-            .prefix(maxLength)
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .prefix(maxLines)
-            .joined(separator: "\n")
-
-        let displayableTranslatedText = text.translatedText.map {
-            String($0.prefix(maxLength))
-                .split(separator: "\n", omittingEmptySubsequences: false)
-                .prefix(maxLines)
-                .joined(separator: "\n")
-        }
-
-        translatableText = TranslatableText(originalText: displayableText,
-                                            originalLanguage: text.originalLanguage,
-                                            translatedText: displayableTranslatedText)
-        textIsEllipsized = text.originalText != displayableText
-        translatedTextIsEllipsized = text.translatedText != displayableTranslatedText
+    init(text: TranslatableText, ellipsize: Bool = true) {
+        translatableText = text
+        truncation = ellipsize ? TextTruncation() : nil
     }
 
-    func getText(translated: Bool) -> String {
+    /// The whole text, untruncated. This is what gets handed to `RichText` along with `truncation`.
+    func getFullText(translated: Bool) -> String {
         translatableText.getText(translated: translated)
     }
 
-    func getIsEllipsized(translated: Bool) -> Bool {
-        guard hasTranslation else { return textIsEllipsized }
-        return translated ? translatedTextIsEllipsized : textIsEllipsized
+    /// A plain-string rendition of the displayed text, for consumers that cannot use the
+    /// attributed one — today, VoiceOver labels.
+    ///
+    /// Note this truncates the markdown *source*, whereas the display truncates the *parsed*
+    /// text (`RichText`). The two agree for plain-text bodies; for a body containing markdown,
+    /// the syntax the parser strips still counts against the budget here, so this rendition can
+    /// report a truncation the screen does not show, and, symmetrically, can hand back fewer
+    /// visible characters than the screen displays, since part of its budget goes to markdown
+    /// syntax the reader never sees. Parsing here too would double the markdown parses per feed
+    /// cell per render, which is not worth it for a label. It also reads the markdown source
+    /// verbatim, so link syntax and URLs are spoken as written.
+    func getTruncatedText(translated: Bool) -> (text: String, isTruncated: Bool) {
+        let text = getFullText(translated: translated)
+        guard let truncation else { return (text, false) }
+        return truncation.truncate(text)
     }
 }

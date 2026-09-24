@@ -18,6 +18,9 @@ struct ResponseFeedItemView: View {
     /// closure when you want the full card to be tappable (e.g. the featured comment in
     /// `PostSummaryView` opens the parent post detail on card tap).
     var onCardTap: (() -> Void)?
+    /// Background color of the response card. `nil` (default) keeps the standard `gray200`; the
+    /// profile Comments tab passes a tint to highlight the connected user's own comment/reply.
+    var cardBackgroundColor: Color?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let displayResponseDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
@@ -33,6 +36,7 @@ struct ResponseFeedItemView: View {
             response: ResponseViewData(from: response),
             context: .summary(onCardTap: onCardTap),
             showsRepliesRow: displayChildCount,
+            cardBackgroundColor: cardBackgroundColor,
             zoomableImageInfo: $zoomableImageInfo,
             reactionTapped: { reactionTapped($0, response.uuid) },
             displayProfile: displayProfile,
@@ -79,12 +83,16 @@ struct ResponseFeedItemView: View {
         }
     }
 
+    /// Unlike `PostSummaryView`, this label always reads the truncated text and that is correct
+    /// here: `text`'s truncation policy is baked in at `DisplayableFeedResponse` construction
+    /// (`ellipsizeText`/`ellipsize` in its `init(from:)` overloads) and this view has no inline
+    /// expansion state of its own, so render and label can never disagree.
     private var accessibilityDescription: LocalizedStringKey {
         let authorName = response.author.name.localizedString(locale: languageManager.overridenLocale)
 
         if let responseText = response.text {
-            let text = responseText.getText(translated: true)
-            let textToRead = "\(text)\(responseText.getIsEllipsized(translated: true) ? "..." : "")"
+            let displayed = responseText.getTruncatedText(translated: true)
+            let textToRead = "\(displayed.text)\(displayed.isTruncated ? "..." : "")"
             if response.image != nil {
                 return "Accessibility.Response.Summary.TextAndImage_author:\(authorName)_date:\(response.relativeDate)_text:\(textToRead)"
             } else {

@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct Com_Octopuscommunity_SendCommunityNotificationRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_SendCommunityNotificationRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -34,7 +34,7 @@ public struct Com_Octopuscommunity_SendCommunityNotificationRequest: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public struct NotificationContent: Sendable {
+  public nonisolated struct NotificationContent: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -49,7 +49,7 @@ public struct Com_Octopuscommunity_SendCommunityNotificationRequest: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_SendCommunityNotificationResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_SendCommunityNotificationResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -62,7 +62,7 @@ public struct Com_Octopuscommunity_SendCommunityNotificationResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_GetUserNotificationsRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetUserNotificationsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -86,7 +86,7 @@ public struct Com_Octopuscommunity_GetUserNotificationsRequest: Sendable {
   fileprivate var _markdownText: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_GetUserNotificationsResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetUserNotificationsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -98,7 +98,7 @@ public struct Com_Octopuscommunity_GetUserNotificationsResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_MarkNotificationsAsReadRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_MarkNotificationsAsReadRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -122,7 +122,7 @@ public struct Com_Octopuscommunity_MarkNotificationsAsReadRequest: Sendable {
   fileprivate var _read: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_MarkNotificationsAsReadResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_MarkNotificationsAsReadResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -136,7 +136,7 @@ public struct Com_Octopuscommunity_MarkNotificationsAsReadResponse: Sendable {
 }
 
 ///Send it each time you receive it and when the user changes. Notification language is related to language tag sent in header of this request
-public struct Com_Octopuscommunity_RegisterPushTokenRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_RegisterPushTokenRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -169,7 +169,7 @@ public struct Com_Octopuscommunity_RegisterPushTokenRequest: Sendable {
   fileprivate var _isSandbox: Bool? = nil
 }
 
-public struct Com_Octopuscommunity_RegisterPushTokenResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_RegisterPushTokenResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -179,38 +179,7 @@ public struct Com_Octopuscommunity_RegisterPushTokenResponse: Sendable {
   public init() {}
 }
 
-public struct Com_Octopuscommunity_SetNotificationSettingsRequest: Sendable {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  public var settings: Com_Octopuscommunity_NotificationSettings {
-    get {_settings ?? Com_Octopuscommunity_NotificationSettings()}
-    set {_settings = newValue}
-  }
-  /// Returns true if `settings` has been explicitly set.
-  public var hasSettings: Bool {self._settings != nil}
-  /// Clears the value of `settings`. Subsequent reads from it will return its default value.
-  public mutating func clearSettings() {self._settings = nil}
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-
-  fileprivate var _settings: Com_Octopuscommunity_NotificationSettings? = nil
-}
-
-public struct Com_Octopuscommunity_GetNotificationSettingsRequest: Sendable {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-}
-
-public struct Com_Octopuscommunity_NotificationSettingsResponse: Sendable {
+public nonisolated struct Com_Octopuscommunity_SetNotificationSettingsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -231,7 +200,38 @@ public struct Com_Octopuscommunity_NotificationSettingsResponse: Sendable {
   fileprivate var _settings: Com_Octopuscommunity_NotificationSettings? = nil
 }
 
-public struct Com_Octopuscommunity_NotificationSettings: Sendable {
+public nonisolated struct Com_Octopuscommunity_GetNotificationSettingsRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_NotificationSettingsResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var settings: Com_Octopuscommunity_NotificationSettings {
+    get {_settings ?? Com_Octopuscommunity_NotificationSettings()}
+    set {_settings = newValue}
+  }
+  /// Returns true if `settings` has been explicitly set.
+  public var hasSettings: Bool {self._settings != nil}
+  /// Clears the value of `settings`. Subsequent reads from it will return its default value.
+  public mutating func clearSettings() {self._settings = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _settings: Com_Octopuscommunity_NotificationSettings? = nil
+}
+
+public nonisolated struct Com_Octopuscommunity_NotificationSettings: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -245,9 +245,9 @@ public struct Com_Octopuscommunity_NotificationSettings: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "com.octopuscommunity"
+fileprivate nonisolated let _protobuf_package = "com.octopuscommunity"
 
-extension Com_Octopuscommunity_SendCommunityNotificationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SendCommunityNotificationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SendCommunityNotificationRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}langToNotifContent\0\u{1}octoObjectId\0")
 
@@ -282,7 +282,7 @@ extension Com_Octopuscommunity_SendCommunityNotificationRequest: SwiftProtobuf.M
   }
 }
 
-extension Com_Octopuscommunity_SendCommunityNotificationRequest.NotificationContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SendCommunityNotificationRequest.NotificationContent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_SendCommunityNotificationRequest.protoMessageName + ".NotificationContent"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}text\0")
 
@@ -312,7 +312,7 @@ extension Com_Octopuscommunity_SendCommunityNotificationRequest.NotificationCont
   }
 }
 
-extension Com_Octopuscommunity_SendCommunityNotificationResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SendCommunityNotificationResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SendCommunityNotificationResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}commuNotifId\0")
 
@@ -342,7 +342,7 @@ extension Com_Octopuscommunity_SendCommunityNotificationResponse: SwiftProtobuf.
   }
 }
 
-extension Com_Octopuscommunity_GetUserNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetUserNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetUserNotificationsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}markdownText\0")
 
@@ -381,7 +381,7 @@ extension Com_Octopuscommunity_GetUserNotificationsRequest: SwiftProtobuf.Messag
   }
 }
 
-extension Com_Octopuscommunity_GetUserNotificationsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetUserNotificationsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetUserNotificationsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notifications\0")
 
@@ -411,7 +411,7 @@ extension Com_Octopuscommunity_GetUserNotificationsResponse: SwiftProtobuf.Messa
   }
 }
 
-extension Com_Octopuscommunity_MarkNotificationsAsReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_MarkNotificationsAsReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkNotificationsAsReadRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notificationIds\0\u{1}read\0")
 
@@ -450,7 +450,7 @@ extension Com_Octopuscommunity_MarkNotificationsAsReadRequest: SwiftProtobuf.Mes
   }
 }
 
-extension Com_Octopuscommunity_MarkNotificationsAsReadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_MarkNotificationsAsReadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkNotificationsAsReadResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notificationIds\0")
 
@@ -480,7 +480,7 @@ extension Com_Octopuscommunity_MarkNotificationsAsReadResponse: SwiftProtobuf.Me
   }
 }
 
-extension Com_Octopuscommunity_RegisterPushTokenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_RegisterPushTokenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RegisterPushTokenRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pushToken\0\u{1}isSandbox\0")
 
@@ -519,7 +519,7 @@ extension Com_Octopuscommunity_RegisterPushTokenRequest: SwiftProtobuf.Message, 
   }
 }
 
-extension Com_Octopuscommunity_RegisterPushTokenResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_RegisterPushTokenResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RegisterPushTokenResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -538,7 +538,7 @@ extension Com_Octopuscommunity_RegisterPushTokenResponse: SwiftProtobuf.Message,
   }
 }
 
-extension Com_Octopuscommunity_SetNotificationSettingsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_SetNotificationSettingsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SetNotificationSettingsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}settings\0")
 
@@ -572,7 +572,7 @@ extension Com_Octopuscommunity_SetNotificationSettingsRequest: SwiftProtobuf.Mes
   }
 }
 
-extension Com_Octopuscommunity_GetNotificationSettingsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_GetNotificationSettingsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetNotificationSettingsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -591,7 +591,7 @@ extension Com_Octopuscommunity_GetNotificationSettingsRequest: SwiftProtobuf.Mes
   }
 }
 
-extension Com_Octopuscommunity_NotificationSettingsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_NotificationSettingsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NotificationSettingsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}settings\0")
 
@@ -625,7 +625,7 @@ extension Com_Octopuscommunity_NotificationSettingsResponse: SwiftProtobuf.Messa
   }
 }
 
-extension Com_Octopuscommunity_NotificationSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Com_Octopuscommunity_NotificationSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NotificationSettings"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pushNotificationEnabled\0")
 

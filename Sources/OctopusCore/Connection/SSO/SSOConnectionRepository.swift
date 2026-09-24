@@ -258,7 +258,14 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
                     if configRepository.userConfig?.canAccessCommunity == false {
                         isWaitingForCommunityAccessToConnectClient = true
                     }
-                    if case .notConnected = connectionState {
+                    // Falling back to a guest keeps the community browsable when the exchange fails for a
+                    // passing reason. A ban is not one: it is the server's answer about this very user,
+                    // and handing them a fresh guest identity instead both answers a refusal with a way
+                    // around it and drops the only explanation there was — leaving the UI with nothing
+                    // better to offer than trying again in a few moments, which is exactly what a banned
+                    // user cannot do. Let the ban travel up instead, all the way to the host's
+                    // `connectUser`, as it does on Android.
+                    if case .notConnected = connectionState, !isBan(error) {
                         try await connectAsGuest()
                     } else {
                         throw error
@@ -288,6 +295,14 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
             throw connectionError
         }
         isConnecting = false
+    }
+
+    /// Whether a failed client-user exchange was the server refusing a banned user, as opposed to the
+    /// passing failures (no network, server hiccup) a guest session is a reasonable answer to.
+    private func isBan(_ error: Error) -> Bool {
+        guard let exchangeTokenError = error as? ExchangeTokenError,
+              case let .detailedErrors(errors) = exchangeTokenError else { return false }
+        return errors.contains { $0.reason == .userBanned }
     }
 
     private func connectAsGuest() async throws(ConnectionError) {

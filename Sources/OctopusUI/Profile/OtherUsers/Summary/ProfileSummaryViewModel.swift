@@ -15,6 +15,9 @@ class ProfileSummaryViewModel: ObservableObject {
     @Published private(set) var dismiss = false
     @Published private(set) var error: DisplayableString?
     @Published private(set) var isLoading: Bool = false
+    /// Set when the profile's first load failed with nothing cached to show. Without it the screen
+    /// spins forever: nothing else on it can report the failure (Screen states spec).
+    @Published private(set) var loadFailure: ScreenStateFailure?
 
     @Published var authenticationAction: ConnectedActionReplacement?
     var authenticationActionBinding: Binding<ConnectedActionReplacement?> {
@@ -27,12 +30,21 @@ class ProfileSummaryViewModel: ObservableObject {
     @Published var blockUserDone = false
 
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
+    @Published private(set) var commentsViewModel: ProfileCommentsListViewModel?
+    /// Whether the Comments tab should be shown on this (other member's) profile. Requires the
+    /// community config flag `showCommentsOnOtherProfiles`, a resolved comments feed, and that loading it
+    /// wasn't refused server-side (`ProfileCommentsListViewModel.isForbidden`).
+    @Published private(set) var showCommentsTab = false
+
+    @Published private var showCommentsOnOtherProfiles = false
+    @Published private var commentsForbidden = false
 
     let octopus: OctopusSDK
     let profileId: String
     let connectedActionChecker: ConnectedActionChecker
 
     private var storage = [AnyCancellable]()
+    private var commentsViewModelStorage: AnyCancellable?
 
     init(octopus: OctopusSDK, translationStore: ContentTranslationPreferenceStore, profileId: String) {
         self.octopus = octopus
@@ -60,6 +72,24 @@ class ProfileSummaryViewModel: ObservableObject {
             } else {
                 postFeedViewModel = nil
             }
+
+            // Comments tab — gated by `showCommentsOnOtherProfiles`; hidden if the profile has
+            // no comment feed or if loading it is refused server-side (`isForbidden`, observed below).
+            if let descCommentFeedId = profile?.descCommentFeedId, !descCommentFeedId.isEmpty {
+                if commentsViewModel?.feedId != descCommentFeedId {
+                    let commentsViewModel = ProfileCommentsListViewModel(
+                        octopus: octopus, feedId: descCommentFeedId, isOwnProfile: false)
+                    self.commentsViewModel = commentsViewModel
+                    commentsForbidden = false
+                    commentsViewModelStorage = commentsViewModel.$isForbidden
+                        .removeDuplicates()
+                        .sink { [unowned self] in commentsForbidden = $0 }
+                }
+            } else {
+                commentsViewModel = nil
+                commentsViewModelStorage = nil
+                commentsForbidden = false
+            }
         }.store(in: &storage)
 
         octopus.core.configRepository
@@ -69,6 +99,28 @@ class ProfileSummaryViewModel: ObservableObject {
             .sink { [unowned self] in
                 displayAccountAge = $0
             }.store(in: &storage)
+
+        octopus.core.configRepository
+            .communityConfigPublisher
+            .map { $0?.showCommentsOnOtherProfiles ?? false }
+            .removeDuplicates()
+            .sink { [unowned self] in
+                showCommentsOnOtherProfiles = $0
+            }.store(in: &storage)
+
+        Publishers.CombineLatest3(
+            $showCommentsOnOtherProfiles,
+            $commentsViewModel,
+            $commentsForbidden
+        )
+        .map { showCommentsOnOtherProfiles, commentsViewModel, commentsForbidden in
+            showsOtherUserCommentsTab(showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                                      hasCommentsFeed: commentsViewModel != nil,
+                                      commentsForbidden: commentsForbidden)
+        }
+        .removeDuplicates()
+        .sink { [unowned self] in showCommentsTab = $0 }
+        .store(in: &storage)
 
         Task {
             await refreshProfile(manual: false)
@@ -82,6 +134,12 @@ class ProfileSummaryViewModel: ObservableObject {
         }
     }
 
+    /// Re-runs the first load, from the error state's CTA.
+    func retryFirstLoad() {
+        loadFailure = nil
+        Task { await refreshProfile(manual: false) }
+    }
+
     /// Refresh the profile
     /// - Parameter manual: whether the refresh is a manual one
     /// - Returns: true if the refresh was successful, false otherwise
@@ -89,12 +147,21 @@ class ProfileSummaryViewModel: ObservableObject {
     private func refreshProfile(manual: Bool) async -> Bool {
         do {
             try await octopus.core.profileRepository.fetchProfile(profileId: profileId)
+            loadFailure = nil
         } catch {
+            if profile == nil {
+                loadFailure = ScreenStateFailure(error)
+                return false
+            }
             if manual {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
-            } else if case .noNetwork = error {
+            } else if case .noNetwork = error,
+                      case .toast = LoadFailureChannel(
+                        hasVisibleContent: postFeedViewModel?.posts?.isEmpty == false) {
+                // The feed shows its own screen state for the same outage; a toast over it would say
+                // the same thing twice.
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
             return false

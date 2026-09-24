@@ -57,6 +57,12 @@ public protocol OctoService {
     func deleteReaction(reactionId: String, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_DeleteReactionResponse
 
+    /// Lists who reacted to an object, most recent reaction first.
+    /// - Parameter unicode: restricts to a single reaction kind. `nil` returns every kind.
+    func getReactionsPage(parentId: String, unicode: String?, pageCursor: String?, pageSize: UInt32,
+                          authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetReactionsPageResponse
+
     func voteOnPoll(objectId: String, answerId: String, parentIsTranslated: Bool, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse
 
@@ -159,7 +165,7 @@ class OctoServiceClient: ServiceClient, OctoService {
         let request = Com_Octopuscommunity_PutRequest.with {
             $0.octoObject = post
             $0.creationSource = creationSource
-            // OCT-1426: signed token authorising a prefilled-share image in a pictures-off community.
+            // Signed token authorising a prefilled-share image in a pictures-off community.
             if let clientToken {
                 $0.clientToken = clientToken
             }
@@ -258,6 +264,23 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.deleteReaction(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    func getReactionsPage(parentId: String, unicode: String?, pageCursor: String?, pageSize: UInt32,
+                          authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetReactionsPageResponse {
+        let request = Com_Octopuscommunity_GetReactionsPageRequest.with {
+            $0.parentID = parentId
+            $0.pageSize = pageSize
+            // Both stay unset rather than empty: `unicode` unset means "every kind" (the All tab),
+            // and `pageCursor` unset means "first page".
+            if let unicode { $0.unicode = unicode }
+            if let pageCursor { $0.pageCursor = pageCursor }
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.getReactionsPage(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

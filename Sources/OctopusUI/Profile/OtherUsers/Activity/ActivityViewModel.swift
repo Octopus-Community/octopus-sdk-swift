@@ -8,16 +8,17 @@ import SwiftUI
 import Octopus
 import OctopusCore
 
-/// Which tab the connected-user Activity screen opens on (Unified Profile, OCT-1374). Mirrors
-/// Android's `selectedTabIndex` (0 = Notifications, 1 = Posts). Carried explicitly by the
-/// `.connectedUser` source, and derived from the unseen-notifications rule when another entry point
-/// resolves to the connected user (see ``ActivityViewModel/connectedUserInitialTab``).
+/// Which tab the connected-user Activity screen opens on (Unified Profile). Only
+/// Notifications and Posts are landing tabs; Comments is never one. Carried explicitly by
+/// the `.connectedUser` source, and derived from the unseen-notifications rule when another entry
+/// point resolves to the connected user (see ``ActivityViewModel/connectedUserInitialTab``). See
+/// ``ActivityTab/viewIndex`` for where each one sits in the visual tab order.
 enum ActivityTab: Hashable {
     case notifications
     case posts
 }
 
-/// How the "activity" screen (Unified Profile, OCT-1374) was opened.
+/// How the "activity" screen (Unified Profile) was opened.
 enum ActivitySource: Hashable {
     /// A resolved Octopus profile id — the in-community profile-tap path (guest / BO / admin member),
     /// which knows the id synchronously and needs no lookup. Resolves to the connected-user mode when
@@ -54,9 +55,9 @@ enum ActivityMode: Equatable {
     /// its overflow menu. Reached when no member was requested, or the requested member resolves to
     /// the connected user (mirrors Android's `CONNECTED_USER`).
     case connectedUser
-    /// Another member: their posts-only screen. A member id is known (a synchronous profileId, or a
-    /// clientUserId that resolved to someone other than the connected user) (mirrors Android's
-    /// `OTHER_USER`).
+    /// Another member: their own screen (posts, plus comments when the community exposes them). A
+    /// member id is known (a synchronous profileId, or a clientUserId that resolved to someone other
+    /// than the connected user) (mirrors Android's `OTHER_USER`).
     case resolved(profileId: String)
     /// A clientUserId entry point whose lookup did not resolve (unknown/stale mapping, network
     /// failure, or the community no longer exposing client user ids). The screen must show its empty
@@ -107,13 +108,15 @@ func resolveActivityMode(profileId: String?, clientUserId: String?,
     return .connectedUser
 }
 
-/// View model of the "activity" screen (Unified Profile, OCT-1374). Polymorphic like Android's single
+/// View model of the "activity" screen (Unified Profile). Polymorphic like Android's single
 /// `ActivityScreen`:
 /// - **connected-user mode** (``ActivityMode/connectedUser``): the connected user's own activity — the
 ///   two-tab "Activity" screen (Notifications + Posts) with the overflow menu. No profile header, no
 ///   gamification (that is exposed to the host via the read-only community-data API instead).
-/// - **other-user mode** (``ActivityMode/resolved(profileId:)``): another member's posts-only screen,
-///   under a "{nickname}'s Posts" title, no tabs, no overflow menu.
+/// - **other-user mode** (``ActivityMode/resolved(profileId:)``): another member's screen, no overflow
+///   menu. Their posts, plus a Comments tab when the community exposes another member's comments
+///   (``showsCommentsTab``) — which also decides the title ("{nickname}'s Posts" vs
+///   "{nickname}'s Activity").
 ///
 /// Three entry points (``ActivitySource``):
 /// - `.connectedUser`: the home floating button — connected-user mode directly, no lookup.
@@ -126,11 +129,34 @@ func resolveActivityMode(profileId: String?, clientUserId: String?,
 class ActivityViewModel: ObservableObject {
     // MARK: Other-user mode
 
-    /// The member's nickname, used for the "{nickname}'s Posts" title (other-user mode). `nil` while
-    /// the profile is still loading — the screen shows no title rather than an empty "'s Posts".
+    /// The member's nickname, used for the other-user title ("{nickname}'s Posts" or "{nickname}'s
+    /// Activity", see ``showsCommentsTab``). `nil` while the profile is still loading — the screen shows
+    /// the generic "Profile" rather than an empty "'s Posts".
     @Published private(set) var nickname: String?
     @Published private(set) var error: DisplayableString?
     @Published private(set) var postFeedViewModel: PostFeedViewModel?
+    /// Set when the screen's own first load failed with nothing to show behind it — the profile could
+    /// not be fetched, so there is no feed either and nothing else can report it.
+    @Published private(set) var loadFailure: ScreenStateFailure?
+
+    /// The comments feed of whichever member the screen shows — shared by both modes, like
+    /// ``postFeedViewModel``. Built as soon as the profile carries a `descCommentFeedId`; whether the
+    /// tab is *shown* is a separate decision (``showsCommentsTab``), because the connected user's own
+    /// comments are always visible while another member's are gated by the community flag.
+    @Published private(set) var commentsViewModel: ProfileCommentsListViewModel?
+
+    /// Whether the Comments tab is shown in **other-user mode**. Same rule as
+    /// ``ProfileSummaryView``'s, via the shared `showsOtherUserCommentsTab` gate, so a member's
+    /// profile behaves identically whether the tap landed here (Unified Profile active, member with no
+    /// client id) or on the native profile screen. Always `false` in connected-user mode, which shows
+    /// its Comments tab unconditionally.
+    @Published private(set) var showsCommentsTab = false
+
+    /// The community flag behind ``showsCommentsTab`` (other-user mode only).
+    @Published private var showCommentsOnOtherProfiles = false
+    /// Mirrors ``ProfileCommentsListViewModel/isForbidden``: the flag can be on while this particular
+    /// feed is refused server-side, in which case the tab must stay hidden.
+    @Published private var commentsForbidden = false
 
     /// The resolved Octopus profile id, published once known (synchronously in profileId mode; after
     /// the lookup settles in clientUserId mode). Drives the one-shot `otherUserPosts` screen event.
@@ -151,7 +177,7 @@ class ActivityViewModel: ObservableObject {
     /// `true` iff the connected user can create a post — gates the create-post incentive on the
     /// empty-posts placeholder. Defaults to `true` so behavior is preserved until permissions resolve.
     @Published private(set) var canCreatePost = true
-    /// Whether the community allows poll creation (OCT-1426) — hides the poll incentive when off.
+    /// Whether the community allows poll creation — hides the poll incentive when off.
     @Published private(set) var pollsEnabled = true
     /// `true` when the connected user is a guest. Guests have no host profile, so the overflow menu's
     /// "View my profile" / "Edit my profile" actions are hidden (mirrors Android's `isGuest`).
@@ -191,6 +217,9 @@ class ActivityViewModel: ObservableObject {
     /// `isResolvingByClientUserId`). Always `false` for the synchronous entry points.
     private var isResolvingByClientUserId: Bool
     private var storage = [AnyCancellable]()
+    /// Kept apart from `storage` so it can be replaced when the comments feed id changes, rather than
+    /// stacking one `isForbidden` subscription per feed (same pattern as `ProfileSummaryViewModel`).
+    private var commentsViewModelStorage: AnyCancellable?
 
     init(octopus: OctopusSDK, translationStore: ContentTranslationPreferenceStore, source: ActivitySource) {
         self.octopus = octopus
@@ -283,7 +312,42 @@ class ActivityViewModel: ObservableObject {
                 } else {
                     postFeedViewModel = nil
                 }
+
+                // Comments tab — built exactly like `ProfileSummaryViewModel` does for the
+                // native profile screen, so both other-member paths list the same feed. Whether the tab
+                // is shown is decided below by the shared `showsOtherUserCommentsTab` gate.
+                if let descCommentFeedId = profile?.descCommentFeedId, !descCommentFeedId.isEmpty {
+                    if commentsViewModel?.feedId != descCommentFeedId {
+                        let commentsViewModel = ProfileCommentsListViewModel(
+                            octopus: octopus, feedId: descCommentFeedId, isOwnProfile: false)
+                        self.commentsViewModel = commentsViewModel
+                        commentsForbidden = false
+                        commentsViewModelStorage = commentsViewModel.$isForbidden
+                            .removeDuplicates()
+                            .sink { [unowned self] in commentsForbidden = $0 }
+                    }
+                } else {
+                    commentsViewModel = nil
+                    commentsViewModelStorage = nil
+                    commentsForbidden = false
+                }
             }.store(in: &storage)
+
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.showCommentsOnOtherProfiles ?? false }
+            .removeDuplicates()
+            .sink { [unowned self] in showCommentsOnOtherProfiles = $0 }
+            .store(in: &storage)
+
+        Publishers.CombineLatest3($showCommentsOnOtherProfiles, $commentsViewModel, $commentsForbidden)
+            .map { showCommentsOnOtherProfiles, commentsViewModel, commentsForbidden in
+                showsOtherUserCommentsTab(showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                                          hasCommentsFeed: commentsViewModel != nil,
+                                          commentsForbidden: commentsForbidden)
+            }
+            .removeDuplicates()
+            .sink { [unowned self] in showsCommentsTab = $0 }
+            .store(in: &storage)
     }
 
     /// Resolves the clientUserId entry point to an Octopus id, then routes to the matching mode —
@@ -314,13 +378,27 @@ class ActivityViewModel: ObservableObject {
         do {
             return try await octopus.core.profileRepository.fetchProfile(byClientUserId: clientUserId)?.id
         } catch {
+            if postFeedViewModel == nil {
+                loadFailure = ScreenStateFailure(error)
+                return nil
+            }
             if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
-            } else if case .noNetwork = error {
+            } else if case .noNetwork = error,
+                      case .toast = LoadFailureChannel(
+                        hasVisibleContent: postFeedViewModel?.posts?.isEmpty == false) {
+                // The feed shows its own screen state for the same outage; a toast over it would say
+                // the same thing twice.
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
             return nil
         }
+    }
+
+    /// Re-runs the first load, from the error state's CTA.
+    func retryFirstLoad() {
+        loadFailure = nil
+        Task { await refresh() }
     }
 
     /// Refresh the (other-user) profile.
@@ -331,12 +409,21 @@ class ActivityViewModel: ObservableObject {
         guard let profileId else { return false }
         do {
             try await octopus.core.profileRepository.fetchProfile(profileId: profileId)
+            loadFailure = nil
         } catch {
+            if postFeedViewModel == nil {
+                loadFailure = ScreenStateFailure(error)
+                return false
+            }
             if manual {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
-            } else if case .noNetwork = error {
+            } else if case .noNetwork = error,
+                      case .toast = LoadFailureChannel(
+                        hasVisibleContent: postFeedViewModel?.posts?.isEmpty == false) {
+                // The feed shows its own screen state for the same outage; a toast over it would say
+                // the same thing twice.
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
             return false
@@ -378,6 +465,14 @@ class ActivityViewModel: ObservableObject {
                         displayModeratedPosts: true,
                         translationStore: translationStore,
                         ensureConnected: { _ in true })
+                }
+                // Comments tab — always shown on the connected user's own activity.
+                let descCommentFeedId = profile.descCommentFeedId
+                if descCommentFeedId.isEmpty {
+                    commentsViewModel = nil
+                } else if commentsViewModel?.feedId != descCommentFeedId {
+                    commentsViewModel = ProfileCommentsListViewModel(
+                        octopus: octopus, feedId: descCommentFeedId, isOwnProfile: true)
                 }
             }.store(in: &storage)
 
@@ -432,7 +527,11 @@ class ActivityViewModel: ObservableObject {
                 self.error = error.displayableMessage
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
-            } else if case .noNetwork = error {
+            } else if case .noNetwork = error,
+                      case .toast = LoadFailureChannel(
+                        hasVisibleContent: postFeedViewModel?.posts?.isEmpty == false) {
+                // The feed shows its own screen state for the same outage; a toast over it would say
+                // the same thing twice.
                 octopus.core.toastsRepository.display(errorToast: .noNetwork)
             }
             return false

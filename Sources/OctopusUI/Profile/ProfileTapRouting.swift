@@ -5,7 +5,7 @@
 import Foundation
 import Octopus
 
-/// The three ways a profile tap can be handled (Unified Profile, OCT-1374).
+/// The three ways a profile tap can be handled (Unified Profile).
 enum ProfileTapTarget: Equatable {
     /// Hand the tap to the host's `onNavigateToProfileCallback` with the tapped member's client
     /// user id.
@@ -117,7 +117,7 @@ func dispatchCurrentUserProfileTap(octopus: OctopusSDK, navigator: Navigator<Mai
 
 // MARK: - Home floating button (connected user's own activity)
 
-/// Where the home floating "my profile" button navigates (Unified Profile, OCT-1374).
+/// Where the home floating "my profile" button navigates (Unified Profile).
 ///
 /// Unlike ``dispatchCurrentUserProfileTap`` (used by the comment/reply composers), the floating button
 /// never routes straight to the host: when Unified Profile is active it opens the SDK's own **Activity**

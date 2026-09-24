@@ -9,21 +9,28 @@ import OctopusCore
 struct PostAggregatedInfoView: View {
     @Environment(\.octopusTheme) private var theme
 
+    let contentId: String
     let aggregatedInfo: AggregatedInfo
     let reactionTapped: (ReactionKind?) -> Void
     let childrenTapped: () -> Void
     let viewCountTapped: () -> Void
+    /// Needed by the "who reacted" sheet, which lists profiles and lets them be opened.
+    let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
 
     @State private var animate = false
 
-    init(aggregatedInfo: AggregatedInfo,
+    init(contentId: String,
+         aggregatedInfo: AggregatedInfo,
          reactionTapped: @escaping (ReactionKind?) -> Void,
          childrenTapped: @escaping () -> Void,
-         viewCountTapped: @escaping () -> Void) {
+         viewCountTapped: @escaping () -> Void,
+         displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void) {
+        self.contentId = contentId
         self.aggregatedInfo = aggregatedInfo
         self.reactionTapped = reactionTapped
         self.childrenTapped = childrenTapped
         self.viewCountTapped = viewCountTapped
+        self.displayProfile = displayProfile
     }
 
     private var hasReactions: Bool {
@@ -35,8 +42,10 @@ struct PostAggregatedInfoView: View {
             AdaptiveAccessibleStack(hStackSpacing: 2, vStackAlignment: .leading, vStackSpacing: 0) {
                 if hasReactions {
                     ReactionsSummary(
+                        contentId: contentId,
                         reactions: aggregatedInfo.reactions,
-                        countPlacement: .trailing)
+                        countPlacement: .trailing,
+                        displayProfile: displayProfile)
                 } else {
                     ReactionPromptButton(reactionTapped: reactionTapped)
                 }
@@ -153,10 +162,12 @@ private let previewStates: [(String, AggregatedInfo)] = [
                     .font(.caption)
                     .foregroundColor(.secondary)
                 PostAggregatedInfoView(
+                    contentId: "preview-post",
                     aggregatedInfo: state.1,
                     reactionTapped: { _ in },
                     childrenTapped: {},
-                    viewCountTapped: {})
+                    viewCountTapped: {},
+                    displayProfile: { _, _ in })
             }
             .padding(.horizontal, 16)
             Divider()

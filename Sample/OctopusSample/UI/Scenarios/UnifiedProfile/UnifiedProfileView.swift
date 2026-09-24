@@ -109,6 +109,11 @@ struct UnifiedProfileView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        // `.combine` BEFORE the id: without it SwiftUI propagates the identifier onto every child
+        // `Text` instead of collapsing the panel, so the query returns four elements and a pipeline
+        // reading the first match gets the constant "Applied override" heading rather than the mode
+        // and the two wiring rows — the three values this scenario is asserted on.
+        .accessibilityElement(children: .combine)
         .accessibilityId("unifiedProfile-result")
     }
 }

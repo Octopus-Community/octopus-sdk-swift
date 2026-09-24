@@ -12,7 +12,7 @@ struct UnsupportedOSVersionView: View {
         VStack(spacing: 40) {
             Image(uiImage: theme.assets.logo)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .scaledToFit()
                 .frame(height: 44)
 
             Text("UnsupportedOS.Title", bundle: .module)

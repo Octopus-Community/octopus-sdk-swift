@@ -59,7 +59,7 @@ public class RootFeedsRepository: InjectableObject, @unchecked Sendable {
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
     }
 
-    public func getRootFeeds() -> AnyPublisher<[RootFeed], Error> {
+    public func getRootFeeds() -> AnyPublisher<[RootFeed], Never> {
         return rootFeedsDatabase.rootFeedsPublisher()
             .map { [weak self] rootFeeds in
                 guard let self else { return [] }

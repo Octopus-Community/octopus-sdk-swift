@@ -10,6 +10,7 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
     @NSManaged public var forceLoginOnStrongActions: Bool
     @NSManaged public var displayAccountAge: Bool
     @NSManaged public var exposeClientUserId: Bool
+    @NSManaged public var showCommentsOnOtherProfiles: Bool
     @NSManaged public var nicknameLock: Int16
     @NSManaged public var avatarLock: Int16
     @NSManaged public var bioLock: Int16
@@ -25,6 +26,7 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
         forceLoginOnStrongActions = config.forceLoginOnStrongActions
         displayAccountAge = config.displayAccountAge
         exposeClientUserId = config.exposeClientUserId
+        showCommentsOnOtherProfiles = config.showCommentsOnOtherProfiles
         nicknameLock = config.profileFieldsLock.nickname.storageValue
         avatarLock = config.profileFieldsLock.avatar.storageValue
         bioLock = config.profileFieldsLock.bio.storageValue

@@ -10,25 +10,72 @@ struct RichText: View {
     @Environment(\.urlOpener) private var urlOpener
 
     let text: String
+    /// How to shorten the text before display, or `nil` to render it in full. When the policy
+    /// actually cuts the text, an inline "... See more" suffix is appended.
+    let truncation: TextTruncation?
 
-    init(_ text: String) {
+    init(_ text: String, truncation: TextTruncation? = nil) {
         self.text = text
+        self.truncation = truncation
     }
 
     var body: some View {
         if #available(iOS 15, *) {
-            Text((try? AttributedString(
-                markdown: text,
-                options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text))
-            .tint(theme.colors.link)
-            .textSelection(.enabled)
-            .environment(\.openURL, OpenURLAction { url in
-                urlOpener.open(url: url)
-                return .handled
-            })
+            attributedText
         } else {
-            MarkdownText(text)
+            legacyText
         }
+    }
+
+    @available(iOS 15, *)
+    @ViewBuilder
+    private var attributedText: some View {
+        let parsed = (try? AttributedString(
+            markdown: text,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text)
+        let displayed = truncation?.truncate(parsed) ?? (text: parsed, isTruncated: false)
+        Group {
+            if displayed.isTruncated {
+                Text(displayed.text) + Text(verbatim: "... ") + readMore
+            } else {
+                Text(displayed.text)
+            }
+        }
+        .tint(theme.colors.link)
+        .modify { view in
+            // Selection is offered only on the full rendition: on a shortened body it would hand
+            // the reader the cut text followed by the "See more" label, an interface word rather
+            // than content. `textSelection` covers a whole `Text`, so the suffix cannot be
+            // excluded from the selection — it is all or nothing.
+            if displayed.isTruncated {
+                view
+            } else {
+                view.textSelection(.enabled)
+            }
+        }
+        .environment(\.openURL, OpenURLAction { url in
+            urlOpener.open(url: url)
+            return .handled
+        })
+    }
+
+    /// Pre-iOS 15 there is no `AttributedString`, and the hand-rolled `MarkdownText` puts its tap
+    /// gesture on a whole line — a tap on "See more" would open the link instead of the content.
+    /// So the truncated case stays plain text there.
+    @ViewBuilder
+    private var legacyText: some View {
+        let displayed = truncation?.truncate(text) ?? (text: text, isTruncated: false)
+        if displayed.isTruncated {
+            Text(verbatim: "\(displayed.text)... ") + readMore
+        } else {
+            MarkdownText(displayed.text)
+        }
+    }
+
+    private var readMore: Text {
+        Text("Common.ReadMore", bundle: .module)
+            .fontWeight(.medium)
+            .foregroundColor(theme.colors.gray500)
     }
 }
 

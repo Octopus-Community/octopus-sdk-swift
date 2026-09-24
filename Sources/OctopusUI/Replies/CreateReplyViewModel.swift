@@ -19,7 +19,7 @@ class CreateReplyViewModel: ObservableObject {
     @Published private(set) var pictureError: DisplayableString?
     @Published private(set) var hasChanges = false
     @Published private(set) var userHasAcceptedCgu = false
-    /// Whether reply pictures are enabled for this community (OCT-1426). Default `true`.
+    /// Whether reply pictures are enabled for this community. Default `true`.
     @Published private(set) var picturesEnabled = true
     /// How the community requires legal acceptance. Default `.implicit` until the config loads.
     @Published private(set) var termsAcceptanceMode: TermsAcceptanceMode = .implicit
@@ -226,7 +226,6 @@ class CreateReplyViewModel: ObservableObject {
             let replyId = createdReply.uuid
             // only stop loading when the new reply has been received in the feed
             replyReceivedCancellable = octopus.core.commentsRepository.getComment(uuid: commentId)
-                .replaceError(with: nil)
                 .map { comment in
                     guard let comment else { return Empty<Void, Never>().eraseToAnyPublisher() }
                     return comment.oldestFirstRepliesFeed?.$items

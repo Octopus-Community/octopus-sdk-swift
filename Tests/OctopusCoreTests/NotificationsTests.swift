@@ -142,7 +142,8 @@ class NotificationsTests: XCTestCase {
             notificationBadgeCount: 0, blockedProfileIds: [],
             entitlements: [],
             clientUserId: nil,
-            newestFirstPostsFeed: Feed(id: "", feedManager: postsFeedManager))
+            newestFirstPostsFeed: Feed(id: "", feedManager: postsFeedManager),
+            descCommentFeedId: "")
     }
 }
 
@@ -226,7 +227,7 @@ private extension PostsFeedManager {
             fatalError("Not implemented")
         }
 
-        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Post], any Error> {
+        func feedItemsPublisher(ids: [FeedItemInfoData]) throws -> AnyPublisher<[Post], Never> {
             fatalError("Not implemented")
         }
 

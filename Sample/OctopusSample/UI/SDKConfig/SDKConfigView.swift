@@ -78,6 +78,30 @@ struct SDKConfigView: View {
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
                 }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "wifi.slash")
+                            .foregroundColor(.accentColor)
+                        Text("Debug")
+                            .font(.subheadline).bold()
+                    }
+                    Toggle(isOn: Binding(get: { viewModel.forceOffline },
+                                         set: { viewModel.setForceOffline($0) })) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Act as if offline")
+                            // A simulator always reports a connection, so the offline states are out
+                            // of reach there without this.
+                            Text("Reaches the empty / error screen states and the no-connection " +
+                                 "toast without a device in airplane mode.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .accessibilityId("qa-config-forceOffline")
+                }
+                .padding()
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
             }
 
             if viewModel.canSave {

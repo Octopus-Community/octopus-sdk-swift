@@ -46,7 +46,7 @@ struct PostMediaContentView: View {
             content: { cachedImage in
                 Image(uiImage: cachedImage.ratioImage)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(maxWidth: .infinity)
                     .modify {
                         if zoomableImageInfo?.url != image.url {

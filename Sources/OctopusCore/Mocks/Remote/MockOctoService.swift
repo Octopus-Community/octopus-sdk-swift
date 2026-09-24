@@ -44,6 +44,12 @@ class MockOctoService: OctoService {
     /// Fifo of the responses to `deleteReaction(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var deleteReactionResponses = [Com_Octopuscommunity_DeleteReactionResponse]()
+    /// Fifo of the responses to `getReactionsPage(:)`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var getReactionsPageResponses = [Com_Octopuscommunity_GetReactionsPageResponse]()
+    /// Requests received by `getReactionsPage(:)`, in call order, so paging tests can assert which
+    /// cursor and reaction kind were actually sent.
+    private(set) var getReactionsPageRequests = [Com_Octopuscommunity_GetReactionsPageRequest]()
     /// Fifo of the responses to `voteOnPoll(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putPollVoteResponses = [Com_Octopuscommunity_PutPollVoteResponse]()
@@ -159,6 +165,21 @@ class MockOctoService: OctoService {
         return response
     }
 
+    func getReactionsPage(parentId: String, unicode: String?, pageCursor: String?, pageSize: UInt32,
+                          authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_GetReactionsPageResponse {
+        getReactionsPageRequests.append(.with {
+            $0.parentID = parentId
+            $0.pageSize = pageSize
+            if let unicode { $0.unicode = unicode }
+            if let pageCursor { $0.pageCursor = pageCursor }
+        })
+        guard let response = getReactionsPageResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextGetReactionsPageResponse must be called before"))
+        }
+        return response
+    }
+
     func voteOnPoll(objectId: String, answerId: String, parentIsTranslated: Bool, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_PutPollVoteResponse {
         guard let response = putPollVoteResponses.popLast() else {
@@ -246,6 +267,10 @@ extension MockOctoService {
 
     func injectNextDeleteReactionResponse(_ response: Com_Octopuscommunity_DeleteReactionResponse) {
         deleteReactionResponses.insert(response, at: 0)
+    }
+
+    func injectNextGetReactionsPageResponse(_ response: Com_Octopuscommunity_GetReactionsPageResponse) {
+        getReactionsPageResponses.insert(response, at: 0)
     }
 
     func injectNextVoteOnPollResponse(_ response: Com_Octopuscommunity_PutPollVoteResponse) {

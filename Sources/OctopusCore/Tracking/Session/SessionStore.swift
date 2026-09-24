@@ -17,7 +17,7 @@ class SessionStore {
 
     @Published var session: StorableSession?
 
-    private let userDefaults = UserDefaults.standard
+    private let userDefaults: UserDefaults
 
     private let prefix: String
     private let uuidKey: String
@@ -25,7 +25,8 @@ class SessionStore {
     private let firstSessionKey: String
     private let lastKnownTimestampKey: String
 
-    required init(prefix: String) {
+    required init(prefix: String, userDefaults: UserDefaults = .standard) {
+        self.userDefaults = userDefaults
         self.prefix = "OctopusSDK.tracking.\(prefix)"
         uuidKey = "\(self.prefix).uuid"
         startTimestampKey = "\(self.prefix).startTimestamp"

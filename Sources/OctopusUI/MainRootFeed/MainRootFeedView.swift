@@ -44,6 +44,8 @@ struct MainRootFeedView: View {
                      selectedRootFeed: $viewModel.mainRootFeed,
                      zoomableImageInfo: $zoomableImageInfo,
                      isScrollingDown: $isScrollingDown,
+                     rootFeedLoadFailure: viewModel.loadFailure,
+                     retryRootFeedLoad: viewModel.retryFirstLoad,
                      // Inset the first item below the floating explore bar (+6pt gap matching the
                      // bar's own top gap, +8pt breathing room) so the first post's author is never
                      // hidden under the bar.
@@ -126,7 +128,7 @@ struct MainRootFeedView: View {
                 if theme.assets.logoIsCustomized {
                     Image(uiImage: theme.assets.logo)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(height: 33)
                         .fixedSize()
                         .accessibilityHidden(true)
@@ -173,7 +175,7 @@ struct MainRootFeedView: View {
             if theme.assets.logoIsCustomized {
                 Image(uiImage: theme.assets.logo)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(height: 33)
                     .fixedSize()
                     .accessibilityHidden(true)
@@ -232,7 +234,7 @@ struct MainRootFeedView: View {
                 if theme.assets.logoIsCustomized {
                     Image(uiImage: theme.assets.logo)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFit()
                         .frame(height: 33)
                         .fixedSize()
                         .accessibilityHidden(true)

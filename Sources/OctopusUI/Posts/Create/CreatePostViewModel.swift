@@ -49,7 +49,7 @@ class CreatePostViewModel: ObservableObject {
     @Published private(set) var hasChanges = false
     @Published var authenticationAction: ConnectedActionReplacement?
     @Published private(set) var userHasAcceptedCgu = false
-    /// Per-content-type creation options for posts (OCT-1426). Default `true` until the community
+    /// Per-content-type creation options for posts. Default `true` until the community
     /// config is loaded, so behaviour is unchanged unless the community disables a capability.
     @Published private(set) var picturesEnabled = true
     @Published private(set) var pollsEnabled = true
@@ -89,7 +89,7 @@ class CreatePostViewModel: ObservableObject {
     private let defaultTopicId: String?
     private let cta: WritableCTA?
     private let creationSource: PostsRepository.CreationSource
-    /// Host signing closure for a prefilled-share image (OCT-1426). `nil` for member-initiated posts.
+    /// Host signing closure for a prefilled-share image. `nil` for member-initiated posts.
     private let bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)?
 
     init(octopus: OctopusSDK,

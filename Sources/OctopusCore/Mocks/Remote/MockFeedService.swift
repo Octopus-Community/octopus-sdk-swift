@@ -16,6 +16,10 @@ class MockFeedService: FeedService {
     // Fifo of the responses to `getNextFeedPage`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var getNextFeedPageResponses = [Com_Octopuscommunity_GetFeedPageResponse]()
+    /// Fifo of the responses to `initializeFeedWithOctoObject`.
+    private var initializeFeedWithOctoObjectResponses = [Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse]()
+    /// Fifo of the responses to `getFeedWithOctoObjectPage`.
+    private var getFeedWithOctoObjectPageResponses = [Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse]()
 
     init() { }
 
@@ -44,6 +48,23 @@ class MockFeedService: FeedService {
         }
         return response
     }
+
+    func initializeFeedWithOctoObject(feedId: String, pageSize: Int32, authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse {
+        guard let response = initializeFeedWithOctoObjectResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextInitializeFeedWithOctoObject must be called before"))
+        }
+        return response
+    }
+
+    func getFeedWithOctoObjectPage(pageCursor: String, pageSize: Int32, fetchAggregates: Bool,
+                                   authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse {
+        guard let response = getFeedWithOctoObjectPageResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextGetFeedWithOctoObjectPage must be called before"))
+        }
+        return response
+    }
 }
 
 extension MockFeedService {
@@ -57,5 +78,13 @@ extension MockFeedService {
 
     func injectNextGetNextFeedPage(_ response: Com_Octopuscommunity_GetFeedPageResponse) {
         getNextFeedPageResponses.insert(response, at: 0)
+    }
+
+    func injectNextInitializeFeedWithOctoObject(_ response: Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse) {
+        initializeFeedWithOctoObjectResponses.insert(response, at: 0)
+    }
+
+    func injectNextGetFeedWithOctoObjectPage(_ response: Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse) {
+        getFeedWithOctoObjectPageResponses.insert(response, at: 0)
     }
 }

@@ -17,6 +17,10 @@ class NotificationCenterViewModel: ObservableObject {
 
     // for errors that are caused by an action inside the view (i.e. not refreshs)
     @Published var displayableError: DisplayableString?
+    /// Set when the first load fails with no notification listed yet.
+    @Published private(set) var loadFailure: ScreenStateFailure?
+    /// Until the first load settles, an empty list means "still loading", not "nothing to show".
+    @Published private(set) var hasLoadedOnce = false
 
     let octopus: OctopusSDK
     private var storage = [AnyCancellable]()
@@ -30,7 +34,6 @@ class NotificationCenterViewModel: ObservableObject {
         relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
 
         octopus.core.notificationsRepository.getNotifications()
-            .replaceError(with: [])
             .sink { [unowned self] in
                 notifications = $0.map {
                     DisplayableNotification(notification: $0, dateFormatter: relativeDateFormatterProvider.formatter)
@@ -43,7 +46,6 @@ class NotificationCenterViewModel: ObservableObject {
             }.store(in: &storage)
 
         octopus.core.notificationsRepository.getSettings()
-            .replaceError(with: .defaultValue)
             .sink { [unowned self] in
                 modelPushNotificationEnabled = $0.pushNotificationsEnabled
                 pushNotificationEnabled = $0.pushNotificationsEnabled
@@ -62,8 +64,36 @@ class NotificationCenterViewModel: ObservableObject {
     func viewDidAppear() {
         viewIsDisplayed = true
         Task {
-            try? await fetchNotifications()
+            await loadNotifications()
         }
+    }
+
+    /// Re-runs the first load after a failure.
+    func retryFirstLoad() {
+        loadFailure = nil
+        // Hold the loader until the retry settles, instead of flashing the empty state through the gap.
+        hasLoadedOnce = false
+        Task {
+            await loadNotifications()
+        }
+    }
+
+    private func loadNotifications() async {
+        do {
+            try await fetchNotifications()
+            loadFailure = nil
+        } catch {
+            // Nothing listed yet: the error takes the list's place, with a retry. Otherwise a toast says
+            // so without hiding the notifications already read (Screen states spec).
+            if notifications.isEmpty {
+                loadFailure = ScreenStateFailure(error)
+            } else if case .noNetwork = error {
+                octopus.core.toastsRepository.display(errorToast: .noNetwork)
+            } else {
+                octopus.core.toastsRepository.display(errorToast: .unknown)
+            }
+        }
+        hasLoadedOnce = true
     }
 
     func viewDidDisappear() {

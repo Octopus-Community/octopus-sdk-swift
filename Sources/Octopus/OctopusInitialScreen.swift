@@ -23,8 +23,10 @@ public enum OctopusInitialScreen {
     /// (unknown/stale mapping, or the community does not expose client user ids) the screen shows its
     /// empty state rather than falling back to any other member. An Octopus profile id needs no such
     /// lookup — the screen opens directly. For another member the screen lists that member's posts
-    /// under a "{author}'s Posts" title (no profile header, no tabs); in the edge case where the id
-    /// resolves to the connected user's own, it opens their two-tab "Activity" screen instead.
+    /// under a "{author}'s Posts" title, with no profile header — plus a Comments tab, under a
+    /// "{author}'s Activity" title, when the community exposes other members' comments; in the edge
+    /// case where the id resolves to the connected user's own, it opens their tabbed "Activity"
+    /// screen instead.
     case activity(ActivityScreenInfo)
 
     /// The post editor, optionally prefilled with content supplied by

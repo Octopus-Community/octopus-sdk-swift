@@ -24,5 +24,9 @@ public enum UserActionToast: Equatable, Sendable {
 
 /// Toasts representing error states
 public enum ErrorToast: Equatable, Sendable {
+    /// The device lost its connection. Stays on screen until the connection is back (Screen states spec).
     case noNetwork
+    /// Any other failure raised while content was already displayed. Transient, and retriable when the
+    /// screen offers a retry.
+    case unknown
 }

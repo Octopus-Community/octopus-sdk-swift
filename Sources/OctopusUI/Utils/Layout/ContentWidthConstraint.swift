@@ -6,7 +6,7 @@ import SwiftUI
 import UIKit
 
 /// Layout constants and helpers for constraining the scrollable content column on large screens
-/// (iPad, iPhone landscape) so line lengths stay readable instead of stretching edge to edge (OCT-1532).
+/// (iPad, iPhone landscape) so line lengths stay readable instead of stretching edge to edge.
 enum OctopusContentLayout {
     /// Max width of the scrollable content column, by device idiom.
     /// - iPhone (and any non-pad idiom): 570pt
@@ -18,6 +18,7 @@ enum OctopusContentLayout {
     }
 
     /// Max width of the scrollable content column for the current device.
+    @MainActor
     static var maxContentWidth: CGFloat {
         maxContentWidth(for: UIDevice.current.userInterfaceIdiom)
     }
@@ -73,8 +74,8 @@ private struct LargeScreenMarginBackgroundModifier: ViewModifier {
         // background blends behind the (translucent / scroll-edge) navigation bar instead of leaving
         // a system-colored strip there. With the default (systemBackground) this matches the window
         // background, so existing integrators see no change; only a customized background now extends
-        // behind the bar (OCT-1532 originally excluded the top for the white default; the themeable
-        // background makes covering it the correct behavior).
+        // behind the bar (the top used to be excluded, back when the background was always white; a
+        // themeable background makes covering it the correct behavior).
         content.background(
             theme.colors.background
                 .edgesIgnoringSafeArea(.all)
@@ -85,7 +86,7 @@ private struct LargeScreenMarginBackgroundModifier: ViewModifier {
 extension View {
     /// Fills the screen behind a content view — the side margins left by ``constrainedContentColumn()``
     /// on large screens (iPad, landscape) and the area behind any bottom bar — with the standard
-    /// background (white in light mode), so nothing shows through in those regions (OCT-1532).
+    /// background (white in light mode), so nothing shows through in those regions.
     func largeScreenMarginBackground() -> some View {
         modifier(LargeScreenMarginBackgroundModifier())
     }

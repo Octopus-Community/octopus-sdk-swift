@@ -59,6 +59,14 @@ class PostDetailViewModel: ObservableObject {
     private var feed: Feed<Comment, Never>?
 
     @Published private(set) var comments: [DisplayableFeedResponse]?
+    /// Set when the comments' first load fails with nothing listed yet.
+    @Published private(set) var commentsLoadFailure: ScreenStateFailure?
+    /// Set when the post itself could not be loaded and none was cached. Without it the screen spins
+    /// forever: the comments cannot load either, so nothing reports the failure.
+    @Published private(set) var contentLoadFailure: ScreenStateFailure?
+    /// Whether the comments' first load has settled. Comments come from the local store first, so an
+    /// empty list before that means "still loading".
+    @Published private(set) var hasLoadedComments = false
     @Published var scrollToBottom = false
     @Published var scrollToId: String?
     @Published var commentTextFocused = false
@@ -153,7 +161,7 @@ class PostDetailViewModel: ObservableObject {
         self.internalPost = try? octopus.core.postsRepository.getPost(uuid: postUuid)
 
         Publishers.CombineLatest4(
-            octopus.core.postsRepository.getPost(uuid: postUuid).removeDuplicates().replaceError(with: nil),
+            octopus.core.postsRepository.getPost(uuid: postUuid).removeDuplicates(),
             octopus.core.topicsRepository.$topics.removeDuplicates(),
             octopus.core.profileRepository.profilePublisher.removeDuplicates(),
             octopus.core.configRepository.communityConfigPublisher
@@ -360,7 +368,7 @@ class PostDetailViewModel: ObservableObject {
 
         octopus.core.profileRepository.onCurrentUserProfileUpdated.sink { [unowned self] _ in
             fetchPost()
-            refreshFeed(isManual: false)
+            refreshFeed()
             fetchTopics()
         }.store(in: &storage)
 
@@ -492,7 +500,7 @@ class PostDetailViewModel: ObservableObject {
             loadAllComments(scrollToBottom: true)
             scrollToMostRecentComment = false
         } else {
-            refreshFeed(isManual: false)
+            refreshFeed()
         }
     }
 
@@ -503,7 +511,7 @@ class PostDetailViewModel: ObservableObject {
     func refresh() async {
         let refreshPostTask = Task { await refreshPost() }
         let refreshTopicsTask = Task { try? await fetchTopics() }
-        let refreshCommentsTask = Task { await refreshFeed(isManual: true) }
+        let refreshCommentsTask = Task { await refreshFeed() }
         await refreshPostTask.value
         await refreshTopicsTask.value
         await refreshCommentsTask.value
@@ -551,10 +559,13 @@ class PostDetailViewModel: ObservableObject {
     func loadAllComments(scrollToBottom: Bool) {
         guard let feed else { return }
         Task {
+            defer { hasLoadedComments = true }
             do {
                 try await feed.fetchAll()
+                commentsLoadFailure = nil
             } catch {
                 if #available(iOS 14, *) { Logger.comments.debug("Error: \(error)") }
+                if comments?.isEmpty ?? true { commentsLoadFailure = ScreenStateFailure(error) }
             }
             if scrollToBottom {
                 DispatchQueue.main.async {
@@ -568,10 +579,13 @@ class PostDetailViewModel: ObservableObject {
     private func loadAllComments(until id: String) {
         guard let feed else { return }
         Task {
+            defer { hasLoadedComments = true }
             do {
                 try await feed.fetchAll(until: id)
+                commentsLoadFailure = nil
             } catch {
                 if #available(iOS 14, *) { Logger.replies.debug("Error: \(error)") }
+                if comments?.isEmpty ?? true { commentsLoadFailure = ScreenStateFailure(error) }
             }
         }
     }
@@ -627,17 +641,39 @@ class PostDetailViewModel: ObservableObject {
         Task {
             do {
                 try await fetchPost(uuid: postUuid, incrementViewCount: incrementViewCount)
+                contentLoadFailure = nil
             } catch {
-                if let error = error as? ServerCallError, case .noNetwork = error {
+                // Nothing on screen to keep: the failure takes the whole screen, with a retry. A toast
+                // over an empty screen would leave a spinner spinning behind it (Screen states spec).
+                if post == nil {
+                    contentLoadFailure = ScreenStateFailure(error)
+                } else if comments?.isEmpty == false,
+                          let error = error as? ServerCallError, case .noNetwork = error {
+                    // One error, one channel. Gated on the comments being on screen rather than on
+                    // their failure being set: both fetches run concurrently, so testing the other's
+                    // failure would report twice or not, depending on which lost the race.
                     octopus.core.toastsRepository.display(errorToast: .noNetwork)
                 }
             }
         }
     }
 
+    /// Re-runs the screen's first load, from the error state's CTA.
+    func retryFirstLoad() {
+        contentLoadFailure = nil
+        fetchPost()
+        refreshFeed()
+    }
+
     private func fetchTopics() {
         Task {
-            try await fetchTopics()
+            do {
+                try await fetchTopics()
+            } catch {
+                if #available(iOS 14, *) {
+                    Logger.posts.debug("Error while fetching the topics: \(error)")
+                }
+            }
         }
     }
 
@@ -686,16 +722,30 @@ class PostDetailViewModel: ObservableObject {
         try await octopus.core.topicsRepository.fetchTopics()
     }
 
-    private func refreshFeed(isManual: Bool, scrollToTop: Bool = false) {
+    private func refreshFeed(scrollToTop: Bool = false) {
         Task {
-            await refreshFeed(isManual: isManual, scrollToTop: scrollToTop)
+            await refreshFeed(scrollToTop: scrollToTop)
         }
+    }
+
+    /// Re-runs the comments' first load after a failure.
+    func retryCommentsFirstLoad() {
+        commentsLoadFailure = nil
+        // Hold the loader until the retry settles, instead of flashing the empty state through the gap.
+        hasLoadedComments = false
+        refreshFeed()
     }
 
     private func refreshNewestComments() {
         guard let newestFirstCommentsFeed else { return }
         Task {
-            try await newestFirstCommentsFeed.refresh(pageSize: 10)
+            do {
+                try await newestFirstCommentsFeed.refresh(pageSize: 10)
+            } catch {
+                if #available(iOS 14, *) {
+                    Logger.comments.debug("Error while refreshing the newest comments: \(error)")
+                }
+            }
         }
     }
 
@@ -707,16 +757,24 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    private func refreshFeed(isManual: Bool, scrollToTop: Bool = false) async {
+    private func refreshFeed(scrollToTop: Bool = false) async {
         guard let feed else { return }
+        defer { hasLoadedComments = true }
         do {
             try await feed.refresh(pageSize: 10)
+            commentsLoadFailure = nil
         } catch {
             if #available(iOS 14, *) { Logger.comments.debug("Error while refreshing posts feed: \(error)") }
-            if isManual {
-                self.error = error.displayableMessage
+            // No comment listed yet: the failure takes the list's place, with a retry (Screen states spec).
+            if comments?.isEmpty ?? true {
+                commentsLoadFailure = ScreenStateFailure(error)
             } else if case .serverError(.notAuthenticated) = error {
                 self.error = error.displayableMessage
+            } else if case .noNetwork = error {
+                // Comments are already on screen: a toast says so without replacing them (Screen states spec).
+                octopus.core.toastsRepository.display(errorToast: .noNetwork)
+            } else {
+                octopus.core.toastsRepository.display(errorToast: .unknown)
             }
         }
     }
