@@ -22,7 +22,8 @@ final class RefreshEntitlementsTests: XCTestCase {
     /// settling. Those transitions are published asynchronously through several
     /// `.receive(on: DispatchQueue.main)` hops; on a saturated CI runner that delivery can be
     /// starved far beyond the sub-100ms it takes locally (a ~15s outlier was observed for
-    /// `testGuestThrowsNotConnected` — same machine-load family as PR #319). A generous timeout
+    /// `testGuestThrowsNotConnected` — the same machine-load starvation that made
+    /// `UserProfileFetchMonitorTests` flaky). A generous timeout
     /// stays a no-op in the normal case (the wait returns as soon as the state settles) while
     /// tolerating that starvation. The guest scenario is the most exposed: it relies solely on
     /// the repo's init-time pipeline burst, with no later write to re-trigger delivery.

@@ -8,7 +8,7 @@ import Octopus
 
 /// View model of CommunityDataView.
 ///
-/// Drives the whole Unified Profile read surface (OCT-1374): the two `fetchCommunityData` overloads
+/// Drives the whole Unified Profile read surface: the two `fetchCommunityData` overloads
 /// and the two `communityDataPublisher` overloads, plus the observation lifecycle the QA presets make
 /// visible.
 ///
@@ -28,7 +28,7 @@ class CommunityDataViewModel: ObservableObject {
 
         var id: Int { rawValue }
 
-        // Labels are the cross-platform contract from the pm-tools scenario catalog, applied verbatim
+        // Labels are the cross-platform contract from the shared QA scenario catalog, applied verbatim
         // so the QA pipeline drives Android, iOS and Flutter with the same strings.
         var label: String {
             switch self {

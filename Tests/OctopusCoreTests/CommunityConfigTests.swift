@@ -9,7 +9,7 @@ import OctopusDependencyInjection
 @testable import OctopusCore
 
 /// Mapping of the gRPC `ApiKeyConfig` onto the `CommunityConfig` domain model,
-/// focusing on the per-field profile lock (OCT-1487).
+/// focusing on the per-field profile lock.
 final class CommunityConfigTests: XCTestCase {
 
     private var storage = [AnyCancellable]()
@@ -91,7 +91,7 @@ final class CommunityConfigTests: XCTestCase {
         XCTAssertEqual(overridden.displayConfig, base.displayConfig)
     }
 
-    // MARK: exposeClientUserId (Unified Profile activation flag, OCT-1374)
+    // MARK: exposeClientUserId (Unified Profile activation flag)
 
     func testExposeClientUserIdMappedFromProto() {
         let config = Com_Octopuscommunity_ApiKeyConfig.with {
@@ -176,7 +176,7 @@ final class CommunityConfigTests: XCTestCase {
         try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
     }
 
-    // MARK: termsAcceptanceMode (explicit terms acceptance, OCT-1633)
+    // MARK: termsAcceptanceMode (explicit terms acceptance)
 
     func testTermsAcceptanceModeMappedFromProto() {
         let multi = Com_Octopuscommunity_ApiKeyConfig.with { $0.termsAcceptanceMode = .explicitMultiCheckbox }
@@ -217,7 +217,7 @@ final class CommunityConfigTests: XCTestCase {
         XCTAssertEqual(stored.termsAcceptanceMode, .explicitSingleCheckbox)
     }
 
-    // MARK: showCommentsOnOtherProfiles (profile Comments tab on other profiles, OCT-1067)
+    // MARK: showCommentsOnOtherProfiles (profile Comments tab on other profiles)
 
     func testShowCommentsOnOtherProfilesMappedFromProto() {
         let config = Com_Octopuscommunity_ApiKeyConfig.with {

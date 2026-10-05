@@ -9,7 +9,7 @@ import OctopusCore
 /// per-field lock. Drives which affordances the profile/edit screens display.
 ///
 /// This is the community-config lock only; the SSO `appManagedFields` redirect is handled
-/// separately (and wins per field — see PRD Q4). With `.allEditable` every flag is `true`, so the
+/// separately (and wins per field). With `.allEditable` every flag is `true`, so the
 /// UI is strictly identical to today for every community that sets no lock.
 struct ProfileFieldsEditability: Equatable {
     let nicknameEditable: Bool
@@ -26,6 +26,6 @@ struct ProfileFieldsEditability: Equatable {
     }
 
     /// The "Edit profile" button is shown as soon as at least one of the three fields is editable
-    /// (Q2: keys off nickname / avatar / bio).
+    /// (keys off nickname / avatar / bio).
     var showEditButton: Bool { nicknameEditable || avatarEditable || bioEditable }
 }

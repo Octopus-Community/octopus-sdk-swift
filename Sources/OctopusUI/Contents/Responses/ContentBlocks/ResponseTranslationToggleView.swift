@@ -6,9 +6,9 @@ import SwiftUI
 import OctopusCore
 
 /// Translation toggle block ("Voir la traduction" / "Voir l'original") inside a response card.
-/// Padding matches the Figma's `Content Trads` block: `pt-[6px] pb-[10px] pl-[12px] pr-[8px]`.
+/// Padding matches the design spec's translation block: `pt-[6px] pb-[10px] pl-[12px] pr-[8px]`.
 /// Only leading/trailing are applied here — `ToggleTextTranslationButton` already has internal
-/// `.padding(.top, 6).padding(.bottom, 10)` (its own hit-area extension, matching the Figma
+/// `.padding(.top, 6).padding(.bottom, 10)` (its own hit-area extension, matching the
 /// vertical spec). Adding the same values on the outer container would double-count and visibly
 /// inflate the block — same pattern as `ResponseActionBarView`.
 struct ResponseTranslationToggleView: View {

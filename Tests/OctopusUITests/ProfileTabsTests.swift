@@ -7,7 +7,7 @@ import SwiftUI
 import Testing
 @testable import OctopusUI
 
-/// OCT-1844: the connected-user Activity screen's tab order, and the box both tab rows share.
+/// The connected-user Activity screen's tab order, and the box both tab rows share.
 @Suite
 struct ProfileTabsTests {
     // MARK: - Activity tab order (Notifications / Posts / Comments)
@@ -35,8 +35,8 @@ struct ProfileTabsTests {
     // MARK: - Shared tab box
 
     /// The two rows (inline underline selector and pinned pills) are two renderings of the same box.
-    /// These values come from the Figma tab-bar component; pinning them here is what guards against
-    /// the defect OCT-1844 fixed, where one row's geometry drifted away from the other's.
+    /// These values come from the design system's tab-bar component; pinning them here is what guards
+    /// against one row's geometry drifting away from the other's, a defect this layout once had.
     @Test func testTabBoxMatchesTheDesignSpec() {
         #expect(ProfileTabsLayout.rowHorizontalPadding == 16)
         #expect(ProfileTabsLayout.interTabSpacing == 8)

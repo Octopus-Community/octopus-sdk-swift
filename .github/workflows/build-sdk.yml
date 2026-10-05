@@ -31,9 +31,10 @@ jobs:
   lint:
     name: SwiftLint
     runs-on: macos-26
-    # Installs SwiftLint via brew on a cold runner, then lints; observed runs sit
-    # well under this. The cap exists so a wedged brew or a hung lint releases the
-    # runner instead of holding it for the 6h default.
+    # Downloads the pinned SwiftLint (once per version on a persistent runner, every
+    # run on a fresh one), then lints; observed runs sit well under this. The cap
+    # exists so a stalled download or a hung lint releases the runner instead of
+    # holding it for the 6h default.
     timeout-minutes: 20
     steps:
     - uses: actions/checkout@v6
@@ -41,11 +42,41 @@ jobs:
         submodules: 'true'
         token: ${{ secrets.CI_PAT }}
 
+    # Pinned, because `brew install swiftlint` serves whatever is current and a new SwiftLint
+    # release adds rules enabled by default. Through brew, the persistent self-hosted Mac kept the
+    # build it installed first while every fresh VM installed the latest one: 0.63.3 added
+    # `legacy_swiftui_aspect_ratio`, and the same commit passed on one and failed on the other
+    # with 44 violations. A contributor cannot act on a red CI they cannot reproduce.
+    # `.swiftlint-version` is the one place the number lives; `Scripts/lint.sh` reads it too, and
+    # bumping it is a commit that lands together with whatever the new rules demand.
+    #
+    # Kept under $HOME rather than in the workspace, which `actions/checkout` wipes with
+    # `git clean -ffdx` every run: on a persistent runner the download happens once per pinned
+    # version instead of once per run. The demo app's CI, which shares that Mac, uses the same
+    # path, so whichever repository needs a version first downloads it for both.
+    #
+    # Unzipped into a throwaway directory and moved into place, so the binary appears at its final
+    # path complete or not at all: a run cancelled mid-download leaves nothing for the next one to
+    # find, and the `-x` test cannot be satisfied by a truncated binary. `curl -f` so a version the
+    # release page does not carry fails on the 404 rather than saving the error page as a zip.
     - name: Install SwiftLint
-      run: brew list swiftlint &>/dev/null || brew install swiftlint
+      run: |
+        set -euo pipefail
+        version=$(tr -d '[:space:]' < .swiftlint-version)
+        bin="$HOME/ci-tools/swiftlint/swiftlint-$version"
+        if [ ! -x "$bin" ]; then
+          staging=$(mktemp -d "$RUNNER_TEMP/swiftlint.XXXXXX")
+          curl -fsSL -o "$staging/swiftlint.zip" \
+            "https://github.com/realm/SwiftLint/releases/download/$version/portable_swiftlint.zip"
+          unzip -q "$staging/swiftlint.zip" -d "$staging"
+          mkdir -p "$(dirname "$bin")"
+          mv "$staging/swiftlint" "$bin"
+        fi
+        echo "SwiftLint $("$bin" version)"
+        echo "SWIFTLINT=$bin" >> "$GITHUB_ENV"
 
     - name: Lint
-      run: swiftlint lint --strict --reporter github-actions-logging
+      run: '"$SWIFTLINT" lint --strict --reporter github-actions-logging'
 
   build:
     name: Build and test the package
@@ -74,6 +105,27 @@ jobs:
         available_runtimes="$(xcrun simctl list runtimes)"
         echo "Runtimes available: $available_runtimes"
 
+    # A simulator of this job's own, never one found by name.
+    #
+    # The self-hosted Mac runs several runners side by side under one macOS user, so every job (this
+    # repository's and other repositories') shares one CoreSimulator device set. Finding the device by
+    # name breaks two ways there:
+    # - the name can match several devices: a second "iPhone 17" on the newest runtime makes
+    #   `name=iPhone 17,OS=latest` ambiguous, and xcodebuild exits 70 before building;
+    # - two jobs that resolve to the same device kill each other: each install of the test host
+    #   terminates the other's, and the first `xcodebuild test` to finish shuts the device down under
+    #   the one still running.
+    #
+    # No runtime is named, so `simctl` takes the newest one the pinned Xcode supports, which is what
+    # `OS=latest` picked.
+    - name: Create a simulator for this job
+      id: simulator
+      run: |
+        set -euo pipefail
+        udid=$(xcrun simctl create "OctopusSDK-CI-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "iPhone 17")
+        echo "Created simulator $udid"
+        echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
     # No dependency cache step: where the runner keeps DerivedData between jobs the build already
     # reuses it, and where it does not, a cold build is the expected cost. Either way, clearing
     # DerivedData is the way out of an incremental build gone wrong.
@@ -81,5 +133,14 @@ jobs:
       run: |
         xcodebuild test \
           -scheme 'OctopusSdkSwift-Package' \
-          -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+          -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.udid }}" \
           CODE_SIGNING_ALLOWED='NO'
+
+    # `always()` also covers a failed or cancelled run, so the only simulator this leaves behind is
+    # one whose runner died mid-job (`xcrun simctl delete <udid>` by hand). Deleting by UDID touches
+    # nothing another job is using.
+    - name: Delete this job's simulator
+      if: always() && steps.simulator.outputs.udid != ''
+      run: |
+        xcrun simctl shutdown "${{ steps.simulator.outputs.udid }}" 2>/dev/null || true
+        xcrun simctl delete "${{ steps.simulator.outputs.udid }}"

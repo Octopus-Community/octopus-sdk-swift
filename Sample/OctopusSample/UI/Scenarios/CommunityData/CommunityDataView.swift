@@ -6,7 +6,7 @@ import Foundation
 import SwiftUI
 import Octopus
 
-/// Unified Profile community-data scenario (OCT-1374) — reads a member's public Octopus stats so the
+/// Unified Profile community-data scenario — reads a member's public Octopus stats so the
 /// **host** can render them on its own profile screen, instead of pushing the user into the SDK's
 /// native profile.
 ///
@@ -21,7 +21,7 @@ import Octopus
 ///   `CommunityDataViewModel.reportIdContract()`).
 ///
 /// Test ids (`qa-preset-communityData-1...6` / `communityData-result`) are the cross-platform contract
-/// from the shared pm-tools scenario catalog, applied verbatim so the QA pipeline drives Android, iOS
+/// from the shared QA scenario catalog, applied verbatim so the QA pipeline drives Android, iOS
 /// and Flutter with the same ids.
 struct CommunityDataView: View {
     @StateObjectCompat private var viewModel = CommunityDataViewModel()

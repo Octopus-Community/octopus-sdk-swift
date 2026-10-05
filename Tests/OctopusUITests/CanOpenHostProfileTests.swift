@@ -7,7 +7,7 @@ import Testing
 @testable import OctopusUI
 
 /// Unit-tests for `canOpenHostProfile`, the connected-user Activity screen's overflow-menu gate
-/// (OCT-1374): whether "View my profile" / "Edit my profile" can be shown. Extracted as a pure
+/// (Unified Profile): whether "View my profile" / "Edit my profile" can be shown. Extracted as a pure
 /// function (same pattern as `unifiedProfileActive`) so the "as-wired" gating — otherwise buried in
 /// `ActivityView.trailingBarItem`, which has no SwiftUI test harness in this repo (no ViewInspector) —
 /// stays independently unit-testable.

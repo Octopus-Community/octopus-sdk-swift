@@ -7,7 +7,7 @@ import Testing
 @testable import OctopusUI
 
 /// Unit-tests for `isOtherUserActivity`, the activity-screen self/other routing that backs Unified
-/// Profile (OCT-1374, ported from Android's `IsOtherUserActivityTest`). The connected user's own
+/// Profile (ported from Android's `IsOtherUserActivityTest`). The connected user's own
 /// activity (`nil` id, or their own id) shows the two-tab activity view; any other member's id shows
 /// the single-tab posts view.
 @Suite
@@ -30,7 +30,7 @@ struct IsOtherUserActivityTests {
 }
 
 /// Unit-tests for `resolveActivityMode`, the activity-screen mode routing for Unified Profile
-/// (OCT-1374, ported from Android's `ResolveActivityModeTest`). It runs after the (possibly async)
+/// (ported from Android's `ResolveActivityModeTest`). It runs after the (possibly async)
 /// `clientUserId` → Octopus-id lookup settles and must never fall back to the connected user's own
 /// activity when a specific member was requested but could not be resolved.
 @Suite

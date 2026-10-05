@@ -6,7 +6,7 @@ import Foundation
 import SwiftUI
 import Octopus
 
-/// Scenario exercising Unified Profile (OCT-1374): pick a preset to override the community's
+/// Scenario exercising Unified Profile: pick a preset to override the community's
 /// `exposeClientUserId` activation flag (DEBUG override), then open the community and tap a
 /// member's profile to see the `onNavigateToProfileCallback` fire.
 struct UnifiedProfileView: View {

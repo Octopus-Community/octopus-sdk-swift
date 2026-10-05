@@ -13,7 +13,7 @@ public struct CustomAction: Equatable, Sendable {
         self.targetUrl = targetUrl
     }
 
-    /// Failable convenience init enforcing PRD Rules 2 and 3:
+    /// Failable convenience init enforcing the CTA validation rules:
     /// both fields must be present, `ctaText.originalText` must be non-empty (TranslatableText
     /// already trims whitespace at init time), and `targetLink` must parse via `URL(string:)`.
     /// Returns nil otherwise.

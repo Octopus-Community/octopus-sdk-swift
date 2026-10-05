@@ -25,7 +25,7 @@ struct ResponseSeeRepliesView: View {
                     .foregroundColor(theme.colors.primary)
                 Spacer(minLength: 0)
             }
-            // Figma: outer `pb-[12px]` + inner `py-[5px]`. Total: 5pt top, 17pt bottom.
+            // Design spec: outer `pb-[12px]` + inner `py-[5px]`. Total: 5pt top, 17pt bottom.
             .padding(.vertical, 5)
             .padding(.bottom, 12)
             .contentShape(Rectangle())

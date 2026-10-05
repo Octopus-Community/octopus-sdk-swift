@@ -5,11 +5,13 @@
 import XCTest
 @testable import OctopusCore
 
-/// The bridge "Share" image fingerprint (OCT-1426 / Q5). MUST match the backend `PrefilledShareVerifier`
-/// byte-for-byte — verified against the canonical example in octopus-documentation #60.
+/// The bridge "Share" image fingerprint, which lets a signed prefilled share carry an image even in a
+/// community that disables pictures. MUST match the backend `PrefilledShareVerifier` byte-for-byte —
+/// verified against the canonical example of the public documentation:
+/// https://doc.octopuscommunity.com/backend/jwt/generate_jwt#generate-jwt-for-a-bridge-share-with-an-image
 final class BridgeShareFingerprintTests: XCTestCase {
 
-    /// Canonical vector from octopus-documentation #60 (image URL case).
+    /// Canonical vector from the public documentation linked above (image URL case).
     func testFingerprintMatchesDocumentationVector() {
         let fingerprint = BridgeShareFingerprint.compute(
             text: "Check out our new recipe!",

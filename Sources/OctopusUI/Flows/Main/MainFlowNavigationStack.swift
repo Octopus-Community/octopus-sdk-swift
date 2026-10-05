@@ -117,7 +117,7 @@ struct MainFlowNavigationStack<RootView: View>: View {
                 }
 
         }
-        .sheet(item: $mainFlowPath.reportTarget) { target in
+        .octopusSheet(item: $mainFlowPath.reportTarget) { target in
             ReportScreen(octopus: octopus, target: target)
                 .modify {
                     if #available(iOS 16.0, *) {

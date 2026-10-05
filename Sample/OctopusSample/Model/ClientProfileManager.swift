@@ -6,8 +6,7 @@ import Foundation
 import Octopus
 
 /// Singleton that bridges the SDK's `onNavigateToProfileCallback` to a published property that
-/// views can observe, and lets the sample wire/unwire that callback live (Unified Profile,
-/// OCT-1374).
+/// views can observe, and lets the sample wire/unwire that callback live (Unified Profile).
 ///
 /// The callback is one of the two inputs of the Unified Profile AND-gate (the other being
 /// `CommunityConfig.exposeClientUserId`). iOS reads `onNavigateToProfileCallback` at every profile
@@ -29,9 +28,9 @@ class ClientProfileManager: ObservableObject {
     @Published private(set) var isCallbackWired: Bool = true
 
     /// One-shot event fired when the SDK invokes `onNavigateToProfileEditCallback` — the "Edit my
-    /// profile" item of the connected-user Activity screen's top-right menu (Unified Profile,
-    /// OCT-1374). The observer sets it back to `false` immediately on consume (see `OctopusUIView`),
-    /// mirroring `tappedClientUserId`'s one-shot pattern.
+    /// profile" item of the connected-user Activity screen's top-right menu (Unified Profile). The
+    /// observer sets it back to `false` immediately on consume (see `OctopusUIView`), mirroring
+    /// `tappedClientUserId`'s one-shot pattern.
     @Published var editProfileRequested: Bool = false
 
     /// Whether `onNavigateToProfileEditCallback` is currently wired on the SDK. Independent of

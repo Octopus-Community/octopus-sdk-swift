@@ -87,7 +87,7 @@ class RepliesTests: XCTestCase {
     }
 
     func testGetReplyObservesDatabase() async throws {
-        // OCT-1067: the profile Comments tab observes a single reply via `getReply(uuid:)` to reflect
+        // The profile Comments tab observes a single reply via `getReply(uuid:)` to reflect
         // live measures / reaction changes. It should emit whatever the local database holds and update
         // when the database changes.
         let emitted = XCTestExpectation(description: "getReply emitted the stored reply")

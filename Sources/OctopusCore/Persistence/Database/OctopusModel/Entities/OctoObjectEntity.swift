@@ -24,7 +24,7 @@ class OctoObjectEntity: NSManagedObject, Identifiable {
 
     // Per-user permissions (set by BE on Topic OctoObjects in v1; reserved for Post/Comment/Reply).
     // Stored as NSNumber? so that proto's "field absent" maps to nil, which the model layer
-    // flattens to `true` (open default — PRD Rule 10).
+    // flattens to `true` (open default, so groups without entitlement requirements stay open).
     @NSManaged public var canAccessOptional: NSNumber?
     @NSManaged public var canCreateChildrenOptional: NSNumber?
 

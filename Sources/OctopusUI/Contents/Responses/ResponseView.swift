@@ -148,11 +148,11 @@ private struct ResponseContentView: View {
     var body: some View {
         let addCardBottomSpacing = response.image == nil && !(response.text?.hasTranslation ?? true)
         let avatarSide = max(avatarSize, 32)
-        // Top extension matches the Figma `pt-[6px]` whitespace above the comment. The same
+        // Top extension matches the design spec's `pt-[6px]` whitespace above the comment. The same
         // value is reused by `ResponseCardView`'s invisible top inset so the avatar and card
         // have a consistent 6pt tappable strip above their visible content.
         let avatarTopExtension: CGFloat = 6
-        // Trailing extension is the Figma `gap-[12px]` between avatar and card; we fold it
+        // Trailing extension is the design spec's `gap-[12px]` between avatar and card; we fold it
         // into the avatar button's hit area so taps in the visual gap open the profile.
         let avatarTrailingExtension: CGFloat = 12
         // Apple's minimum tap target — the bottom extension below is sized to make the avatar
@@ -201,7 +201,7 @@ private struct ResponseContentView: View {
                         }
                     }
 
-                    // Figma "Spaccing when no image" — 8pt spacer inside the card when nothing
+                    // Design spec's no-image spacing — 8pt spacer inside the card when nothing
                     // else supplies the bottom whitespace. An image sits flush against the
                     // card's bottom rounded corners, and the translation toggle already carries
                     // its own 10pt bottom padding — in either case the spacer is skipped.

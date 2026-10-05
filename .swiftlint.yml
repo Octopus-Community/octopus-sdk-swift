@@ -82,3 +82,14 @@ file_header:
     \/\/
     \/\/  Copyright © \d{4} Octopus Community\. All rights reserved\.
     \/\/
+
+custom_rules:
+  # An iPad app running on a Mac evaluates presented content before handing it the presenter's environment, so
+  # an `@EnvironmentObject` read there traps. The `octopus…` modifiers inject the shared objects explicitly.
+  octopus_presentation:
+    name: "Octopus presentation"
+    included: "Sources/OctopusUI/"
+    regex: '\.(sheet|fullScreenCover|popover)\('
+    message: "Use octopusSheet / octopusFullScreenCover / octopusPopover, which hand the presented content the
+      SDK's environment objects (see View+OctopusPresentation.swift)."
+    severity: error

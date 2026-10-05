@@ -110,7 +110,7 @@ extension View {
                 self
             }
         } else {
-            self.sheet(isPresented: isPresented) {
+            self.octopusSheet(isPresented: isPresented) {
                 ImagePicker(selection: selection, error: error) // only 1 selection for this class
             }
         }

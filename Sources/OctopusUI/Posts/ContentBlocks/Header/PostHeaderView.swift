@@ -45,7 +45,7 @@ struct PostHeaderView: View {
                 AuthorAvatarView(avatar: author.avatar)
                     .frame(width: avatarImageSize, height: avatarImageSize)
                     // Visual inset: the avatar sits 12pt below the hit-area top, matching the
-                    // 8pt (card) + 8pt (header rhythm) offset the Figma defines. The hit area
+                    // 8pt (card) + 8pt (header rhythm) offset the design defines. The hit area
                     // itself extends up to the card's top edge.
                     .padding(.top, 16)
             }

@@ -7,7 +7,7 @@ import SwiftUI
 import Octopus
 import OctopusUI
 
-/// Scenario exercising the screen states (OCT-1617): force the SDK offline, then open the community
+/// Scenario exercising the screen states: force the SDK offline, then open the community
 /// to observe the empty / error states, their Retry and the no-connection toast.
 ///
 /// A simulator reports a connection whatever the host does, so the SDK never sees an outage there —

@@ -43,7 +43,7 @@ class EditProfileViewModel: ObservableObject {
     }
 
     /// Pure per-field edit decision combining the SSO app-managed redirect with the community lock.
-    /// `appManagedFields` wins for that field (PRD Q4); otherwise a non-editable lock hides the field.
+    /// `appManagedFields` wins for that field; otherwise a non-editable lock hides the field.
     enum FieldEditMode: Equatable {
         case editInOctopus
         case editInApp

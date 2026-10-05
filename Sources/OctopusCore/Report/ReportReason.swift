@@ -77,7 +77,8 @@ extension ReportReason {
         case .reportCex: .childExploitationOrAbuse
         case .reportIpv: .intellectualPropertyViolation
         // .reportIll (illegal activities/products) is folded into .other for now — exposing it as a
-        // dedicated public ReportReason needs product + localization work (separate ticket).
+        // dedicated public ReportReason is a public API addition that also needs its own product
+        // wording and translations, so it is left for later.
         case .reportUnspecifiedReason, .reportOth, .reportIll, .UNRECOGNIZED:   .other
         }
     }

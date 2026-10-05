@@ -8,7 +8,7 @@ import OctopusGrpcModels
 import OctopusDependencyInjection
 @testable import OctopusCore
 
-/// Mapping of the gRPC `ContentOptions` onto the `CommunityConfig` domain model (OCT-1426).
+/// Mapping of the gRPC `ContentOptions` onto the `CommunityConfig` domain model.
 /// Highest-priority invariant: absence ⇒ everything enabled (no behaviour change).
 final class ContentOptionsTests: XCTestCase {
 

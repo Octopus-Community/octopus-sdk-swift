@@ -7,7 +7,7 @@ import SwiftUI
 /// Design-system line height for **body-2 *content* (reading) text** — post body, comment/reply
 /// body and catch phrases (the surfaces Android tags with its content `lineHeight` token).
 ///
-/// The Figma design system specs body-2 content as SF Pro Text 16px with a **24px line height**
+/// The design system specs body-2 content as SF Pro Text 16px with a **24px line height**
 /// — a **1.5 ratio** relative to the font size (also Android's ratio, `fontSize * 1.5`).
 ///
 /// The line height is expressed as a **ratio**, not a fixed 24pt, so it scales with Dynamic Type:
@@ -22,7 +22,7 @@ import SwiftUI
 enum BodyContentLineHeight {
     /// Design-system line-height ratio: 24px line height over a 16px font (relative to font size).
     static let ratio: CGFloat = 24.0 / 16.0
-    /// Base font size of the body-2 style (Figma: 16px). Used only for the pre-iOS 26 fallback.
+    /// Base font size of the body-2 style (design system: 16px). Used only for the pre-iOS 26 fallback.
     static let baseFontSize: CGFloat = 16
 }
 

@@ -49,7 +49,7 @@ struct PoweredByOctopusView: View {
             .buttonStyle(.plain)
             .modify {
                 if #available(iOS 16.4, *), !UIAccessibility.isVoiceOverRunning {
-                    $0.popover(isPresented: $isShowingPopover, arrowEdge: .bottom) {
+                    $0.octopusPopover(isPresented: $isShowingPopover, arrowEdge: .bottom) {
                         Text(verbatim: "www.octopuscommunity.com")
                             .font(theme.fonts.caption1)
                             .foregroundColor(theme.colors.gray900)

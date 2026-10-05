@@ -10,7 +10,7 @@ import OctopusCore
 
 /// View model of ContentOptionsView.
 ///
-/// Applies a DEBUG-only override of the community content options (OCT-1426), so the per-content-type
+/// Applies a DEBUG-only override of the community content options, so the per-content-type
 /// picture/poll gating can be exercised in the sample without a backend-driven config (the backend
 /// serves a single config per key, so presets are the only way to cover the full matrix).
 @MainActor

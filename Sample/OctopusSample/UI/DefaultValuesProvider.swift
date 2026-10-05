@@ -21,7 +21,7 @@ enum DefaultValuesProvider {
     static var featureEnvsConfigured: Bool { !featureEnvsHost.isEmpty && !featureEnvsToken.isEmpty }
 
     /// Ticket (or env name) passed at launch to target a feature env without touching the UI:
-    /// `xcrun simctl launch <udid> com.octopuscommunity.sdk.sample -featureEnvTicket OCT-1707`.
+    /// `xcrun simctl launch <udid> com.octopuscommunity.sdk.sample -featureEnvTicket <ticket>`.
     /// `UserDefaults` exposes `-key value` launch arguments, which is what QA tooling uses.
     static var featureEnvTicketArgument: String? { launchArgument("featureEnvTicket") }
 

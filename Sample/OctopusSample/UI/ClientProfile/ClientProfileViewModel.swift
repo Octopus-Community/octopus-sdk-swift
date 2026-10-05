@@ -7,7 +7,7 @@ import Octopus
 
 /// View model of ClientProfileScreen.
 ///
-/// Fetches the tapped member's ``OctopusCommunityData`` (Unified Profile, OCT-1374) so the host's
+/// Fetches the tapped member's ``OctopusCommunityData`` (Unified Profile) so the host's
 /// own profile stand-in can surface Octopus community stats à la carte, without rendering any
 /// Octopus UI.
 @MainActor

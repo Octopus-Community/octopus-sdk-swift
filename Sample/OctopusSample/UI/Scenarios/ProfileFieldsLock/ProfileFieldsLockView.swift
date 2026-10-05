@@ -7,7 +7,7 @@ import SwiftUI
 import Octopus
 import OctopusUI
 
-/// Scenario exercising the per-field profile lock (OCT-1487): pick a preset to apply a community
+/// Scenario exercising the per-field profile lock: pick a preset to apply a community
 /// per-field lock (DEBUG override), then open the community to observe the profile + edit screens.
 struct ProfileFieldsLockView: View {
     @StateObjectCompat private var viewModel = ProfileFieldsLockViewModel()
