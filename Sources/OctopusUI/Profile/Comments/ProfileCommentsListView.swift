@@ -124,7 +124,7 @@ private struct ContentView: View {
 ///
 /// The member's own comment/reply is highlighted with a light-blue card (`primaryLowContrast`). When the
 /// entry is a reply, the parent comment is shown above it (plain gray card) and the reply is indented with
-/// a `↳` corner arrow in the gutter, matching the feed's reply layout (Figma zRPfGOIUdcNwgdg1R9yw03).
+/// a `↳` corner arrow in the gutter, matching the feed's reply layout.
 private struct UserCommentCell: View {
     @Environment(\.octopusTheme) private var theme
 

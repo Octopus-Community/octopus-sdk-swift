@@ -18,7 +18,7 @@ struct OtherUserCommentsTabGateTests {
     }
 
     @Test func flagOffNeverShowsTheTab() {
-        // The ticket's core contract: the flag alone decides, on every path.
+        // The gate's core contract: the flag alone decides, on every path.
         #expect(!showsOtherUserCommentsTab(showCommentsOnOtherProfiles: false, hasCommentsFeed: true,
                                            commentsForbidden: false))
     }

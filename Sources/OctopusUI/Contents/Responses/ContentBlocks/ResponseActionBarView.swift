@@ -41,11 +41,11 @@ struct ResponseActionBarView: View {
     }
 
     var body: some View {
-        // Figma: `h-[44px] pt-[8px]` — 44pt tall with 8pt top padding. We keep the default
+        // Design spec: `h-[44px] pt-[8px]` — 44pt tall with 8pt top padding. We keep the default
         // center alignment in the HStack: `ReactionToggleView` is ~44pt tall (its own tap
         // target) while the Reply button intrinsically sizes to its ~24pt content; centering
         // both inside the 44pt frame aligns their icons on the same visual line. `items-start`
-        // in the Figma is a CSS artifact of a 1pt-height `Spacer` trick, not a hard alignment
+        // in the spec is a CSS artifact of a 1pt-height `Spacer` trick, not a hard alignment
         // requirement — matching visual alignment between the two button icons is more
         // important here.
         HStack(spacing: 16) {

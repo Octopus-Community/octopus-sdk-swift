@@ -52,7 +52,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
         XCTAssertNil(alpha.ticket)
         XCTAssertEqual(alpha.displayName, "feat-alpha")
         let beta = try XCTUnwrap(envs.first { $0.name == "feat-beta" })
-        XCTAssertEqual(beta.displayName, "OCT-1000")
+        XCTAssertEqual(beta.displayName, "TICKET-1000")
     }
 
     func testDecodesDatesAndOptionalCommunityDescription() throws {
@@ -189,8 +189,8 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
             .first { $0.name == "feat-beta" })
         let selection = FeatureEnvSelection(env: env, community: env.communities[0])
         XCTAssertEqual(selection.apiHost, "api-feat-beta.example.com")
-        XCTAssertEqual(selection.ticket, "OCT-1000")
-        XCTAssertEqual(selection.displayName, "OCT-1000")
+        XCTAssertEqual(selection.ticket, "TICKET-1000")
+        XCTAssertEqual(selection.displayName, "TICKET-1000")
         XCTAssertEqual(selection.apiKey, "key-c2")
         XCTAssertEqual(selection.expiresAt, env.expiresAt)
     }
@@ -226,7 +226,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
     }
 
     func testSdkConfigWithFeatureEnvRoundTripsThroughCodable() throws {
-        let selection = FeatureEnvSelection(envName: "feat-x", ticket: "OCT-1", apiHost: "api-x.example.com",
+        let selection = FeatureEnvSelection(envName: "feat-x", ticket: "TICKET-1", apiHost: "api-x.example.com",
                                             expiresAt: Date(timeIntervalSince1970: 1_800_000_000),
                                             communityId: "c", communityName: "Seed", apiKey: "k")
         let config = SDKConfig(authKind: .octopus).with(featureEnv: selection)
@@ -246,7 +246,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
 
     func testResolvesByTicketAndTakesTheFirstCommunityByDefault() throws {
         let envs = try decodedFixture()
-        let selection = try XCTUnwrap(FeatureEnvSelection.resolve(ticket: "OCT-1000", communityHint: nil,
+        let selection = try XCTUnwrap(FeatureEnvSelection.resolve(ticket: "TICKET-1000", communityHint: nil,
                                                                  in: envs))
         XCTAssertEqual(selection.envName, "feat-beta")
         XCTAssertEqual(selection.communityId, "C2")
@@ -254,7 +254,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
 
     func testTicketMatchIsCaseInsensitive() throws {
         let envs = try decodedFixture()
-        XCTAssertNotNil(FeatureEnvSelection.resolve(ticket: "oct-1000", communityHint: nil, in: envs))
+        XCTAssertNotNil(FeatureEnvSelection.resolve(ticket: "ticket-1000", communityHint: nil, in: envs))
     }
 
     /// An env whose `ticket` is null must stay reachable by its name, otherwise 3 of the 5 live envs
@@ -268,18 +268,18 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
 
     func testCommunityHintPicksByIdOrNameFragment() throws {
         let envs = try decodedFixture()
-        let byId = try XCTUnwrap(FeatureEnvSelection.resolve(ticket: "OCT-1000", communityHint: "C3",
+        let byId = try XCTUnwrap(FeatureEnvSelection.resolve(ticket: "TICKET-1000", communityHint: "C3",
                                                             in: envs))
         XCTAssertEqual(byId.communityId, "C3")
-        let byName = try XCTUnwrap(FeatureEnvSelection.resolve(ticket: "OCT-1000", communityHint: "sandbox b",
+        let byName = try XCTUnwrap(FeatureEnvSelection.resolve(ticket: "TICKET-1000", communityHint: "sandbox b",
                                                               in: envs))
         XCTAssertEqual(byName.communityId, "C3")
     }
 
     func testUnknownTicketOrHintResolvesToNothing() throws {
         let envs = try decodedFixture()
-        XCTAssertNil(FeatureEnvSelection.resolve(ticket: "OCT-9000", communityHint: nil, in: envs))
-        XCTAssertNil(FeatureEnvSelection.resolve(ticket: "OCT-1000", communityHint: "nope", in: envs))
+        XCTAssertNil(FeatureEnvSelection.resolve(ticket: "TICKET-9000", communityHint: nil, in: envs))
+        XCTAssertNil(FeatureEnvSelection.resolve(ticket: "TICKET-1000", communityHint: "nope", in: envs))
     }
 
     /// Mirrors what `SDKConfig` encoded to before `featureEnv` existed.

@@ -81,7 +81,7 @@ struct CreatePostView: View {
         .navigationBarBackButtonHidden(viewModel.hasChanges || canClose || navBarLeadingAction != nil)
         .toolbar(leading: leadingBarItem, trailing: postButton,
                  trailingSharedBackgroundVisibility: .hidden)
-        .fullScreenCover(isPresented: $showTopicPicker) {
+        .octopusFullScreenCover(isPresented: $showTopicPicker) {
             GroupListScreen(octopus: viewModel.octopus, context: .groupSelection(
                 selectedGroupId: viewModel.selectedTopic?.topicId,
                 updateSelectedGroupId: { newTopicId in

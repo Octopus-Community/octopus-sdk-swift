@@ -7,7 +7,7 @@ import SwiftUI
 import Octopus
 import OctopusUI
 
-/// Scenario exercising the per-content-type content options (OCT-1426): pick a preset to apply a
+/// Scenario exercising the per-content-type content options: pick a preset to apply a
 /// community content-options config (DEBUG override), then open the community to observe the
 /// picture / poll affordances hidden on the post composer, comment input and reply input.
 struct ContentOptionsView: View {

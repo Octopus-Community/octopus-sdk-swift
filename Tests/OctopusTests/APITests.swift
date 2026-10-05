@@ -451,7 +451,7 @@ class APITests {
         )
         _ = OctopusInitialScreen.createPost(.init(prefilledPost: prefill))
 
-        // Prefilled share with a bridge-image signing closure (OCT-1426 Q5)
+        // Prefilled share with a bridge-image signing closure (image allowed in a pictures-off community)
         let signedPrefill = try OctopusPrefilledPost(
             text: "hello world long enough",
             image: nil,

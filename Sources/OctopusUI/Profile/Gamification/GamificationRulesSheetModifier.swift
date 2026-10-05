@@ -13,7 +13,7 @@ struct GamificationRulesSheetModifier: ViewModifier {
     let gamificationRulesViewManager: GamificationRulesViewManager
 
     func body(content: Content) -> some View {
-        content.sheet(isPresented: $isPresented) {
+        content.octopusSheet(isPresented: $isPresented) {
             if let gamificationConfig {
                 GamificationRulesScreen(gamificationConfig: gamificationConfig,
                                         gamificationRulesViewManager: gamificationRulesViewManager

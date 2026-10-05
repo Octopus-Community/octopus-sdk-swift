@@ -6,7 +6,7 @@ import XCTest
 import OctopusCore
 @testable import OctopusUI
 
-/// Derived per-field editability for the current-user profile UI (OCT-1487, Q2/Q4).
+/// Derived per-field editability for the current-user profile UI.
 final class ProfileFieldsEditabilityTests: XCTestCase {
 
     func testAllEditableShowsEverything() {
@@ -19,8 +19,8 @@ final class ProfileFieldsEditabilityTests: XCTestCase {
         XCTAssertTrue(editability.showEditButton)
     }
 
-    func testClueConfigLocksEverythingAndHidesEditButton() {
-        // Clue: pseudo read-only + avatar read-only + bio disabled.
+    func testFullLockConfigLocksEverythingAndHidesEditButton() {
+        // Pseudo read-only + avatar read-only + bio disabled.
         let lock = ProfileFieldsLock(nickname: .readOnly, avatar: .readOnly, bio: .disabled)
         let editability = ProfileFieldsEditability(lock: lock)
 
@@ -32,7 +32,7 @@ final class ProfileFieldsEditabilityTests: XCTestCase {
     }
 
     func testEditButtonVisibleWhenOnlyBioEditable() {
-        // Q2: the "Edit profile" button keys off all three fields, including bio.
+        // The "Edit profile" button keys off all three fields, including bio.
         let lock = ProfileFieldsLock(nickname: .readOnly, avatar: .readOnly, bio: .editable)
         let editability = ProfileFieldsEditability(lock: lock)
 

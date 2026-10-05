@@ -169,7 +169,7 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, C
 
                         // A `disabled` bio is removed entirely (no display even of an
                         // existing value); "Add a bio" shows only if the bio is editable; the "Edit
-                        // profile" button shows as soon as any of the three fields is editable (Q2).
+                        // profile" button shows as soon as any of the three fields is editable.
                         if !editability.bioHidden, let bio = profile.bio {
                             Group {
                                 if bio.isEllipsized {

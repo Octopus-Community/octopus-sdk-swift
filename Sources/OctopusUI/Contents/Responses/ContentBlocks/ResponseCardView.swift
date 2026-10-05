@@ -17,7 +17,7 @@ import SwiftUI
 /// shape while hit testing keeps the full frames — the usual SwiftUI pattern for decoupling
 /// visible geometry from tap geometry.
 ///
-/// The 6pt value matches the Figma's `pt-[6px]` whitespace above the comment/reply.
+/// The 6pt value matches the design spec's `pt-[6px]` whitespace above the comment/reply.
 struct ResponseCardView<Content: View>: View {
     @Environment(\.octopusTheme) private var theme
 

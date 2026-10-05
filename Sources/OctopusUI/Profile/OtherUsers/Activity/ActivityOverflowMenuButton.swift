@@ -8,8 +8,8 @@ import UIKit
 /// Top-right overflow menu of the connected user's own screens — the Activity screen (Unified
 /// Profile) and the legacy profile summary (whose "…" used to push a separate
 /// "Community settings" screen; it now opens this same menu — PO feedback, 2026-07-17). Organised
-/// in four visually-separated blocks (mirrors Android's `ActivityOverflowMenu` and the Figma menu
-/// design, node 17130-844):
+/// in four visually-separated blocks (mirrors Android's `ActivityOverflowMenu` and the menu
+/// design):
 /// 1. profile actions — Unified Profile "View my profile" / "Edit my profile" (each shown only when
 ///    its host target is reachable), or the legacy "My profile" account settings row;
 /// 2. community legal links (terms / privacy / guidelines), reusing the same URLs as the report
@@ -20,11 +20,11 @@ import UIKit
 /// Modeled on `PostMoreMenuButton`: an iOS 14+ `Menu` with a `.highPriorityGesture` tap-absorption
 /// workaround, and an iOS 13 action-sheet fallback. Every row (profile actions, legal links, report,
 /// logout) is a `Button` — the proven primitive for a system `Menu`/`ActionSheet` row (a `Link`
-/// wrapped in a custom view is not a verified `Menu` primitive). Row icons are the exact Figma menu
-/// vectors (node 17130-844), shipped as template PDF assets in the module bundle (`activityMenu*`)
+/// wrapped in a custom view is not a verified `Menu` primitive). Row icons are the exact menu-design
+/// vectors, shipped as template PDF assets in the module bundle (`activityMenu*`)
 /// so they render identically to the Android drawables and follow the system menu tint — the
 /// earlier SF-symbol approximations diverged from the design (pencil especially). Logout is the one
-/// exception: it is a legacy-only row absent from the Figma menu, so it keeps its SF Symbol.
+/// exception: it is a legacy-only row absent from the menu design, so it keeps its SF Symbol.
 /// Legal links open through the environment `urlOpener`, so the host's `onNavigateToURL` callback is
 /// honored (same routing as `RichText`).
 struct ActivityOverflowMenuButton: View {
@@ -167,7 +167,7 @@ struct ActivityOverflowMenuButton: View {
         }
     }
 
-    /// A menu-row icon exported from the Figma menu design (node 17130-844) and bundled as a template
+    /// A menu-row icon exported from the menu design and bundled as a template
     /// PDF (`activityMenu*` in the module asset catalog). Template rendering makes it follow the
     /// system menu tint, exactly like the SF Symbols it replaced.
     private static func menuIcon(_ name: String) -> Image {

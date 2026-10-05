@@ -29,7 +29,7 @@ struct ReactionsSummary: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityHintInBundle("Accessibility.Reaction.Summary.SeeAll")
-                .sheet(isPresented: $displayReactionsCount) {
+                .octopusSheet(isPresented: $displayReactionsCount) {
                     ReactionsListSheetScreen(
                         contentId: contentId, reactions: reactions, displayProfile: displayProfile)
                         .accessibilityFocusOnAppear()

@@ -66,7 +66,7 @@ struct ResponseImageContentView: View {
                 $0.fixedSize(horizontal: false, vertical: true)
             } else { $0 }
         }
-        // Figma `pt-[2px]` — a small breathing strip above the image separating it from the
+        // Design spec `pt-[2px]` — a small breathing strip above the image separating it from the
         // text block. The image is still flush with the card's bottom edge (no bottom padding).
         .padding(.top, 2)
     }

@@ -29,11 +29,11 @@ struct ConnectionRouter: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .fullScreenCover(isPresented: $openLogin) {
+            .octopusFullScreenCover(isPresented: $openLogin) {
                 MagicLinkView(octopus: octopus)
                     .environment(\.dismissModal, $openLogin)
             }
-            .fullScreenCover(isPresented: $openNicknameValidation) {
+            .octopusFullScreenCover(isPresented: $openNicknameValidation) {
                 ValidateNicknameScreen(octopus: viewModel.octopus, isPresented: $openNicknameValidation)
             }
             .compatAlert(

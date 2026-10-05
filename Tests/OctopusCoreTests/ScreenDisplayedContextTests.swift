@@ -6,7 +6,7 @@ import Foundation
 import Testing
 @testable import OctopusCore
 
-/// Unit-tests for the additive `otherUserPosts` screen-displayed context (Unified Profile, OCT-1374),
+/// Unit-tests for the additive `otherUserPosts` screen-displayed context (Unified Profile),
 /// iOS's counterpart of Android's `ScreenDisplayed.OtherUserPosts`. Locks the new case + its context
 /// struct so the additive Core change can't regress.
 @Suite

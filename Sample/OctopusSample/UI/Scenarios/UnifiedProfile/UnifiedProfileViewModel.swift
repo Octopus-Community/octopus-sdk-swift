@@ -8,7 +8,7 @@ import Foundation
 /// View model of UnifiedProfileView.
 ///
 /// Applies a DEBUG-only override of the `CommunityConfig.exposeClientUserId` activation flag
-/// (Unified Profile, OCT-1374), so the feature can be exercised in the sample before the backend
+/// (Unified Profile), so the feature can be exercised in the sample before the backend
 /// serves the flag. Unified Profile is active only when this flag is on **and**
 /// `onNavigateToProfileCallback` is wired — the sample always wires the callback by default via
 /// `ClientProfileManager`.

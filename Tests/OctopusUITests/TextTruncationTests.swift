@@ -108,7 +108,7 @@ struct TextTruncationTests {
         #expect(result.isTruncated == false)
     }
 
-    /// The point of the whole ticket: the visible text is cut, the tap target is not.
+    /// The core guarantee of truncation: the visible text is cut, the tap target is not.
     @Test func cuttingInsideAnAutolinkedURLKeepsTheFullURL() throws {
         guard #available(iOS 15, *) else { return }
         let full = URL(string: "https://example.com/a/very/long/path?with=query")!

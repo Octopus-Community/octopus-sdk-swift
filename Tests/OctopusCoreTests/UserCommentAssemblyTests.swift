@@ -8,7 +8,7 @@ import OctopusGrpcModels
 import OctopusDependencyInjection
 @testable import OctopusCore
 
-/// Assembly of the profile "Comments" feed (OCT-1067): `UserComment.list` mapping a `WithOctoObject`
+/// Assembly of the profile "Comments" feed: `UserComment.list` mapping a `WithOctoObject`
 /// response onto the domain models — parent/grandparent wiring, aggregate correlation, and the
 /// defensive skip of items that can't be anchored. The pure parent-context walk is covered separately
 /// in `UserCommentsResolverTests`.

@@ -11,7 +11,7 @@ import OctopusDependencyInjection
 /// Unit tests for `GroupList.init(from:)` — the pure builder that turns a
 /// `[OctopusCore.Topic]` into the SDK's internal Topics-nav block structure.
 ///
-/// Behavior under test (OCT-1392):
+/// Behavior under test:
 /// 1. Topics with no client section land in a single `.noSectionGroups` block at the top,
 ///    in their incoming array order.
 /// 2. Client sections follow, sorted by `Section.position` ascending, each containing
@@ -157,7 +157,7 @@ struct GroupListBuilderTests {
         #expect(list.groupsBySection[.clientSection(name: "Outdoors")]?.map(\.id) == ["running"])
     }
 
-    /// Regression guard against the OCT-1004 behavior. With OCT-1392, flipping `isFollowed`
+    /// Regression guard against the former Followed / More split. Now, flipping `isFollowed`
     /// on any single topic must produce a byte-identical `(sections, groupsBySection)` —
     /// follow status is not part of the ordering contract anymore.
     @Test func followStatusDoesNotAffectOutput() {

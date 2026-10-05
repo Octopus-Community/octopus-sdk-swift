@@ -7,7 +7,7 @@ import Testing
 @testable import OctopusUI
 
 /// Unit-tests for `currentUserActivityDestination`, the home floating-button routing that backs
-/// Unified Profile (OCT-1374, ported from Android's `CurrentUserActivityDestinationTest`). When
+/// Unified Profile (ported from Android's `CurrentUserActivityDestinationTest`). When
 /// Unified Profile is active (the community exposes client user ids AND the host wired
 /// `onNavigateToProfile`) the button opens the standalone Activity screen — always on the
 /// Notifications tab, because the button shows a bell (PO feedback, 2026-07-17); otherwise it keeps

@@ -9,7 +9,7 @@ import OctopusGrpcModels
 ///
 /// Defaults to fully open (`canAccess = true`, `canCreateChildren = true`) when the proto
 /// field is absent — preserves backward-compatible behavior for groups without entitlement
-/// requirements (PRD Rule 10).
+/// requirements.
 ///
 /// `public` so cross-module consumers within this Swift package (`OctopusUI`, `Octopus`) can
 /// read it. The host-app-facing surface is ``OctopusGroup/canAccess`` (a flat `Bool`).

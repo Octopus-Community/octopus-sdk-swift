@@ -7,7 +7,7 @@ import Foundation
 import OctopusGrpcModels
 @testable import OctopusCore
 
-/// Parent-context resolution of the profile "Comments" feed (OCT-1067) — the `parentId` walk and the
+/// Parent-context resolution of the profile "Comments" feed — the `parentId` walk and the
 /// orphan-skipping the backend spec calls out. Pure logic, no I/O.
 struct UserCommentsResolverTests {
     typealias OctoObject = Com_Octopuscommunity_OctoObject

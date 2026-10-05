@@ -127,7 +127,7 @@ class ConnectedActionChecker {
     /// previously this branch raised `Connection.SSO.Error.Unknown` while still allowing the action,
     /// which surfaced a spurious "retrieve your data" popup on the first post even though the post
     /// succeeded (the stored `lastConnectionError` self-heals via the retry the alert itself triggers).
-    /// This aligns iOS with Android, whose connected state carries no error field (issue #307).
+    /// This aligns iOS with Android, whose connected state carries no error field.
     nonisolated static func decision(magicLinkRequestActive: Bool,
                                      state: ConnectionDecisionState,
                                      isSSO: Bool,
@@ -211,7 +211,7 @@ class ConnectedActionChecker {
         case .proceed:
             return true
         case let .block(replacement):
-            // octopus_driven_login (#315): report when this action is what triggered a login prompt.
+            // octopus_driven_login: report when this action is what triggered a login prompt.
             // A `.login` replacement is a login drive on the non-SSO / magic-link-login paths — but not
             // when it merely reflects a pending magic-link request (which was not caused by this action).
             if replacement == .login, !magicLinkActive {

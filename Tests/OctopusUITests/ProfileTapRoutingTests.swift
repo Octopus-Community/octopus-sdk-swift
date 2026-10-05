@@ -6,7 +6,7 @@ import Foundation
 import Testing
 @testable import OctopusUI
 
-/// Unit-tests for the Unified Profile routing (OCT-1374, ported from Android's ProfileTapTargetTest):
+/// Unit-tests for the Unified Profile routing (ported from Android's ProfileTapTargetTest):
 /// - `unifiedProfileActive`: the activation gate — active iff the community exposes client user ids
 ///   (backend) AND the host wired `onNavigateToProfileCallback`.
 /// - `resolveProfileTapTarget`: once activation is known, a member with a client id opens the host

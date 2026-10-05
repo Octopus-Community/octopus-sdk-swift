@@ -279,7 +279,7 @@ private struct PublishedContentView: View {
             contentId: post.uuid,
             text: content.text)
 
-        // Figma order: text → poll → translation toggle → media → CTA.
+        // Design order: text → poll → translation toggle → media → CTA.
         if case let .poll(poll) = content.attachment {
             PostPollContentView(
                 postId: post.uuid,

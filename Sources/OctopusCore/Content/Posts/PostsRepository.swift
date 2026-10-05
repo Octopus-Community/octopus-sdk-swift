@@ -167,7 +167,8 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
 
             // For a prefilled (bridge) share carrying an image, sign the content so the
             // server accepts the image even in a pictures-off community. The fingerprint is computed on
-            // the RESIZED/uploaded bytes (must match the backend PrefilledShareVerifier — doc #60).
+            // the RESIZED/uploaded bytes, the only ones the backend PrefilledShareVerifier sees, so the
+            // two computations match (see `BridgeShareFingerprint`).
             var clientToken: String?
             if let bridgeShareSignature, case let .image(resizedImgData) = post.attachment {
                 let fingerprint = BridgeShareFingerprint.compute(

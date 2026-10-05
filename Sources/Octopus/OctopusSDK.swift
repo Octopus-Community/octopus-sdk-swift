@@ -774,6 +774,16 @@ extension OctopusSDK {
 
 // MARK: - Community Data
 extension OctopusSDK {
+    /// Box for a `Future` promise, which Swift cannot prove `Sendable`.
+    ///
+    /// The promise has to cross into the Task that resolves the member. A box is used rather than a
+    /// `nonisolated(unsafe) let` capture: the Swift 6.2 compiler (Xcode 26.2) ignores that annotation
+    /// when the local is captured by the `sending` Task closure and rejects the build. The hop is safe:
+    /// the promise is fulfilled exactly once, only from within that Task.
+    private struct UncheckedSendablePromise<Output>: @unchecked Sendable {
+        let fulfill: (Result<Output, Never>) -> Void
+    }
+
     /// Refreshes and returns a read-only ``OctopusCommunityData`` snapshot for the member identified
     /// by the host app's own `clientUserId` (Unified Profile).
     ///
@@ -832,11 +842,11 @@ extension OctopusSDK {
         return Deferred {
             Future<String?, Never> { promise in
                 // `promise` is fulfilled exactly once, only from within this Task — safe to send.
-                nonisolated(unsafe) let promise = promise
+                let promise = UncheckedSendablePromise(fulfill: promise)
                 Task {
                     let resolvedProfileId = try? await profileRepository
                         .fetchProfile(byClientUserId: clientUserId)?.id
-                    promise(.success(resolvedProfileId))
+                    promise.fulfill(.success(resolvedProfileId))
                 }
             }
         }

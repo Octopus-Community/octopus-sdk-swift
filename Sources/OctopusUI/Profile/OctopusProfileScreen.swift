@@ -118,14 +118,15 @@ public struct OctopusProfileScreen: View {
         // set the environment, this will set the default environment if no other has been set, and avoid re-creating
         // the default env each time it is accessed
         .environment(\.octopusTheme, theme)
-        .environmentObject(translationStore)
         .environment(\.trackingApi, trackingApi)
-        .environmentObject(gamificationRulesViewManager)
-        .environmentObject(displayConfigManager)
-        .environmentObject(reactionsListManager)
-        .environmentObject(videoManager)
         .environment(\.urlOpener, urlOpener)
-        .environmentObject(languageManager)
+        .sharedEnvironmentObjects(SharedEnvironmentObjects(
+            translationStore: translationStore,
+            gamificationRulesViewManager: gamificationRulesViewManager,
+            displayConfigManager: displayConfigManager,
+            reactionsListManager: reactionsListManager,
+            videoManager: videoManager,
+            languageManager: languageManager))
         .overrideLanguageIfNeeded(languageManager: languageManager)
     }
 

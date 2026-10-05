@@ -11,9 +11,10 @@ import CryptoKit
 /// rejected server-side unless the post is signed. The SDK computes this fingerprint, the host signs
 /// it (JWT HS256, `bridge_fingerprint` claim) and the SDK sends it as `PutPost.clientToken`.
 ///
-/// The computation MUST match the backend `PrefilledShareVerifier` exactly (octopus-documentation #60):
-/// a compact JSON object of the non-empty fields below, keys in alphabetical order, no spaces, then
-/// SHA-256 (lowercase hex).
+/// The computation MUST match the backend `PrefilledShareVerifier` exactly: a compact JSON object of
+/// the non-empty fields below, keys in alphabetical order, no spaces, then SHA-256 (lowercase hex).
+/// The host-side signing is documented at
+/// https://doc.octopuscommunity.com/backend/jwt/generate_jwt#generate-jwt-for-a-bridge-share-with-an-image
 enum BridgeShareFingerprint {
     enum Image {
         /// An already-hosted image URL.

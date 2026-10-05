@@ -48,7 +48,7 @@ struct CustomThemeView: View {
                     main: .Scenarios.CustomTheme.Colors.primary,
                     lowContrast: .Scenarios.CustomTheme.Colors.primaryLow,
                     highContrast: .Scenarios.CustomTheme.Colors.primaryHigh),
-                // OCT-1370: showcase the customizable link/URL color (rendered in posts/comments)
+                // Showcase the customizable link/URL color (rendered in posts/comments)
                 link: .purple,
                 // Showcase the customizable community background color
                 background: customBackground ? customBackgroundColor : nil),

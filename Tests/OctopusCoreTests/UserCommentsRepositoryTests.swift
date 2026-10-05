@@ -9,7 +9,7 @@ import OctopusRemoteClient
 import OctopusDependencyInjection
 @testable import OctopusCore
 
-/// Paging, end-detection, error mapping and persistence of the profile "Comments" repository (OCT-1067).
+/// Paging, end-detection, error mapping and persistence of the profile "Comments" repository.
 /// Assembly of the domain models is covered in `UserCommentAssemblyTests`; here we exercise the
 /// repository boundary against the mock feed service.
 struct UserCommentsRepositoryTests {
@@ -138,8 +138,8 @@ struct UserCommentsRepositoryTests {
     // Two hypotheses were tested and ruled out — the shared static NSManagedObjectModel cache (rerun
     // with the cache off: same failure) and the async migration ModelCoreDataStack kicks off from a
     // UserDefaults version check (rerun with the version pinned: same failure). The remaining suspicion
-    // is cross-suite isolation of the in-RAM CoreData stacks, which predates this ticket, so the fix
-    // does not belong in OCT-1067. Tracked separately; re-enable with it.
+    // is cross-suite isolation of the in-RAM CoreData stacks, which predates the profile Comments
+    // feed, so the fix belongs with that isolation work. Tracked separately; re-enable with it.
     @Test(.disabled("Cross-suite CoreData isolation, see comment above"))
     func persistClassifiesByContentKindAndDedupesByUuid() async throws {
         mockFeedService.injectNextInitializeFeedWithOctoObject(Response.with {

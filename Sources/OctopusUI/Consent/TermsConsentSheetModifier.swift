@@ -19,7 +19,7 @@ private struct TermsConsentSheetModifier: ViewModifier {
     let onAccept: () -> Void
 
     func body(content: Content) -> some View {
-        content.sheet(isPresented: $isPresented) {
+        content.octopusSheet(isPresented: $isPresented) {
             if mode.isExplicit {
                 TermsConsentSheet(
                     mode: mode,

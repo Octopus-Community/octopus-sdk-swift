@@ -10,9 +10,9 @@ import OctopusCore
 
 /// View model of ProfileFieldsLockView.
 ///
-/// Applies a DEBUG-only override of the community per-field profile lock (OCT-1487), so the lock can
+/// Applies a DEBUG-only override of the community per-field profile lock, so the lock can
 /// be exercised in the sample without a backend-driven config. Each preset maps to one of the lock
-/// combinations described in the PRD.
+/// combinations a community can configure.
 @MainActor
 class ProfileFieldsLockViewModel: ObservableObject {
     enum Preset: Int, CaseIterable, Identifiable {
@@ -22,7 +22,7 @@ class ProfileFieldsLockViewModel: ObservableObject {
 
         var id: Int { rawValue }
 
-        // Generic labels (no client name) — kept in sync with the pm-tools scenario catalog.
+        // Generic labels (no client name) — kept in sync with the shared QA scenario catalog.
         var label: String {
             switch self {
             case .allEditable: "Preset 1 · All editable (default / no-op)"

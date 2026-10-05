@@ -9,7 +9,7 @@ import Octopus
 /// Full-screen presented when the SDK invokes `onNavigateToProfileCallback`. This is the host
 /// app's own "profile" stand-in for the tapped member: once a host app wires the Unified Profile
 /// callback, the SDK never shows its native profile screens, so the host renders its own screen
-/// using the `clientUserId` handed back by the callback (OCT-1374).
+/// using the `clientUserId` handed back by the callback.
 struct ClientProfileScreen: View {
     @Environment(\.presentationMode) private var presentationMode
     @StateObjectCompat private var viewModel: ClientProfileViewModel
@@ -85,7 +85,7 @@ struct ClientProfileScreen: View {
                 // identifier onto every descendant text, which SHADOWED the three state ids below:
                 // an on-simulator `idb ui describe-all` dump showed zero `clientProfile-data` and five
                 // `clientProfile-communityData` instead. Moved onto the heading so the id still
-                // resolves — nothing in pm-tools consumes it, unlike the state ids, which are the
+                // resolves — nothing in the QA pipeline consumes it, unlike the state ids, which are the
                 // documented assertion target for the `communityData` scenario's preset 6.
                 .accessibilityId("clientProfile-communityData")
             switch viewModel.state {
@@ -122,7 +122,7 @@ struct ClientProfileScreen: View {
         }
     }
 
-    // The three outcomes carry the cross-platform test ids from the shared pm-tools scenario catalog
+    // The three outcomes carry the cross-platform test ids from the shared QA scenario catalog
     // (`clientProfile-data` / `clientProfile-error` / `clientProfile-unknown`), so the QA pipeline can
     // tell "rendered the stats" from "member unknown" from "fetch failed" without reading pixels.
     @ViewBuilder

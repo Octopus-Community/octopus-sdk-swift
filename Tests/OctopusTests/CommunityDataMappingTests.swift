@@ -13,7 +13,7 @@ import SwiftProtobuf
 
 /// Unit-tests for the mapping + nil-propagation logic behind `OctopusSDK.fetchCommunityData(...)`
 /// (Sources/Octopus/OctopusSDK.swift, "Community Data" extension) and `OctopusCommunityData.init(from:)`
-/// (Sources/Octopus/OctopusCommunityData.swift), Unified Profile (OCT-1374).
+/// (Sources/Octopus/OctopusCommunityData.swift), Unified Profile.
 ///
 /// ### Why not drive this through a live `OctopusSDK`
 /// `OctopusSDK` cannot be constructed with mocked dependencies for a *running* test: its only public
@@ -22,7 +22,7 @@ import SwiftProtobuf
 /// self-registers every repository into its own private `Injector` — there is no seam for a caller to
 /// substitute a mock beforehand (`Injector.register` calls `preconditionFailure` on a second
 /// registration of an already-registered identifier). This is a pre-existing, repo-wide limitation, not
-/// specific to this ticket: see `Tests/OctopusUITests/GroupListViewModelTests.swift`
+/// specific to Community Data: see `Tests/OctopusUITests/GroupListViewModelTests.swift`
 /// ("The ViewModel itself requires a full OctopusSDK instance, so the filtering predicate is tested as
 /// a pure helper below") and the fact that every *running* `OctopusSDK(apiKey:)` construction in this
 /// repo's test suites lives inside a `@Suite(.disabled(...))` compile-only suite (`APITests.swift` in

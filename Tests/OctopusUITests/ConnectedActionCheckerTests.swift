@@ -10,7 +10,7 @@ import Foundation
 /// Unit tests for `ConnectedActionChecker.decision(...)` — the pure gate that decides whether a user
 /// action may proceed, and if not, what UI replaces it.
 ///
-/// Regression focus (issue #307): on the *proceed* path (connected, config loaded, past the
+/// Regression focus: on the *proceed* path (connected, config loaded, past the
 /// strong-action guest gate and the nickname screen) a lingering connection error must NOT surface a
 /// popup. Previously the branch raised `Connection.SSO.Error.Unknown` while still allowing the action,
 /// producing a spurious "retrieve your data" alert on the first bridge-share post (the post succeeds).
@@ -37,7 +37,7 @@ struct ConnectedActionCheckerTests {
                    userBannedMessage: userBannedMessage)
     }
 
-    // MARK: - Regression: spurious SSO error popup on the proceed path (#307)
+    // MARK: - Regression: spurious SSO error popup on the proceed path
 
     @Test func connectedWithLingeringError_stillProceeds_noPopup() {
         // The exact triad the popup used to key on: SSO + client user connected + a stored error,
@@ -146,8 +146,8 @@ struct ConnectedActionCheckerTests {
             isSSO: true, clientUserConnected: true, action: .reaction) == .proceed)
     }
 
-    /// The #307 guard, restated against this change: a lingering error that is *not* a ban must still let
-    /// the action through, which is what keeps `banBlock` keyed on the message rather than on `hasError`.
+    /// The spurious-popup guard, restated against this change: a lingering error that is *not* a ban must
+    /// still let the action through, which is what keeps `banBlock` keyed on the message rather than on `hasError`.
     @Test func lingeringNonBanError_strongAction_stillProceeds() {
         #expect(Sut.decision(
             magicLinkRequestActive: false,

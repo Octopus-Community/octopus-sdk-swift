@@ -17,9 +17,9 @@ import SwiftUI
 /// (the row then scrolls). Either way the selected-tab underline spans its tab edge to edge and the
 /// label is centered on it by construction.
 enum ProfileTabsLayout {
-    /// Horizontal padding of the row, per the Figma tab-bar component.
+    /// Horizontal padding of the row, per the design system's tab-bar component.
     static let rowHorizontalPadding: CGFloat = 16
-    /// Spacing between two tabs, per the Figma tab-bar component.
+    /// Spacing between two tabs, per the design system's tab-bar component.
     static let interTabSpacing: CGFloat = 8
     /// Horizontal padding inside a tab, between its label and its own edges.
     static let tabHorizontalPadding: CGFloat = 16
