@@ -79,7 +79,8 @@ struct RichText: View {
     }
 }
 
-private struct MarkdownText: View {
+/// Markdown rendering of the iOS 13–14 fallback (no `AttributedString`). Internal so its parser can be tested.
+struct MarkdownText: View {
     @Environment(\.urlOpener) private var urlOpener
 
     let input: String
@@ -175,6 +176,16 @@ private struct MarkdownText: View {
             }
     }
 
+    /// The URL of a link, or `nil` when `raw` is not a valid URL. As strict on every OS as `URL(string:)` is on
+    /// iOS 13–14, where this fallback renders: from iOS 17, `URL(string:)` would percent-encode what it used to
+    /// reject.
+    static func linkURL(_ raw: String) -> URL? {
+        if #available(iOS 17, *) {
+            return URL(string: raw, encodingInvalidCharacters: false)
+        }
+        return URL(string: raw)
+    }
+
     func parse(text: String) -> [MarkdownPart] {
         var result: [MarkdownPart] = []
         var remaining = text
@@ -190,7 +201,8 @@ private struct MarkdownText: View {
                         let labelRange = Range(match.range(at: 1), in: source)!
                         let urlRange = Range(match.range(at: 2), in: source)!
                         let label = String(source[labelRange])
-                        let url = URL(string: String(source[urlRange]))!
+                        // An invalid URL keeps its label, as plain text: never a crash.
+                        guard let url = Self.linkURL(String(source[urlRange])) else { return (label, .normal) }
                         return (label, .link(url))
                     }),
             Pattern(regex: try! NSRegularExpression(pattern: "\\*\\*(.+?)\\*\\*"),
@@ -218,7 +230,9 @@ private struct MarkdownText: View {
                         let range = Range(match.range(at: 1), in: source)!
                         let raw = String(source[range])
                         let prefix = raw.hasPrefix("http") ? "" : "https://"
-                        return (raw, .link(URL(string: prefix + raw)!))
+                        // An invalid URL stays as written, as plain text: never a crash.
+                        guard let url = Self.linkURL(prefix + raw) else { return (raw, .normal) }
+                        return (raw, .link(url))
                     })
         ]
 

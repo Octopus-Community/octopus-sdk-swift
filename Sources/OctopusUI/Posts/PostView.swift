@@ -21,12 +21,12 @@ struct PostView: View {
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
     let reactionTapped: (ReactionKind?) -> Void
-    let voteOnPoll: (String) -> Bool
+    let voteOnPoll: (String) async -> Bool
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openGroup: (String) -> Void
     let deletePost: () -> Void
     let blockAuthor: (String) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
     let openCreateComment: () -> Void
 
@@ -42,7 +42,7 @@ struct PostView: View {
             zoomableImageInfo: $zoomableImageInfo,
             iOS13ActionSheetIsPresented: $iOS13ActionSheetIsPresented,
             onDelete: { displayDeleteAlert = true },
-            onReport: { displayContentModeration(post.uuid) },
+            onReport: { displayContentModeration(reportTarget) },
             onBlockAuthor: { displayBlockAlert = true },
             onReaction: reactionTapped,
             onVote: voteOnPoll,
@@ -72,6 +72,11 @@ struct PostView: View {
         }
     }
 
+    /// What the Report entries report, with the author the "Report sent" alert may offer to block.
+    private var reportTarget: ReportTarget {
+        .content(contentId: post.uuid, author: post.author, authorCanBeBlocked: post.canBeBlockedByUser)
+    }
+
     private var iOS13ActionSheetButtons: [ActionSheet.Button] {
         var buttons: [ActionSheet.Button] = []
         // "View group" is a non-destructive navigation action, so it comes first. Shown on every
@@ -88,7 +93,7 @@ struct PostView: View {
         }
         if post.canBeModerated {
             buttons.append(.destructive(Text("Moderation.Content.Button", bundle: .module)) {
-                displayContentModeration(post.uuid)
+                displayContentModeration(reportTarget)
             })
         }
         if post.canBeBlockedByUser {
@@ -117,7 +122,7 @@ private struct PostContentView: View {
     let onReport: () -> Void
     let onBlockAuthor: () -> Void
     let onReaction: (ReactionKind?) -> Void
-    let onVote: (String) -> Bool
+    let onVote: (String) async -> Bool
     let onOpenCreateComment: () -> Void
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openGroup: (String) -> Void
@@ -221,7 +226,7 @@ private struct PublishedContentView: View {
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
     let onReaction: (ReactionKind?) -> Void
-    let onVote: (String) -> Bool
+    let onVote: (String) async -> Bool
     let onOpenCreateComment: () -> Void
     let displayClientObject: ((String) -> Void)?
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
@@ -234,7 +239,7 @@ private struct PublishedContentView: View {
          width: CGFloat,
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
          onReaction: @escaping (ReactionKind?) -> Void,
-         onVote: @escaping (String) -> Bool,
+         onVote: @escaping (String) async -> Bool,
          onOpenCreateComment: @escaping () -> Void,
          displayClientObject: ((String) -> Void)?,
          displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void) {
@@ -268,6 +273,15 @@ private struct PublishedContentView: View {
         return nil
     }
 
+    private func mediaView(_ media: PostAttachmentsViewData.Media) -> some View {
+        PostMediaContentView(
+            postId: post.uuid,
+            width: width,
+            media: media,
+            zoomableImageInfo: $zoomableImageInfo,
+            visiblePost: post.visiblePost)
+    }
+
     var body: some View {
         PostTagsView(tags: post.tags)
 
@@ -275,40 +289,44 @@ private struct PublishedContentView: View {
             PostCatchPhraseView(contentId: post.uuid, catchPhrase: catchPhrase)
         }
 
-        PostTextContentView(
-            contentId: post.uuid,
-            text: content.text)
+        // A post may carry an image without text. Skipping the empty block keeps the media 8pt below the header
+        // (header bottom 4 + media top 4), the same distance the text would start at.
+        if content.text.hasText {
+            PostTextContentView(
+                contentId: post.uuid,
+                text: content.text)
+        }
 
-        // Design order: text → poll → translation toggle → media → CTA.
-        if case let .poll(poll) = content.attachment {
+        // Design order. With a poll: text → media → poll → translation toggle → CTA, the media sitting in
+        // its own slot above the poll. Without a poll: text → translation toggle → media → CTA.
+        if let poll = content.attachments.poll {
+            if let media = content.attachments.media {
+                mediaView(media)
+                    .padding(.top, 4)
+                    // 8 here + 4 (PostPollContentView top) + 4 (PollOptionView) = 16pt from the media
+                    // to the first option.
+                    .padding(.bottom, 8)
+            }
             PostPollContentView(
                 postId: post.uuid,
                 poll: poll,
                 liveMeasuresPublisher: content.liveMeasuresPublisher,
                 initialLiveMeasures: content.liveMeasuresValue,
                 vote: onVote)
-                .padding(.top, 4)
+                .padding(.top, content.attachments.media == nil ? 4 : 0)
         }
 
-        if content.text.hasTranslation {
+        if content.hasTranslation {
+            // The language is the post's own (it may be set without text); `nil` gives the generic
+            // "View original" label. Poll options carry no language of their own.
             PostTranslationToggleView(
                 contentId: post.uuid,
                 originalLanguage: content.text.originalLanguage)
         }
 
-        switch content.attachment {
-        case .image, .video:
-            if let attachment = content.attachment {
-                PostMediaContentView(
-                    postId: post.uuid,
-                    width: width,
-                    attachment: attachment,
-                    zoomableImageInfo: $zoomableImageInfo,
-                    visiblePost: post.visiblePost)
-                    .padding(.top, 4)
-            }
-        case .poll, .none:
-            EmptyView()
+        if content.attachments.poll == nil, let media = content.attachments.media {
+            mediaView(media)
+                .padding(.top, 4)
         }
 
         if let cta = content.cta {
@@ -394,7 +412,7 @@ private struct PublishedContentView: View {
         PostView(
             post: PostViewData(from: PostView.Previews.samplePost(
                 text: "Un texte",
-                attachment: .image(.init(
+                attachments: .image(.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
                     size: CGSize(width: 700, height: 750))),
                 reactions: [.init(reactionKind: .heart, count: 10)],
@@ -420,7 +438,7 @@ private struct PublishedContentView: View {
         PostView(
             post: PostViewData(from: PostView.Previews.samplePost(
                 text: "Un sondage",
-                attachment: .poll(DisplayablePoll(options: [
+                attachments: .poll(DisplayablePoll(options: [
                     .init(id: "1",
                           text: .init(originalText: "Option 1", originalLanguage: "fr",
                                       translatedText: "Option 1")),
@@ -445,6 +463,54 @@ private struct PublishedContentView: View {
     .mockEnvironmentForPreviews()
 }
 
+#Preview("Summary — text + image + poll") {
+    StatefulPreviewWrapper(initial: ZoomableImageInfo?.none) { zoomable in
+        PostView(
+            post: PostViewData(from: PostView.Previews.samplePost(
+                text: "Laquelle préférez-vous ?",
+                attachments: PostView.Previews.imageAndPoll,
+                childCount: 2, viewCount: 10)),
+            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            width: 393,
+            zoomableImageInfo: zoomable,
+            reactionTapped: { _ in },
+            voteOnPoll: { _ in false },
+            displayProfile: { _, _ in },
+            openGroup: { _ in },
+            deletePost: {},
+            blockAuthor: { _ in },
+            displayContentModeration: { _ in },
+            displayClientObject: nil,
+            openCreateComment: {})
+    }
+    .mockEnvironmentForPreviews()
+}
+
+#Preview("Detail — text + image + poll") {
+    StatefulPreviewWrapper(initial: ZoomableImageInfo?.none) { zoomable in
+        ScrollView {
+            PostView(
+                post: PostViewData(from: PostView.Previews.samplePost(
+                    text: "Laquelle préférez-vous ?",
+                    attachments: PostView.Previews.imageAndPoll,
+                    childCount: 8, viewCount: 100)),
+                context: .detail,
+                width: 393,
+                zoomableImageInfo: zoomable,
+                reactionTapped: { _ in },
+                voteOnPoll: { _ in false },
+                displayProfile: { _, _ in },
+                openGroup: { _ in },
+                deletePost: {},
+                blockAuthor: { _ in },
+                displayContentModeration: { _ in },
+                displayClientObject: nil,
+                openCreateComment: {})
+        }
+    }
+    .mockEnvironmentForPreviews()
+}
+
 #Preview("Detail — text + image + CTA") {
     StatefulPreviewWrapper(initial: ZoomableImageInfo?.none) { zoomable in
         ScrollView {
@@ -452,12 +518,62 @@ private struct PublishedContentView: View {
                 post: PostViewData(from: PostView.Previews.samplePost(
                     text: "Un texte avec image",
                     topic: "Design",
-                    attachment: .image(.init(
+                    attachments: .image(.init(
                         url: URL(string: "https://picsum.photos/700/400")!,
                         size: CGSize(width: 700, height: 400))),
                     reactions: [.init(reactionKind: .heart, count: 42)],
                     childCount: 8, viewCount: 100,
                     canBeModerated: false)),
+                context: .detail,
+                width: 393,
+                zoomableImageInfo: zoomable,
+                reactionTapped: { _ in },
+                voteOnPoll: { _ in false },
+                displayProfile: { _, _ in },
+                openGroup: { _ in },
+                deletePost: {},
+                blockAuthor: { _ in },
+                displayContentModeration: { _ in },
+                displayClientObject: nil,
+                openCreateComment: {})
+        }
+    }
+    .mockEnvironmentForPreviews()
+}
+
+#Preview("Summary — image, no text") {
+    StatefulPreviewWrapper(initial: ZoomableImageInfo?.none) { zoomable in
+        PostView(
+            post: PostViewData(from: PostView.Previews.samplePost(
+                text: "", originalLanguage: nil, translatedText: nil,
+                attachments: .image(.init(
+                    url: URL(string: "https://picsum.photos/700/750")!,
+                    size: CGSize(width: 700, height: 750))),
+                childCount: 1, viewCount: 3)),
+            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            width: 393,
+            zoomableImageInfo: zoomable,
+            reactionTapped: { _ in },
+            voteOnPoll: { _ in false },
+            displayProfile: { _, _ in },
+            openGroup: { _ in },
+            deletePost: {},
+            blockAuthor: { _ in },
+            displayContentModeration: { _ in },
+            displayClientObject: nil,
+            openCreateComment: {})
+    }
+    .mockEnvironmentForPreviews()
+}
+
+#Preview("Detail — image + poll, no text") {
+    StatefulPreviewWrapper(initial: ZoomableImageInfo?.none) { zoomable in
+        ScrollView {
+            PostView(
+                post: PostViewData(from: PostView.Previews.samplePost(
+                    text: "", originalLanguage: nil, translatedText: nil,
+                    attachments: PostView.Previews.imageAndPoll,
+                    childCount: 2, viewCount: 10)),
                 context: .detail,
                 width: 393,
                 zoomableImageInfo: zoomable,
@@ -482,12 +598,25 @@ private struct PublishedContentView: View {
 /// pattern.
 extension PostView {
     enum Previews {
+        static let imageAndPoll = PostAttachmentsViewData(
+            media: .image(.init(
+                url: URL(string: "https://picsum.photos/700/750")!,
+                size: CGSize(width: 700, height: 750))),
+            poll: DisplayablePoll(options: [
+                .init(id: "1",
+                      text: .init(originalText: "La rouge", originalLanguage: "fr",
+                                  translatedText: "The red one")),
+                .init(id: "2",
+                      text: .init(originalText: "La bleue", originalLanguage: "fr",
+                                  translatedText: "The blue one"))
+            ]))
+
         static func samplePost(
             text: String = "Un texte",
             originalLanguage: String? = "fr",
             translatedText: String? = "A text",
             topic: String? = "Help",
-            attachment: DisplayablePost.PostContent.Attachment? = nil,
+            attachments: PostAttachmentsViewData = .empty,
             reactions: [ReactionCount] = [],
             childCount: Int = 0,
             viewCount: Int = 0,
@@ -528,7 +657,7 @@ extension PostView {
                     text: .init(originalText: text,
                                 originalLanguage: originalLanguage,
                                 translatedText: translatedText),
-                    attachment: attachment,
+                    attachments: attachments,
                     bridgeInfo: nil,
                     customAction: nil,
                     featuredComment: nil,

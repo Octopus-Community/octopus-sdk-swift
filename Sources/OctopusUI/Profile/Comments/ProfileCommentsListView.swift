@@ -12,8 +12,9 @@ import OctopusCore
 /// and `ResponseFeedItemView` for the comment/reply (and the parent comment, for a reply) — so the cell
 /// matches the feed's look (reactions, media, counts, "see replies").
 ///
-/// Navigation matches the normal feed exactly: tapping the post / "Comment" opens the post detail
-/// (`displayPostDetail`), and tapping a comment / reply / "Reply" opens the comment detail
+/// Navigation: tapping the post / "Comment" opens the post detail (`displayPostDetail`); tapping a
+/// top-level comment (the member's own, or the one their reply answers) opens the post detail scrolled to
+/// that comment; tapping a reply / "Reply" / "See N replies" opens the comment detail
 /// (`displayCommentDetail`) — for a reply, the parent comment's detail scrolled to the reply.
 struct ProfileCommentsListView: View {
     /// Observed, not owned: the screen's own view model creates this one and replaces it whenever the
@@ -127,6 +128,7 @@ private struct ContentView: View {
 /// a `↳` corner arrow in the gutter, matching the feed's reply layout.
 private struct UserCommentCell: View {
     @Environment(\.octopusTheme) private var theme
+    @Environment(\.trackingApi) private var trackingApi
 
     let entry: DisplayableUserComment
     let width: CGFloat
@@ -158,16 +160,13 @@ private struct UserCommentCell: View {
 
             if let parentComment = entry.parentComment {
                 // Reply: the parent comment (plain gray) is itself a top-level comment on the post, so
-                // tapping it opens the *post* detail — same as tapping the post. The indented reply (with
+                // tapping it opens the *post* detail scrolled to that comment. The indented reply (with
                 // the ↳ arrow) opens the parent comment's detail scrolled to the reply. "See N other
                 // replies" (the parent's other replies) sits under the member's own bubble, opening that
                 // thread.
                 responseCard(parentComment, backgroundColor: nil,
                              detailCommentId: parentComment.uuid, replyToScrollTo: nil,
-                             onCardTap: {
-                                 displayPostDetail(entry.post.uuid, false, false, nil,
-                                                   entry.post.hasFeaturedComment)
-                             })
+                             onCardTap: openTopLevelComment)
                 HStack(alignment: .top, spacing: 0) {
                     ReplyArrow()
                         .frame(width: 13, height: 14)
@@ -183,24 +182,38 @@ private struct UserCommentCell: View {
                 // row lines up under the reply's bubble (not the parent comment's).
                 SeeRepliesRow(source: parentComment, subtractSelf: true, otherWording: true,
                               extraLeading: 32 + 12) {
-                    displayCommentDetail(parentComment.uuid, false, nil)
+                    seeReplies()
                 }
             } else {
                 // The member's own top-level comment, highlighted. Tapping the card opens the *post* detail
-                // (same as tapping the post above it) — a top-level comment is read in the context of its
-                // post, not its own thread. "Reply" still opens the comment thread (see `responseCard`).
-                // "See N replies" (the replies to that comment) sits under the bubble and opens the thread.
+                // scrolled to that comment — a top-level comment is read in the context of its post, not
+                // its own thread. "Reply" still opens the comment thread (see `responseCard`). "See N
+                // replies" (the replies to that comment) sits under the bubble and opens the thread.
                 responseCard(entry.response, backgroundColor: theme.colors.primaryLowContrast,
                              detailCommentId: entry.response.uuid, replyToScrollTo: nil,
-                             onCardTap: {
-                                 displayPostDetail(entry.post.uuid, false, false, nil,
-                                                   entry.post.hasFeaturedComment)
-                             })
+                             onCardTap: openTopLevelComment)
                 SeeRepliesRow(source: entry.response, subtractSelf: false, otherWording: false) {
-                    displayCommentDetail(entry.response.uuid, false, nil)
+                    seeReplies()
                 }
             }
         }
+    }
+
+    private var tapTargets: UserCommentTapTargets {
+        UserCommentTapTargets(commentId: entry.response.uuid, parentCommentId: entry.parentComment?.uuid)
+    }
+
+    /// Opens the post detail scrolled to the entry's top-level comment.
+    private func openTopLevelComment() {
+        displayPostDetail(entry.post.uuid, false, false, tapTargets.topLevelCommentId,
+                          entry.post.hasFeaturedComment)
+    }
+
+    /// Opens the thread under the "See N (other) replies" row, reported like the same row under a post.
+    private func seeReplies() {
+        let commentId = tapTargets.topLevelCommentId
+        trackingApi.emit(event: .seeRepliesButtonClicked(.init(commentId: commentId)))
+        displayCommentDetail(commentId, false, nil)
     }
 
     /// Renders one comment/reply card. By default, tapping the card or "Reply" opens `detailCommentId`'s
@@ -376,7 +389,7 @@ enum ProfileCommentsPreviewFixtures {
             content: .published(.init(
                 text: .init(originalText: "The parent post that gives context to the comment.",
                             originalLanguage: nil),
-                attachment: nil, bridgeInfo: nil, customAction: nil, featuredComment: nil,
+                attachments: .empty, bridgeInfo: nil, customAction: nil, featuredComment: nil,
                 liveMeasuresPublisher: liveMeasures(reactions: 10, children: 4))),
             position: 0, isLast: false,
             displayEvents: .init(onAppear: {}, onDisappear: {}))

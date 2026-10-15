@@ -17,6 +17,9 @@ struct EllipsizableTranslatedText: Equatable {
 
     var hasTranslation: Bool { translatableText.hasTranslation }
     var originalLanguage: String? { translatableText.originalLanguage }
+    /// Whether there is any text to show. A post may carry an image without text. The original text is
+    /// already trimmed by `TranslatableText`, so a whitespace-only body counts as no text.
+    var hasText: Bool { !translatableText.originalText.isEmpty }
 
     init?(text: TranslatableText?, ellipsize: Bool = true) {
         guard let text else { return nil }

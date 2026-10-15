@@ -7,9 +7,6 @@ import OctopusCore
 
 /// The kind of connection
 public enum ConnectionMode {
-    /// Connection and user management is handled by OctopusSDK
-    /// - Parameter deepLink: the deeplink trigger to re-open the app after magic link has been opened
-    case octopus(deepLink: String?)
     /// You provide to OctopusSDK the user and their lifecycle are tight to their lifecycle in your app
     case sso(SSOConfiguration)
 
@@ -98,8 +95,7 @@ extension ConnectionMode.SSOConfiguration {
 extension ConnectionMode {
     var coreValue: OctopusCore.ConnectionMode {
         return switch self {
-        case let .octopus(deepLink):    .octopus(deepLink: deepLink)
-        case let .sso(config):          .sso(config.coreValue)
+        case let .sso(config): .sso(config.coreValue)
         }
     }
 }

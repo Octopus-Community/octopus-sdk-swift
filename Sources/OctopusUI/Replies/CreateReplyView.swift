@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import Combine
 import SwiftUI
 import Octopus
 
@@ -21,11 +22,13 @@ struct CreateReplyView: View {
     init(octopus: OctopusSDK, commentId: String,
          translationStore: ContentTranslationPreferenceStore,
          textFocused: Binding<Bool>, hasChanges: Binding<Bool>,
-         ensureConnected: @escaping (UserAction) -> Bool) {
+         ensureConnected: @escaping (UserAction) -> Bool,
+         nicknameChoiceClosed: AnyPublisher<Void, Never>) {
         _viewModel = Compat.StateObject(wrappedValue: CreateReplyViewModel(
             octopus: octopus, commentId: commentId,
             translationStore: translationStore,
-            ensureConnected: ensureConnected))
+            ensureConnected: ensureConnected,
+            nicknameChoiceClosed: nicknameChoiceClosed))
         self._textFocused = textFocused
         self._hasChanges = hasChanges
         self.ensureConnected = ensureConnected
@@ -48,6 +51,7 @@ struct CreateReplyView: View {
             termsOfUseUrl: viewModel.termsOfUseUrl,
             privacyPolicyUrl: viewModel.privacyPolicyUrl,
             communityGuidelinesUrl: viewModel.communityGuidelinesUrl,
+            consentTexts: viewModel.consentTexts,
             send: viewModel.send,
             userProfileTapped: { dispatchCurrentUserProfileTap(octopus: viewModel.octopus, navigator: navigator) },
             resetAlertError: { viewModel.alertError = nil },
@@ -58,6 +62,7 @@ struct CreateReplyView: View {
         .termsConsentSheet(
             isPresented: $viewModel.displayConsentSheet,
             mode: viewModel.termsAcceptanceMode,
+            consentTexts: viewModel.consentTexts,
             contribution: .reply,
             termsUrl: viewModel.termsOfUseUrl,
             privacyUrl: viewModel.privacyPolicyUrl,

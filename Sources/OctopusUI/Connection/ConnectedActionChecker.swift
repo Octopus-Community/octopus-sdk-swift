@@ -52,21 +52,18 @@ enum UserAction {
 }
 
 enum ConnectedActionReplacement: Equatable {
-    case login
-    case validateNickname
+    /// The nickname choice screen, which names the contribution it holds back.
+    case validateNickname(UserAction)
     case loadConfig
 //    case createProfile
     /// A failure worth retrying: the router shows it *and* re-runs the client-user exchange, which is how
     /// a transient one heals itself.
     ///
-    /// Only meaningful in SSO — there is no client user to link otherwise — and ``decision(magicLinkRequestActive:state:isSSO:clientUserConnected:action:)``
-    /// returns it only behind an `isSSO` check. That is a convention, not a guarantee, so the router
-    /// re-checks the connection mode before acting on it rather than trusting this to hold.
+    /// ``decision(state:clientUserConnected:action:)`` returns it only when a client user is connected
+    /// without a signed-in (non-guest) Octopus session, which is the one situation the exchange can repair.
     case error(DisplayableString)
     /// A ban, carrying the server's own wording. Kept apart from ``error`` because retrying is exactly
-    /// what must not happen: no exchange lifts a ban, so re-running it only costs a round trip per tap —
-    /// and in magic-link mode it would call into `linkClientUserToOctopusUser`, whose implementation there
-    /// is a `preconditionFailure`.
+    /// what must not happen: no exchange lifts a ban, so re-running it only costs a round trip per tap.
     case banned(DisplayableString)
 }
 
@@ -78,24 +75,48 @@ class ConnectedActionChecker {
         self.octopus = octopus
     }
 
-    /// Whether an action must route through the first-post nickname-confirmation screen.
+    /// Whether an action must route through the nickname choice screen.
     ///
     /// A community-locked nickname (`read only` / `disabled`) is treated as already-confirmed:
     /// the confirmation screen is skipped for a field the user cannot edit, so the
     /// user posts directly with the auto-generated, non-editable nickname. Editable nicknames keep
     /// today's behaviour, so this is a strict no-op for every other community.
+    ///
+    /// A nickname the host app manages (see ``isNicknameAppManaged(octopus:isGuest:)``) is skipped for
+    /// the same reason: the member cannot change it in the SDK, the host sets it. The profile merger only
+    /// marks it confirmed when the host sends a nickname that differs from the stored one, so
+    /// `hasConfirmedNickname` alone can stay `false` for such a member.
     nonisolated static func needsNicknameValidation(for action: UserAction,
                                                     hasConfirmedNickname: Bool,
-                                                    nicknameLock: ProfileFieldLockState) -> Bool {
+                                                    nicknameLock: ProfileFieldLockState,
+                                                    isNicknameAppManaged: Bool) -> Bool {
         action.needNicknameValidation && !hasConfirmedNickname && nicknameLock == .editable
+            && !isNicknameAppManaged
     }
 
-    /// Resolved connection facts fed to ``decision(magicLinkRequestActive:state:isSSO:clientUserConnected:action:)``.
+    /// Whether the host app owns the nickname of this member: the `isNicknameAppManaged` value every caller
+    /// of `needsNicknameValidation` passes.
+    ///
+    /// Same rule as the profile edition and the picture of the nickname choice screen: the SSO
+    /// configuration's `appManagedFields` only apply to a member signed in through the host app, so a guest,
+    /// who has no host account, never has an app-managed nickname.
+    static func isNicknameAppManaged(octopus: OctopusSDK, isGuest: Bool) -> Bool {
+        isNicknameAppManaged(connectionMode: octopus.core.connectionRepository.connectionMode, isGuest: isGuest)
+    }
+
+    /// ``isNicknameAppManaged(octopus:isGuest:)`` on plain values, so the guest rule is unit-testable.
+    nonisolated static func isNicknameAppManaged(connectionMode: OctopusCore.ConnectionMode, isGuest: Bool) -> Bool {
+        guard !isGuest, case let .sso(configuration) = connectionMode else { return false }
+        return configuration.appManagedFields.contains(.nickname)
+    }
+
+    /// Resolved connection facts fed to ``decision(state:clientUserConnected:action:)``.
     /// Keeping the decision inputs as plain values (instead of reading `octopus.core` inline) makes the
-    /// full guest / SSO / error matrix unit-testable without a live SDK.
+    /// full guest / client user / error matrix unit-testable without a live SDK.
     ///
     /// `hasError` is any lingering connection error, deliberately ignored on the proceed path (see
-    /// ``decision(magicLinkRequestActive:state:isSSO:clientUserConnected:action:)``).
+    /// ``decision(state:clientUserConnected:action:)``).
+    /// `isNicknameAppManaged` is ``isNicknameAppManaged(octopus:isGuest:)`` for the connected profile.
     /// `userBannedMessage` is the narrower subset the blocking branches do care about: the server's own
     /// words for why this client user has no Octopus session.
     enum ConnectionDecisionState: Equatable {
@@ -105,12 +126,13 @@ class ConnectedActionChecker {
                        profileIsGuest: Bool,
                        profileHasConfirmedNickname: Bool,
                        nicknameLock: ProfileFieldLockState,
+                       isNicknameAppManaged: Bool,
                        hasError: Bool,
                        userBannedMessage: String?)
     }
 
     /// What ``ensureConnected(action:actionWhenNotConnected:)`` should do. The caller performs the
-    /// side effects (setting the replacement binding, or calling `config.loginRequired()` in SSO).
+    /// side effects (setting the replacement binding, or calling `config.loginRequired()`).
     enum Decision: Equatable {
         /// The action is allowed to proceed (`ensureConnected` returns `true`).
         case proceed
@@ -128,22 +150,18 @@ class ConnectedActionChecker {
     /// which surfaced a spurious "retrieve your data" popup on the first post even though the post
     /// succeeded (the stored `lastConnectionError` self-heals via the retry the alert itself triggers).
     /// This aligns iOS with Android, whose connected state carries no error field.
-    nonisolated static func decision(magicLinkRequestActive: Bool,
-                                     state: ConnectionDecisionState,
-                                     isSSO: Bool,
+    nonisolated static func decision(state: ConnectionDecisionState,
                                      clientUserConnected: Bool,
                                      action: UserAction) -> Decision {
-        guard !magicLinkRequestActive else { return .block(.login) }
-
         switch state {
         case let .notConnected(userBannedMessage):
             if let banned = banBlock(userBannedMessage) { return banned }
-            guard isSSO else { return .block(.login) }
             return clientUserConnected
                 ? .block(.error(.localizationKey("Connection.SSO.Error.Unknown")))
                 : .requireSSOLogin
         case let .connected(communityConfigAvailable, forceLoginOnStrongActions, profileIsGuest,
-                            profileHasConfirmedNickname, nicknameLock, _, userBannedMessage):
+                            profileHasConfirmedNickname, nicknameLock, isNicknameAppManaged, _,
+                            userBannedMessage):
             guard communityConfigAvailable else { return .block(.loadConfig) }
             // Ahead of the force-login gate, not inside it. A ban and a forced login are unrelated
             // questions — one says this person may not contribute at all, the other says guests must
@@ -153,15 +171,15 @@ class ConnectedActionChecker {
             // one, so the server had no reason to refuse it and the SDK routed around its own ban.
             if action.isStrong, let banned = banBlock(userBannedMessage) { return banned }
             if action.isStrong, profileIsGuest, forceLoginOnStrongActions {
-                guard isSSO else { return .block(.login) }
                 return clientUserConnected
                     ? .block(.error(.localizationKey("Connection.SSO.Error.Unknown")))
                     : .requireSSOLogin
             }
             if needsNicknameValidation(for: action,
                                        hasConfirmedNickname: profileHasConfirmedNickname,
-                                       nicknameLock: nicknameLock) {
-                return .block(.validateNickname)
+                                       nicknameLock: nicknameLock,
+                                       isNicknameAppManaged: isNicknameAppManaged) {
+                return .block(.validateNickname(action))
             }
             return .proceed
         }
@@ -179,9 +197,20 @@ class ConnectedActionChecker {
         userBannedMessage.map { .block(.banned(.localizedString($0))) }
     }
 
+    /// The profile ``ensureConnected(action:actionWhenNotConnected:)`` decides on, or `nil` when not connected.
+    /// A contribution held for the nickname choice is held for this profile.
+    static func connectedProfile(octopus: OctopusSDK) -> CurrentUserProfile? {
+        guard case let .connected(user, _) = octopus.core.connectionRepository.connectionState else { return nil }
+        return profile(of: user, octopus: octopus)
+    }
+
+    private static func profile(of user: User, octopus: OctopusSDK) -> CurrentUserProfile {
+        // use the profile from profileRepository because it is updated quicker than the profile in the User
+        octopus.core.profileRepository.profile ?? user.profile
+    }
+
     func ensureConnected(action: UserAction, actionWhenNotConnected: Binding<ConnectedActionReplacement?>) -> Bool {
         let connectionRepository = octopus.core.connectionRepository
-        let isSSO: Bool = if case .sso = connectionRepository.connectionMode { true } else { false }
 
         let connectionState = connectionRepository.connectionState
         let userBannedMessage = connectionState.userBannedMessage
@@ -190,8 +219,7 @@ class ConnectedActionChecker {
         case .notConnected:
             state = .notConnected(userBannedMessage: userBannedMessage)
         case let .connected(user, error):
-            // use the profile from profileRepository because it is updated quicker than the profile in the User
-            let profile = octopus.core.profileRepository.profile ?? user.profile
+            let profile = Self.profile(of: user, octopus: octopus)
             let communityConfig = octopus.core.configRepository.communityConfig
             state = .connected(
                 communityConfigAvailable: communityConfig != nil,
@@ -199,63 +227,26 @@ class ConnectedActionChecker {
                 profileIsGuest: profile.isGuest,
                 profileHasConfirmedNickname: profile.hasConfirmedNickname,
                 nicknameLock: communityConfig?.profileFieldsLock.nickname ?? .editable,
+                isNicknameAppManaged: Self.isNicknameAppManaged(octopus: octopus, isGuest: profile.isGuest),
                 hasError: error != nil,
                 userBannedMessage: userBannedMessage)
         }
 
-        let magicLinkActive = connectionRepository.magicLinkRequest != nil
-        switch Self.decision(magicLinkRequestActive: magicLinkActive,
-                             state: state, isSSO: isSSO,
+        switch Self.decision(state: state,
                              clientUserConnected: connectionRepository.clientUserConnected,
                              action: action) {
         case .proceed:
             return true
         case let .block(replacement):
-            // octopus_driven_login: report when this action is what triggered a login prompt.
-            // A `.login` replacement is a login drive on the non-SSO / magic-link-login paths — but not
-            // when it merely reflects a pending magic-link request (which was not caused by this action).
-            if replacement == .login, !magicLinkActive {
-                octopus.core.octopusDrivenLoginMonitor.notifyLoginRequested(action: action.drivenLoginAction)
-            }
             actionWhenNotConnected.wrappedValue = replacement
             return false
         case .requireSSOLogin:
+            // octopus_driven_login: this action is what triggered the host's login prompt.
             octopus.core.octopusDrivenLoginMonitor.notifyLoginRequested(action: action.drivenLoginAction)
-            if case let .sso(config) = connectionRepository.connectionMode {
-                config.loginRequired()
+            switch connectionRepository.connectionMode {
+            case let .sso(config): config.loginRequired()
             }
             return false
         }
     }
-
-//    func ensureConnected(actionWhenNotConnected: Binding<ConnectedActionReplacement?>) -> Bool {
-//        guard octopus.core.connectionRepository.magicLinkRequest == nil else {
-//            actionWhenNotConnected.wrappedValue = .login
-//            return false
-//        }
-//        switch octopus.core.connectionRepository.connectionState {
-//        case .notConnected/*, .magicLinkSent*/: // TODO Djavan: utiliser connectionRepository.magicLinkRequest
-//            if case let .sso(config) = octopus.core.connectionRepository.connectionMode {
-//                config.loginRequired()
-//            } else {
-//                actionWhenNotConnected.wrappedValue = .login
-//            }
-////        case let .clientConnected(_, error):
-////            switch error {
-////            case let .detailedErrors(errors):
-////                if let error = errors.first(where: { $0.reason == .userBanned }) {
-////                    actionWhenNotConnected.wrappedValue = .ssoError(.localizedString(error.message))
-////                } else {
-////                    fallthrough
-////                }
-////            default:
-////                actionWhenNotConnected.wrappedValue = .ssoError(.localizationKey("Connection.SSO.Error.Unknown"))
-////            }
-////        case .profileCreationRequired:
-////            actionWhenNotConnected.wrappedValue = .createProfile
-//        case .connected:
-//            return true
-//        }
-//        return false
-//    }
 }

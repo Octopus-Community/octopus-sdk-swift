@@ -6,6 +6,16 @@ import Foundation
 import SwiftUI
 
 extension Compat {
+    /// A one-shot request to scroll to the view identified by `id`. Unlike `scrollToId`, which uses the
+    /// scroll view's fixed `idAnchor`, each request carries its own anchor: `nil` scrolls the minimum
+    /// amount that makes the view visible. The scroll view resets the binding to `nil` once the request
+    /// is handled, so the same request can be sent again. On iOS 13, where no `ScrollViewReader` is
+    /// available, requests are ignored.
+    struct ScrollRequest: Equatable {
+        let id: String
+        let anchor: UnitPoint?
+    }
+
     struct ScrollView<Content: View>: View {
         let axes: Axis.Set
         let showIndicators: Bool
@@ -13,6 +23,7 @@ extension Compat {
         @Binding var scrollToBottom: Bool
         @Binding var scrollToId: String?
         let idAnchor: UnitPoint?
+        @Binding var scrollRequest: ScrollRequest?
         let preventScrollIfContentFits: Bool
         let canScrollToExtremities: Bool
         @State private var refreshAction: (@Sendable () async -> Void)?
@@ -24,6 +35,7 @@ extension Compat {
              scrollToBottom: Binding<Bool> = .constant(false),
              scrollToId: Binding<String?> = .constant(nil),
              idAnchor: UnitPoint? = nil,
+             scrollRequest: Binding<ScrollRequest?> = .constant(nil),
              preventScrollIfContentFits: Bool = true,
              canScrollToExtremities: Bool = true,
              refreshAction: (@Sendable () async -> Void)? = nil,
@@ -35,6 +47,7 @@ extension Compat {
             self._scrollToBottom = scrollToBottom
             self._scrollToId = scrollToId
             self.idAnchor = idAnchor
+            self._scrollRequest = scrollRequest
             self.preventScrollIfContentFits = preventScrollIfContentFits
             self.canScrollToExtremities = canScrollToExtremities
             if let refreshAction {
@@ -62,6 +75,7 @@ extension Compat {
                     scrollToBottom: $scrollToBottom,
                     scrollToId: $scrollToId,
                     idAnchor: idAnchor,
+                    scrollRequest: $scrollRequest,
                     canScrollToExtremities: canScrollToExtremities,
                     refreshAction: refreshAction) {
                         content
@@ -80,6 +94,7 @@ extension Compat {
                                 scrollToBottom: $scrollToBottom,
                                 scrollToId: $scrollToId,
                                 idAnchor: idAnchor,
+                                scrollRequest: $scrollRequest,
                                 canScrollToExtremities: canScrollToExtremities,
                                 refreshAction: refreshAction) {
                     content
@@ -102,6 +117,7 @@ extension Compat {
         @Binding var scrollToBottom: Bool
         @Binding var scrollToId: String?
         let idAnchor: UnitPoint?
+        @Binding var scrollRequest: ScrollRequest?
         let canScrollToExtremities: Bool
         let refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
@@ -158,6 +174,13 @@ extension Compat {
                     }
                     scrollToId = nil
                 }
+                .onChange(of: scrollRequest) {
+                    guard let request = $0 else { return }
+                    withAnimation {
+                        reader.scrollTo(request.id, anchor: request.anchor)
+                    }
+                    scrollRequest = nil
+                }
             }
         }
     }
@@ -172,6 +195,7 @@ extension Compat {
         @Binding var scrollToBottom: Bool
         @Binding var scrollToId: String?
         let idAnchor: UnitPoint?
+        @Binding var scrollRequest: ScrollRequest?
         let canScrollToExtremities: Bool
         let refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
@@ -232,6 +256,13 @@ extension Compat {
                                 reader.scrollTo(id, anchor: idAnchor)
                             }
                             scrollToId = nil
+                        }
+                        .onChange(of: scrollRequest) {
+                            guard let request = $0 else { return }
+                            withAnimation {
+                                reader.scrollTo(request.id, anchor: request.anchor)
+                            }
+                            scrollRequest = nil
                         }
                         .onPreferenceChange(OffsetPreferenceKey.self) { [$isCurrentlyRefreshing] offset in
                             guard let refreshAction else { return }

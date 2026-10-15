@@ -10,6 +10,8 @@ struct StorableProfile: Sendable {
     let nickname: String?
     let bio: String?
     let pictureUrl: URL?
+    /// See `MinimalProfile.defaultAvatar`. When non-nil, `pictureUrl` is nil.
+    let defaultAvatar: DefaultAvatar?
 
     let tags: ProfileTags
 
@@ -33,6 +35,7 @@ extension StorableProfile {
         nickname = entity.nickname
         bio = entity.bio
         pictureUrl = entity.pictureUrl
+        defaultAvatar = entity.defaultAvatar
         tags = entity.tags
         totalMessages = entity.totalMessages
         accountCreationDate = entity.accountCreationDate
@@ -48,7 +51,10 @@ extension StorableProfile {
         id = profile.id
         nickname = profile.hasNickname ? profile.nickname.nilIfEmpty : nil
         bio = profile.bio
-        pictureUrl = profile.hasPictureURL ? URL(string: profile.pictureURL) : nil
+        let defaultAvatar = profile.hasDefaultAvatar ? DefaultAvatar(from: profile.defaultAvatar) : nil
+        self.defaultAvatar = defaultAvatar
+        // Same rule as MinimalProfile: a default that can be drawn replaces the copy of it made for older SDKs.
+        pictureUrl = defaultAvatar == nil && profile.hasPictureURL ? URL(string: profile.pictureURL) : nil
 
         tags = ProfileTags(from: profile.tags)
 

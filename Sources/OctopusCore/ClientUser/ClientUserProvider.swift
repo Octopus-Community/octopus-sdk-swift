@@ -19,34 +19,34 @@ class ClientUserProvider: InjectableObject, @unchecked Sendable {
     private let userDataStorage: UserDataStorage
     private var storage: Set<AnyCancellable> = []
 
-    init(connectionMode: ConnectionMode, injector: Injector) {
+    init(injector: Injector) {
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($clientUser, $hasLoadedClientUser)
 
-        if case .sso = connectionMode {
-            let clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
-            userDataStorage.$clientUserData
-                .receive(on: DispatchQueue.main)
-                .map { clientUserData in
-                    guard let clientUserData else {
-                        return Just<ClientUser?>(nil).eraseToAnyPublisher()
-                    }
-                    return clientUserProfileDatabase.profilePublisher(clientUserId: clientUserData.id)
-                        .map {
-                            guard let clientUserProfile = $0 else { return nil }
-                            return ClientUser(userId: clientUserData.id,
-                                              profile: clientUserProfile)
-                        }
-                        .eraseToAnyPublisher()
+        let clientUserProfileDatabase = injector.getInjected(identifiedBy: Injected.clientUserProfileDatabase)
+        userDataStorage.$clientUserData
+            .receive(on: DispatchQueue.main)
+            .map { clientUserData in
+                guard let clientUserData else {
+                    return Just<ClientUser?>(nil).eraseToAnyPublisher()
                 }
-                .switchToLatest()
-                .removeDuplicates()
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] in
-                    guard let self else { return }
-                    self.clientUser = $0
-                    self.hasLoadedClientUser = true
-                }.store(in: &storage)
-        }
+                return clientUserProfileDatabase.profilePublisher(clientUserId: clientUserData.id)
+                    .map {
+                        guard let clientUserProfile = $0 else { return nil }
+                        return ClientUser(userId: clientUserData.id,
+                                          profile: clientUserProfile)
+                    }
+                    .eraseToAnyPublisher()
+            }
+            .switchToLatest()
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                guard let self else { return }
+                self.clientUser = $0
+                self.hasLoadedClientUser = true
+            }.store(in: &storage)
     }
 
 }

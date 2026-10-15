@@ -38,6 +38,8 @@ final class TrackingEventsSendingMonitor: InjectableObject, @unchecked Sendable 
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($isSendingEvents)
     }
 
     func start() {

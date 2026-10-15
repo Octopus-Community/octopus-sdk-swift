@@ -83,12 +83,17 @@ class CommentDetailViewModel: ObservableObject {
     let octopus: OctopusSDK
     let commentUuid: String
     let connectedActionChecker: ConnectedActionChecker
+    private let nicknameChoiceClosedSubject = PassthroughSubject<Void, Never>()
     private let translationStore: ContentTranslationPreferenceStore
     private let languageRepository: LanguageRepository
 
     private var newestFirstRepliesFeed: Feed<Reply, Never>?
     private var reply: Bool
-    private var replyToScrollTo: String?
+    /// The reply the screen opened on, until the screen has scrolled to it.
+    private var scrollTarget: PendingScrollTarget
+    /// Whether the screen opens on a reply. Its list is then built whole from the start: a lazy list has
+    /// not built a row far below the fold yet, so a scroll to it would find nothing and be lost.
+    let opensOnReply: Bool
 
     private var internalComment: Comment?
 
@@ -107,7 +112,8 @@ class CommentDetailViewModel: ObservableObject {
         self.translationStore = translationStore
         self.commentUuid = commentUuid
         self.reply = reply
-        self.replyToScrollTo = replyToScrollTo
+        self.scrollTarget = PendingScrollTarget(id: replyToScrollTo)
+        self.opensOnReply = replyToScrollTo != nil
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
 
         relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
@@ -261,11 +267,7 @@ class CommentDetailViewModel: ObservableObject {
             }
             if self.replies != newReplies {
                 self.replies = newReplies
-                if let replyToScrollTo = self.replyToScrollTo,
-                   replies?.contains(where: { $0.uuid == replyToScrollTo }) ?? false {
-                    self.scrollToId = "Reply-\(replyToScrollTo)"
-                    self.replyToScrollTo = nil
-                }
+                scrollToTargetIfListed()
                 if #available(iOS 14, *) { Logger.comments.trace("Replies list updated done") }
             }
         }.store(in: &storage)
@@ -345,8 +347,17 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
+    /// Scrolls to the reply the screen opened on, once it is listed and its load has settled.
+    private func scrollToTargetIfListed() {
+        guard let id = scrollTarget.takeIfListed(replies?.map(\.uuid) ?? []) else { return }
+        scrollToId = ResponseKind.reply.scrollAnchorId(for: id)
+    }
+
     private func set(feed: Feed<Reply, Never>) {
         guard feed.id != self.feed?.id else { return }
+        // Started before subscribing: a feed that already holds the reply publishes it at once, and a scroll
+        // then would be undone as the load below replaces those items.
+        scrollTarget.loadStarted()
         replies = nil
         self.feed = feed
         feedStorage = []
@@ -365,17 +376,26 @@ class CommentDetailViewModel: ObservableObject {
                 hasMoreData = $0
             }.store(in: &feedStorage)
 
+        guard let loadUntil = scrollTarget.id else {
+            Task {
+                await feed.populateWithLocalData(pageSize: 10)
+            }
+            if reply {
+                loadAllReplies(scrollToBottom: true)
+                reply = false
+            } else {
+                refreshFeed()
+            }
+            return
+        }
+        // The local first page replaces whatever the feed already holds, so the load until the reply runs after it.
         Task {
             await feed.populateWithLocalData(pageSize: 10)
-        }
-
-        if let replyToScrollTo {
-            loadAllReplies(until: replyToScrollTo)
-        } else if reply {
-            loadAllReplies(scrollToBottom: true)
-            reply = false
-        } else {
-            refreshFeed()
+            await loadAllReplies(until: loadUntil, in: feed)
+            // A newer feed set meanwhile runs its own load: only that one settles the target.
+            guard self.feed?.id == feed.id else { return }
+            scrollTarget.loadSettled()
+            scrollToTargetIfListed()
         }
     }
 
@@ -418,9 +438,10 @@ class CommentDetailViewModel: ObservableObject {
 
         autoFetchLatestRepliesTask = Task {
             repeat {
-                // only fetch new replies if we are not fetching all replies until the replyToScrollTo otherwise it
-                // messes up with the scroll
-                if replyToScrollTo == nil {
+                // only fetch new replies if we are not fetching all replies until the reply to scroll to otherwise
+                // it messes up with the scroll. Gated on the load rather than on the reply being reached, so a reply
+                // that is never listed (deleted, moderated) does not stop the polling for the screen's life.
+                if !scrollTarget.isLoading {
                     do {
                         try await newestFirstRepliesFeed.refresh(pageSize: 10)
                     } catch {
@@ -455,17 +476,14 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
-    private func loadAllReplies(until id: String) {
-        guard let feed else { return }
-        Task {
-            defer { hasLoadedReplies = true }
-            do {
-                try await feed.fetchAll(until: id)
-                repliesLoadFailure = nil
-            } catch {
-                if #available(iOS 14, *) { Logger.replies.debug("Error: \(error)") }
-                if replies?.isEmpty ?? true { repliesLoadFailure = ScreenStateFailure(error) }
-            }
+    private func loadAllReplies(until id: String, in feed: Feed<Reply, Never>) async {
+        defer { hasLoadedReplies = true }
+        do {
+            try await feed.fetchAll(until: id)
+            repliesLoadFailure = nil
+        } catch {
+            if #available(iOS 14, *) { Logger.replies.debug("Error: \(error)") }
+            if replies?.isEmpty ?? true { repliesLoadFailure = ScreenStateFailure(error) }
         }
     }
 
@@ -542,6 +560,18 @@ class CommentDetailViewModel: ObservableObject {
         contentLoadFailure = nil
         fetchComment()
         refreshFeed()
+    }
+
+    /// Called when the member closes the nickname choice screen without confirming their nickname: forwarded to
+    /// the composer, which drops the contribution it held.
+    func nicknameChoiceClosed() {
+        nicknameChoiceClosedSubject.send()
+    }
+
+    /// Emits when the member closes the nickname choice screen without confirming their nickname. The composer,
+    /// whose view model this one does not own, listens to it alongside ``ensureConnected(action:)``.
+    var nicknameChoiceClosedPublisher: AnyPublisher<Void, Never> {
+        nicknameChoiceClosedSubject.eraseToAnyPublisher()
     }
 
     func ensureConnected(action: UserAction) -> Bool {

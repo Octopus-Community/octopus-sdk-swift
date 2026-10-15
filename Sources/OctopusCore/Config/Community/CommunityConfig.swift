@@ -31,6 +31,13 @@ public struct CommunityConfig: Equatable, Sendable {
     /// profiles. Set internally per-community in the back-office at the client's request. Absent /
     /// unseeded ⇒ `false` ⇒ the Comments tab stays private (own profile only).
     public let showCommentsOnOtherProfiles: Bool
+    /// Whether a member who has not confirmed a nickname yet must type one before their first post, comment or
+    /// reply (empty field), instead of being offered the generated one (prefilled field). Absent / unseeded ⇒
+    /// `false` ⇒ prefilled field.
+    public let forceNicknameChoice: Bool
+    /// The consent wordings the community set in its back-office. They only apply when their case matches
+    /// `termsAcceptanceMode`. Absent ⇒ `nil` ⇒ the SDK wordings.
+    public let consentTexts: ConsentTexts?
 }
 
 extension CommunityConfig {
@@ -44,6 +51,8 @@ extension CommunityConfig {
         self.exposeClientUserId = entity.exposeClientUserId
         self.termsAcceptanceMode = TermsAcceptanceMode(storageValue: entity.termsAcceptanceMode)
         self.showCommentsOnOtherProfiles = entity.showCommentsOnOtherProfiles
+        self.forceNicknameChoice = entity.forceNicknameChoice
+        self.consentTexts = ConsentTexts(from: entity)
     }
 
     init(from config: Com_Octopuscommunity_ApiKeyConfig) {
@@ -71,6 +80,10 @@ extension CommunityConfig {
         termsAcceptanceMode = TermsAcceptanceMode(from: config.termsAcceptanceMode)
         // ApiKeyConfig.showCommentsOnOtherProfiles is a plain proto3 bool (false when unset).
         showCommentsOnOtherProfiles = config.showCommentsOnOtherProfiles
+        // ApiKeyConfig.forceNicknameChoice is a plain proto3 bool (false when unset).
+        forceNicknameChoice = config.forceNicknameChoice
+        // ApiKeyConfig.consentTexts is a message: absent, or with no mode set ⇒ nil ⇒ the SDK wordings.
+        consentTexts = config.hasConsentTexts ? ConsentTexts(from: config.consentTexts) : nil
     }
 }
 
@@ -87,7 +100,9 @@ extension CommunityConfig {
                         contentOptions: contentOptions,
                         exposeClientUserId: exposeClientUserId,
                         termsAcceptanceMode: termsAcceptanceMode,
-                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                        forceNicknameChoice: forceNicknameChoice,
+                        consentTexts: consentTexts)
     }
 
     /// Returns a copy with only `contentOptions` replaced. Internal test affordance used (via an
@@ -102,7 +117,9 @@ extension CommunityConfig {
                         contentOptions: options,
                         exposeClientUserId: exposeClientUserId,
                         termsAcceptanceMode: termsAcceptanceMode,
-                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                        forceNicknameChoice: forceNicknameChoice,
+                        consentTexts: consentTexts)
     }
 
     /// Returns a copy with only `exposeClientUserId` replaced. Internal test affordance used (via an
@@ -117,7 +134,9 @@ extension CommunityConfig {
                         contentOptions: contentOptions,
                         exposeClientUserId: enabled,
                         termsAcceptanceMode: termsAcceptanceMode,
-                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                        forceNicknameChoice: forceNicknameChoice,
+                        consentTexts: consentTexts)
     }
 
     /// Returns a copy with only `termsAcceptanceMode` replaced. Internal test affordance used (via an
@@ -132,7 +151,9 @@ extension CommunityConfig {
                         contentOptions: contentOptions,
                         exposeClientUserId: exposeClientUserId,
                         termsAcceptanceMode: mode,
-                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles)
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                        forceNicknameChoice: forceNicknameChoice,
+                        consentTexts: consentTexts)
     }
 
     /// Returns a copy with only `showCommentsOnOtherProfiles` replaced. Internal test affordance used
@@ -147,6 +168,41 @@ extension CommunityConfig {
                         contentOptions: contentOptions,
                         exposeClientUserId: exposeClientUserId,
                         termsAcceptanceMode: termsAcceptanceMode,
-                        showCommentsOnOtherProfiles: enabled)
+                        showCommentsOnOtherProfiles: enabled,
+                        forceNicknameChoice: forceNicknameChoice,
+                        consentTexts: consentTexts)
+    }
+
+    /// Returns a copy with only `forceNicknameChoice` replaced. Internal test affordance used (via an
+    /// `@_spi` SDK entry point) by the sample app to exercise the nickname choice screen without a
+    /// backend-driven config.
+    func withForceNicknameChoice(_ enabled: Bool) -> CommunityConfig {
+        CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
+                        displayAccountAge: displayAccountAge,
+                        gamificationConfig: gamificationConfig,
+                        displayConfig: displayConfig,
+                        profileFieldsLock: profileFieldsLock,
+                        contentOptions: contentOptions,
+                        exposeClientUserId: exposeClientUserId,
+                        termsAcceptanceMode: termsAcceptanceMode,
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                        forceNicknameChoice: enabled,
+                        consentTexts: consentTexts)
+    }
+
+    /// Returns a copy with only `consentTexts` replaced. Internal test affordance used (via an `@_spi`
+    /// SDK entry point) by the sample app to exercise custom consent texts without a backend-driven config.
+    func withConsentTexts(_ texts: ConsentTexts?) -> CommunityConfig {
+        CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
+                        displayAccountAge: displayAccountAge,
+                        gamificationConfig: gamificationConfig,
+                        displayConfig: displayConfig,
+                        profileFieldsLock: profileFieldsLock,
+                        contentOptions: contentOptions,
+                        exposeClientUserId: exposeClientUserId,
+                        termsAcceptanceMode: termsAcceptanceMode,
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                        forceNicknameChoice: forceNicknameChoice,
+                        consentTexts: texts)
     }
 }

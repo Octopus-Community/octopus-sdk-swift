@@ -7,12 +7,12 @@ import OctopusGrpcModels
 @testable import OctopusCore
 
 /// Terms-acceptance mode on `CommunityConfig` (explicit-consent feature).
-/// Highest-priority invariant: until the backend/proto field lands, the mode defaults to
-/// `.implicit` (today's behaviour — implicit acceptance, no consent sheet, no behaviour change).
+/// Highest-priority invariant: a community that sets no mode (or an unknown one) stays on `.implicit`
+/// (implicit acceptance, no consent sheet, no behaviour change).
 final class TermsAcceptanceModeTests: XCTestCase {
 
     func testDefaultsToImplicitFromProtoConfig() {
-        // No terms field on the proto yet ⇒ the mapper hardcodes `.implicit`.
+        // The proto field is unset ⇒ the mapper falls back to `.implicit`.
         let config = Com_Octopuscommunity_ApiKeyConfig.with { $0.displayAccountAge = true }
 
         let community = CommunityConfig(from: config)

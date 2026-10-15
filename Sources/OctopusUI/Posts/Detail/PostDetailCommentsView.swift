@@ -20,7 +20,7 @@ struct PostDetailCommentsView: View {
     let deleteComment: (String) -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
 
     var body: some View {
         if !comments.isEmpty {
@@ -33,6 +33,7 @@ struct PostDetailCommentsView: View {
                     blockAuthor: blockAuthor,
                     reactionTapped: reactionTapped,
                     displayContentModeration: displayContentModeration)
+                .id(comment.kind.scrollAnchorId(for: comment.uuid))
                 .onAppear {
                     comment.displayEvents.onAppear()
                 }

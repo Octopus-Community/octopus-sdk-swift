@@ -2,6 +2,7 @@
 
 The code located in NavigationBackport is taken from https://github.com/johnpatrickmorgan/NavigationBackport
 We needed to do some changes on the code (adding support of iOS 13) and it is easier to copy the code than making a public fork.
+Its declarations are internal: they serve OctopusUI's own screens and are not part of the SDK's public API.
 All the code located in this folder is used respecting its author's original license (that you can find in this folder).
 
 # Original Readme

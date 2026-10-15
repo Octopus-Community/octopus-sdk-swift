@@ -65,6 +65,9 @@ extension ModelCoreDataStack {
                     try await addVideoAndCtaToPosts(context: context)
                     updatedToVersion = 2
                 }
+                if latestVersion < 4 {
+                    try await refetchCachedContentForDefaultAvatars(context: context)
+                }
                 updatedToVersion = targetVersion
             } catch {
                 if #available(iOS 14, *) { Logger.other.debug("Error during migration from version \(updatedToVersion) to \(targetVersion): \(error)") }
@@ -102,6 +105,27 @@ extension ModelCoreDataStack {
 
                 for existingPost in existingPosts {
                     existingPost.updateTimestamp = Date.distantPast.timeIntervalSince1970
+                }
+                try context.save()
+            }
+        }
+
+        /// This migration was introduced to upgrade to version 4.
+        /// Contents cached by an SDK that ignored the community default avatar hold no default for their author. The
+        /// feeds only download again a content whose server update date is newer than the stored one, and the server
+        /// moved that date when the community chose its default avatars, before this SDK was installed: it will not
+        /// move it again. So every cached content (posts, comments, replies...) has its update timestamp set to
+        /// distant past, to be fetched once more.
+        static func refetchCachedContentForDefaultAvatars(context: NSManagedObjectContext) async throws {
+            if #available(iOS 14, *) {
+                Logger.other.trace("Migrating Model db: refetching contents for default avatars")
+            }
+            try await context.performAsync { [context] in
+                let request = OctoObjectEntity.fetchAllGeneric()
+                let existingContents = try context.fetch(request)
+
+                for existingContent in existingContents {
+                    existingContent.updateTimestamp = Date.distantPast.timeIntervalSince1970
                 }
                 try context.save()
             }

@@ -18,6 +18,7 @@ class PostsTests: XCTestCase {
     private var postsDatabase: PostsDatabase!
     private var mockOctoService: MockOctoService!
     private var blockedUserIdsProvider: MockBlockedUserIdsProvider!
+    private var mockConfigRepository: MockConfigRepository!
     private var storage = [AnyCancellable]()
 
     override func setUp() {
@@ -40,6 +41,7 @@ class PostsTests: XCTestCase {
         postsDatabase = injector.getInjected(identifiedBy: Injected.postsDatabase)
         mockOctoService = (injector.getInjected(identifiedBy: Injected.remoteClient).octoService as! MockOctoService)
         blockedUserIdsProvider = (injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider) as! MockBlockedUserIdsProvider)
+        mockConfigRepository = (injector.getInjected(identifiedBy: Injected.configRepository) as! MockConfigRepository)
     }
 
     func testCreatePost() async throws {
@@ -63,7 +65,7 @@ class PostsTests: XCTestCase {
             bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
             customActionText: nil, customActionTargetLink: nil,
             aggregatedInfo: .empty, userInteractions: .empty))
-        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text")
         try await postsRepository.send(post)
 
         await fulfillment(of: [sendExpectation], timeout: 5)
@@ -81,7 +83,7 @@ class PostsTests: XCTestCase {
             bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
             customActionText: nil, customActionTargetLink: nil,
             aggregatedInfo: .empty, userInteractions: .empty))
-        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text")
         try await postsRepository.send(post)
         XCTAssertEqual(mockOctoService.lastPutPostCreationSource, .user)
     }
@@ -98,9 +100,100 @@ class PostsTests: XCTestCase {
             bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
             customActionText: nil, customActionTargetLink: nil,
             aggregatedInfo: .empty, userInteractions: .empty))
-        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text")
         try await postsRepository.send(post, creationSource: .prefilledFromClient)
         XCTAssertEqual(mockOctoService.lastPutPostCreationSource, .prefilledFromClient)
+    }
+
+    func testSendMixedPostForwardsImageAndPoll() async throws {
+        injectPutPost(Self.sentPostResponse)
+        let post = WritablePost(topicId: "topicId", text: "?", image: Data([0x01, 0x02]),
+                                poll: WritablePoll(options: [.init(text: "Red"), .init(text: "Blue")]))
+        try await postsRepository.send(post)
+
+        let sent = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post
+        XCTAssertEqual(sent.media.images.count, 1)
+        XCTAssertEqual(sent.poll.answers.map(\.text), ["Red", "Blue"])
+    }
+
+    func testBridgeShareFingerprintDoesNotDependOnThePoll() async throws {
+        let recorder = FingerprintRecorder()
+        let sign: @Sendable (String) async throws -> String = { fingerprint in
+            await recorder.record(fingerprint)
+            return "client-token"
+        }
+        let image = Data([0x01, 0x02])
+
+        injectPutPost(Self.sentPostResponse)
+        try await postsRepository.send(
+            WritablePost(topicId: "topicId", text: "Shared text", image: image),
+            creationSource: .prefilledFromClient, bridgeShareSignature: sign)
+
+        injectPutPost(Self.sentPostResponse)
+        try await postsRepository.send(
+            WritablePost(topicId: "topicId", text: "Shared text", image: image,
+                         poll: WritablePoll(options: [.init(text: "Red"), .init(text: "Blue")])),
+            creationSource: .prefilledFromClient, bridgeShareSignature: sign)
+
+        let fingerprints = await recorder.values
+        XCTAssertEqual(fingerprints.count, 2)
+        XCTAssertEqual(fingerprints.first, fingerprints.last)
+        XCTAssertEqual(fingerprints.first, BridgeShareFingerprint.compute(
+            text: "Shared text", ctaText: nil, ctaTargetLink: nil, images: [.bytes(image)]))
+        XCTAssertEqual(mockOctoService.lastPutPostClientToken, "client-token")
+    }
+
+    func testPollOnlyPrefilledShareIsNotSigned() async throws {
+        let recorder = FingerprintRecorder()
+        let sign: @Sendable (String) async throws -> String = { fingerprint in
+            await recorder.record(fingerprint)
+            return "client-token"
+        }
+
+        injectPutPost(Self.sentPostResponse)
+        try await postsRepository.send(
+            WritablePost(topicId: "topicId", text: "?",
+                         poll: WritablePoll(options: [.init(text: "Red"), .init(text: "Blue")])),
+            creationSource: .prefilledFromClient, bridgeShareSignature: sign)
+
+        let fingerprints = await recorder.values
+        XCTAssertTrue(fingerprints.isEmpty)
+        XCTAssertNil(mockOctoService.lastPutPostClientToken)
+    }
+
+    func testSendImagePostWithoutTextWhenTextIsOptional() async throws {
+        try await setCommunity(textRequired: false)
+        injectPutPost(Self.sentPostResponse)
+
+        try await postsRepository.send(WritablePost(topicId: "topicId", text: "", image: Data([0x01, 0x02])))
+
+        let sent = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post
+        XCTAssertEqual(sent.text, "")
+        XCTAssertEqual(sent.media.images.count, 1)
+    }
+
+    func testSendImagePostWithBlankTextSendsAnEmptyTextWhenTextIsOptional() async throws {
+        try await setCommunity(textRequired: false)
+        injectPutPost(Self.sentPostResponse)
+
+        try await postsRepository.send(WritablePost(topicId: "topicId", text: "  \n ", image: Data([0x01, 0x02])))
+
+        let sent = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post
+        XCTAssertEqual(sent.text, "")
+        XCTAssertEqual(sent.media.images.count, 1)
+    }
+
+    func testSendImagePostWithoutTextIsRejectedWhenTextIsRequired() async throws {
+        try await setCommunity(textRequired: true)
+
+        await assertRejectedLocally(WritablePost(topicId: "topicId", text: "", image: Data([0x01, 0x02])))
+    }
+
+    func testSendImagePostWithoutTextIsRejectedWithoutCommunityConfig() async {
+        // No config loaded yet: text stays required.
+        XCTAssertNil(mockConfigRepository.communityConfig)
+
+        await assertRejectedLocally(WritablePost(topicId: "topicId", text: "", image: Data([0x01, 0x02])))
     }
 
     func testCreatePostThatDisallowsComments() async throws {
@@ -125,7 +218,7 @@ class PostsTests: XCTestCase {
             customActionText: nil, customActionTargetLink: nil,
             aggregatedInfo: .empty, userInteractions: .empty),
                       canCreateChildren: false)
-        let post = WritablePost(topicId: "topicId", text: "My Post with long text", attachment: nil)
+        let post = WritablePost(topicId: "topicId", text: "My Post with long text")
         try await postsRepository.send(post)
 
         await fulfillment(of: [sendExpectation], timeout: 5)
@@ -686,6 +779,48 @@ class PostsTests: XCTestCase {
 
     // MARK: - Helpers
 
+    private func setCommunity(textRequired: Bool) async throws {
+        mockConfigRepository.injectNextRefreshCommunityConfig(CommunityConfig(
+            forceLoginOnStrongActions: false, displayAccountAge: false,
+            gamificationConfig: nil, displayConfig: nil,
+            profileFieldsLock: .allEditable,
+            contentOptions: ContentOptions(
+                post: .init(enablePictures: true, enablePolls: true, textRequired: textRequired),
+                comment: .init(enablePictures: true),
+                reply: .init(enablePictures: true)),
+            exposeClientUserId: false, termsAcceptanceMode: .implicit,
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
+        try await mockConfigRepository.refreshCommunityConfig()
+    }
+
+    /// Asserts that `send` throws the local "malformed object" error without calling the server.
+    private func assertRejectedLocally(_ post: WritablePost, file: StaticString = #filePath,
+                                       line: UInt = #line) async {
+        do {
+            try await postsRepository.send(post)
+            XCTFail("The post should have been rejected before reaching the server", file: file, line: line)
+        } catch SendPost.Error.serverCall(.other) {
+            // expected: `InternalError.objectMalformed`, thrown before any network call
+        } catch {
+            XCTFail("Unexpected error: \(error)", file: file, line: line)
+        }
+        XCTAssertNil(mockOctoService.lastPutPostRwOctoObject, file: file, line: line)
+    }
+
+    private static var sentPostResponse: StorablePost {
+        StorablePost(
+            uuid: "newPost", text: .init(originalText: "Sent", originalLanguage: nil, translatedText: nil),
+            medias: [], poll: nil,
+            author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
+            creationDate: Date(), updateDate: Date(),
+            status: .published, statusReasons: [],
+            parentId: "topicId",
+            descCommentFeedId: nil, ascCommentFeedId: nil,
+            bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+            customActionText: nil, customActionTargetLink: nil,
+            aggregatedInfo: .empty, userInteractions: .empty)
+    }
+
     private func octoPost(from item: StorablePost) -> Com_Octopuscommunity_OctoObject {
         Com_Octopuscommunity_OctoObject.with {
             $0.createdAt = item.creationDate.timestampMs
@@ -715,5 +850,13 @@ class PostsTests: XCTestCase {
                 }
             }
         }
+    }
+}
+
+private actor FingerprintRecorder {
+    private(set) var values = [String]()
+
+    func record(_ value: String) {
+        values.append(value)
     }
 }

@@ -46,7 +46,6 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
     private let appStateMonitor: AppStateMonitor
 
     private var storage: Set<AnyCancellable> = []
-    private var magicLinkSubscription: Task<Void, Error>?
 
     @Published private var connectionInProgress = false
 
@@ -57,6 +56,8 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         appStateMonitor = injector.getInjected(identifiedBy: Injected.appStateMonitor)
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($userProfileResponse, $connectionInProgress)
     }
 
     func start() {
@@ -95,7 +96,7 @@ class UserProfileFetchMonitorDefault: UserProfileFetchMonitor, InjectableObject,
                                 let connectionRepository = injector?.getInjected(identifiedBy: Injected.connectionRepository)
                                 Task {
                                     do {
-                                        try await connectionRepository?.logout(preventReconnection: false)
+                                        try await connectionRepository?.logout()
                                     } catch {
                                         if #available(iOS 14, *) {
                                             Logger.connection.debug("Error while logging out the user: \(error)")

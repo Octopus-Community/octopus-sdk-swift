@@ -48,8 +48,8 @@ struct GroupAccessDeniedScreen: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                    .foregroundColor(.white)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                    .foregroundColor(SampleTokens.Colors.buttonText)
                 }
                 .disabled(viewModel.isSaving)
             }
@@ -75,7 +75,7 @@ struct GroupAccessDeniedScreen: View {
             .onValueChanged(of: viewModel.errorMessage) {
                 errorAlertPresented = $0 != nil
             }
-            .hostAppFooter()
+            .hostAppFooter(debugConsole: false)
         }
     }
 

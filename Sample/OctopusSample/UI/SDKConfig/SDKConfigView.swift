@@ -5,17 +5,16 @@
 import Foundation
 import SwiftUI
 
-/// View that display the SDK Configuration. Internal use only.
+/// The first-start Configuration, internal demo mode only: Start SDK persists the config, which makes
+/// `SampleRootView` swap this screen for the tabs. After Settings › Reset the SDK of the previous setup is still
+/// alive, and Start SDK rebuilds it on the new config, as Apply does.
 struct SDKConfigScreen: View {
-    @Environment(\.presentationMode) private var presentationMode
-
     var body: some View {
         NavigationView {
-            SDKConfigView(afterSaveAction: {
-                presentationMode.wrappedValue.dismiss()
-            })
-            .hostAppFooter()
+            ConfigView(isRevisit: false)
+                .hostAppFooter(debugConsole: false)
         }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -25,31 +24,9 @@ struct SDKConfigView: View {
     @StateObjectCompat private var viewModel = SDKConfigViewModel()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "network")
-                        .foregroundColor(.accentColor)
-                    Text("Authentication mode")
-                        .font(.subheadline).bold()
-                }
-                Picker("", selection: $viewModel.authMode) {
-                    Text("Octopus").tag(SDKConfigViewModel.AuthMode.octopus)
-                    Text("SSO").tag(SDKConfigViewModel.AuthMode.sso)
-                }
-                .pickerStyle(.segmented)
-            }
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-
-            if viewModel.authMode == .sso {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "person.text.rectangle")
-                            .foregroundColor(.accentColor)
-                        Text("Associated Fields")
-                            .font(.subheadline).bold()
-                    }
+        ScrollView {
+            VStack(alignment: .leading, spacing: SampleTokens.Spacing.space4) {
+                card(systemImage: "person.text.rectangle", title: "Associated Fields") {
                     Toggle(isOn: $viewModel.nicknameIsAssociated) {
                         Text("Nickname")
                     }
@@ -60,73 +37,99 @@ struct SDKConfigView: View {
                         Text("Picture")
                     }
                 }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
 
                 if !viewModel.nicknameIsAssociated {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "lock.shield")
-                                .foregroundColor(.accentColor)
-                            Text("Security")
-                                .font(.subheadline).bold()
-                        }
+                    card(systemImage: "lock.shield", title: "Security") {
                         Toggle(isOn: $viewModel.forceLoginOnStringAction) {
                             Text("Force login on strong actions")
                         }
                     }
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "wifi.slash")
-                            .foregroundColor(.accentColor)
-                        Text("Debug")
-                            .font(.subheadline).bold()
-                    }
+                unifiedProfileCard
+
+                card(systemImage: "wifi.slash", title: "Debug") {
                     Toggle(isOn: Binding(get: { viewModel.forceOffline },
                                          set: { viewModel.setForceOffline($0) })) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Act as if offline")
                             // A simulator always reports a connection, so the offline states are out
                             // of reach there without this.
-                            Text("Reaches the empty / error screen states and the no-connection " +
-                                 "toast without a device in airplane mode.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                            caption("Reaches the empty / error screen states and the no-connection " +
+                                    "toast without a device in airplane mode.")
                         }
                     }
                     .accessibilityId("qa-config-forceOffline")
                 }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-            }
 
-            if viewModel.canSave {
-                Spacer()
-                Button(action: {
-                    viewModel.save()
-                    afterSaveAction()
-                }) {
-                    HStack {
-                        Image(systemName: "checkmark")
-                        Text("Save")
+                if viewModel.canSave {
+                    Button(action: {
+                        viewModel.save()
+                        afterSaveAction()
+                    }) {
+                        HStack {
+                            Image(systemName: "checkmark")
+                            Text("Save")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                        .foregroundColor(SampleTokens.Colors.buttonText)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                    .foregroundColor(.white)
+                } else {
+                    Text("No existing community to match this configuration")
+                        .font(.subheadline)
+                        .foregroundColor(SampleTokens.Colors.danger)
                 }
-            } else {
-                Text("No existing community to match this configuration")
-                    .font(.subheadline)
-                    .foregroundColor(Color.red)
-                Spacer()
             }
+            .padding()
         }
         .navigationBarTitle(Text("SDK Configuration"))
+        .sampleScreenBackground()
+    }
+
+    /// Both host-side inputs of Unified Profile behind one switch, and the line saying what a profile tap does
+    /// right now. Applied at once, like the offline switch: it is a host integration choice, not part of the
+    /// SDK config the Save button rebuilds the SDK on.
+    private var unifiedProfileCard: some View {
+        card(systemImage: "person.crop.circle.badge.checkmark", title: "Unified profile") {
+            Toggle(isOn: Binding(get: { viewModel.unifiedProfile.isSwitchOn },
+                                 set: { viewModel.setUnifiedProfileEnabled($0) })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Open the app's profile")
+                    caption("Wires onNavigateToProfile and forces the community's exposeClientUserId flag on. " +
+                            "Off unwires the callback and goes back to the backend flag.")
+                }
+            }
+            .accessibilityId("config-unified-profile")
+
+            Text(viewModel.unifiedProfile.statusLine)
+                .font(.footnote)
+                .foregroundColor(SampleTokens.Colors.text)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityId("config-unified-profile-status")
+        }
+    }
+
+    private func card(systemImage: String, title: String,
+                      @ViewBuilder content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: SampleTokens.Spacing.space2) {
+            HStack {
+                Image(systemName: systemImage)
+                    .foregroundColor(SampleTokens.Colors.accentText)
+                Text(title)
+                    .font(.subheadline).bold()
+            }
+            content()
+        }
         .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .sampleCardSurface()
+    }
+
+    private func caption(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundColor(SampleTokens.Colors.textSecondary)
     }
 }

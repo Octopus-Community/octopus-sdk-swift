@@ -39,8 +39,8 @@ struct ClientProfileScreen: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                    .foregroundColor(.white)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                    .foregroundColor(SampleTokens.Colors.buttonText)
                 }
                 .accessibilityId("clientProfile-seePosts")
             }
@@ -62,6 +62,7 @@ struct ClientProfileScreen: View {
                     .accessibilityLabelCompat("Close")
                     .accessibilityId("clientProfile-back")
             )
+            .dismissedOnPushRouting($presentCommunityActivity)
             .sheet(isPresented: $presentCommunityActivity) {
                 OctopusUIView(
                     octopus: OctopusSDKProvider.instance.octopus,
@@ -71,7 +72,13 @@ struct ClientProfileScreen: View {
             .onAppear {
                 Task { await viewModel.fetchCommunityData() }
             }
-            .hostAppFooter()
+            // SwiftUI presents this full-screen cover as `.overFullScreen` and paints its background itself.
+            // Without an explicit presentation background, dismissing the activity sheet above wipes that
+            // background: the screen turns see-through and the community it covers shows behind its content.
+            // Observed on iOS 26.5. Same workaround as `AppLoginScreen` and `AppEditUserScreen`, which got it
+            // when iOS 26 presentations lost their opaque default background.
+            .presentationBackground(Color(.systemBackground))
+            .hostAppFooter(debugConsole: false)
         }
     }
 

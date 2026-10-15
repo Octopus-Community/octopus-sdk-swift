@@ -5,22 +5,6 @@
 import Foundation
 import OctopusCore
 
-extension PostDetailViewModel.Post.Attachment {
-    init?(from post: Post) {
-        if let poll = post.poll {
-            self = .poll(DisplayablePoll(from: poll))
-        } else if let media = post.medias.first(where: { $0.kind == .video }),
-                  let videoMedia = VideoMedia(from: media) {
-            self = .video(videoMedia)
-        } else if let media = post.medias.first(where: { $0.kind == .image }),
-                  let imageMedia = ImageMedia(from: media) {
-            self = .image(imageMedia)
-        } else {
-            return nil
-        }
-    }
-}
-
 extension PostDetailViewModel.Post {
     init(from post: Post,
          gamificationLevels: [GamificationLevel],
@@ -35,7 +19,7 @@ extension PostDetailViewModel.Post {
         relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())
         self.topic = topic?.name
         self.groupId = post.parentId
-        attachment = .init(from: post)
+        attachments = PostAttachmentsViewData(from: post)
         canBeDeleted = post.author != nil && post.author?.uuid == thisUserProfileId
         canBeModerated = post.author?.uuid != thisUserProfileId
         canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)
@@ -56,17 +40,7 @@ extension PostDetailViewModel.Post {
         catchPhrase = post.clientObjectBridgeInfo?.catchPhrase
     }
 
-    var hasVideo: Bool {
-        switch attachment {
-        case .video: return true
-        default: return false
-        }
-    }
+    var hasVideo: Bool { attachments.hasVideo }
 
-    var videoId: String? {
-        switch attachment {
-        case let .video(video): return video.videoId
-        default: return nil
-        }
-    }
+    var videoId: String? { attachments.videoId }
 }

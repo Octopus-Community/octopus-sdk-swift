@@ -33,12 +33,17 @@ struct FeatureEnv: Decodable, Identifiable {
         }
     }
 
+    /// One API key of a community. The directory lists a community once per key, under the same id and
+    /// name, so only `apiKey` and `description` tell those entries apart.
     struct Community: Decodable, Identifiable {
-        var id: String { communityId }
+        var id: String { "\(communityId)\(apiKey)" }
         let communityId: String
         let communityName: String
         let apiKey: String
         let description: String?
+
+        /// Described as the key a client app embeds, rather than one of the community's other keys.
+        var isClientKey: Bool { description?.caseInsensitiveCompare("client key") == .orderedSame }
     }
 
     var id: String { name }

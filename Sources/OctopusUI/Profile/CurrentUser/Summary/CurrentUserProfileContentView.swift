@@ -309,10 +309,6 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, C
     }
 
     private var avatar: Author.Avatar {
-        if let pictureUrl = profile.pictureUrl {
-            return .image(url: pictureUrl, name: profile.nickname)
-        } else {
-            return .defaultImage(name: profile.nickname)
-        }
+        .member(pictureUrl: profile.pictureUrl, name: profile.nickname, community: profile.defaultAvatar)
     }
 }

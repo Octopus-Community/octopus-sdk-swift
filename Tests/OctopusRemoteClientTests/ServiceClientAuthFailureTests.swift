@@ -26,7 +26,8 @@ struct ServiceClientAuthFailureTests {
 
     private func makeClient(locale: String = "fr_FR") -> ServiceClient {
         ServiceClient(apiKey: "api-key", sdkVersion: "1.13.2", installId: "install-id",
-                      localeIdentifier: locale)
+                      localeIdentifier: locale,
+                      sdkIdentity: { SdkIdentity(family: .native, version: "1.13.2") })
     }
 
     /// Runs `callRemote` with a failing block and returns whether `authFailure` was called.

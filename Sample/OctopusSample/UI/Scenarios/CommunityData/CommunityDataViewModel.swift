@@ -6,7 +6,7 @@ import Foundation
 import Combine
 import Octopus
 
-/// View model of CommunityDataView.
+/// View model of CommunityDataSection.
 ///
 /// Drives the whole Unified Profile read surface: the two `fetchCommunityData` overloads
 /// and the two `communityDataPublisher` overloads, plus the observation lifecycle the QA presets make
@@ -72,9 +72,8 @@ class CommunityDataViewModel: ObservableObject {
     /// The host-side id to look the member up by: the id the SDK reports for the connected user when
     /// available, else the id the host itself signed in with.
     ///
-    /// Unlike Flutter — where the example always holds an SSO subject — this is optional here: in
-    /// `.octopus` (magic link) mode the host has no client user id at all, and the presets say so
-    /// instead of looking up an empty string.
+    /// Optional because no host user may be signed in yet: the presets then say so instead of looking
+    /// up an empty string.
     ///
     /// Republished rather than computed, so the live-state row refreshes on an `AppUserManager` change
     /// too — it is not an `ObservableObject` this view could observe on its own.
@@ -87,6 +86,14 @@ class CommunityDataViewModel: ObservableObject {
     /// Set while an async preset is in flight, so the result panel never shows the *previous* preset's
     /// outcome as if it were the current one (mirrors the Android section's `loading…`).
     @Published private(set) var isLoading = false
+
+    /// The hand-typed Octopus id of the raw `fetchCommunityData(profileId:)` lookup.
+    @Published var rawProfileIdInput = ""
+
+    /// Outcome of the raw lookup, kept apart from the presets' result panel as on Android.
+    @Published private(set) var rawFetchResult: String?
+    @Published private(set) var rawFetchIsError = false
+    @Published private(set) var isRawFetching = false
 
     /// Set by preset 6, consumed by the view to present the host-rendered profile screen.
     @Published var clientProfileTarget: ClientProfileTarget?
@@ -139,6 +146,32 @@ class CommunityDataViewModel: ObservableObject {
         case .stopObserving: stopObservingPreset()
         case .idContract: reportIdContract()
         case .openClientProfile: openClientProfile()
+        }
+    }
+
+    /// One-shot lookup on any hand-typed Octopus id — the raw call the presets never cover.
+    func fetchRawProfileId() {
+        guard !isRawFetching else { return }
+        let profileId = rawProfileIdInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !profileId.isEmpty else {
+            rawFetchResult = "Enter a user id first."
+            rawFetchIsError = true
+            return
+        }
+        isRawFetching = true
+        rawFetchResult = nil
+        rawFetchIsError = false
+        Task {
+            defer { isRawFetching = false }
+            do {
+                let data = try await octopus.fetchCommunityData(profileId: profileId)
+                rawFetchResult = data == nil
+                    ? "Unknown member for profileId \"\(profileId)\"."
+                    : "Fetched: \(Self.describe(data))"
+            } catch {
+                rawFetchResult = "fetchCommunityData failed: \(error)"
+                rawFetchIsError = true
+            }
         }
     }
 
@@ -251,8 +284,7 @@ class CommunityDataViewModel: ObservableObject {
     // MARK: - Private
 
     private static let noClientUserIdMessage =
-        "No clientUserId available — connect a user in SSO mode (the Octopus magic-link mode has no " +
-        "host-side id to look up)."
+        "No clientUserId available — connect a user first (from the Account tab)."
 
     /// Clears the previous outcome before an async preset runs, so the panel the QA pipeline reads can
     /// never be mistaken for the current preset's result while the fetch is still in flight.

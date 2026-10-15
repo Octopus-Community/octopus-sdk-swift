@@ -29,7 +29,6 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
     private let clientUserProfileMerger: ClientUserProfileMerger
 
     private var storage: Set<AnyCancellable> = []
-    private var magicLinkSubscription: Task<Void, Error>?
 
     init(injector: Injector) {
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
@@ -41,7 +40,11 @@ class UserDataCleanerMonitor: InjectableObject, @unchecked Sendable {
     }
 
     func start() {
-        userDataStorage.$userData.removeDuplicates()
+        // An unreadable session is not a logout: its data is kept until the session can be read again.
+        Publishers.CombineLatest(userDataStorage.$userData, userDataStorage.$sessionIsUnreadable)
+            .filter { !$1 }
+            .map { $0.0 }
+            .removeDuplicates()
             .sink { userData in
                 guard userData == nil else { return }
                 Task { [self] in

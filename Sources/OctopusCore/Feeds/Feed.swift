@@ -155,6 +155,12 @@ public class Feed<Item: FeedItem, ChildItem: FeedItem>: @MainActor Hashable {
         canPublishItems = false
         defer { canPublishItems = true }
 
+        // A feed filled from local data only can find the item in a stale first page: reach the server once
+        // before trusting it, so the items listed around the item are the current ones.
+        if !hasFetchedDistantOnce {
+            try await refresh(pageSize: 100)
+        }
+
         while !idsInfo.contains(where: { $0.itemId == id }) && hasMoreData {
             if nextPageCursor == nil {
                 try await refresh(pageSize: 100)

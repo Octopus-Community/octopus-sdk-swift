@@ -14,7 +14,7 @@ struct SizedSheetModifier: ViewModifier {
                 if #available(iOS 16.4, *) {
                     $0.readHeight($height)
                         .modify {
-                            if !UIAccessibility.isVoiceOverRunning {
+                            if Self.sizesToContent {
                                 $0.presentationDetents([.height(height)])
                             } else { $0 }
                         }
@@ -26,6 +26,17 @@ struct SizedSheetModifier: ViewModifier {
                     $0.presentationContentInteraction(.scrolls)
                 } else { $0 }
             }
+    }
+}
+
+extension SizedSheetModifier {
+    /// Whether `sizedSheet()` sizes the sheet to its measured content: from iOS 16.4, unless VoiceOver runs.
+    /// Otherwise the sheet keeps its full (large) height, so content that can outgrow it must scroll on its own.
+    static var sizesToContent: Bool {
+        if #available(iOS 16.4, *) {
+            return !UIAccessibility.isVoiceOverRunning
+        }
+        return false
     }
 }
 

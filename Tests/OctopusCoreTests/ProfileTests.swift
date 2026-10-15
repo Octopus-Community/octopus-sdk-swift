@@ -29,7 +29,7 @@ class ProfileTests: XCTestCase {
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
-        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .appStateMonitor, .magicLinkMonitor,
+        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .appStateMonitor,
                                .userProfileFetchMonitor, .authProvider, .blockedUserIdsProvider, .configRepository)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
@@ -41,11 +41,7 @@ class ProfileTests: XCTestCase {
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ClientUserProfileDatabase(injector: $0) }
-        injector.register { ClientUserProvider(
-            connectionMode: .sso(.init(
-                appManagedFields: [], loginRequired: {}, modifyUser: { _ in })),
-            injector: $0)
-        }
+        injector.register { ClientUserProvider(injector: $0) }
         injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
         injector.register { FrictionlessProfileMigrator(injector: $0) }
         injector.register { GamificationRepository(injector: $0) }
@@ -195,6 +191,39 @@ class ProfileTests: XCTestCase {
         await fulfillment(of: [profileUpdatedExpectation], timeout: 5)
     }
 
+    func testUpdateProfileAsksForNicknameSuggestionsWhenRequested() async throws {
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(.with {
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "nickname"
+                }
+            })
+        })
+
+        try await profileRepository.updateCurrentUserProfile(
+            with: EditableProfile(nickname: .updated("nickname"), wantNicknameSuggestions: true))
+
+        XCTAssertEqual(mockUserService.lastUpdateProfileData?.wantNicknameSuggestions, true)
+    }
+
+    func testUpdateProfileDoesNotAskForNicknameSuggestionsByDefault() async throws {
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", jwtToken: "fake_token"))
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(.with {
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "nickname"
+                }
+            })
+        })
+
+        try await profileRepository.updateCurrentUserProfile(with: EditableProfile(nickname: .updated("nickname")))
+
+        XCTAssertEqual(mockUserService.lastUpdateProfileData?.wantNicknameSuggestions, false)
+    }
+
     func testFetchProfile() async throws {
         let profilePublishedExpectation = XCTestExpectation(description: "Profile published")
 
@@ -238,6 +267,74 @@ class ProfileTests: XCTestCase {
         XCTAssertEqual(stored?.id, "octoProfileId")
     }
 
+    func testPublicProfileDefaultAvatar_isPersisted() async throws {
+        mockUserService.injectNextGetPublicProfileByClientUserIdResponse(.with {
+            $0.profile = .with {
+                $0.id = "octoProfileId"
+                $0.nickname = "nickname"
+                $0.defaultAvatar = .with {
+                    $0.color = .with {
+                        $0.backgroundHex = "#3366CC"
+                        $0.initialsHex = "#FFFFFF"
+                    }
+                }
+            }
+        })
+
+        let fetched = try await profileRepository.fetchProfile(byClientUserId: "host-42")
+        XCTAssertEqual(fetched?.defaultAvatar, .color(backgroundHex: "#3366CC", initialsHex: "#FFFFFF"))
+
+        let stored = try await publicProfileDatabase.getProfile(profileId: "octoProfileId")
+        XCTAssertEqual(stored?.defaultAvatar, .color(backgroundHex: "#3366CC", initialsHex: "#FFFFFF"))
+    }
+
+    func testCurrentUserDefaultAvatar_isPersisted() async throws {
+        try await userProfileDatabase.upsert(profile: .create(
+            id: "profileId", userId: "userId", nickname: "nickname",
+            defaultAvatar: .color(backgroundHex: "#3366CC", initialsHex: "#000000")))
+
+        // fails after the timeout instead of hanging if the profile is never published
+        let published = XCTestExpectation(description: "Current user profile published")
+        published.assertForOverFulfill = false
+        // written on the main queue before the expectation is fulfilled, read once it has been
+        nonisolated(unsafe) var stored: StorableCurrentUserProfile?
+        userProfileDatabase.profilePublisher(userId: "userId")
+            .compactMap { $0 }
+            .sink {
+                stored = $0
+                published.fulfill()
+            }.store(in: &storage)
+        await fulfillment(of: [published], timeout: 5)
+
+        XCTAssertEqual(stored?.defaultAvatar, .color(backgroundHex: "#3366CC", initialsHex: "#000000"))
+        XCTAssertNil(stored?.pictureUrl)
+    }
+
+    func testCurrentUserDefaultAvatarIfPictureRemoved_isPersisted() async throws {
+        try await userProfileDatabase.upsert(profile: .create(
+            id: "profileId", userId: "userId", nickname: "nickname",
+            pictureUrl: URL(string: "https://cdn.example.com/own.jpg"),
+            defaultAvatarIfPictureRemoved: .color(backgroundHex: "#3366CC", initialsHex: "#000000")))
+
+        // fails after the timeout instead of hanging if the profile is never published
+        let published = XCTestExpectation(description: "Current user profile published")
+        published.assertForOverFulfill = false
+        // written on the main queue before the expectation is fulfilled, read once it has been
+        nonisolated(unsafe) var stored: StorableCurrentUserProfile?
+        userProfileDatabase.profilePublisher(userId: "userId")
+            .compactMap { $0 }
+            .sink {
+                stored = $0
+                published.fulfill()
+            }.store(in: &storage)
+        await fulfillment(of: [published], timeout: 5)
+
+        XCTAssertEqual(stored?.defaultAvatarIfPictureRemoved,
+                       .color(backgroundHex: "#3366CC", initialsHex: "#000000"))
+        XCTAssertNil(stored?.defaultAvatar)
+        XCTAssertEqual(stored?.pictureUrl, URL(string: "https://cdn.example.com/own.jpg"))
+    }
+
     func testFetchProfileByProfileId_emptyResponse_returnsNil() async throws {
         // Empty response (no such profile): return nil rather than upserting a malformed profile.
         mockUserService.injectNextGetPublicProfileResponse(
@@ -269,7 +366,7 @@ class ProfileTests: XCTestCase {
             contentOptions: .allEnabled,
             exposeClientUserId: false,
             termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false))
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
 
         mockUserService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {
@@ -332,7 +429,7 @@ class ProfileTests: XCTestCase {
     func testFetchProfileByClientUserId_emptyResponse_returnsNilWithoutEvictingCache() async throws {
         // Seed an existing public profile in cache.
         try await publicProfileDatabase.upsert(profile: StorableProfile(
-            id: "cachedId", nickname: "cached", bio: nil, pictureUrl: nil, tags: [],
+            id: "cachedId", nickname: "cached", bio: nil, pictureUrl: nil, defaultAvatar: nil, tags: [],
             totalMessages: nil, accountCreationDate: nil,
             gamificationLevel: nil,
             descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil))
@@ -368,7 +465,7 @@ class ProfileTests: XCTestCase {
             contentOptions: .allEnabled,
             exposeClientUserId: true,
             termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false))
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
 
         mockUserService.injectNextGetPublicProfileByClientUserIdResponse(.with {
             $0.profile = .with {
@@ -443,7 +540,7 @@ class ProfileTests: XCTestCase {
 
     func testPublicProfileDatabase_getProfile_returnsStoredProfile() async throws {
         try await publicProfileDatabase.upsert(profile: StorableProfile(
-            id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil,
+            id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil, defaultAvatar: nil,
             tags: .admin,
             totalMessages: nil, accountCreationDate: nil,
             gamificationLevel: nil,
@@ -513,7 +610,7 @@ class ProfileTests: XCTestCase {
 
         // Seed an admin-tagged public profile in cache
         try await publicProfileDatabase.upsert(profile: StorableProfile(
-            id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil,
+            id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil, defaultAvatar: nil,
             tags: .admin,
             totalMessages: nil, accountCreationDate: nil,
             gamificationLevel: nil,
@@ -632,6 +729,95 @@ class ProfileTests: XCTestCase {
         try await delay()
 
         await fulfillment(of: [profileUpdatedExpectation], timeout: 5)
+    }
+
+    func testDoNotFillWithClientUserWhenNicknameIsTheCurrentOne() async throws {
+        // Precondition: the nickname the host asked for was taken, so the server gave a variant of it
+        try await userProfileDatabase.upsert(
+            profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "clientNickname1",
+                                                originalNickname: "clientNickname",
+                                                email: nil, bio: "clientBio", pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: false, hasConfirmedBio: false,
+                                                hasConfirmedPicture: false,
+                                                isGuest: false,
+                                                notificationBadgeCount: 0,
+                                                descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", clientId: "clientUserId", jwtToken: "fake_token"))
+        userDataStorage.store(clientUserData: UserDataStorage.ClientUserData(id: "clientUserId"))
+
+        // no need to call mockUserService.injectNextUpdateProfileResponse because no network calls should be done
+
+        // wait for the merge of the host's profile to end, rather than for an arbitrary delay
+        let syncedExpectation = XCTestExpectation(description: "Host profile merged")
+        profileRepository.profileSyncResultPublisher.first().sink {
+            if case .success = $0 { syncedExpectation.fulfill() }
+        }.store(in: &storage)
+
+        // the host now sends the nickname the user has
+        try await clientUserProfileDatabase.upsert(
+            profile: .init(nickname: "clientNickname1", bio: "clientBio", picture: nil),
+            clientUserId: "clientUserId")
+
+        await fulfillment(of: [syncedExpectation], timeout: 5)
+        XCTAssertNil(mockUserService.lastUpdateProfileData)
+    }
+
+    func testFillOnlyTheBioWhenTheClientNicknameIsTheCurrentOne() async throws {
+        // Precondition: the nickname the host asked for was taken, so the server gave a variant of it
+        try await userProfileDatabase.upsert(
+            profile: StorableCurrentUserProfile(id: "profileId", userId: "userId", nickname: "clientNickname1",
+                                                originalNickname: "clientNickname",
+                                                email: nil, bio: "clientBio", pictureUrl: nil, tags: [],
+                                                totalMessages: nil, accountCreationDate: nil,
+                                                gamificationLevel: nil, gamificationScore: nil,
+                                                hasSeenOnboarding: nil, hasAcceptedCgu: nil,
+                                                hasConfirmedNickname: false, hasConfirmedBio: false,
+                                                hasConfirmedPicture: false,
+                                                isGuest: false,
+                                                notificationBadgeCount: 0,
+                                                descPostFeedId: "", ascPostFeedId: "", blockedProfileIds: []))
+        userDataStorage.store(userData: UserDataStorage.UserData(id: "userId", clientId: "clientUserId", jwtToken: "fake_token"))
+        userDataStorage.store(clientUserData: UserDataStorage.ClientUserData(id: "clientUserId"))
+
+        let profileUpdatedExpectation = XCTestExpectation(description: "Profile updated with client bio")
+        profileRepository.profilePublisher.sink {
+            guard let profile = $0 else { return }
+            if profile.nickname == "clientNickname1", profile.bio == "newClientBio" {
+                profileUpdatedExpectation.fulfill()
+            }
+        }.store(in: &storage)
+
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(
+                .with {
+                    $0.profile = .with {
+                        $0.id = "profileId"
+                        $0.nickname = "clientNickname1"
+                        $0.originalNickname = "clientNickname"
+                        $0.bio = "newClientBio"
+                        $0.hasConfirmedNickname_p = false
+                        $0.hasConfirmedBio_p = false
+                        $0.hasConfirmedPicture_p = false
+                    }
+                })
+        })
+
+        // the host now sends the nickname the user has, along with a new bio
+        try await clientUserProfileDatabase.upsert(
+            profile: .init(nickname: "clientNickname1", bio: "newClientBio", picture: nil),
+            clientUserId: "clientUserId")
+
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 5)
+        let sentUpdate = try XCTUnwrap(mockUserService.lastUpdateProfileData)
+        guard case .notUpdated = sentUpdate.nickname else {
+            return XCTFail("The nickname must not be sent, got \(sentUpdate.nickname)")
+        }
+        XCTAssertFalse(sentUpdate.optFindAvailableNickname)
+        guard case let .updated(bio) = sentUpdate.bio else { return XCTFail("The bio must be sent") }
+        XCTAssertEqual(bio, "newClientBio")
     }
 
     func testNoLoopWhenFillingProfileWithClientProfile() async throws {

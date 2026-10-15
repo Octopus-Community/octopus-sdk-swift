@@ -28,6 +28,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let gamificationRepository: GamificationRepository
     private let toastsRepository: ToastsRepository
     private let sdkEventsEmitter: SdkEventsEmitter
+    private let configRepository: ConfigRepository
 
     public var postSentPublisher: AnyPublisher<Void, Never> {
         _postSentPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher()
@@ -48,6 +49,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
+        configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
 
         commentFeedsStore = injector.getInjected(identifiedBy: Injected.commentFeedsStore)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
@@ -151,26 +153,33 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                      creationSource: CreationSource = .user,
                      bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)? = nil)
     async throws(SendPost.Error) -> (Post, Data?) {
-        guard Validators.Post.validate(post: post) else {
+        // Local safety net only: the server stays the authority on the community setting. Reading the
+        // setting here keeps a post the community accepts (an image without text) from being refused
+        // before it is even sent. Without a loaded config, text stays required.
+        let textRequired = configRepository.communityConfig?.contentOptions.post.textRequired ?? true
+        guard Validators.Post.validate(post: post, textRequired: textRequired) else {
             throw .serverCall(.other(InternalError.objectMalformed))
         }
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
 
         do {
             var post = post
+            post.text = Validators.Post.publishableText(post.text, hasImage: post.image != nil,
+                                                        textRequired: textRequired)
             var imageIsCompressed = false
-            if case let .image(imageData) = post.attachment {
+            if let imageData = post.image {
                 let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
-                post.attachment = .image(resizedImgData)
+                post.image = resizedImgData
                 imageIsCompressed = isCompressed
             }
 
             // For a prefilled (bridge) share carrying an image, sign the content so the
             // server accepts the image even in a pictures-off community. The fingerprint is computed on
             // the RESIZED/uploaded bytes, the only ones the backend PrefilledShareVerifier sees, so the
-            // two computations match (see `BridgeShareFingerprint`).
+            // two computations match (see `BridgeShareFingerprint`). The poll is deliberately left out:
+            // the backend fingerprint covers text, CTA and image only.
             var clientToken: String?
-            if let bridgeShareSignature, case let .image(resizedImgData) = post.attachment {
+            if let bridgeShareSignature, let resizedImgData = post.image {
                 let fingerprint = BridgeShareFingerprint.compute(
                     text: post.text,
                     ctaText: post.cta?.label,
@@ -198,7 +207,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 let hasVideo = finalPost.medias.contains { $0.kind == .video }
                 try? await fetchAdditionalData(ids: [(finalPost.uuid, hasVideo)], incrementViewCount: false)
                 _postSentPublisher.send()
-                let imageData: Data? = if case let .image(imageData) = post.attachment { imageData } else { nil }
+                let imageData = post.image
                 let createdPost = Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
                 sdkEventsEmitter.emit(.contentCreated(content: createdPost))
                 sdkEventsEmitter.emit(.postCreated(.init(from: createdPost)))

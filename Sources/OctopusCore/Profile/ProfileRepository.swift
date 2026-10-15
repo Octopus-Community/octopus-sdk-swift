@@ -115,6 +115,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         clientUserProfileMerger = injector.getInjected(identifiedBy: Injected.clientUserProfileMerger)
         frictionlessProfileMigrator = injector.getInjected(identifiedBy: Injected.frictionlessProfileMigrator)
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($profile, $hasLoadedProfile)
 
         userDataStorage.$userData
             .receive(on: DispatchQueue.main)
@@ -425,7 +427,8 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                     hasConfirmedNickname: profile.hasConfirmedNickname.backendValue,
                     hasConfirmedBio: profile.hasConfirmedBio.backendValue,
                     hasConfirmedPicture: profile.hasConfirmedPicture.backendValue,
-                    optFindAvailableNickname: findAvailableNickname
+                    optFindAvailableNickname: findAvailableNickname,
+                    wantNicknameSuggestions: profile.wantNicknameSuggestions
                 ),
                 authenticationMethod: try authCallProvider.authenticatedMethod())
             switch response.result {

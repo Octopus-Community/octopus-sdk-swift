@@ -109,11 +109,6 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
     }
     @Published private(set) var connectionState = ConnectionState.notConnected(nil)
 
-    var magicLinkRequestPublisher: AnyPublisher<OctopusCore.MagicLinkRequest?, Never> {
-        $magicLinkRequest.eraseToAnyPublisher()
-    }
-    @Published private(set) var magicLinkRequest: OctopusCore.MagicLinkRequest?
-
     var clientUserConnected: Bool { userDataStorage.clientUserData != nil }
 
     var connectionMode: ConnectionMode
@@ -123,7 +118,7 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
 
     init(injector: Injector) {
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
-        connectionMode = .octopus(deepLink: nil) // for simplicity purpose
+        connectionMode = .sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
         let postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
 
         userDataStorage.$userData
@@ -152,21 +147,17 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
         }
     }
 
-    func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError) { }
+    func logout() async throws {
+        userDataStorage.store(userData: nil)
+    }
 
-    func cancelMagicLink() { }
-
-    func checkMagicLinkConfirmed() async throws(MagicLinkConfirmationError) -> Bool { return false }
-
-    func logout(preventReconnection: Bool) async throws {
+    func logoutBeforeCommunitySwitch() async throws {
         userDataStorage.store(userData: nil)
     }
 
     func onAuthenticatedCallFailed() async throws {
-        try await logout(preventReconnection: false)
+        try await logout()
     }
-
-    func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) { }
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws { }
 

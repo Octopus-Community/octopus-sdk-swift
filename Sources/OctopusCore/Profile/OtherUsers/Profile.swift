@@ -12,6 +12,8 @@ public struct Profile: Equatable, Sendable {
     public let nickname: String?
     public let bio: String?
     public let pictureUrl: URL?
+    /// See `MinimalProfile.defaultAvatar`. When non-nil, `pictureUrl` is nil.
+    public let defaultAvatar: DefaultAvatar?
 
     public let tags: ProfileTags
 
@@ -37,6 +39,7 @@ extension Profile {
         nickname = storableProfile.nickname
         bio = storableProfile.bio?.trimmingCharacters(in: .whitespacesAndNewlines)
         pictureUrl = storableProfile.pictureUrl
+        defaultAvatar = storableProfile.defaultAvatar
         tags = storableProfile.tags
         totalMessages = storableProfile.totalMessages
         accountCreationDate = storableProfile.accountCreationDate

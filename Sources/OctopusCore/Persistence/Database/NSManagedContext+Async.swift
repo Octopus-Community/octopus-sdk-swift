@@ -22,6 +22,23 @@ extension NSManagedObjectContext {
         // Ensure stores are loaded before making a query
         try await TaskUtils.wait(for: persistentStoreCoordinator?.persistentStores.isEmpty == false, timeout: 0.1)
 
+        return try await performOnQueue { [self] in
+            // Checked again on the queue: the stores can be torn down while this block waits for its turn
+            // (`CoreDataStackManager.teardown()`), and a `save()` on a coordinator without stores raises an ObjC
+            // exception that `try` cannot catch. Teardowns run on this same queue, so the stores cannot go away
+            // between this check and the end of the block.
+            guard persistentStoreCoordinator?.persistentStores.isEmpty == false else {
+                throw CoreDataErrors.storesTornDown
+            }
+            return try block()
+        }
+    }
+
+    /// Runs `block` on the context's queue, with none of the checks of `performAsync(_:)`.
+    ///
+    /// - Warning: Not for reads nor writes, which go through `performAsync(_:)`: a `save()` made here after a teardown
+    ///   would abort the app. It is meant for the teardown itself.
+    func performOnQueue<T>(_ block: @escaping () throws -> T) async throws -> T {
         let block = UncheckedSendableBlock(run: block)
         if #available(iOS 15.0, *) {
             return try await perform { try block.run() }

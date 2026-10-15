@@ -4,7 +4,7 @@
 
 import SwiftUI
 import Octopus
-import PhotosUI
+import OctopusCore
 
 struct EditProfileView: View {
     @Environment(\.octopusTheme) private var theme
@@ -17,10 +17,8 @@ struct EditProfileView: View {
     private let bioFocused: Bool
     private let photoPickerFocused: Bool
 
-    init(octopus: OctopusSDK, bioFocused: Bool = false, photoPickerFocused: Bool = false,
-         preventDismissAfterUpdate: Bool = false) {
-        _viewModel = Compat.StateObject(wrappedValue: EditProfileViewModel(
-            octopus: octopus, preventDismissAfterUpdate: preventDismissAfterUpdate))
+    init(octopus: OctopusSDK, bioFocused: Bool = false, photoPickerFocused: Bool = false) {
+        _viewModel = Compat.StateObject(wrappedValue: EditProfileViewModel(octopus: octopus))
         self.bioFocused = bioFocused
         self.photoPickerFocused = photoPickerFocused
     }
@@ -32,6 +30,7 @@ struct EditProfileView: View {
                     pictureEditConfig: viewModel.pictureEditConfig,
                     nickname: $viewModel.nickname,
                     bio: $viewModel.bio, picture: $viewModel.picture, nicknameForAvatar: viewModel.nicknameForAvatar,
+                    communityAvatar: viewModel.communityAvatar,
                     nicknameError: viewModel.nicknameError, bioError: viewModel.bioError,
                     pictureError: viewModel.pictureError, bioFocused: bioFocused, bioMaxLength: viewModel.bioMaxLength,
                     photoPickerFocused: photoPickerFocused
@@ -100,6 +99,7 @@ private struct ContentView: View {
     @Binding var bio: String
     @Binding var picture: EditProfileViewModel.Picture
     let nicknameForAvatar: String
+    let communityAvatar: DefaultAvatar?
 
     let nicknameError: DisplayableString?
     let bioError: DisplayableString?
@@ -117,6 +117,7 @@ private struct ContentView: View {
                 bioEditConfig: bioEditConfig,
                 pictureEditConfig: pictureEditConfig,
                 nickname: $nickname, bio: $bio, picture: $picture, nicknameForAvatar: nicknameForAvatar,
+                communityAvatar: communityAvatar,
                 nicknameError: nicknameError, bioError: bioError, pictureError: pictureError,
                 bioFocused: bioFocused, bioMaxLength: bioMaxLength, photoPickerFocused: photoPickerFocused)
             .disabled(isLoading)
@@ -136,6 +137,7 @@ private struct EditProfileFormView: View {
     @Binding var bio: String
     @Binding var picture: EditProfileViewModel.Picture
     let nicknameForAvatar: String
+    let communityAvatar: DefaultAvatar?
 
     let nicknameError: DisplayableString?
     let bioError: DisplayableString?
@@ -157,7 +159,7 @@ private struct EditProfileFormView: View {
          bioEditConfig: EditProfileViewModel.FieldEditConfig,
          pictureEditConfig: EditProfileViewModel.FieldEditConfig,
          nickname: Binding<String>, bio: Binding<String>, picture: Binding<EditProfileViewModel.Picture>,
-         nicknameForAvatar: String,
+         nicknameForAvatar: String, communityAvatar: DefaultAvatar?,
          nicknameError: DisplayableString?, bioError: DisplayableString?, pictureError: DisplayableString?,
          bioFocused: Bool, bioMaxLength: Int, photoPickerFocused: Bool) {
         _nickname = nickname
@@ -167,6 +169,7 @@ private struct EditProfileFormView: View {
         self.bioEditConfig = bioEditConfig
         self.pictureEditConfig = pictureEditConfig
         self.nicknameForAvatar = nicknameForAvatar
+        self.communityAvatar = communityAvatar
         self.nicknameError = nicknameError
         self.bioError = bioError
         self.pictureError = pictureError
@@ -182,8 +185,9 @@ private struct EditProfileFormView: View {
                 if !pictureEditConfig.isHidden {
                 HStack {
                     Spacer()
-                    PictureView(picture: $picture, nickname: nicknameForAvatar, openPhotosPicker: photoPickerFocused,
-                                pictureSize: pictureSize)
+                    EditablePictureView(picture: $picture, nickname: nickname, avatarColorSeed: nicknameForAvatar,
+                                        communityAvatar: communityAvatar, openPhotosPicker: photoPickerFocused,
+                                        pictureSize: pictureSize)
                         .frame(width: pictureSize, height: pictureSize)
                         .disabled(!pictureEditConfig.fieldIsEditable)
                         .opacity(1.0) // Prevents fading due to disabled
@@ -308,110 +312,3 @@ private struct EditProfileFormView: View {
         }
     }
 }
-
-private struct PictureView: View {
-    @Environment(\.octopusTheme) private var theme
-    @Environment(\.layoutDirection) private var layoutDirection
-    @Binding var picture: EditProfileViewModel.Picture
-    let nickname: String
-    let pictureSize: CGFloat
-
-    @State private var selectedItems: [ImageAndData] = []
-    @State private var imagePickingError: Error?
-    @State private var loading = false
-    @State private var openActionList = false
-    @State private var openPhotosPicker = false
-
-    init(picture: Binding<EditProfileViewModel.Picture>, nickname: String, openPhotosPicker: Bool,
-         pictureSize: CGFloat) {
-        _picture = picture
-        self.nickname = nickname
-        _openPhotosPicker = .init(initialValue: openPhotosPicker)
-        self.pictureSize = pictureSize
-    }
-
-    var body: some View {
-        if !loading {
-            Button(action: {
-                if canDeletePicture {
-                    openActionList = true
-                } else {
-                    openPhotosPicker = true
-                }
-            }) {
-                AuthorAvatarView(avatar: authorAvatar)
-                    .overlay(
-                        Image(uiImage: theme.assets.icons.profile.editPicture)
-                            .resizable()
-                            .scaledToFit()
-                            .foregroundColor(theme.colors.onPrimary)
-                            .padding(8)
-                            .background(theme.colors.primary)
-                            .clipShape(Circle())
-                            .frame(width: 28, height: 28)
-                            // Keep the badge on the avatar's trailing-bottom corner in both directions
-                            // (offset x is physical, so flip it in RTL).
-                            .offset(x: layoutDirection == .rightToLeft ? -30 : 30, y: 30)
-                    )
-                    .frame(width: pictureSize, height: pictureSize)
-            }
-            .buttonStyle(.borderless)
-            .actionSheet(isPresented: $openActionList) {
-                ActionSheet(title: Text(verbatim: ""), buttons: [
-                    ActionSheet.Button.default(Text("Profile.Edit.Picture.Change", bundle: .module)) {
-                        openPhotosPicker = true
-                    },
-                    ActionSheet.Button.destructive(Text("Profile.Edit.Picture.Delete", bundle: .module)) {
-                        picture = .deleted
-                        selectedItems = []
-                    },
-                    ActionSheet.Button.cancel()
-                ])
-            }
-            .accessibilityHintInBundle("Accessibility.Profile.Picture.Edit")
-            .imagesPicker(isPresented: $openPhotosPicker, selection: $selectedItems, error: $imagePickingError,
-                          maxSelectionCount: 1)
-            .onValueChanged(of: selectedItems) {
-                guard let imagePickerItem = $0.first else {
-                    picture = .deleted
-                    return
-                }
-                picture = .changed(imagePickerItem.imageData, imagePickerItem.image)
-            }
-        } else {
-            Compat.ProgressView()
-                .frame(width: 60)
-        }
-    }
-
-    private var authorAvatar: Author.Avatar {
-        switch picture {
-        case let .unchanged(pictureUrl):
-            if let pictureUrl {
-                return .image(url: pictureUrl, name: nickname)
-            } else {
-                return .defaultImage(name: nickname)
-            }
-        case let .changed(_, image):
-            return .localImage(image)
-        case .deleted:
-            return .defaultImage(name: nickname)
-        }
-    }
-
-    private var canDeletePicture: Bool {
-        switch picture {
-        case let .unchanged(url):
-            return url != nil
-        case .changed:
-            return true
-        case .deleted:
-            return false
-        }
-    }
-}
-
-// #Preview {
-//    ContentView(state: .emailEntry(.emailNeeded), sendEmailButtonAvailable: true, email: .constant(""),
-//                sendMagicLink: { }, enterNewEmail: { }, checkMagicLinkConfirmed: { })
-// }

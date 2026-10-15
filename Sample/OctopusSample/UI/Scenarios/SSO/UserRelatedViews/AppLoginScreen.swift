@@ -30,10 +30,10 @@ struct AppLoginScreen: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Image(systemName: "person.text.rectangle")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(SampleTokens.Colors.textSecondary)
                             Text("Unique Identifier")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(SampleTokens.Colors.textSecondary)
                         }
                         TextField("Unique Identifier", text: $uniqueIdentifier)
                             .autocapitalization(.none)
@@ -46,10 +46,10 @@ struct AppLoginScreen: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Image(systemName: "key")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(SampleTokens.Colors.textSecondary)
                             Text("Entitlements")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(SampleTokens.Colors.textSecondary)
                         }
                         EditEntitlementsView(selection: $entitlements)
                     }
@@ -73,14 +73,15 @@ struct AppLoginScreen: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                        .foregroundColor(.white)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                        .foregroundColor(SampleTokens.Colors.buttonText)
                     }
                     .padding(.horizontal)
                     Spacer()
                 }
             }
             .padding()
+            .sampleScreenBackground()
             .navigationBarTitle("App Login Flow", displayMode: .inline)
             .navigationBarItems(
                 trailing:
@@ -105,8 +106,8 @@ struct AppLoginScreen: View {
                     }
                 }
             }
-            .presentationBackground(Color(.systemBackground))
-            .hostAppFooter()
+            .presentationBackground(SampleTokens.Colors.background)
+            .hostAppFooter(debugConsole: false)
         }
     }
 }

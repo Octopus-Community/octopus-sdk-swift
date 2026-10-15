@@ -56,14 +56,12 @@ public class OctopusSDKCore: ObservableObject {
     }
 
     private let injector: Injector
-    private let connectionMode: ConnectionMode
 
     /// Constructor
     /// - Parameter apiKey: the API key that identifies your project
     public init(apiKey: String, connectionMode: ConnectionMode, sdkConfig: OctopusSDKConfiguration,
                 cleanAfterCommunitySwitch: Bool = false,
                 injector: Injector) throws {
-        self.connectionMode = connectionMode
         self.sdkConfig = sdkConfig
         self.injector = injector
         let installIdProvider = InstallIdProvider()
@@ -78,6 +76,7 @@ public class OctopusSDKCore: ObservableObject {
         let remoteClient = try GrpcClient(
             apiKey: apiKey, sdkVersion: version, installId: installIdProvider.installId,
             localeIdentifier: languageRepository.localeIdentifier,
+            sdkIdentity: { SdkIdentityRegistry.shared.current },
             serverHost: sdkConfig.apiServer?.host,
             serverPort: sdkConfig.apiServer?.port,
             getUserIdBlock: { [userDataStorage] in
@@ -99,7 +98,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { PostChildChangeMonitor(injector: $0) }
         injector.register { LanguageChangedMonitor(injector: $0) }
         injector.register { BlockedUserIdsProviderDefault(injector: $0) }
-        injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
+        injector.register { ClientUserProvider(injector: $0) }
         injector.register { SdkEventsEmitter(injector: $0) }
 
         // Repository
@@ -135,18 +134,14 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { RepliesDatabase(injector: $0) }
         injector.register { TopicsDatabase(injector: $0) }
 
-        // Connection mode related instanciations
+        // Connection
         let appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>
         switch connectionMode {
-        case .octopus:
-            injector.register { MagicLinkMonitorDefault(injector: $0) }
-            injector.register { MagicLinkConnectionRepository(connectionMode: connectionMode, injector: $0) }
-            appManagedFields = []
         case let .sso(config):
-            injector.register { SSOConnectionRepository(connectionMode: connectionMode, injector: $0) }
-            injector.register { ClientUserProfileDatabase(injector: $0) }
             appManagedFields = config.appManagedFields
         }
+        injector.register { SSOConnectionRepository(connectionMode: connectionMode, injector: $0) }
+        injector.register { ClientUserProfileDatabase(injector: $0) }
         injector.register { UserDataCleanerMonitor(injector: $0) }
         injector.register { ProfileRepositoryDefault(appManagedFields: appManagedFields, injector: $0) }
         injector.register { ClientUserProfileMerger(appManagedFields: appManagedFields, injector: $0) }
@@ -179,12 +174,6 @@ public class OctopusSDKCore: ObservableObject {
         injector.getInjected(identifiedBy: Injected.communityAccessMonitor).start()
         injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).start()
         injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).start()
-        switch connectionMode {
-        case .octopus:
-            injector.getInjected(identifiedBy: Injected.magicLinkMonitor).start()
-        case .sso:
-            break
-        }
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).start()
         injector.getInjected(identifiedBy: Injected.entitlementMonitor).start()
         injector.getInjected(identifiedBy: Injected.languageChangedMonitor).start()
@@ -232,7 +221,7 @@ public class OctopusSDKCore: ObservableObject {
 
         // disconnecting user
         do {
-            try await connectionRepository.logout(preventReconnection: true)
+            try await connectionRepository.logoutBeforeCommunitySwitch()
         } catch {
             if #available(iOS 14, *) { Logger.other.debug("Disconnecting user failed: \(error)") }
         }
@@ -257,21 +246,21 @@ public class OctopusSDKCore: ObservableObject {
         if #available(iOS 14, *) { Logger.other.debug("Cleaning db files") }
         do {
             let modelCoreDataStack = injector.getInjected(identifiedBy: Injected.modelCoreDataStack)
-            try modelCoreDataStack.teardown()
+            try await modelCoreDataStack.teardown()
         } catch {
             if #available(iOS 14, *) { Logger.other.debug("Cleaning model db files failed: \(error)") }
         }
 
         do {
             let configCoreDataStack = injector.getInjected(identifiedBy: Injected.configCoreDataStack)
-            try configCoreDataStack.teardown()
+            try await configCoreDataStack.teardown()
         } catch {
             if #available(iOS 14, *) { Logger.other.debug("Cleaning config db files failed: \(error)") }
         }
 
         do {
             let trackingCoreDataStack = injector.getInjected(identifiedBy: Injected.trackingCoreDataStack)
-            try trackingCoreDataStack.teardown()
+            try await trackingCoreDataStack.teardown()
         } catch {
             if #available(iOS 14, *) { Logger.other.debug("Cleaning tracking db files failed: \(error)") }
         }
@@ -303,12 +292,6 @@ public class OctopusSDKCore: ObservableObject {
         injector.getInjected(identifiedBy: Injected.languageChangedMonitor).stop()
         injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).stop()
         injector.getInjected(identifiedBy: Injected.entitlementMonitor).stop()
-        switch connectionMode {
-        case .octopus:
-            injector.getInjected(identifiedBy: Injected.magicLinkMonitor).stop()
-        case .sso:
-            break
-        }
         injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).stop()
         injector.getInjected(identifiedBy: Injected.communityAccessMonitor).stop()
         injector.getInjected(identifiedBy: Injected.appSessionMonitor).stop()

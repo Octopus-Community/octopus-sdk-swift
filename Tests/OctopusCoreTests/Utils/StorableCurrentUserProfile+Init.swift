@@ -16,7 +16,8 @@ extension StorableCurrentUserProfile {
         isGuest: Bool = false,
         notificationBadgeCount: Int? = nil,
         descPostFeedId: String = "", ascPostFeedId: String = "", blockedProfileIds: [String] = [],
-        entitlements: Set<String> = [])
+        entitlements: Set<String> = [], defaultAvatar: DefaultAvatar? = nil,
+        defaultAvatarIfPictureRemoved: DefaultAvatar? = nil)
     -> StorableCurrentUserProfile {
         StorableCurrentUserProfile(
             id: id, userId: userId, nickname: nickname, originalNickname: originalNickname, email: email, bio: bio,
@@ -30,6 +31,7 @@ extension StorableCurrentUserProfile {
             isGuest: isGuest,
             notificationBadgeCount: notificationBadgeCount,
             descPostFeedId: descPostFeedId, ascPostFeedId: ascPostFeedId, blockedProfileIds: blockedProfileIds,
-            entitlements: entitlements)
+            entitlements: entitlements, defaultAvatar: defaultAvatar,
+            defaultAvatarIfPictureRemoved: defaultAvatarIfPictureRemoved)
     }
 }

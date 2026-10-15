@@ -229,11 +229,111 @@ public nonisolated struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable
     set {_uniqueStorage()._showCommentsOnOtherProfiles = newValue}
   }
 
+  public var forceNicknameChoice: Bool {
+    get {_storage._forceNicknameChoice}
+    set {_uniqueStorage()._forceNicknameChoice = newValue}
+  }
+
+  public var consentTexts: Com_Octopuscommunity_ConsentTexts {
+    get {_storage._consentTexts ?? Com_Octopuscommunity_ConsentTexts()}
+    set {_uniqueStorage()._consentTexts = newValue}
+  }
+  /// Returns true if `consentTexts` has been explicitly set.
+  public var hasConsentTexts: Bool {_storage._consentTexts != nil}
+  /// Clears the value of `consentTexts`. Subsequent reads from it will return its default value.
+  public mutating func clearConsentTexts() {_uniqueStorage()._consentTexts = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+/// Markdown, in the member's language. Empty => the SDK wording. Set to the active mode only.
+public nonisolated struct Com_Octopuscommunity_ConsentTexts: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var mode: Com_Octopuscommunity_ConsentTexts.OneOf_Mode? = nil
+
+  public var implicit: Com_Octopuscommunity_ImplicitConsentTexts {
+    get {
+      if case .implicit(let v)? = mode {return v}
+      return Com_Octopuscommunity_ImplicitConsentTexts()
+    }
+    set {mode = .implicit(newValue)}
+  }
+
+  public var multiCheckbox: Com_Octopuscommunity_MultiCheckboxConsentTexts {
+    get {
+      if case .multiCheckbox(let v)? = mode {return v}
+      return Com_Octopuscommunity_MultiCheckboxConsentTexts()
+    }
+    set {mode = .multiCheckbox(newValue)}
+  }
+
+  public var singleCheckbox: Com_Octopuscommunity_SingleCheckboxConsentTexts {
+    get {
+      if case .singleCheckbox(let v)? = mode {return v}
+      return Com_Octopuscommunity_SingleCheckboxConsentTexts()
+    }
+    set {mode = .singleCheckbox(newValue)}
+  }
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_Mode: Equatable, Sendable {
+    case implicit(Com_Octopuscommunity_ImplicitConsentTexts)
+    case multiCheckbox(Com_Octopuscommunity_MultiCheckboxConsentTexts)
+    case singleCheckbox(Com_Octopuscommunity_SingleCheckboxConsentTexts)
+
+  }
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_ImplicitConsentTexts: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var notice: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_MultiCheckboxConsentTexts: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var termsLabel: String = String()
+
+  public var privacyLabel: String = String()
+
+  public var rulesLabel: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_SingleCheckboxConsentTexts: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var label: String = String()
+
+  public var belowText: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 /// Per-content-type publishing options; each flag absent => enabled (true).
@@ -294,12 +394,22 @@ public nonisolated struct Com_Octopuscommunity_ContentOptions: Sendable {
     /// Clears the value of `enablePolls`. Subsequent reads from it will return its default value.
     public mutating func clearEnablePolls() {self._enablePolls = nil}
 
+    public var textRequired: Bool {
+      get {_textRequired ?? false}
+      set {_textRequired = newValue}
+    }
+    /// Returns true if `textRequired` has been explicitly set.
+    public var hasTextRequired: Bool {self._textRequired != nil}
+    /// Clears the value of `textRequired`. Subsequent reads from it will return its default value.
+    public mutating func clearTextRequired() {self._textRequired = nil}
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
 
     fileprivate var _enablePictures: Bool? = nil
     fileprivate var _enablePolls: Bool? = nil
+    fileprivate var _textRequired: Bool? = nil
   }
 
   public nonisolated struct CommentConfig: Sendable {
@@ -685,7 +795,7 @@ nonisolated extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Mess
 
 nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ApiKeyConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0\u{1}exposeClientUserId\0\u{1}termsAcceptanceMode\0\u{1}showCommentsOnOtherProfiles\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0\u{1}exposeClientUserId\0\u{1}termsAcceptanceMode\0\u{1}showCommentsOnOtherProfiles\0\u{1}forceNicknameChoice\0\u{1}consentTexts\0")
 
   fileprivate class _StorageClass {
     var _clientLoginMandatory: Bool = false
@@ -698,6 +808,8 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
     var _exposeClientUserID: Bool = false
     var _termsAcceptanceMode: Com_Octopuscommunity_TermsAcceptanceMode = .implicit
     var _showCommentsOnOtherProfiles: Bool = false
+    var _forceNicknameChoice: Bool = false
+    var _consentTexts: Com_Octopuscommunity_ConsentTexts? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -718,6 +830,8 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
       _exposeClientUserID = source._exposeClientUserID
       _termsAcceptanceMode = source._termsAcceptanceMode
       _showCommentsOnOtherProfiles = source._showCommentsOnOtherProfiles
+      _forceNicknameChoice = source._forceNicknameChoice
+      _consentTexts = source._consentTexts
     }
   }
 
@@ -746,6 +860,8 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
         case 8: try { try decoder.decodeSingularBoolField(value: &_storage._exposeClientUserID) }()
         case 9: try { try decoder.decodeSingularEnumField(value: &_storage._termsAcceptanceMode) }()
         case 10: try { try decoder.decodeSingularBoolField(value: &_storage._showCommentsOnOtherProfiles) }()
+        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._forceNicknameChoice) }()
+        case 12: try { try decoder.decodeSingularMessageField(value: &_storage._consentTexts) }()
         default: break
         }
       }
@@ -788,6 +904,12 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
       if _storage._showCommentsOnOtherProfiles != false {
         try visitor.visitSingularBoolField(value: _storage._showCommentsOnOtherProfiles, fieldNumber: 10)
       }
+      if _storage._forceNicknameChoice != false {
+        try visitor.visitSingularBoolField(value: _storage._forceNicknameChoice, fieldNumber: 11)
+      }
+      try { if let v = _storage._consentTexts {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -807,10 +929,201 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
         if _storage._exposeClientUserID != rhs_storage._exposeClientUserID {return false}
         if _storage._termsAcceptanceMode != rhs_storage._termsAcceptanceMode {return false}
         if _storage._showCommentsOnOtherProfiles != rhs_storage._showCommentsOnOtherProfiles {return false}
+        if _storage._forceNicknameChoice != rhs_storage._forceNicknameChoice {return false}
+        if _storage._consentTexts != rhs_storage._consentTexts {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_ConsentTexts: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ConsentTexts"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}implicit\0\u{1}multiCheckbox\0\u{1}singleCheckbox\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: Com_Octopuscommunity_ImplicitConsentTexts?
+        var hadOneofValue = false
+        if let current = self.mode {
+          hadOneofValue = true
+          if case .implicit(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.mode = .implicit(v)
+        }
+      }()
+      case 2: try {
+        var v: Com_Octopuscommunity_MultiCheckboxConsentTexts?
+        var hadOneofValue = false
+        if let current = self.mode {
+          hadOneofValue = true
+          if case .multiCheckbox(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.mode = .multiCheckbox(v)
+        }
+      }()
+      case 3: try {
+        var v: Com_Octopuscommunity_SingleCheckboxConsentTexts?
+        var hadOneofValue = false
+        if let current = self.mode {
+          hadOneofValue = true
+          if case .singleCheckbox(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.mode = .singleCheckbox(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.mode {
+    case .implicit?: try {
+      guard case .implicit(let v)? = self.mode else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .multiCheckbox?: try {
+      guard case .multiCheckbox(let v)? = self.mode else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case .singleCheckbox?: try {
+      guard case .singleCheckbox(let v)? = self.mode else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ConsentTexts, rhs: Com_Octopuscommunity_ConsentTexts) -> Bool {
+    if lhs.mode != rhs.mode {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_ImplicitConsentTexts: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ImplicitConsentTexts"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notice\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.notice) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.notice.isEmpty {
+      try visitor.visitSingularStringField(value: self.notice, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_ImplicitConsentTexts, rhs: Com_Octopuscommunity_ImplicitConsentTexts) -> Bool {
+    if lhs.notice != rhs.notice {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_MultiCheckboxConsentTexts: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".MultiCheckboxConsentTexts"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}termsLabel\0\u{1}privacyLabel\0\u{1}rulesLabel\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.termsLabel) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.privacyLabel) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.rulesLabel) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.termsLabel.isEmpty {
+      try visitor.visitSingularStringField(value: self.termsLabel, fieldNumber: 1)
+    }
+    if !self.privacyLabel.isEmpty {
+      try visitor.visitSingularStringField(value: self.privacyLabel, fieldNumber: 2)
+    }
+    if !self.rulesLabel.isEmpty {
+      try visitor.visitSingularStringField(value: self.rulesLabel, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_MultiCheckboxConsentTexts, rhs: Com_Octopuscommunity_MultiCheckboxConsentTexts) -> Bool {
+    if lhs.termsLabel != rhs.termsLabel {return false}
+    if lhs.privacyLabel != rhs.privacyLabel {return false}
+    if lhs.rulesLabel != rhs.rulesLabel {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_SingleCheckboxConsentTexts: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SingleCheckboxConsentTexts"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}label\0\u{1}belowText\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.label) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.belowText) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.label.isEmpty {
+      try visitor.visitSingularStringField(value: self.label, fieldNumber: 1)
+    }
+    if !self.belowText.isEmpty {
+      try visitor.visitSingularStringField(value: self.belowText, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_SingleCheckboxConsentTexts, rhs: Com_Octopuscommunity_SingleCheckboxConsentTexts) -> Bool {
+    if lhs.label != rhs.label {return false}
+    if lhs.belowText != rhs.belowText {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -862,7 +1175,7 @@ nonisolated extension Com_Octopuscommunity_ContentOptions: SwiftProtobuf.Message
 
 nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".PostConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0\u{1}enablePolls\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0\u{1}enablePolls\0\u{1}textRequired\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -872,6 +1185,7 @@ nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProto
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self._enablePictures) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self._enablePolls) }()
+      case 3: try { try decoder.decodeSingularBoolField(value: &self._textRequired) }()
       default: break
       }
     }
@@ -888,12 +1202,16 @@ nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProto
     try { if let v = self._enablePolls {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._textRequired {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_ContentOptions.PostConfig, rhs: Com_Octopuscommunity_ContentOptions.PostConfig) -> Bool {
     if lhs._enablePictures != rhs._enablePictures {return false}
     if lhs._enablePolls != rhs._enablePolls {return false}
+    if lhs._textRequired != rhs._textRequired {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

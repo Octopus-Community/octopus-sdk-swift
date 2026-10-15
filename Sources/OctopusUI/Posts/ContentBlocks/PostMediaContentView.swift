@@ -11,7 +11,7 @@ struct PostMediaContentView: View {
 
     let postId: String
     let width: CGFloat
-    let attachment: PostAttachmentViewData
+    let media: PostAttachmentsViewData.Media
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     /// Visibility payload attached to the video's bounds anchor so `postsVisibilityScrollView`
     /// can detect when the video is centered and auto-play it. `nil` disables the anchor
@@ -21,13 +21,11 @@ struct PostMediaContentView: View {
     private let minAspectRatio: CGFloat = 4 / 5
 
     var body: some View {
-        switch attachment {
+        switch media {
         case let .image(image):
             imageView(image)
         case let .video(video):
             videoView(video)
-        case .poll:
-            EmptyView()
         }
     }
 
@@ -116,7 +114,7 @@ struct PostMediaContentView: View {
 #Preview("Image") {
     PostMediaContentView(
         postId: "p1", width: 393,
-        attachment: .image(ImageMedia(
+        media: .image(ImageMedia(
             url: URL(string: "https://picsum.photos/700/750")!,
             size: CGSize(width: 700, height: 750))),
         zoomableImageInfo: .constant(nil),

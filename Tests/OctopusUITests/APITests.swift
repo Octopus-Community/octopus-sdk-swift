@@ -12,8 +12,10 @@ import SwiftUI
 @Suite(.disabled("Disabled because we only need that they compile"))
 @MainActor
 class APITests {
+    private let connectionMode = ConnectionMode.sso(.init(loginRequired: { }))
+
     @Test func testHomeScreen() async throws {
-        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = OctopusHomeScreen(octopus: octopusSdk)
         _ = OctopusHomeScreen(octopus: octopusSdk, bottomSafeAreaInset: 5)
         _ = OctopusHomeScreen(octopus: octopusSdk, mainFeedNavBarTitle: nil)
@@ -39,7 +41,7 @@ class APITests {
     }
 
     @Test func testOctopusThemeApi() async throws {
-        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         // check that init with default params is available
         var theme = OctopusTheme()
         // check that it is customizable
@@ -82,8 +84,21 @@ class APITests {
         // Partial override: the Unified Profile activity button icon (shown in place of the
         // connected user's avatar on the home floating button when Unified Profile is active)
         _ = OctopusTheme.Assets.Icons.Common(activityButton: UIImage())
+        // Partial override: the button that clears a text field
+        _ = OctopusTheme.Assets.Icons.Common(clearText: UIImage())
+        // Every parameter at once, in declaration order
+        _ = OctopusTheme.Assets.Icons.Common(
+            radio: .init(on: UIImage(), off: UIImage()),
+            checkbox: .init(on: UIImage(), off: UIImage()),
+            toggle: .init(on: UIImage(), off: UIImage()),
+            close: UIImage(),
+            moreActions: UIImage(),
+            activityButton: UIImage(),
+            listCellNavIndicator: UIImage(),
+            clearText: UIImage())
         // Wired into Icons
         _ = OctopusTheme.Assets.Icons(common: .init(activityButton: UIImage()))
+        _ = OctopusTheme.Assets.Icons(common: .init(clearText: UIImage()))
     }
 
     @Test func testMainFeedTitle() async throws {
@@ -108,6 +123,32 @@ class APITests {
         )
     }
 
+    @Test func testSettingsIconsApi() async throws {
+        _ = OctopusTheme.Assets.Icons.Settings()
+        _ = OctopusTheme.Assets.Icons.Settings(help: UIImage())
+        let settings = OctopusTheme.Assets.Icons.Settings(help: UIImage(), info: UIImage())
+        let _: UIImage = settings.help
+        let _: UIImage = settings.info
+        _ = OctopusTheme.Assets.Icons(settings: settings)
+    }
+
+    @Test func testEmptyStateIconsApi() async throws {
+        _ = OctopusTheme.Assets.Icons.Content.Post()
+        _ = OctopusTheme.Assets.Icons.Content.Post(
+            creation: .init(), notAvailable: UIImage(), commentCount: UIImage(), viewCount: UIImage(),
+            moreReactions: UIImage(), likeNotSelected: UIImage(), moderated: UIImage())
+        _ = OctopusTheme.Assets.Icons.Content.Comment()
+        _ = OctopusTheme.Assets.Icons.Content.Comment(
+            creation: .init(), notAvailable: UIImage(), seeReply: UIImage(), likeNotSelected: UIImage())
+        _ = OctopusTheme.Assets.Icons.Profile()
+        _ = OctopusTheme.Assets.Icons.Profile(
+            addPicture: UIImage(), editPicture: UIImage(), addBio: UIImage(), report: UIImage(),
+            notConnected: UIImage(), blockUser: UIImage())
+        // the empty lists are customized through the screen states
+        _ = OctopusTheme.Assets.Icons(
+            screenStates: .init(emptyContent: UIImage(), emptyNotifications: UIImage()))
+    }
+
     @Test func testThemeWithCustomBackgroundCompiles() {
         _ = OctopusTheme(colors: OctopusTheme.Colors(
             primarySet: .init(main: .blue, lowContrast: .blue, highContrast: .blue),
@@ -117,7 +158,7 @@ class APITests {
     }
 
     @Test func testOctopusHomeScreenWithCreatePostInitialScreen() throws {
-        let sdk = try OctopusSDK(apiKey: "API_KEY")
+        let sdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let prefill = try OctopusPrefilledPost(
             text: "hello world long enough",
             cta: try OctopusPrefilledPost.CTA(
@@ -133,7 +174,7 @@ class APITests {
     }
 
     @Test func testProfileScreen() throws {
-        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = OctopusProfileScreen(octopus: octopusSdk)
         _ = OctopusProfileScreen(octopus: octopusSdk, clientUserId: "CLIENT_USER_ID")
         _ = OctopusProfileScreen(octopus: octopusSdk, navigationMode: .automatic)
@@ -150,11 +191,38 @@ class APITests {
 /// Deprecated APIs (tests are still here to ensure old APIs can still be called)
 extension APITests {
     @Test func testOldHomeScreen() async throws {
-        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .logo)
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .text(.init(text: "")))
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarPrimaryColor: true)
         _ = OctopusHomeScreen(octopus: octopusSdk, mainFeedNavBarTitle: nil, postId: "POST_ID")
         _ = OctopusHomeScreen(octopus: octopusSdk, mainFeedNavBarTitle: nil, notificationResponse: .constant(nil))
+    }
+
+    @Test func testOldSettingsIconsApi() async throws {
+        let settings = OctopusTheme.Assets.Icons.Settings(
+            account: UIImage(), help: UIImage(), info: UIImage(), logout: UIImage(),
+            deleteAccountWarning: UIImage())
+        let _: UIImage = settings.account
+        let _: UIImage = settings.logout
+        let _: UIImage = settings.deleteAccountWarning
+    }
+
+    @Test func testOldEmptyStateIconsApi() async throws {
+        let post = OctopusTheme.Assets.Icons.Content.Post(
+            creation: .init(), emptyFeedInGroups: UIImage(), emptyFeedInCurrentUserProfile: UIImage(),
+            emptyFeedInOtherUserProfile: UIImage(), notAvailable: UIImage(), commentCount: UIImage(),
+            viewCount: UIImage(), moreReactions: UIImage(), likeNotSelected: UIImage(), moderated: UIImage())
+        let _: UIImage = post.emptyFeedInGroups
+        let _: UIImage = post.emptyFeedInCurrentUserProfile
+        let _: UIImage = post.emptyFeedInOtherUserProfile
+        let comment = OctopusTheme.Assets.Icons.Content.Comment(
+            creation: .init(), emptyFeed: UIImage(), notAvailable: UIImage(), seeReply: UIImage(),
+            likeNotSelected: UIImage())
+        let _: UIImage = comment.emptyFeed
+        let profile = OctopusTheme.Assets.Icons.Profile(
+            addPicture: UIImage(), editPicture: UIImage(), addBio: UIImage(), emptyNotifications: UIImage(),
+            report: UIImage(), notConnected: UIImage(), blockUser: UIImage())
+        let _: UIImage = profile.emptyNotifications
     }
 }

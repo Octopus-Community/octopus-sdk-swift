@@ -66,6 +66,12 @@ struct EditablePoll: Equatable {
     }
 }
 
+extension EditablePoll {
+    var writablePoll: WritablePoll {
+        WritablePoll(options: options.map { .init(text: $0.text) })
+    }
+}
+
 struct CreatePollView: View {
     @Environment(\.octopusTheme) private var theme
     @Binding var poll: EditablePoll

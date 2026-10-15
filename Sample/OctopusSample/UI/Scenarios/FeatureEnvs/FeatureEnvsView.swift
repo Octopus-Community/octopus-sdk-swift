@@ -11,56 +11,60 @@ struct FeatureEnvsView: View {
 
     var body: some View {
         List {
-            if let dropped = viewModel.droppedAtLaunch {
-                Section {
-                    Text("\(dropped.displayName) is gone (expired or unreachable). The sample went back "
-                         + "to its default community.")
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                }
-            }
-
-            if let current = viewModel.currentFeatureEnv {
-                Section(header: Text("Current environment")) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(current.displayName) · \(current.communityName)").bold()
-                        Text(current.apiHost)
+            Group {
+                if let dropped = viewModel.droppedAtLaunch {
+                    Section {
+                        Text("\(dropped.displayName) is gone (expired or unreachable). The sample went back "
+                             + "to its default community.")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.orange)
                     }
-                    Button("Back to the default community") {
-                        Task { await viewModel.clearSelection() }
-                    }
-                    .foregroundColor(.red)
-                    .disabled(viewModel.isApplying)
                 }
-            }
 
-            if let error = viewModel.errorMessage {
-                Section {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Button("Retry") {
-                        Task { await viewModel.load() }
+                if let current = viewModel.currentFeatureEnv {
+                    Section(header: Text("Current environment")) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(current.displayName) · \(current.communityName)").bold()
+                            Text(current.apiHost)
+                                .font(.caption)
+                                .foregroundColor(SampleTokens.Colors.textSecondary)
+                        }
+                        Button("Back to the default community") {
+                            Task { await viewModel.clearSelection() }
+                        }
+                        .foregroundColor(.red)
+                        .disabled(viewModel.isApplying)
                     }
                 }
-            }
 
-            Section(header: Text("Live environments")) {
-                if viewModel.isLoading && viewModel.envs.isEmpty {
-                    Text("Loading…").foregroundColor(.secondary)
-                } else if viewModel.envs.isEmpty && viewModel.errorMessage == nil {
-                    Text("No live feature env right now.").foregroundColor(.secondary)
+                if let error = viewModel.errorMessage {
+                    Section {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
+                        Button("Retry") {
+                            Task { await viewModel.load() }
+                        }
+                    }
                 }
-                ForEach(viewModel.envs) { env in
-                    FeatureEnvRow(env: env, isApplying: viewModel.isApplying) { community in
-                        Task { await viewModel.select(env: env, community: community) }
+
+                Section(header: Text("Live environments")) {
+                    if viewModel.isLoading && viewModel.envs.isEmpty {
+                        Text("Loading…").foregroundColor(SampleTokens.Colors.textSecondary)
+                    } else if viewModel.envs.isEmpty && viewModel.errorMessage == nil {
+                        Text("No live feature env right now.").foregroundColor(SampleTokens.Colors.textSecondary)
+                    }
+                    ForEach(viewModel.envs) { env in
+                        FeatureEnvRow(env: env, isApplying: viewModel.isApplying) { community in
+                            Task { await viewModel.select(env: env, community: community) }
+                        }
                     }
                 }
             }
+            .sampleRowSurface()
         }
         .listStyle(.grouped)
+        .sampleListBackground()
         .navigationBarTitle(Text("Feature Environments"), displayMode: .inline)
         // Pull-to-refresh from iOS 15; below that, the nav-bar button is the only way to reload without
         // leaving the screen. The button is kept everywhere so the action stays discoverable.
@@ -74,7 +78,7 @@ struct FeatureEnvsView: View {
         .navigationBarItems(trailing: Button(action: { Task { await viewModel.load() } }) {
             Image(systemName: "arrow.clockwise")
         }.disabled(viewModel.isLoading))
-        .hostAppFooter()
+        .hostAppFooter(debugConsole: false)
         .onAppear {
             Task { await viewModel.load() }
         }
@@ -102,12 +106,13 @@ private struct FeatureEnvRow: View {
                         Spacer()
                         Text("expires in \(env.expiresInDays()) d")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
                     }
                     Text("\(env.name) · \(env.branch) · \(env.owner)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
                 }
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -120,13 +125,16 @@ private struct FeatureEnvRow: View {
                             if let description = community.description {
                                 Text("· \(description)")
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(SampleTokens.Colors.textSecondary)
                             }
                             Spacer()
                             Image(systemName: "arrow.right.circle")
                         }
                         .padding(.leading, 12)
+                        // A plain button only hits its drawn content: keep the whole row tappable.
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                     .disabled(isApplying)
                 }
             }

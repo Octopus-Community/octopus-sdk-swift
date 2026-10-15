@@ -1,6 +1,6 @@
 import SwiftUI
 
-public enum UseNavigationStackPolicy {
+enum UseNavigationStackPolicy {
   case whenAvailable
   case never
 }

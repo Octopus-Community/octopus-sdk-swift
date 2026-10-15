@@ -27,6 +27,9 @@ public struct EditableProfile: Sendable {
     public let hasConfirmedNickname: FieldUpdate<Bool>
     public let hasConfirmedBio: FieldUpdate<Bool>
     public let hasConfirmedPicture: FieldUpdate<Bool>
+    /// Asks the server, when the updated nickname is already taken, for available nicknames derived from it.
+    /// Meant for the nickname choice screen; left `false` elsewhere so the server does no lookup.
+    public let wantNicknameSuggestions: Bool
 
     public init(nickname: FieldUpdate<String> = .unchanged,
                 bio: FieldUpdate<String?> = .unchanged,
@@ -35,7 +38,8 @@ public struct EditableProfile: Sendable {
                 hasAcceptedCgu: FieldUpdate<Bool> = .unchanged,
                 hasConfirmedNickname: FieldUpdate<Bool> = .unchanged,
                 hasConfirmedBio: FieldUpdate<Bool> = .unchanged,
-                hasConfirmedPicture: FieldUpdate<Bool> = .unchanged
+                hasConfirmedPicture: FieldUpdate<Bool> = .unchanged,
+                wantNicknameSuggestions: Bool = false
     ) {
         self.nickname = nickname
         self.bio = bio
@@ -45,6 +49,7 @@ public struct EditableProfile: Sendable {
         self.hasConfirmedNickname = hasConfirmedNickname
         self.hasConfirmedBio = hasConfirmedBio
         self.hasConfirmedPicture = hasConfirmedPicture
+        self.wantNicknameSuggestions = wantNicknameSuggestions
     }
 }
 

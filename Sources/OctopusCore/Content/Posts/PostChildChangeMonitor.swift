@@ -25,8 +25,11 @@ class PostChildChangeMonitor: InjectableObject, @unchecked Sendable {
     }
 
     func start() {
-        commentsRepository.commentSentPublisher.sink { [unowned self] createdComment in
-            Task {
+        // The sinks and their tasks capture `self` weakly, not unowned: a task can start once this monitor is gone (a
+        // community switch releases the previous core), and then has no post count to update.
+        commentsRepository.commentSentPublisher.sink { [weak self] createdComment in
+            Task { [weak self] in
+                guard let self else { return }
                 do {
                     try await postsDatabase.incrementChildCount(by: 1, contentId: createdComment.parentId)
                 } catch {
@@ -37,9 +40,10 @@ class PostChildChangeMonitor: InjectableObject, @unchecked Sendable {
             }
         }.store(in: &storage)
 
-        commentsRepository.commentDeletedPublisher.sink { [unowned self] deletedComment in
+        commentsRepository.commentDeletedPublisher.sink { [weak self] deletedComment in
             guard let deletedComment else { return }
-            Task {
+            Task { [weak self] in
+                guard let self else { return }
                 do {
                     try await postsDatabase.incrementChildCount(by: -1, contentId: deletedComment.parentId)
                 } catch {

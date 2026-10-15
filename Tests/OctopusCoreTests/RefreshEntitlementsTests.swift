@@ -30,15 +30,13 @@ final class RefreshEntitlementsTests: XCTestCase {
     private let connectionSettleTimeout: TimeInterval = 30
 
     override func setUp() {
-        let connectionMode = ConnectionMode.sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
         injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
-                               .userProfileFetchMonitor, .blockedUserIdsProvider, .appStateMonitor,
-                               .magicLinkMonitor)
+                               .userProfileFetchMonitor, .blockedUserIdsProvider, .appStateMonitor)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
@@ -50,7 +48,7 @@ final class RefreshEntitlementsTests: XCTestCase {
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
-        injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
+        injector.register { ClientUserProvider(injector: $0) }
         injector.register { ClientUserProfileDatabase(injector: $0) }
         injector.register { UserConfigDatabase(injector: $0) }
         injector.register { CommunityConfigDatabase(injector: $0) }
@@ -69,12 +67,28 @@ final class RefreshEntitlementsTests: XCTestCase {
 
     // MARK: - Guard branches
 
-    func testOctopusModeThrowsNotInSSOMode() async throws {
-        let repo = MagicLinkConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+    func testRestoredSessionWithoutTokenProviderThrowsNoClientTokenProvider() async throws {
+        // A relaunch restores the client user's session from storage, but the token provider only comes
+        // with the next `connectUser` call: until then there is nothing to get a fresh token from.
+        userDataStorage.store(userData: .init(id: "userId", clientId: "clientUserId", jwtToken: "fakeJwt"))
+        userDataStorage.store(clientUserData: .init(id: "clientUserId"))
+        try await userProfileDatabase.upsert(profile: StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "Nick", isGuest: false))
+
+        let repo = SSOConnectionRepository(connectionMode: ssoConnectionMode(), injector: injector)
+        // Same main queue hop as `connectAsClientUser()`: `@Published` emits before the property is written.
+        let connected = XCTestExpectation(description: "Restored user connected (non-guest)")
+        connected.assertForOverFulfill = false
+        repo.$connectionState.sink { state in
+            guard case let .connected(user, _) = state, !user.profile.isGuest else { return }
+            DispatchQueue.main.async { connected.fulfill() }
+        }.store(in: &storage)
+        await fulfillment(of: [connected], timeout: connectionSettleTimeout)
+
         do {
             try await repo.refreshEntitlements()
             XCTFail("Expected .noClientTokenProvider")
-        } catch RefreshEntitlementsCoreError.notInSSOMode {
+        } catch RefreshEntitlementsCoreError.noClientTokenProvider {
             // expected
         } catch {
             XCTFail("Expected .noClientTokenProvider, got \(error)")

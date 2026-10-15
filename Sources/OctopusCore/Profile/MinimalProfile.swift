@@ -10,6 +10,9 @@ public struct MinimalProfile: Equatable, Sendable {
     public let uuid: String
     public let nickname: String
     public let avatarUrl: URL?
+    /// What to draw when the member has no picture of their own and the community chose it. When non-nil,
+    /// `avatarUrl` is nil.
+    public let defaultAvatar: DefaultAvatar?
     public let tags: ProfileTags
     public let gamificationLevel: Int?
     /// The user's id in the host app's own system (Unified Profile). Non-nil only when the community
@@ -19,11 +22,12 @@ public struct MinimalProfile: Equatable, Sendable {
 
     /// Public constructor, only for SwiftUI previews
     public init(uuid: String, nickname: String,
-                avatarUrl: URL? = nil, tags: ProfileTags = [],
+                avatarUrl: URL? = nil, defaultAvatar: DefaultAvatar? = nil, tags: ProfileTags = [],
                 gamificationLevel: Int? = nil, clientUserId: String? = nil) {
         self.uuid = uuid
         self.nickname = nickname
         self.avatarUrl = avatarUrl
+        self.defaultAvatar = defaultAvatar
         self.tags = tags
         self.gamificationLevel = gamificationLevel
         self.clientUserId = clientUserId
@@ -52,6 +56,7 @@ extension MinimalProfile {
         uuid = entity.profileId
         nickname = entity.nickname
         avatarUrl = entity.avatarUrl
+        defaultAvatar = entity.defaultAvatar
         tags = entity.tags
         gamificationLevel = entity.gamificationLevel >= 0 ? entity.gamificationLevel : nil
         clientUserId = entity.clientUserId
@@ -60,7 +65,11 @@ extension MinimalProfile {
     init(from profile: Com_Octopuscommunity_MinimalProfile) {
         uuid = profile.profileID
         nickname = profile.nickname
-        if profile.hasAvatarURL, let profileAvatarUrl = profile.avatarURL.nilIfEmpty {
+        let defaultAvatar = profile.hasDefaultAvatar ? DefaultAvatar(from: profile.defaultAvatar) : nil
+        self.defaultAvatar = defaultAvatar
+        // With a default, the member has no picture: avatarUrl holds at most a copy of the default image, made for
+        // older SDKs. Drop it only when the default can be drawn; otherwise that copy is the best this version has.
+        if defaultAvatar == nil, profile.hasAvatarURL, let profileAvatarUrl = profile.avatarURL.nilIfEmpty {
             avatarUrl = URL(string: profileAvatarUrl)
         } else {
             avatarUrl = nil

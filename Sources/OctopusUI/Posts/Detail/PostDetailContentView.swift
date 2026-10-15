@@ -14,8 +14,8 @@ struct PostDetailContentView: View {
     let deletePost: () -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?) -> Void
-    let voteOnPoll: (String) -> Bool
-    let displayContentModeration: (String) -> Void
+    let voteOnPoll: (String) async -> Bool
+    let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
 
     var body: some View {

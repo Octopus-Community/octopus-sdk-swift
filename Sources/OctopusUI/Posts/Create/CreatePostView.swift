@@ -59,12 +59,14 @@ struct CreatePostView: View {
                     displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendButtonAvailable
                         && !viewModel.termsAcceptanceMode.isExplicit,
                     text: $viewModel.text,
-                    attachment: $viewModel.attachment,
+                    image: $viewModel.image,
+                    poll: $viewModel.poll,
                     textError: viewModel.textError,
                     pictureError: viewModel.pictureError,
                     pollError: viewModel.pollError,
                     termsOfUseUrl: viewModel.termsOfUseUrl, privacyPolicyUrl: viewModel.privacyPolicyUrl,
                     communityGuidelinesUrl: viewModel.communityGuidelinesUrl,
+                    consentTexts: viewModel.consentTexts,
                     userAvatar: viewModel.userAvatar ?? .defaultImage(name: "?"),
                     selectedTopic: viewModel.selectedTopic,
                     showTopicPicker: $showTopicPicker,
@@ -76,7 +78,8 @@ struct CreatePostView: View {
         // screen mixes the custom color with the system background.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .largeScreenMarginBackground()
-        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction,
+                          onNicknameChoiceClosed: viewModel.nicknameChoiceClosed)
         .navigationBarTitle(Text("Post.Create.Title", bundle: .module), displayMode: .inline)
         .navigationBarBackButtonHidden(viewModel.hasChanges || canClose || navBarLeadingAction != nil)
         .toolbar(leading: leadingBarItem, trailing: postButton,
@@ -101,6 +104,7 @@ struct CreatePostView: View {
         .termsConsentSheet(
             isPresented: $viewModel.displayConsentSheet,
             mode: viewModel.termsAcceptanceMode,
+            consentTexts: viewModel.consentTexts,
             contribution: .post,
             termsUrl: viewModel.termsOfUseUrl,
             privacyUrl: viewModel.privacyPolicyUrl,
@@ -168,7 +172,8 @@ private struct ContentView: View {
     let isLoading: Bool
     let displayCguText: Bool
     @Binding var text: String
-    @Binding var attachment: CreatePostViewModel.Attachment?
+    @Binding var image: ImageAndData?
+    @Binding var poll: EditablePoll?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
@@ -177,6 +182,7 @@ private struct ContentView: View {
     let termsOfUseUrl: URL
     let privacyPolicyUrl: URL
     let communityGuidelinesUrl: URL
+    let consentTexts: ConsentTexts?
 
     let userAvatar: Author.Avatar
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
@@ -187,10 +193,11 @@ private struct ContentView: View {
     let createPoll: () -> Void
 
     var body: some View {
-        WritingPostForm(displayCguText: displayCguText, text: $text, attachment: $attachment,
+        WritingPostForm(displayCguText: displayCguText, text: $text, image: $image, poll: $poll,
                         textError: textError, pictureError: pictureError, pollError: pollError,
                         termsOfUseUrl: termsOfUseUrl, privacyPolicyUrl: privacyPolicyUrl,
                         communityGuidelinesUrl: communityGuidelinesUrl,
+                        consentTexts: consentTexts,
                         userAvatar: userAvatar, selectedTopic: selectedTopic,
                         showTopicPicker: $showTopicPicker,
                         picturesEnabled: picturesEnabled,
@@ -206,7 +213,8 @@ private struct WritingPostForm: View {
     let displayCguText: Bool
 
     @Binding var text: String
-    @Binding var attachment: CreatePostViewModel.Attachment?
+    @Binding var image: ImageAndData?
+    @Binding var poll: EditablePoll?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
@@ -215,6 +223,7 @@ private struct WritingPostForm: View {
     let termsOfUseUrl: URL
     let privacyPolicyUrl: URL
     let communityGuidelinesUrl: URL
+    let consentTexts: ConsentTexts?
 
     let userAvatar: Author.Avatar
     let selectedTopic: CreatePostViewModel.DisplayableTopic?
@@ -228,14 +237,33 @@ private struct WritingPostForm: View {
     @State private var textFocused = true
     @State private var openPhotosPicker = false
     @State private var scrollToBottomOfId: String?
+    @State private var attachmentScrollRequest: Compat.ScrollRequest?
+    /// The block the user is adding: set by the user action, consumed by the next change of that block.
+    @State private var pendingReveal: AttachmentBlock?
+    @State private var scrollViewportHeight: CGFloat = 0
+    @State private var imagePreviewHeight: CGFloat = 0
+    @State private var pollEditorHeight: CGFloat = 0
 
     @State private var keyboardHeight: CGFloat = 0
     @State private var previousText = ""
 
-    var legalTextStr: String {
-        L10n("Content.Create.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@",
-             locale: languageManager.overridenLocale,
-             termsOfUseUrl.absoluteString, privacyPolicyUrl.absoluteString, communityGuidelinesUrl.absoluteString)
+    private enum AttachmentBlock: String {
+        case imagePreview
+        case pollEditor
+    }
+
+    private var attachmentRules: CreatePostAttachmentRules {
+        CreatePostAttachmentRules(picturesEnabled: picturesEnabled, pollsEnabled: pollsEnabled,
+                                  hasImage: image != nil, hasPoll: poll != nil)
+    }
+
+    /// The notice under the composer: the community's own when it set one for the implicit mode, the SDK wording
+    /// otherwise. Resolved for the implicit mode because the notice only shows in that mode (`displayCguText`).
+    var implicitNotice: String {
+        ConsentWording.implicitNotice(texts: consentTexts,
+                                      urls: ConsentLegalUrls(terms: termsOfUseUrl, privacy: privacyPolicyUrl,
+                                                             rules: communityGuidelinesUrl),
+                                      locale: languageManager.overridenLocale)
     }
 
     var body: some View {
@@ -243,7 +271,8 @@ private struct WritingPostForm: View {
             Color.white.opacity(0.0001)
                 .frame(maxWidth: .infinity)
                 .frame(height: 1)
-            Compat.ScrollView(scrollToId: $scrollToBottomOfId, idAnchor: .bottom) {
+            Compat.ScrollView(scrollToId: $scrollToBottomOfId, idAnchor: .bottom,
+                              scrollRequest: $attachmentScrollRequest) {
                 VStack {
                     VStack(alignment: .leading) {
                         HStack(spacing: 8) {
@@ -291,15 +320,13 @@ private struct WritingPostForm: View {
                                     } else { $0 }
                                 }
 
-                            switch attachment {
-                            case let .image(imageAndData):
-                                Spacer().frame(height: 10)
+                            if let imageAndData = image {
                                 ZStack(alignment: .topTrailing) {
                                     Image(uiImage: imageAndData.image)
                                         .resizable()
                                         .scaledToFit()
                                     Button(action: {
-                                        attachment = nil
+                                        image = nil
                                         selectedItems = []
                                     }) {
                                         IconImage(theme.assets.icons.content.post.creation.deletePicture)
@@ -318,25 +345,30 @@ private struct WritingPostForm: View {
                                     .buttonStyle(.plain)
                                     .accessibilityLabelInBundle("Accessibility.Image.Delete")
                                 }
-                            case let .poll(editablePoll):
-                                Spacer().frame(height: 10)
+                                // The gap above the block is part of the revealed area, so a tall block aligned
+                                // on its top keeps it.
+                                .padding(.top, 10)
+                                .readHeight($imagePreviewHeight)
+                                .id(AttachmentBlock.imagePreview.rawValue)
+                            }
+                            if let editablePoll = poll {
                                 CreatePollView(
-                                    poll: Binding(get: { editablePoll }, set: { attachment = .poll($0) }),
+                                    poll: Binding(get: { editablePoll }, set: { poll = $0 }),
                                     deletePoll: {
-                                        attachment = nil
+                                        poll = nil
                                     })
-                            case nil:
-                                if text.isEmpty {
-                                    // when there is no attachment displayed, use the remaining part of the screen to
-                                    // catch tap
-                                    theme.colors.background
-                                        .frame(height: 150)
-                                        .onTapGesture {
-                                            textFocused = true
-                                        }
-                                } else {
-                                    EmptyView()
-                                }
+                                .padding(.top, 10)
+                                .readHeight($pollEditorHeight)
+                                .id(AttachmentBlock.pollEditor.rawValue)
+                            }
+                            if attachmentRules.hasNoAttachment && text.isEmpty {
+                                // when there is no attachment displayed, use the remaining part of the screen to
+                                // catch tap
+                                theme.colors.background
+                                    .frame(height: 150)
+                                    .onTapGesture {
+                                        textFocused = true
+                                    }
                             }
                         }
                         Spacer()
@@ -345,6 +377,7 @@ private struct WritingPostForm: View {
                     .padding(.top, 8)
                 }
             }
+            .readHeight($scrollViewportHeight)
             VStack(spacing: 0) {
                 if pictureError != nil || textError != nil || pollError != nil {
                     theme.colors.error.frame(height: 1)
@@ -385,10 +418,10 @@ private struct WritingPostForm: View {
                 }
 
                 VStack(spacing: 0) {
-                    if !(attachment?.hasPoll ?? false) {
+                    if attachmentRules.showsActionBar {
                         HStack(spacing: 8) {
                             // Hide the picture-add entry when the community disables post pictures.
-                            if picturesEnabled, !(attachment?.hasPoll ?? false) {
+                            if attachmentRules.canAddPicture {
                                 Button(action: { openPhotosPicker = true }) {
                                     HStack(spacing: 4) {
                                         IconImage(theme.assets.icons.content.post.creation.addPicture)
@@ -398,12 +431,13 @@ private struct WritingPostForm: View {
                                 .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
                                                                 externalVerticalPadding: 16))
                             }
-                            // Hide the poll-creation entry when the community disables polls.
-                            if pollsEnabled, attachment == nil {
+                            // Hide the poll-creation entry when the community disables polls or a poll exists.
+                            if attachmentRules.canAddPoll {
                                 Button(action: {
-                                    withAnimation {
-                                        createPoll()
-                                    }
+                                    markForReveal(.pollEditor)
+                                    // Not animated: an animated insertion animates the scroll content size
+                                    // from "fits", which clamps the reveal to 0.
+                                    createPoll()
                                 }) {
                                     HStack(spacing: 4) {
                                         IconImage(theme.assets.icons.content.post.creation.addPoll)
@@ -431,12 +465,7 @@ private struct WritingPostForm: View {
 
                     if displayCguText {
                         theme.colors.gray300.frame(height: 1)
-                        RichText(legalTextStr)
-                            .font(theme.fonts.caption2.weight(.medium))
-                            .foregroundColor(theme.colors.gray900)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                        ImplicitConsentNotice(markdown: implicitNotice)
                     }
                 }
                 .animation(.easeInOut(duration: 0.2), value: displayCguText)
@@ -444,24 +473,61 @@ private struct WritingPostForm: View {
         }
         .imagesPicker(isPresented: $openPhotosPicker, selection: $selectedItems, error: $imagePickingError,
                       maxSelectionCount: 1)
-        .onValueChanged(of: selectedItems) {
-            attachment = $0.first.map { .image($0) }
-        }
-        .onValueChanged(of: attachment) {
-            switch $0 {
-            case .image: break
-            default: selectedItems = []
+        .onValueChanged(of: selectedItems) { newItems in
+            if newItems.first != nil {
+                markForReveal(.imagePreview)
             }
+            image = newItems.first
+        }
+        .onValueChanged(of: image) { newImage in
+            if newImage == nil {
+                selectedItems = []
+            }
+            revealIfPending(.imagePreview, blockExists: newImage != nil)
+        }
+        .onValueChanged(of: poll != nil) {
+            revealIfPending(.pollEditor, blockExists: $0)
+        }
+    }
+
+    /// Marks the block the user is adding so it is revealed once inserted. Skipped below iOS 14: there is no
+    /// programmatic scroll there, and `onValueChanged` fires on every render, which would keep re-marking it.
+    private func markForReveal(_ block: AttachmentBlock) {
+        if #available(iOS 14.0, *) {
+            pendingReveal = block
+        }
+    }
+
+    /// Scrolls the minimum amount that makes the block the user just added visible; a block taller than the
+    /// visible area is aligned on its top instead. Does nothing unless `pendingReveal` marks this block, so a
+    /// prefilled image, a poll created at init and poll edits never scroll. Runs from the update that inserts
+    /// the block, then hops to the next main-queue turn so the block is laid out (and measured) first.
+    private func revealIfPending(_ block: AttachmentBlock, blockExists: Bool) {
+        guard pendingReveal == block else { return }
+        pendingReveal = nil
+        guard blockExists else { return }
+        DispatchQueue.main.async {
+            let blockHeight: CGFloat
+            switch block {
+            case .imagePreview: blockHeight = imagePreviewHeight
+            case .pollEditor: blockHeight = pollEditorHeight
+            }
+            let alignsTop = CreatePostAttachmentRules.revealAlignsTop(blockHeight: blockHeight,
+                                                                      viewportHeight: scrollViewportHeight)
+            attachmentScrollRequest = Compat.ScrollRequest(id: block.rawValue, anchor: alignsTop ? .top : nil)
         }
     }
 }
 
 #Preview {
-    ContentView(isLoading: false, displayCguText: true, text: .constant(""), attachment: .constant(.image(ImageAndData(imageData: Data(), image: .actions))),
+    ContentView(isLoading: false, displayCguText: true, text: .constant(""),
+                image: .constant(ImageAndData(imageData: Data(), image: .actions)),
+                poll: .constant(EditablePoll()),
                 textError: nil, pictureError: nil, pollError: nil,
                 termsOfUseUrl: URL(string: "www.google.com")!,
                 privacyPolicyUrl: URL(string: "www.google.com")!,
                 communityGuidelinesUrl: URL(string: "www.google.com")!,
+                consentTexts: nil,
                 userAvatar: .defaultImage(name: "toto"),
                 selectedTopic: nil, showTopicPicker: .constant(false),
                 picturesEnabled: true, pollsEnabled: true, createPoll: { })

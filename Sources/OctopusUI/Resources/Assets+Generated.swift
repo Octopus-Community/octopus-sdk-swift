@@ -141,9 +141,9 @@ extension GenImageResource {
     static let cellNavIndicator = GenImageResource(name: "cellNavIndicator", bundle: resourceBundle)
     static let check = GenImageResource(name: "check", bundle: resourceBundle)
     static let circledCheck = GenImageResource(name: "circledCheck", bundle: resourceBundle)
+    static let clearText = GenImageResource(name: "clearText", bundle: resourceBundle)
     static let close = GenImageResource(name: "close", bundle: resourceBundle)
     static let closeLight = GenImageResource(name: "closeLight", bundle: resourceBundle)
-    static let congrats = GenImageResource(name: "congrats", bundle: resourceBundle)
     static let contentNotAvailable = GenImageResource(name: "contentNotAvailable", bundle: resourceBundle)
     static let createPost = GenImageResource(name: "createPost", bundle: resourceBundle)
     static let down = GenImageResource(name: "down", bundle: resourceBundle)
@@ -286,9 +286,9 @@ extension UIKit.UIImage {
         static var cellNavIndicator: UIKit.UIImage { .init(res: .cellNavIndicator) }
         static var check: UIKit.UIImage { .init(res: .check) }
         static var circledCheck: UIKit.UIImage { .init(res: .circledCheck) }
+        static var clearText: UIKit.UIImage { .init(res: .clearText) }
         static var close: UIKit.UIImage { .init(res: .close) }
         static var closeLight: UIKit.UIImage { .init(res: .closeLight) }
-        static var congrats: UIKit.UIImage { .init(res: .congrats) }
         static var contentNotAvailable: UIKit.UIImage { .init(res: .contentNotAvailable) }
         static var createPost: UIKit.UIImage { .init(res: .createPost) }
         static var down: UIKit.UIImage { .init(res: .down) }

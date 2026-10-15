@@ -18,7 +18,7 @@ struct BridgeToClientObjectView: View {
             VStack(spacing: 12) {
                 Text("Select a recipe to open")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Button(action: { viewModel.recipePushed = stableRecipe }) {
@@ -28,7 +28,7 @@ struct BridgeToClientObjectView: View {
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
                     }
                     .padding(.vertical, 10)
                     .padding(.horizontal, 12)
@@ -42,7 +42,7 @@ struct BridgeToClientObjectView: View {
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
                     }
                     .padding(.vertical, 10)
                     .padding(.horizontal, 12)
@@ -50,7 +50,7 @@ struct BridgeToClientObjectView: View {
                 }
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .sampleCardSurface()
 
             Spacer()
 
@@ -63,8 +63,8 @@ struct BridgeToClientObjectView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                .foregroundColor(.white)
+                .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                .foregroundColor(SampleTokens.Colors.buttonText)
             }
         }
         .padding()
@@ -84,16 +84,20 @@ struct BridgeToClientObjectView: View {
                 label: { EmptyView() }
             )
         )
+        .dismissedOnPushRouting($viewModel.displayOctopusAsFullScreenModal)
         .fullScreenCover(isPresented: $viewModel.displayOctopusAsFullScreenModal) {
             OctopusUIView(octopus: viewModel.octopus)
+                .dismissedOnPushRouting($viewModel.recipePresented)
                 .fullScreenCover(item: $viewModel.recipePresented) { recipe in
                     RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
                 }
         }
+        .dismissedOnPushRouting($viewModel.displayOctopusAsSheet)
         .sheet(isPresented: $viewModel.displayOctopusAsSheet) {
             OctopusUIView(
                 octopus: viewModel.octopus,
                 initialScreen: viewModel.octopusPostId.map { .post(.init(postId: $0)) } ?? .mainFeed)
+                .dismissedOnPushRouting($viewModel.recipePresented)
                 .fullScreenCover(item: $viewModel.recipePresented) { recipe in
                     RecipeScreen(recipe: recipe, postIdToDisplay: $viewModel.octopusPostId)
                 }
@@ -101,6 +105,8 @@ struct BridgeToClientObjectView: View {
         .onAppear {
             viewModel.configureSDK()
         }
+        .sampleScreenBackground()
+        .navigationBarTitle("Bridge to Client Object", displayMode: .inline)
         .hostAppFooter()
     }
 }
@@ -121,7 +127,7 @@ private struct RecipeScreen: View {
                         }
                         .buttonStyle(.plain)
                 )
-                .presentationBackground(Color(.systemBackground))
+                .presentationBackground(SampleTokens.Colors.background)
         }
     }
 }
@@ -255,7 +261,8 @@ private struct RecipeView: View {
                 }
             }
         }
-        .hostAppFooter()
+        .sampleScreenBackground()
+        .hostAppFooter(debugConsole: false)
     }
 }
 

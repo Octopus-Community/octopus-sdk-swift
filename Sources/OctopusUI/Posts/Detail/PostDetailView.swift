@@ -85,6 +85,7 @@ struct PostDetailView: View {
                     width: width,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
+                    opensOnScrollTarget: viewModel.opensOnComment,
                     zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousComments: viewModel.loadPreviousComments,
                     refresh: viewModel.refresh,
@@ -108,7 +109,7 @@ struct PostDetailView: View {
                     commentReactionTapped: viewModel.setCommentReaction(_:commentId:),
                     displayContentModeration: {
                         guard viewModel.ensureConnected(action: .moderation) else { return }
-                        mainFlowPath.reportTarget = .content(contentId: $0)
+                        mainFlowPath.reportTarget = $0
                     },
                     displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId: $0) } : nil)
                 )
@@ -120,7 +121,8 @@ struct PostDetailView: View {
                                       translationStore: translationStore,
                                       textFocused: $viewModel.commentTextFocused,
                                       hasChanges: $commentHasChanges,
-                                      ensureConnected: viewModel.ensureConnected)
+                                      ensureConnected: viewModel.ensureConnected,
+                                      nicknameChoiceClosed: viewModel.nicknameChoiceClosedPublisher)
                     // Opaque background extended into the bottom safe area so the composer bar and
                     // the home-indicator area stay white. On large screens (where side margins
                     // appear) the top is rounded (radius 24) so the gray margin background follows
@@ -142,7 +144,8 @@ struct PostDetailView: View {
             }
         }
         .readWidth($width)
-        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction,
+                          onNicknameChoiceClosed: viewModel.nicknameChoiceClosed)
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem,
@@ -277,7 +280,8 @@ struct PostDetailView: View {
                 if post.canBeModerated {
                     DestructiveMenuButton(action: {
                         guard viewModel.ensureConnected(action: .moderation) else { return }
-                        mainFlowPath.reportTarget = .content(contentId: post.uuid)
+                        mainFlowPath.reportTarget = .content(
+                            contentId: post.uuid, author: post.author, authorCanBeBlocked: post.canBeBlockedByUser)
                     }) {
                         Label(title: { Text("Moderation.Content.Button", bundle: .module) },
                               icon: { Image(uiImage: theme.assets.icons.content.report) })
@@ -336,6 +340,8 @@ private struct ContentView: View {
     let width: CGFloat
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
+    /// The list is kept whole so a scroll requested as the screen opens finds its row.
+    var opensOnScrollTarget = false
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
     let refresh: @Sendable () async -> Void
@@ -346,9 +352,9 @@ private struct ContentView: View {
     let deleteComment: (String) -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?) -> Void
-    let voteOnPoll: (String) -> Bool
+    let voteOnPoll: (String) async -> Bool
     let commentReactionTapped: (ReactionKind?, String) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
 
     var body: some View {
@@ -364,7 +370,8 @@ private struct ContentView: View {
 #endif
             Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
                               refreshAction: refresh) {
-                LazyIfPossibleVStack(spacing: 0, preventLaziness: scrollToBottom || scrollToId != nil) {
+                LazyIfPossibleVStack(spacing: 0,
+                                     preventLaziness: opensOnScrollTarget || scrollToBottom || scrollToId != nil) {
                     if let post {
                         PostDetailContentView(post: post,
                                               // Clamp to the content cap so media is sized to the
@@ -453,7 +460,7 @@ private struct ContentView: View {
                 originalText: "Un texte",
                 originalLanguage: "fr",
                 translatedText: "A text"),
-            attachment: nil,
+            attachments: .empty,
             author: Author(
                 profile: MinimalProfile(
                     uuid: "profileId",
@@ -513,7 +520,7 @@ private struct ContentView: View {
                 originalText: "Un texte",
                 originalLanguage: "fr",
                 translatedText: "A text"),
-            attachment: .image(.init(
+            attachments: .image(.init(
                 url: URL(string: "https://picsum.photos/700/750")!,
                 size: CGSize(width: 700, height: 750))),
             author: Author(
@@ -575,7 +582,7 @@ private struct ContentView: View {
                 originalText: "Un texte",
                 originalLanguage: "fr",
                 translatedText: "A text"),
-            attachment: .poll(
+            attachments: .poll(
                 DisplayablePoll(options: [
                     .init(id: "1", text: .init(
                         originalText: "Option 1",
@@ -645,7 +652,7 @@ private struct ContentView: View {
             text: .init(
                 originalText: "Un texte",
                 originalLanguage: nil),
-            attachment: .poll(
+            attachments: .poll(
                 DisplayablePoll(options: [
                     .init(id: "1", text: .init(
                         originalText: "Option 1",
@@ -714,7 +721,7 @@ private struct ContentView: View {
                 originalText: "Un texte",
                 originalLanguage: "fr",
                 translatedText: "A text"),
-            attachment: .image(.init(
+            attachments: .image(.init(
                 url: URL(string: "https://picsum.photos/700/750")!,
                 size: CGSize(width: 700, height: 750))),
             author: Author(

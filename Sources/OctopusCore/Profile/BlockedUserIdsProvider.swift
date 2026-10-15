@@ -34,6 +34,8 @@ class BlockedUserIdsProviderDefault: BlockedUserIdsProvider, InjectableObject {
 
     init(injector: Injector) {
         self.injector = injector
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($blockedUserIds)
     }
 
     func start() {

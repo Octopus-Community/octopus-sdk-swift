@@ -21,10 +21,7 @@ extension SdkEvent {
         case reportContent
         case reportProfile
         case validateNickname
-        case settingsList
-        case settingsAccount
         case reportExplanation
-        case deleteAccount
     }
 }
 

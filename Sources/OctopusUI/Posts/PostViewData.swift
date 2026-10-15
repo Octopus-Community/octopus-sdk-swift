@@ -35,17 +35,17 @@ enum PostContent {
 struct PostPublishedContent {
     let catchPhrase: TranslatableText?
     let text: EllipsizableTranslatedText
-    let attachment: PostAttachmentViewData?
+    let attachments: PostAttachmentsViewData
     let cta: PostCTAViewData?
     let liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>
     /// Immediate snapshot of live measures so the first render is not empty.
     let liveMeasuresValue: LiveMeasures
-}
 
-enum PostAttachmentViewData {
-    case image(ImageMedia)
-    case video(VideoMedia)
-    case poll(DisplayablePoll)
+    /// Whether the translation toggle applies: the text or any poll option has a translation. A post may carry
+    /// a translated poll without text; the toggle switches the text and the poll options together.
+    var hasTranslation: Bool {
+        text.hasTranslation || (attachments.poll?.options.contains { $0.text.hasTranslation } ?? false)
+    }
 }
 
 struct PostCTAViewData {

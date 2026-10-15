@@ -23,7 +23,7 @@ struct PostFeedView<EmptyPostView: View>: View {
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openGroup: (String) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
 
     @ViewBuilder var emptyPostView: EmptyPostView
 
@@ -37,7 +37,7 @@ struct PostFeedView<EmptyPostView: View>: View {
          displayCommentDetail: @escaping (_ id: String, _ reply: Bool) -> Void,
          displayProfile: @escaping (_ profileId: String, _ clientUserId: String?) -> Void,
          openGroup: @escaping (String) -> Void,
-         displayContentModeration: @escaping (String) -> Void,
+         displayContentModeration: @escaping (ReportTarget) -> Void,
          @ViewBuilder _ emptyPostView: () -> EmptyPostView) {
         self.screenStatePadding = screenStatePadding
         self.loaderTopPadding = loaderTopPadding
@@ -119,8 +119,8 @@ private struct ContentView<EmptyPostView: View>: View {
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
     let commentReactionTapped: (ReactionKind?, String) -> Void
-    let voteOnPoll: (String, String) -> Bool
-    let displayContentModeration: (String) -> Void
+    let voteOnPoll: (String, String) async -> Bool
+    let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
     let loadFailure: ScreenStateFailure?
     let hasLoadedOnce: Bool
@@ -181,8 +181,8 @@ private struct PostsView<EmptyPostView: View>: View {
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
     let commentReactionTapped: (ReactionKind?, String) -> Void
-    let voteOnPoll: (String, String) -> Bool
-    let displayContentModeration: (String) -> Void
+    let voteOnPoll: (String, String) async -> Bool
+    let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
     @ViewBuilder var emptyPostView: EmptyPostView
 

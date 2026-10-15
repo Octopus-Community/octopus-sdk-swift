@@ -5,6 +5,7 @@
 import Foundation
 import SwiftUI
 import Octopus
+import OctopusCore
 
 struct CreateResponseView: View {
     let responseKind: ResponseKind
@@ -23,6 +24,8 @@ struct CreateResponseView: View {
     let termsOfUseUrl: URL
     let privacyPolicyUrl: URL
     let communityGuidelinesUrl: URL
+    /// The community's custom consent wordings, `nil` for the SDK ones.
+    let consentTexts: ConsentTexts?
     let send: () -> Void
     let userProfileTapped: () -> Void
     let resetAlertError: () -> Void
@@ -41,6 +44,7 @@ struct CreateResponseView: View {
             termsOfUseUrl: termsOfUseUrl,
             privacyPolicyUrl: privacyPolicyUrl,
             communityGuidelinesUrl: communityGuidelinesUrl,
+            consentTexts: consentTexts,
             send: send,
             userProfileTapped: {
                 if ensureConnected(.viewOwnProfile) {
@@ -88,6 +92,7 @@ private struct ContentView: View {
     let termsOfUseUrl: URL
     let privacyPolicyUrl: URL
     let communityGuidelinesUrl: URL
+    let consentTexts: ConsentTexts?
 
     let send: () -> Void
     let userProfileTapped: () -> Void
@@ -96,10 +101,13 @@ private struct ContentView: View {
     @State private var imagePickingError: Error?
     @State private var openPhotosPicker = false
 
-    var legalTextStr: String {
-        L10n("Content.Create.Legal_termOfUse:%@_privacyPolicy:%@_communityGuidelines:%@",
-             locale: languageManager.overridenLocale,
-             termsOfUseUrl.absoluteString, privacyPolicyUrl.absoluteString, communityGuidelinesUrl.absoluteString)
+    /// The notice under the composer: the community's own when it set one for the implicit mode, the SDK wording
+    /// otherwise. Resolved for the implicit mode because the notice only shows in that mode (`displayCguText`).
+    var implicitNotice: String {
+        ConsentWording.implicitNotice(texts: consentTexts,
+                                      urls: ConsentLegalUrls(terms: termsOfUseUrl, privacy: privacyPolicyUrl,
+                                                             rules: communityGuidelinesUrl),
+                                      locale: languageManager.overridenLocale)
     }
 
     var body: some View {
@@ -207,12 +215,7 @@ private struct ContentView: View {
 
             if displayCguText {
                 theme.colors.gray300.frame(height: 1)
-                RichText(legalTextStr)
-                    .font(theme.fonts.caption2.weight(.medium))
-                    .foregroundColor(theme.colors.gray900)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                ImplicitConsentNotice(markdown: implicitNotice)
             }
         }
         .animation(.easeInOut(duration: 0.2), value: displayCguText)
@@ -269,6 +272,7 @@ private extension ResponseKind {
         termsOfUseUrl: URL(string: "https://www.mock.com")!,
         privacyPolicyUrl: URL(string: "https://www.mock.com")!,
         communityGuidelinesUrl: URL(string: "https://www.mock.com")!,
+        consentTexts: nil,
         send: { },
         userProfileTapped: { },
         resetAlertError: { },

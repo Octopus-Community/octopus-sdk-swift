@@ -18,7 +18,5 @@ enum MainFlowScreen: NBScreen {
     case postDetail(postId: String, comment: Bool, commentToScrollTo: String?, scrollToMostRecentComment: Bool, origin: PostDetailNavigationOrigin, hasFeaturedComment: Bool)
     case commentDetail(commentId: String, displayGoToParentButton: Bool, reply: Bool, replyToScrollTo: String?)
     case editProfile(bioFocused: Bool, pictureFocused: Bool)
-    case settingsAccount
     case reportExplanation
-    case deleteAccount
 }

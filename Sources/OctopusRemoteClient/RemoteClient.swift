@@ -14,7 +14,6 @@ import NIOPosix
 import NIOHPACK
 
 public protocol OctopusRemoteClient {
-    var magicLinkService: MagicLinkService { get }
     var octoService: OctoService { get }
     var userService: UserService { get }
     var feedService: FeedService { get }
@@ -30,7 +29,6 @@ public protocol OctopusRemoteClient {
 
 public class GrpcClient: OctopusRemoteClient {
     public var octoService: OctoService { _octoService }
-    public var magicLinkService: MagicLinkService { _magicLinkService }
     public var userService: UserService { _userService }
     public var feedService: FeedService { _feedService }
     public var trackingService: TrackingService { _trackingService }
@@ -38,7 +36,6 @@ public class GrpcClient: OctopusRemoteClient {
     public var apiKeyService: ApiKeyService { _apiKeyService }
 
     private let _octoService: OctoServiceClient
-    private let _magicLinkService: MagicLinkServiceClient
     private let _userService: UserServiceClient
     private let _feedService: FeedServiceClient
     private let _trackingService: TrackingServiceClient
@@ -51,6 +48,7 @@ public class GrpcClient: OctopusRemoteClient {
     private let serviceClients: [ServiceClient]
 
     public init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
+                sdkIdentity: @escaping @Sendable () -> SdkIdentity,
                 serverHost: String? = nil,
                 serverPort: Int? = nil,
                 getUserIdBlock: @escaping () -> String?,
@@ -69,34 +67,30 @@ public class GrpcClient: OctopusRemoteClient {
 
         _octoService = OctoServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier,
-            getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
-        _magicLinkService = MagicLinkServiceClient(
-            unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _userService = UserServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _feedService = FeedServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _trackingService = TrackingServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _notificationService = NotificationServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _apiKeyService = ApiKeyServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
 
-        serviceClients = [_octoService, _magicLinkService, _userService, _feedService,
+        serviceClients = [_octoService, _userService, _feedService,
                           _trackingService, _notificationService, _apiKeyService]
     }
 

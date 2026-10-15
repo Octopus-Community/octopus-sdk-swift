@@ -15,16 +15,17 @@ struct PostPollContentView: View {
     let liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>
     /// Immediate initial snapshot so the first render isn't empty (the publisher is a `CurrentValueSubject` upstream).
     let initialLiveMeasures: LiveMeasures
-    let vote: (String) -> Bool
+    /// Casts the vote for an option; returns whether it was cast.
+    let vote: (String) async -> Bool
 
     @State private var liveMeasures: LiveMeasures
-    @State private var simulateVote: String?
+    @State private var pendingVote = PendingPollVote()
 
     init(postId: String,
          poll: DisplayablePoll,
          liveMeasuresPublisher: AnyPublisher<LiveMeasures, Never>,
          initialLiveMeasures: LiveMeasures,
-         vote: @escaping (String) -> Bool) {
+         vote: @escaping (String) async -> Bool) {
         self.postId = postId
         self.poll = poll
         self.liveMeasuresPublisher = liveMeasuresPublisher
@@ -39,7 +40,7 @@ struct PostPollContentView: View {
                 let pollOption = poll.options[pollOptionIdx]
                 Group {
                     let optionState = state(for: pollOption.id)
-                    if simulateVote != nil || optionState.displayResult {
+                    if pendingVote.optionId != nil || optionState.displayResult {
                         PollOptionView(
                             pollOption: pollOption,
                             optionIdx: pollOptionIdx,
@@ -49,12 +50,12 @@ struct PostPollContentView: View {
                         .animation(.easeInOut, value: optionState)
                     } else {
                         Button(action: {
-                            simulateVote = pollOption.id
-                            let hasVoted = vote(pollOption.id)
-                            if !hasVoted {
-                                simulateVote = nil
-                            }
+                            pendingVote.start(optionId: pollOption.id)
                             HapticFeedback.play()
+                            Task {
+                                let voted = await vote(pollOption.id)
+                                pendingVote.settle(voted: voted)
+                            }
                         }) {
                             PollOptionView(
                                 pollOption: pollOption,
@@ -79,8 +80,7 @@ struct PostPollContentView: View {
         .padding(.top, 4)
         .onValueChanged(of: liveMeasures.userInteractions.hasVoted) {
             guard $0 else { return }
-            // put back simulateVoting as soon as the user has voted
-            simulateVote = nil
+            pendingVote.confirmed()
         }
         .onReceive(liveMeasuresPublisher) { newLiveMeasures in
             liveMeasures = newLiveMeasures
@@ -96,8 +96,8 @@ struct PostPollContentView: View {
             return .displayResult(
                 percent: liveMeasures.aggregatedInfo.pollResult?.percentageResultsByOption[optionId] ?? 0,
                 isUserChoice: optionId == liveMeasures.userInteractions.pollVoteId)
-        } else if let simulateVote {
-            return .displayResult(percent: 0, isUserChoice: optionId == simulateVote)
+        } else if let pendingOptionId = pendingVote.optionId {
+            return .displayResult(percent: 0, isUserChoice: optionId == pendingOptionId)
         } else {
             return .waitForUserVote
         }

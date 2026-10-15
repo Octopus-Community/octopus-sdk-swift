@@ -135,7 +135,7 @@ struct GroupDetailView: View {
                 },
                 openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                 displayContentModeration: {
-                    mainFlowPath.reportTarget = .content(contentId: $0)
+                    mainFlowPath.reportTarget = $0
                 }) {
                     if viewModel.canCreateAnyPost {
                         ScreenState(

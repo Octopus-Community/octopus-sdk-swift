@@ -7,8 +7,9 @@ import OctopusCore
 
 /// Standalone translation-toggle block in the post card (the design's translation block).
 ///
-/// Sits between the text/attachment and the CTA, rendered only when the post's text has a
-/// translation available. Horizontally padded to match the rest of the card's content blocks.
+/// Rendered only when the post's text or one of its poll options has a translation available. Without a poll
+/// it sits between the text and the media; with a poll it sits below the poll, before the CTA (see the display
+/// order in `PostView`). Horizontally padded to match the rest of the card's content blocks.
 struct PostTranslationToggleView: View {
     @Environment(\.octopusTheme) private var theme
 

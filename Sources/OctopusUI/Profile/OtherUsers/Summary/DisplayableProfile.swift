@@ -9,6 +9,7 @@ struct DisplayableProfile: Equatable, Sendable {
     let nickname: String?
     let bio: EllipsizableText?
     let pictureUrl: URL?
+    let defaultAvatar: DefaultAvatar?
     let tags: ProfileTags
     let totalMessages: Int?
     let accountCreationDate: Date?
@@ -23,6 +24,7 @@ extension DisplayableProfile {
         nickname = profile.nickname
         bio = EllipsizableText(text: profile.bio?.cleanedBio, maxLength: 140, maxLines: 2)
         pictureUrl = profile.pictureUrl
+        defaultAvatar = profile.defaultAvatar
         tags = profile.tags
         totalMessages = profile.totalMessages
         accountCreationDate = profile.accountCreationDate

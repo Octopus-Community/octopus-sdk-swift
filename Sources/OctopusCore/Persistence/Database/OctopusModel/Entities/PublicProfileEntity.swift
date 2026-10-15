@@ -11,6 +11,9 @@ class PublicProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var nickname: String?
     @NSManaged public var bio: String?
     @NSManaged public var pictureUrl: URL?
+    @NSManaged public var defaultAvatarBackgroundHex: String?
+    @NSManaged public var defaultAvatarInitialsHex: String?
+    @NSManaged public var defaultAvatarImageUrl: String?
 
     @NSManaged public var tagsRawValue: Int
 
@@ -46,3 +49,5 @@ class PublicProfileEntity: NSManagedObject, Identifiable {
         return request
     }
 }
+
+extension PublicProfileEntity: DefaultAvatarStoring {}

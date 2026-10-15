@@ -20,9 +20,12 @@ extension View {
 #if compiler(>=6.2)
         if #available(iOS 26.0, *),
             !(Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false) {
+            // From iOS 27, the bar proposes a side item less width than it needs, which truncates a text label
+            // ("Publish" became "Pub…"). The side items keep their ideal width instead: the title gives way.
             self.toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     leading
+                        .fixedSize(horizontal: true, vertical: false)
                 }
                 .sharedBackgroundVisibility(leadingSharedBackgroundVisibility.usableValue)
 
@@ -36,12 +39,14 @@ extension View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     preTrailing
+                        .fixedSize(horizontal: true, vertical: false)
                 }
                 .sharedBackgroundVisibility(preTrailingSharedBackgroundVisibility.usableValue)
 
                 ToolbarSpacer(.fixed, placement: .topBarTrailing)
                 ToolbarItem(placement: .topBarTrailing) {
                     trailing
+                        .fixedSize(horizontal: true, vertical: false)
                 }
                 .sharedBackgroundVisibility(trailingSharedBackgroundVisibility.usableValue)
             }

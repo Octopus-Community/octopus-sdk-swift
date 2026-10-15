@@ -124,6 +124,32 @@ class InstallIdProviderTests: XCTestCase {
         XCTAssertFalse(provider.isNewInstall)
     }
 
+    /// Before the device's first unlock after a reboot, the Keychain is unreadable and `UserDefaults` answers
+    /// empty: the missing marker then says nothing about the container. Reading it as a fresh install would
+    /// clear the stored session of a user who never reinstalled.
+    func testAStoreLockedUntilFirstUnlockIsNotReportedAsNew() {
+        let provider = InstallIdProvider(
+            storage: FakeInstallIdStorage(readError: SecuredStorageError.unavailableUntilFirstUnlock))
+
+        XCTAssertFalse(provider.isNewInstall)
+    }
+
+    /// Nor is the marker written then: it would stand for a container that was never actually checked.
+    func testAStoreLockedUntilFirstUnlockLeavesTheMarkerUnwritten() {
+        _ = InstallIdProvider(storage: FakeInstallIdStorage(readError: SecuredStorageError.unavailableUntilFirstUnlock))
+
+        XCTAssertNil(UserDefaults.standard.object(forKey: "OctopusSDK.InstallId.containerMarker"))
+    }
+
+    /// Any other read error does not mean the protected data is unavailable: the container is checked as usual,
+    /// otherwise a store that stays unreadable would keep a reinstall from ever clearing the session.
+    func testAStoreUnreadableForAnotherReasonIsStillChecked() {
+        let provider = InstallIdProvider(storage: FakeInstallIdStorage(readError: FakeError.unreadable))
+
+        XCTAssertTrue(provider.isNewInstall)
+        XCTAssertEqual(UserDefaults.standard.object(forKey: "OctopusSDK.InstallId.containerMarker") as? Bool, true)
+    }
+
     /// The regression this guards: an app updating from a version that kept the id in UserDefaults has no
     /// marker yet. Reading that as a fresh install would clear the session of every existing user.
     func testAnUpdateFromAVersionWithoutTheMarkerIsNotReportedAsNew() {

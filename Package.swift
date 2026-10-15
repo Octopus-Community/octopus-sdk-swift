@@ -90,6 +90,8 @@ let package = Package(
             name: "OctopusCoreTests",
             dependencies: [
                 "OctopusCore",
+                // to build the errors the Keychain throws
+                "KeychainAccess",
             ],
             resources: [
                 .copy("Resources/ClientPostTests/clientPostImg1.png"),

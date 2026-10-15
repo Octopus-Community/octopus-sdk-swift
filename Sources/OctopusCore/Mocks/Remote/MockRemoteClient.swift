@@ -9,7 +9,6 @@ import OctopusDependencyInjection
 class MockRemoteClient: OctopusRemoteClient, InjectableObject {
     static let injectedIdentifier = Injected.remoteClient
     let octoService: any OctoService
-    let magicLinkService: any MagicLinkService
     let userService: any UserService
     let feedService: any FeedService
     let trackingService: any TrackingService
@@ -18,7 +17,6 @@ class MockRemoteClient: OctopusRemoteClient, InjectableObject {
 
     init() {
         self.octoService = MockOctoService()
-        self.magicLinkService = MockMagicLinkService()
         self.userService = MockUserService()
         self.feedService = MockFeedService()
         self.trackingService = MockTrackingService()

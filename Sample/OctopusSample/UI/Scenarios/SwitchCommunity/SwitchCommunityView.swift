@@ -35,8 +35,8 @@ struct SwitchCommunityView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                    .foregroundColor(.white)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                    .foregroundColor(SampleTokens.Colors.buttonText)
                 }
             }
             if #available(iOS 14.0, *), viewModel.isLoading {
@@ -52,6 +52,8 @@ struct SwitchCommunityView: View {
         .alert(isPresented: $displayError) {
             Alert(title: Text(error?.localizedDescription ?? "Unknown"))
         }
+        .navigationBarTitle("Switch Community", displayMode: .inline)
+        .sampleScreenBackground()
         .hostAppFooter()
     }
 }

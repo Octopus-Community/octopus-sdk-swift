@@ -1,6 +1,6 @@
 import Foundation
 
-public extension NBNavigationPath {
+extension NBNavigationPath {
   /// Pushes a new screen via a push navigation.
   /// - Parameter screen: The screen to push.
   mutating func push(_ screen: AnyHashable) {
@@ -37,7 +37,7 @@ public extension NBNavigationPath {
   }
 }
 
-public extension NBNavigationPath {
+extension NBNavigationPath {
   /// Pops to the topmost (most recently pushed) screen in the stack
   /// equal to the given screen. If no screens are found,
   /// the screens array will be unchanged.

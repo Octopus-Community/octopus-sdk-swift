@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct UseNavigationStackPolicyKey: EnvironmentKey {
-    nonisolated(unsafe) static let defaultValue = UseNavigationStackPolicy.whenAvailable
+    static let defaultValue = UseNavigationStackPolicy.whenAvailable
 }
 
 struct IsWithinNavigationStackKey: EnvironmentKey {

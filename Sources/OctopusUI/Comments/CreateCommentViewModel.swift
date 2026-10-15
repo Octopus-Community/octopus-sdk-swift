@@ -23,6 +23,8 @@ class CreateCommentViewModel: ObservableObject {
     @Published private(set) var picturesEnabled = true
     /// How the community requires legal acceptance. Default `.implicit` until the config loads.
     @Published private(set) var termsAcceptanceMode: TermsAcceptanceMode = .implicit
+    /// The community's custom consent wordings, `nil` for the SDK ones (until the config loads, or when unset).
+    @Published private(set) var consentTexts: ConsentTexts?
     /// Drives the explicit terms-acceptance bottom sheet (explicit modes only).
     @Published var displayConsentSheet = false
     /// Set once the user accepts in the consent sheet, so the re-entered `send()` bypasses the gate.
@@ -45,11 +47,12 @@ class CreateCommentViewModel: ObservableObject {
     private var commentReceivedCancellable: AnyCancellable?
     private let ensureConnected: (UserAction) -> Bool
 
-    private var isWaitingToSendComment = false
+    private var pendingSend: PendingSendReason?
 
     init(octopus: OctopusSDK, postId: String,
          translationStore: ContentTranslationPreferenceStore,
-         ensureConnected: @escaping (UserAction) -> Bool) {
+         ensureConnected: @escaping (UserAction) -> Bool,
+         nicknameChoiceClosed: AnyPublisher<Void, Never>) {
         self.octopus = octopus
         self.postId = postId
         self.translationStore = translationStore
@@ -67,8 +70,8 @@ class CreateCommentViewModel: ObservableObject {
                 guard forceLoginOnStrongActions != nil else {
                     return
                 }
-                if isWaitingToSendComment {
-                    isWaitingToSendComment = false
+                if let pendingSend, pendingSend.resumesOnConfigChange {
+                    self.pendingSend = nil
                     DispatchQueue.main.async { [weak self] in
                         self?.send()
                     }
@@ -87,18 +90,20 @@ class CreateCommentViewModel: ObservableObject {
             .sink { [unowned self] in termsAcceptanceMode = $0 }
             .store(in: &storage)
 
+        octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.consentTexts }
+            .removeDuplicates()
+            .sink { [unowned self] in consentTexts = $0 }
+            .store(in: &storage)
+
+        nicknameChoiceClosed
+            .sink { [unowned self] in self.nicknameChoiceClosed() }
+            .store(in: &storage)
+
         octopus.core.profileRepository.profilePublisher
             .sink { [unowned self] profile in
-                guard let profile else { return }
-                userHasAcceptedCgu = profile.hasAcceptedCgu
-                if !profile.isGuest || profile.hasConfirmedNickname {
-                    if isWaitingToSendComment {
-                        isWaitingToSendComment = false
-                        DispatchQueue.main.async { [weak self] in
-                            self?.send()
-                        }
-                    }
-                }
+                if let profile { userHasAcceptedCgu = profile.hasAcceptedCgu }
+                resolvePendingSend(profile: profile)
             }.store(in: &storage)
 
         $text
@@ -137,7 +142,7 @@ class CreateCommentViewModel: ObservableObject {
     }
 
     /// Whether the connected user's only remaining blocker before publishing is the first-contribution
-    /// nickname-confirmation ("congrats") screen — so the consent sheet can be presented *before* it.
+    /// nickname choice screen — so the consent sheet can be presented *before* it.
     /// Returns `false` when the user is not connected or still owes a (forced) login (those come first).
     private var isBlockedOnlyByFirstContributionNicknameValidation: Bool {
         guard case .connected = octopus.core.connectionRepository.connectionState,
@@ -147,7 +152,31 @@ class CreateCommentViewModel: ObservableObject {
         return ConnectedActionChecker.needsNicknameValidation(
             for: .comment,
             hasConfirmedNickname: profile?.hasConfirmedNickname ?? false,
-            nicknameLock: config.profileFieldsLock.nickname)
+            nicknameLock: config.profileFieldsLock.nickname,
+            isNicknameAppManaged: ConnectedActionChecker.isNicknameAppManaged(
+                octopus: octopus, isGuest: profile?.isGuest ?? true))
+    }
+
+    /// Sends, keeps or drops the contribution held by `ensureConnected`, depending on the connected profile.
+    private func resolvePendingSend(profile: CurrentUserProfile?) {
+        guard let pendingSend else { return }
+        switch pendingSend.resolution(for: profile.map(PendingSendReason.Profile.init)) {
+        case .keepWaiting:
+            break
+        case .drop:
+            self.pendingSend = nil
+        case .send:
+            self.pendingSend = nil
+            DispatchQueue.main.async { [weak self] in
+                self?.send()
+            }
+        }
+    }
+
+    /// Called when the member closes the nickname choice screen without confirming their nickname: the
+    /// contribution it held is not sent, now or once the nickname is confirmed later. The draft stays.
+    func nicknameChoiceClosed() {
+        pendingSend = nil
     }
 
     func send() {
@@ -156,7 +185,7 @@ class CreateCommentViewModel: ObservableObject {
 
         isLoading = true
 
-        // The first-contribution nickname-confirmation ("congrats") screen must not appear before the
+        // The nickname choice screen must not appear before the
         // user has accepted the legal documents. When the connected user's only remaining blocker is
         // that screen and explicit consent is still pending, present the consent sheet first; the
         // nickname screen then follows once consent is accepted (on the re-entered `send()`).
@@ -168,7 +197,8 @@ class CreateCommentViewModel: ObservableObject {
         }
 
         guard ensureConnected(.comment) else {
-            isWaitingToSendComment = true
+            pendingSend = .held(isBlockedOnlyByNicknameChoice: isBlockedOnlyByFirstContributionNicknameValidation,
+                                profileId: ConnectedActionChecker.connectedProfile(octopus: octopus)?.id)
             isLoading = false
             return
         }

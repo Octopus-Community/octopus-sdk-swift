@@ -16,35 +16,39 @@ struct PushTokenView: View {
 
     var body: some View {
         List {
-            Section(header: Text("APNs device token")) {
-                if let token = notificationManager.notificationDeviceToken {
-                    Text(token)
-                        .font(.system(.footnote, design: .monospaced))
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Button(action: { copy(token) }) {
-                        Text(copied ? "Copied!" : "Copy token")
-                    }
-                } else {
-                    Text("No device token yet. Grant the notification permission, then come back to this screen.")
-                        .foregroundColor(.secondary)
-                    if notificationManager.authorizationStatus != .authorized {
-                        Button(action: { notificationManager.requestForPushNotificationPermission() }) {
-                            Text("Ask for notification permission")
+            Group {
+                Section(header: Text("APNs device token")) {
+                    if let token = notificationManager.notificationDeviceToken {
+                        Text(token)
+                            .font(.system(.footnote, design: .monospaced))
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button(action: { copy(token) }) {
+                            Text(copied ? "Copied!" : "Copy token")
+                        }
+                    } else {
+                        Text("No device token yet. Grant the notification permission, then come back to this screen.")
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
+                        if notificationManager.authorizationStatus != .authorized {
+                            Button(action: { notificationManager.requestForPushNotificationPermission() }) {
+                                Text("Ask for notification permission")
+                            }
                         }
                     }
                 }
+                Section {
+                    Text("""
+                    The token value does not reveal whether it is a sandbox or production token — that depends on \
+                    the build's aps-environment entitlement (Debug = development, Release/TestFlight = production).
+                    """)
+                        .font(.caption)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
+                }
             }
-            Section {
-                Text("""
-                The token value does not reveal whether it is a sandbox or production token — that depends on \
-                the build's aps-environment entitlement (Debug = development, Release/TestFlight = production).
-                """)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+            .sampleRowSurface()
         }
         .listStyle(.grouped)
+        .sampleListBackground()
         .navigationBarTitle(Text("Push Token"), displayMode: .inline)
     }
 

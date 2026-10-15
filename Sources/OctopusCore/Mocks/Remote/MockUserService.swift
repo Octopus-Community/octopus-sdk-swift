@@ -19,9 +19,6 @@ class MockUserService: UserService {
     /// Fifo of the responses to `updateProfile`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var updateProfileResponses = [Com_Octopuscommunity_UpdateProfileResponse]()
-    /// Fifo of the responses to `deleteAccount`.
-    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
-    private var deleteAccountResponses = [Com_Octopuscommunity_DeleteMyProfileResponse]()
     /// Fifo of the responses to `reportUser`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var reportUserResponses = [Com_Octopuscommunity_ReportUserResponse]()
@@ -56,11 +53,16 @@ class MockUserService: UserService {
     /// Number of times syncFollowTopics has been called. Useful to assert no-network-call behavior.
     private(set) var syncFollowTopicsCallCount = 0
     private(set) var getGuestJwtCallCount = 0
+    /// Number of times a client token has been exchanged for a JWT.
+    private(set) var getJwtCallCount = 0
 
     /// The last actions passed to syncFollowTopics. Useful to assert correct proto mapping.
     private(set) var lastSyncFollowTopicsActions: [Com_Octopuscommunity_SyncFollowTopicAction] = []
 
     private(set) var errorMessage: String?
+
+    /// The profile update `updateProfile` received last. Useful to assert what the repository sends.
+    private(set) var lastUpdateProfileData: UpdateProfileData?
 
     func getPublicProfile(profileId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetPublicProfileResponse {
@@ -96,6 +98,7 @@ class MockUserService: UserService {
                        profile: UpdateProfileData,
                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_UpdateProfileResponse {
+        lastUpdateProfileData = profile
         guard let response = updateProfileResponses.popLast() else {
             let message = "Dev error, injectNextUpdateProfileResponse must be called before"
             errorMessage = message
@@ -107,17 +110,6 @@ class MockUserService: UserService {
     func deleteUser(userId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeleteUserResponse {
         fatalError("Not implemented")
-    }
-
-    func deleteAccount(userId: String, reason: Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReason,
-                       authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> Com_Octopuscommunity_DeleteMyProfileResponse {
-        guard let response = deleteAccountResponses.popLast() else {
-            let message = "Dev error, injectNextDeleteProfileResponse must be called before"
-            errorMessage = message
-            throw .unknown(MockError(message))
-        }
-        return response
     }
 
     func reportUser(profileId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
@@ -143,6 +135,7 @@ class MockUserService: UserService {
 
     func getJwt(clientToken: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse {
+        getJwtCallCount += 1
         try? await Task.sleep(nanoseconds: UInt64.random(in: 0..<10) * 1_000_000)
         guard let response = getJwtFromClientTokenResponses.popLast() else {
             let message = "Dev error, injectNextGetJwtFromClientResponse must be called before"
@@ -245,10 +238,6 @@ extension MockUserService {
 
     func injectNextUpdateProfileResponse(_ response: Com_Octopuscommunity_UpdateProfileResponse) {
         updateProfileResponses.insert(response, at: 0)
-    }
-
-    func injectNextDeleteAccountResponse(_ response: Com_Octopuscommunity_DeleteMyProfileResponse) {
-        deleteAccountResponses.insert(response, at: 0)
     }
 
     func injectNextReportUserResponse(_ response: Com_Octopuscommunity_ReportUserResponse) {

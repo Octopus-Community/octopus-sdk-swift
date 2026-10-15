@@ -14,15 +14,15 @@ Octopus Community Swift SDK is divided into two public libraries:
 `Octopus` exposes `OctopusSDK`.
 
 - `OctopusSDK` is the main object of the Octopus SDK. It is initialized with the API key that uniquely identifies a client. It creates all the other main objects of the SDK. These objects are created and retained using a dependency injection module. They are mainly `Repositories`, `Monitors`, `Databases interfaces`  and `Server interfaces`.
-- `ConnectionMode` is a configuration of the SDK. It is either `octopus` for a user connection handled by us, or `sso` for a user connection based on your user management.
-- `ClientUser` is only used when `connectionMode` is `sso`. It represents how the SDK will be fed with your user information.
+- `ConnectionMode` is a configuration of the SDK. Its only mode is `sso`: the user connection is based on your user management.
+- `ClientUser` represents how the SDK will be fed with your user information.
 
 
 For the moment, those other objects are not public, so you should not use them (as long as they are in the OctopusCore package).
 Here is a quick explanation of what they do, just so you can get a better understanding of how the whole SDK works.
 
 - `Repositories` are the public (but yet private to you!) interface for each kind of interaction with the model layer. For example PostsRepository, ConnectionRepository…
-- `Monitors` are objects that are observing a state and reacts accordingly. They are private to the SDK. They can be `NetworkMonitor` that monitors the network connectivity or `MagicLinkMonitor` that listen for app states (whether in foreground, with a magic link pending…) to query and update the magic link state. `Monitors` are generally objects that lives on their own and their only API is `start` and `stop`.
+- `Monitors` are objects that are observing a state and reacts accordingly. They are private to the SDK. They can be `NetworkMonitor` that monitors the network connectivity or `UserProfileFetchMonitor` that fetches a newly connected user's profile once the network is available and the app is active. `Monitors` are generally objects that lives on their own and their only API is `start` and `stop`.
 - `Database interfaces` are objects that can do CRUD operations on a CoreDatabase stack
 - `Server interfaces` are part of another private target: `OctopusRemoteClient`. They are the interface to call the GRPC services.
 

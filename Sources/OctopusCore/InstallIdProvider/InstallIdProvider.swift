@@ -37,7 +37,11 @@ struct KeychainInstallIdStorage: InstallIdStorage {
     }
 
     func installId() throws -> String? {
-        try keychain.get(Self.key)
+        do {
+            return try keychain.get(Self.key)
+        } catch {
+            throw SecuredStorageError.from(keychainError: error)
+        }
     }
 
     func store(installId: String) throws {
@@ -76,7 +80,16 @@ class InstallIdProvider {
 
     init(storage: InstallIdStorage = KeychainInstallIdStorage()) {
         self.storage = storage
-        installId = resolveInstallId()
+        let resolved = resolveInstallId()
+        installId = resolved.installId
+        guard resolved.protectedDataIsAvailable else {
+            // Typically a launch in the background before the device's first unlock after a reboot:
+            // `UserDefaults` then answers empty too, so the missing marker says nothing about the container.
+            // Reading it as a fresh install would wipe the session of a user who never reinstalled, and writing
+            // the marker would stand for a container that was never checked. The next launch decides.
+            if #available(iOS 14, *) { Logger.other.debug("Protected data unavailable: new install not checked.") }
+            return
+        }
         // An app updating from a version that kept the id in UserDefaults has no marker yet, but its
         // container is obviously not new — the legacy id proves it. Without that second test, shipping
         // this would read every existing install as fresh and log all of them out on update.
@@ -84,7 +97,8 @@ class InstallIdProvider {
         if containerSeen != true { containerSeen = true }
     }
 
-    private func resolveInstallId() -> String {
+    /// The install id, and whether the protected data could be read: `false` only before the device's first unlock.
+    private func resolveInstallId() -> (installId: String, protectedDataIsAvailable: Bool) {
         let stored: String?
         do {
             stored = try storage.installId()
@@ -96,10 +110,15 @@ class InstallIdProvider {
             if #available(iOS 14, *) {
                 Logger.other.debug("Install id could not be read (\(error)). Using a transient one.")
             }
-            return UUID().uuidString
+            let isUnavailableUntilFirstUnlock = if case SecuredStorageError.unavailableUntilFirstUnlock = error {
+                true
+            } else {
+                false
+            }
+            return (UUID().uuidString, !isUnavailableUntilFirstUnlock)
         }
 
-        if let stored { return stored }
+        if let stored { return (stored, true) }
 
         // Nothing in the Keychain: either a genuinely new install, or an app updating from a version that
         // kept the id in UserDefaults. Carrying the legacy value over matters — minting a new id on update
@@ -112,6 +131,6 @@ class InstallIdProvider {
                 Logger.other.debug("Install id could not be persisted: \(error)")
             }
         }
-        return installId
+        return (installId, true)
     }
 }

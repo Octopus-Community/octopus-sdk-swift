@@ -35,7 +35,6 @@ public enum ServerCallError: Error {
 enum InternalError: Error {
     case objectMalformed
     case invalidArgument
-    case wrongConnectionMode
     case incorrectState
     case timeout
     case explainedError(String)

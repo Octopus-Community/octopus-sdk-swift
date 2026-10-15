@@ -667,6 +667,15 @@ public nonisolated struct Com_Octopuscommunity_MinimalProfile: Sendable {
   /// Clears the value of `clientUserID`. Subsequent reads from it will return its default value.
   public mutating func clearClientUserID() {self._clientUserID = nil}
 
+  public var defaultAvatar: Com_Octopuscommunity_DefaultAvatar {
+    get {_defaultAvatar ?? Com_Octopuscommunity_DefaultAvatar()}
+    set {_defaultAvatar = newValue}
+  }
+  /// Returns true if `defaultAvatar` has been explicitly set.
+  public var hasDefaultAvatar: Bool {self._defaultAvatar != nil}
+  /// Clears the value of `defaultAvatar`. Subsequent reads from it will return its default value.
+  public mutating func clearDefaultAvatar() {self._defaultAvatar = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -674,6 +683,68 @@ public nonisolated struct Com_Octopuscommunity_MinimalProfile: Sendable {
   fileprivate var _avatarURL: String? = nil
   fileprivate var _gamificationLevel: Int32? = nil
   fileprivate var _clientUserID: String? = nil
+  fileprivate var _defaultAvatar: Com_Octopuscommunity_DefaultAvatar? = nil
+}
+
+/// What to draw for a member who has no picture of their own, chosen by the community.
+/// Set by the server only when the member has no picture AND the community uses its own colors or
+/// images. Absent otherwise: keep your current fallback (initials on a color computed by the app).
+/// When present, draw it instead of avatarUrl / pictureUrl: the member has no picture, so those hold at
+/// most a copy of the default image, made for older app versions. Colors are never copied.
+public nonisolated struct Com_Octopuscommunity_DefaultAvatar: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var kind: Com_Octopuscommunity_DefaultAvatar.OneOf_Kind? = nil
+
+  /// Draw the member's initials, in initialsHex, on backgroundHex.
+  public var color: Com_Octopuscommunity_DefaultAvatarColor {
+    get {
+      if case .color(let v)? = kind {return v}
+      return Com_Octopuscommunity_DefaultAvatarColor()
+    }
+    set {kind = .color(newValue)}
+  }
+
+  /// Draw this image like a profile picture. Square JPEG, 256x256. Immutable: a new image always
+  /// gets a new URL, and the file name (last path segment) is unique across communities.
+  public var imageURL: String {
+    get {
+      if case .imageURL(let v)? = kind {return v}
+      return String()
+    }
+    set {kind = .imageURL(newValue)}
+  }
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_Kind: Equatable, Sendable {
+    /// Draw the member's initials, in initialsHex, on backgroundHex.
+    case color(Com_Octopuscommunity_DefaultAvatarColor)
+    /// Draw this image like a profile picture. Square JPEG, 256x256. Immutable: a new image always
+    /// gets a new URL, and the file name (last path segment) is unique across communities.
+    case imageURL(String)
+
+  }
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_DefaultAvatarColor: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Always "#RRGGBB": 7 characters, uppercase hex, no alpha.
+  public var backgroundHex: String = String()
+
+  /// "#000000" or "#FFFFFF", chosen by the server for contrast.
+  public var initialsHex: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 public nonisolated struct Com_Octopuscommunity_Content: @unchecked Sendable {
@@ -2187,7 +2258,7 @@ nonisolated extension Com_Octopuscommunity_ReactionData: SwiftProtobuf.Message, 
 
 nonisolated extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MinimalProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profileId\0\u{1}nickname\0\u{1}avatarUrl\0\u{1}tags\0\u{1}gamificationLevel\0\u{1}clientUserId\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}profileId\0\u{1}nickname\0\u{1}avatarUrl\0\u{1}tags\0\u{1}gamificationLevel\0\u{1}clientUserId\0\u{1}defaultAvatar\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2201,6 +2272,7 @@ nonisolated extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message
       case 4: try { try decoder.decodeRepeatedEnumField(value: &self.tags) }()
       case 5: try { try decoder.decodeSingularInt32Field(value: &self._gamificationLevel) }()
       case 6: try { try decoder.decodeSingularStringField(value: &self._clientUserID) }()
+      case 7: try { try decoder.decodeSingularMessageField(value: &self._defaultAvatar) }()
       default: break
       }
     }
@@ -2229,6 +2301,9 @@ nonisolated extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message
     try { if let v = self._clientUserID {
       try visitor.visitSingularStringField(value: v, fieldNumber: 6)
     } }()
+    try { if let v = self._defaultAvatar {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2239,6 +2314,104 @@ nonisolated extension Com_Octopuscommunity_MinimalProfile: SwiftProtobuf.Message
     if lhs.tags != rhs.tags {return false}
     if lhs._gamificationLevel != rhs._gamificationLevel {return false}
     if lhs._clientUserID != rhs._clientUserID {return false}
+    if lhs._defaultAvatar != rhs._defaultAvatar {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_DefaultAvatar: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DefaultAvatar"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}color\0\u{1}imageUrl\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: Com_Octopuscommunity_DefaultAvatarColor?
+        var hadOneofValue = false
+        if let current = self.kind {
+          hadOneofValue = true
+          if case .color(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.kind = .color(v)
+        }
+      }()
+      case 2: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.kind != nil {try decoder.handleConflictingOneOf()}
+          self.kind = .imageURL(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.kind {
+    case .color?: try {
+      guard case .color(let v)? = self.kind else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .imageURL?: try {
+      guard case .imageURL(let v)? = self.kind else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_DefaultAvatar, rhs: Com_Octopuscommunity_DefaultAvatar) -> Bool {
+    if lhs.kind != rhs.kind {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_DefaultAvatarColor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DefaultAvatarColor"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}backgroundHex\0\u{1}initialsHex\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.backgroundHex) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.initialsHex) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.backgroundHex.isEmpty {
+      try visitor.visitSingularStringField(value: self.backgroundHex, fieldNumber: 1)
+    }
+    if !self.initialsHex.isEmpty {
+      try visitor.visitSingularStringField(value: self.initialsHex, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_DefaultAvatarColor, rhs: Com_Octopuscommunity_DefaultAvatarColor) -> Bool {
+    if lhs.backgroundHex != rhs.backgroundHex {return false}
+    if lhs.initialsHex != rhs.initialsHex {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -173,17 +173,12 @@ private final class StubConnectionRepository: ConnectionRepository, InjectableOb
     var connectionState: ConnectionState { subject.value }
     var connectionStatePublisher: AnyPublisher<ConnectionState, Never> { subject.eraseToAnyPublisher() }
 
-    var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> { Just(nil).eraseToAnyPublisher() }
-    var magicLinkRequest: MagicLinkRequest? { nil }
     var clientUserConnected: Bool { false }
-    var connectionMode: ConnectionMode = .octopus(deepLink: nil)
+    var connectionMode: ConnectionMode = .sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
 
-    func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError) { }
-    func cancelMagicLink() { }
-    func checkMagicLinkConfirmed() async throws(MagicLinkConfirmationError) -> Bool { false }
     func onAuthenticatedCallFailed() async throws { }
-    func logout(preventReconnection: Bool) async throws { }
-    func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) { }
+    func logout() async throws { }
+    func logoutBeforeCommunitySwitch() async throws { }
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws { }
     func disconnectUser() async throws { }
     func linkClientUserToOctopusUser() async throws(ExchangeTokenError) { }

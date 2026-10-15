@@ -22,8 +22,6 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     }
     @Published public private(set) var connectionState: ConnectionState = .notConnected(nil)
 
-    public var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> { Just(nil).eraseToAnyPublisher() }
-    public let magicLinkRequest: MagicLinkRequest? = nil
     public var clientUserConnected: Bool { userDataStorage.clientUserData != nil }
 
     public let connectionMode: ConnectionMode
@@ -50,6 +48,9 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
 
     private var clientUserTokenProvider: (() async throws -> String)?
 
+    /// How long `connectUser` waits for an unreadable stored session to become readable. Shortened by the tests.
+    var unreadableSessionTimeout: TimeInterval = 5
+
     init(connectionMode: ConnectionMode, injector: Injector) {
         self.connectionMode = connectionMode
         profileRepository = injector.getInjected(identifiedBy: Injected.profileRepository)
@@ -63,6 +64,11 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         userProfileFetchMonitor = injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor)
         clientUserProfileMerger = injector.getInjected(identifiedBy: Injected.clientUserProfileMerger)
         frictionlessProfileMigrator = injector.getInjected(identifiedBy: Injected.frictionlessProfileMigrator)
+
+        // See `PublishedPublishers`: these values are written from the main queue and from connection tasks, while
+        // `$isConnecting` is first read in a closure below and `$connectionState` by observers, on other threads.
+        PublishedPublishers.create($connectionState, $isConnecting, $clientIsConnecting,
+                                   $isWaitingForCommunityAccessToConnectClient)
 
         Publishers.CombineLatest(
             userDataStorage.$userData.removeDuplicates()
@@ -98,7 +104,12 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         .store(in: &storage)
 
         Publishers.CombineLatest3(
-            userDataStorage.$userData.map { $0 == nil }.removeDuplicates().receive(on: DispatchQueue.main),
+            // An unreadable session is not an absent one: connecting a guest then would replace the user's
+            // session as soon as the device is unlocked. Wait for it to be read.
+            Publishers.CombineLatest(userDataStorage.$userData, userDataStorage.$sessionIsUnreadable)
+                .filter { !$1 }
+                .map { $0.0 == nil }
+                .removeDuplicates().receive(on: DispatchQueue.main),
             // ensure that profile value is not the initial one
             Publishers.CombineLatest(
                 profileRepository.profilePublisher,
@@ -138,6 +149,7 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws {
         clientIsConnecting = true
         defer { clientIsConnecting = false }
+        try await waitForReadableSession()
         let previousClientUserId = userDataStorage.clientUserData?.id
         // since connection state is not set immediatly, we need to wait for its first "real" value, not the one that
         // it has been init with.
@@ -211,29 +223,74 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         guard userDataStorage.clientUserData != nil else { return }
         clientIsConnecting = true
         defer { clientIsConnecting = false }
-        try await logout()
+        let keptGuestSession = try await performLogout()
+        // A guest session stays as it is: connecting again would forge a new guest for nothing.
+        guard !keptGuestSession else { return }
         connectAsync()
     }
 
-    func logout(preventReconnection: Bool = false) async throws {
-        // A guest has no account to log out from. Destroying its identity would re-forge a brand-new
-        // guest (user_id churn), so logging out a guest is a no-op — matching Android's `!isGuest`
-        // guard. Only a logged-in client user is cleared.
-        if case let .connected(user, _) = connectionState, user.profile.isGuest {
-            return
-        }
-        let profileId: String? = if case let .connected(user, _) = connectionState {
-            user.profile.id
-        } else { nil }
+    func logout() async throws {
+        try await performLogout()
+    }
+
+    func logoutBeforeCommunitySwitch() async throws {
+        try await performLogout(keepingGuestSession: false)
+    }
+
+    /// Logs the client user out, and returns whether the session was a guest one that was kept as it is.
+    /// - Parameter keepingGuestSession: whether a guest session survives the logout. Only a community switch drops
+    ///   it: a guest JWT is only valid on the community that issued it.
+    @discardableResult
+    private func performLogout(keepingGuestSession: Bool = true) async throws -> Bool {
+        // Read once, before the first suspension: the guest decision and the profile to delete must describe the
+        // same state, whatever changes while the client profile is deleted.
+        let state = connectionState
+        let guestUser: User? = if case let .connected(user, _) = state, user.profile.isGuest { user } else { nil }
+        // The client user is forgotten whatever the session is. It can be a guest one: when the exchange of the
+        // client token fails, the SDK falls back to a guest but keeps the client user to connect them later.
+        // Keeping them past a logout would let the next connection sign that very user back in, so a disconnect
+        // would end up connecting them. Android forgets the client user before its guest guard too.
         let previousClientUserId = userDataStorage.clientUserData?.id
         self.clientUserTokenProvider = nil
+        isWaitingForCommunityAccessToConnectClient = false
         userDataStorage.store(clientUserData: nil)
-        userDataStorage.store(userData: nil)
+        // The error a guest session carries is the one of that client user's failed exchange, a ban included: it
+        // goes with them, or a guest with no client user any more would still be told they are banned. Android
+        // clears the ban with the client user.
+        if let guestUser, previousClientUserId != nil, case let .connected(_, error) = state, error != nil {
+            lastConnectionError = nil
+            connectionState = .connected(guestUser, nil)
+        }
         if let previousClientUserId {
             try await clientUserProfileDatabase.delete(clientUserId: previousClientUserId)
         }
+        // A guest has no account to log out from. Destroying its identity would re-forge a brand-new
+        // guest (user_id churn), so a guest session is kept — matching Android's `!isGuest` guard. Except on a
+        // community switch, where the guest belongs to the community being left, as Android's `reset()` clears it.
+        if guestUser != nil && keepingGuestSession { return true }
+        let profileId: String? = if case let .connected(user, _) = state {
+            user.profile.id
+        } else { nil }
+        userDataStorage.store(userData: nil)
         if let profileId {
             try await profileRepository.deleteCurrentUserProfile(profileId: profileId)
+        }
+        return false
+    }
+
+    /// The stored session says who is connected. Before the device's first unlock it cannot be read, and taking it
+    /// for an absent one would end in a guest connected over it: try to read it for a little while, without
+    /// relying on the unlock notification having been received, then give up rather than guess. The host connects
+    /// the user again on a later launch or foreground.
+    private func waitForReadableSession() async throws {
+        // Uptime rather than the wall clock, which network time can set back right after a reboot.
+        let deadline = ProcessInfo.processInfo.systemUptime + unreadableSessionTimeout
+        while !userDataStorage.readSessionIfUnreadable() {
+            guard ProcessInfo.processInfo.systemUptime < deadline else {
+                throw ConnectionError.unknown(
+                    InternalError.explainedError("The stored session cannot be read until the device is unlocked"))
+            }
+            try await Task.sleep(nanoseconds: 250_000_000)
         }
     }
 
@@ -428,10 +485,8 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         guard let user = connectionState.user, !user.profile.isGuest else {
             throw .notConnected
         }
-        guard let clientUserTokenProvider,
-              let clientUserId = userDataStorage.clientUserData?.id else {
-            throw .notConnected
-        }
+        guard let clientUserTokenProvider else { throw .noClientTokenProvider }
+        guard let clientUserId = userDataStorage.clientUserData?.id else { throw .notConnected }
         do {
             let clientToken = try await clientUserTokenProvider()
             let response = try await remoteClient.userService.getJwt(
@@ -469,22 +524,6 @@ class SSOConnectionRepository: ConnectionRepository, InjectableObject, @unchecke
         } catch {
             throw .serverError(error)
         }
-    }
-
-    func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError) {
-        preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
-    }
-
-    public func cancelMagicLink() {
-        preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
-    }
-
-    public func checkMagicLinkConfirmed() async throws(MagicLinkConfirmationError) -> Bool {
-        preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
-    }
-
-    public func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError) {
-        preconditionFailure("Dev error: the sdk is not configured to handle Octopus connection")
     }
 }
 

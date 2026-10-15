@@ -27,7 +27,11 @@ class ModelCoreDataStack: InjectableObject, @unchecked Sendable {
     /// Current version of the database. Used to determine which kind of migration is needed
     /// v3: added desc/ascCommentFeedId to Public/PrivateProfile (String, default "") — a
     /// lightweight, non-resetting migration; the ids populate on the next profile fetch.
-    private static let currentVersion: Int = 3
+    /// v4: added the three optional defaultAvatar* attributes to MinimalProfile, PublicProfile and PrivateProfile. A
+    /// lightweight, non-resetting migration; they populate on the next fetch of the profiles. The cached contents are
+    /// marked as outdated (see `Migrator.refetchCachedContentForDefaultAvatars`) so that they are fetched again and
+    /// fill the default of their author. PrivateProfile also has three defaultAvatarIfPictureRemoved* ones.
+    private static let currentVersion: Int = 4
 
     private let stackManager: CoreDataStackManager
 
@@ -66,7 +70,7 @@ class ModelCoreDataStack: InjectableObject, @unchecked Sendable {
         }
     }
 
-    func teardown() throws {
-        try stackManager.reset()
+    func teardown() async throws {
+        try await stackManager.teardown()
     }
 }

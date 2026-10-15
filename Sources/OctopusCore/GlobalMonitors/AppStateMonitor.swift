@@ -44,6 +44,12 @@ final class AppStateMonitorDefault: AppStateMonitor, InjectableObject, @unchecke
 
     private var storage: Set<AnyCancellable> = []
 
+    init() {
+        // See `PublishedPublishers`: `start()` writes the state from the main queue, while other objects subscribe
+        // to it from whichever thread builds them.
+        PublishedPublishers.create($appState)
+    }
+
     func start() {
         // The UIApplication.shared.applicationState is changed from .background to .active after
         // `applicationDidFinishLaunching` function has returned. In that case, no notification is fired.

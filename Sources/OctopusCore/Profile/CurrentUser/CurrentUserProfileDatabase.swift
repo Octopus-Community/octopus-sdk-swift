@@ -50,6 +50,8 @@ class CurrentUserProfileDatabase: InjectableObject {
             profileEntity.email = profile.email
             profileEntity.bio = profile.bio
             profileEntity.pictureUrl = profile.pictureUrl
+            profileEntity.defaultAvatar = profile.defaultAvatar
+            profileEntity.defaultAvatarIfPictureRemoved = profile.defaultAvatarIfPictureRemoved
             profileEntity.totalMessagesOptional = profile.totalMessages.map { NSNumber(integerLiteral: $0) }
             profileEntity.accountCreationDate = profile.accountCreationDate
             profileEntity.gamificationLevelOptional = profile.gamificationLevel.map { NSNumber(integerLiteral: $0) }

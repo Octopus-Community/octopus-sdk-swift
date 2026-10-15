@@ -65,7 +65,10 @@ import OctopusUI
 @main
 struct MyApp: App {
     // Keep a single instance for the app's lifetime. Handle the thrown error in a real app.
-    private let octopus = try! OctopusSDK(apiKey: "YOUR_API_KEY")
+    private let octopus = try! OctopusSDK(
+        apiKey: "YOUR_API_KEY",
+        connectionMode: .sso(.init(loginRequired: { /* start your app's login flow */ }))
+    )
     @State private var showCommunity = false
 
     var body: some Scene {
@@ -79,9 +82,9 @@ struct MyApp: App {
 }
 ```
 
-The default connection mode lets Octopus handle sign-in, so no callback is needed. To connect
-your own signed-in users, pass `connectionMode: .sso(.init(loginRequired: { … }))` and call
-`octopus.connectUser(_:tokenProvider:)` with a token from your backend — see
+Your app owns sign-in: `loginRequired` is called when a member does something that needs an
+account, and once your user is signed in you call `octopus.connectUser(_:tokenProvider:)` with a
+token from your backend — see
 [Link your user to the SDK](https://doc.octopuscommunity.com/SDK/sso/#link-your-user-to-the-sdk).
 Keep `navigationMode: .navigationStack` whenever the screen sits in a modal (`.sheet`,
 `.fullScreenCover`, a Flutter or React Native modal route): the default navigation container can
@@ -89,7 +92,7 @@ drop in-app pushes there. Pushed onto your own navigation stack, the default `.a
 
 ## Sample app
 
-[`Sample/`](Sample) is a SwiftUI app covering Octopus sign-in and the SSO variants, theming,
+[`Sample/`](Sample) is a SwiftUI app covering the SSO variants, theming,
 the bridge, push notifications, events and opening a specific screen, one scenario each.
 
 ```bash

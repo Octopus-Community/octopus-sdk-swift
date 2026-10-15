@@ -6,8 +6,8 @@ import Foundation
 
 /// Errors that may be thrown by ``OctopusSDK/refreshEntitlements()``.
 public enum OctopusRefreshEntitlementsError: Error, Sendable, CustomDebugStringConvertible {
-    /// The SDK is configured in `.octopus` connection mode. Entitlements refresh is only
-    /// supported in `.sso` mode.
+    /// No `tokenProvider` has been registered yet: call `connectUser(_:tokenProvider:)` first, the
+    /// refresh exchanges a fresh token obtained from it.
     case noClientTokenProvider
     /// No connected user (guest, or user not connected).
     case userNotConnected
@@ -22,7 +22,7 @@ public enum OctopusRefreshEntitlementsError: Error, Sendable, CustomDebugStringC
     public var debugDescription: String {
         switch self {
         case .noClientTokenProvider:
-            return "refreshEntitlements requires .sso connection mode."
+            return "refreshEntitlements requires a tokenProvider registered through connectUser."
         case .userNotConnected:
             return "refreshEntitlements requires a connected (non-guest) user."
         case .noNetwork:

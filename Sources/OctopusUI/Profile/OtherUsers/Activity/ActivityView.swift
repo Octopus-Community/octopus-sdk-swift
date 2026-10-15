@@ -150,7 +150,7 @@ struct ActivityView: View {
                                 displayProfile: { _, _ in },
                                 openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                                 displayContentModeration: {
-                                    mainFlowPath.reportTarget = .content(contentId: $0)
+                                    mainFlowPath.reportTarget = $0
                                 }) {
                                     ScreenState(
                                 image: theme.assets.icons.screenStates.emptyContent,
@@ -536,7 +536,7 @@ private struct ConnectedUserActivityContentView: View {
                     displayProfile: { _, _ in },
                     openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                     displayContentModeration: {
-                        mainFlowPath.reportTarget = .content(contentId: $0)
+                        mainFlowPath.reportTarget = $0
                     }) {
                         // One CTA now, not the previous post/poll pair (Screen states spec).
                         if canCreatePost {

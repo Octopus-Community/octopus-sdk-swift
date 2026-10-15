@@ -19,12 +19,13 @@ func expectWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throw
     }
 }
 
-func assertWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throws -> Bool) async throws {
+func assertWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throws -> Bool,
+                       file: StaticString = #filePath, line: UInt = #line) async throws {
     var elapsedTime: TimeInterval = 0
     let steps = 0.005
     while !(try block()) {
         guard elapsedTime < timeout else {
-            XCTFail("Timed out")
+            XCTFail("Timed out", file: file, line: line)
             return
         }
         try await Task.sleep(nanoseconds: .secondsToNano(steps))
@@ -32,12 +33,13 @@ func assertWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throw
     }
 }
 
-func assertWithTimeout(timeout: TimeInterval = 5, _ block: @escaping () async throws -> Bool) async throws {
+func assertWithTimeout(timeout: TimeInterval = 5, _ block: @escaping () async throws -> Bool,
+                       file: StaticString = #filePath, line: UInt = #line) async throws {
     var elapsedTime: TimeInterval = 0
     let steps = 0.005
     while !(try await block()) {
         guard elapsedTime < timeout else {
-            XCTFail("Timed out")
+            XCTFail("Timed out", file: file, line: line)
             return
         }
         try await Task.sleep(nanoseconds: .secondsToNano(steps))

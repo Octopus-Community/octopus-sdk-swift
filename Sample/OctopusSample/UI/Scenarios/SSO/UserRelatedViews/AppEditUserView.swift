@@ -44,10 +44,10 @@ struct AppEditUserView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Image(systemName: "person")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
                     Text("Nickname")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
                 }
                 TextField("Nickname", text: $nickname)
                     .textFieldStyle(.roundedBorder)
@@ -55,10 +55,10 @@ struct AppEditUserView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Image(systemName: "text.quote")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
                     Text("Bio")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
                 }
                 TextField("Bio", text: $bio)
                     .textFieldStyle(.roundedBorder)
@@ -66,10 +66,10 @@ struct AppEditUserView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Image(systemName: "photo")
-                        .foregroundColor(.secondary)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
                     Text("Picture")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(SampleTokens.Colors.textSecondary)
                 }
                 Picker("", selection: $pictureKind) {
                     Text("None").tag(PictureKind.empty)

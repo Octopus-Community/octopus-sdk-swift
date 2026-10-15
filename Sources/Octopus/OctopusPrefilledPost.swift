@@ -75,20 +75,12 @@ public struct OctopusPrefilledPost: Sendable {
         // group (with an optional CTA) and empty, user-editable fields. Any provided text/image is
         // still validated below, and the editor re-validates the final content at publish time.
 
-        // Match the editor's publish-time validation: pass the image
-        // attachment so the too-short rule fires consistently
-        // (Validators.Post only waives too-short for .poll).
-        let attachmentForValidation: WritablePost.Attachment?
-        if let normalizedImage {
-            attachmentForValidation = .image(normalizedImage)
-        } else {
-            attachmentForValidation = nil
-        }
-
+        // Match the editor's publish-time validation. A prefilled post never carries a poll, so the
+        // too-short rule applies (Validators.Post only waives it when a poll is present).
         if let normalizedText {
             switch Validators.Post.validate(
                 text: normalizedText,
-                attachment: attachmentForValidation,
+                hasPoll: false,
                 ignoreTooShort: false
             ) {
             case .success: break
