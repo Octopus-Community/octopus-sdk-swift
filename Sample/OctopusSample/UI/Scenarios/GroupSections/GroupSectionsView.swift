@@ -24,7 +24,7 @@ struct GroupSectionsView: View {
                      "open the community and browse the groups list to see the section titles and the " +
                      "separator drawn above every block except the first.")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
 
                 ForEach(GroupSectionsViewModel.Preset.allCases) { preset in
                     Button(action: { viewModel.apply(preset) }) {
@@ -47,7 +47,7 @@ struct GroupSectionsView: View {
                 .accessibilityId("qa-preset-groupSections-clear")
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .sampleCardSurface()
 
             resultPanel
 
@@ -66,6 +66,7 @@ struct GroupSectionsView: View {
         }
         .padding()
         .navigationBarTitle("Group Sections", displayMode: .inline)
+        .dismissedOnPushRouting($presentCommunity)
         .sheet(isPresented: $presentCommunity) {
             OctopusUIView(octopus: octopus)
         }
@@ -73,6 +74,7 @@ struct GroupSectionsView: View {
             // Restore the backend-driven groups so the next scenario boots clean.
             viewModel.clearOverride()
         }
+        .sampleScreenBackground()
         .hostAppFooter()
     }
 
@@ -80,19 +82,19 @@ struct GroupSectionsView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Applied sections")
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(SampleTokens.Colors.textSecondary)
             if let preset = viewModel.appliedPreset {
                 Text(preset.sectionNames.joined(separator: ", "))
                     .font(.system(.footnote, design: .monospaced))
             } else {
                 Text("none (backend default)")
                     .font(.system(.footnote, design: .monospaced))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        .sampleCardSurface()
         // `.combine` BEFORE the id: without it SwiftUI propagates the identifier onto every child
         // `Text` instead of collapsing the panel, so the query returns two elements and a pipeline
         // reading the first match gets the constant "Applied sections" heading rather than the outcome.

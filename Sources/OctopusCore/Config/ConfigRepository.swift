@@ -38,8 +38,16 @@ public protocol ConfigRepository: Sendable {
     func debugOverrideExposeClientUserId(_ enabled: Bool?)
     /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the
     /// terms-acceptance mode of the published community config, without a backend-driven config.
-    /// Pass `nil` to clear and fall back to the backend value (currently `.implicit`).
+    /// Pass `nil` to clear and fall back to the backend value.
     func debugOverrideTermsAcceptanceMode(_ mode: TermsAcceptanceMode?)
+    /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override whether members must
+    /// type their nickname before their first contribution, without a backend-driven config. Pass `nil` to clear
+    /// and fall back to the backend value.
+    func debugOverrideForceNicknameChoice(_ enabled: Bool?)
+    /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally override the consent texts of
+    /// the published community config, applied on top of the backend-driven config. Pass `nil` to clear and fall
+    /// back to the backend value. Used by the sample app.
+    func debugOverrideConsentTexts(_ texts: ConsentTexts?)
 }
 
 extension Injected {
@@ -58,6 +66,8 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
     private var contentOptionsOverride: ContentOptions?
     private var exposeClientUserIdOverride: Bool?
     private var termsAcceptanceModeOverride: TermsAcceptanceMode?
+    private var forceNicknameChoiceOverride: Bool?
+    private var consentTextsOverride: ConsentTexts?
 
     @Published private(set) var userConfig: UserConfig?
     var userConfigPublisher: AnyPublisher<UserConfig?, Never> { $userConfig.eraseToAnyPublisher() }
@@ -77,6 +87,10 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
 
     private var storage: Set<AnyCancellable> = []
 
+    deinit {
+        plannedRefreshCommunityConfig?.cancel()
+    }
+
     init(injector: Injector, forceReset: Bool = false) {
         communityConfigDatabase = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
         userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
@@ -85,6 +99,10 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
         appStateMonitor = injector.getInjected(identifiedBy: Injected.appStateMonitor)
         userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         authenticatedCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
+
+        // See `PublishedPublishers`: the database sinks below write these values from the main queue, while other
+        // objects subscribe to them later from whichever thread builds them (the profile repository does in its init).
+        PublishedPublishers.create($communityConfig, $userConfig)
 
         if forceReset {
             userCommunityAccessSyncStore.clear()
@@ -96,16 +114,22 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
             userConfig = UserConfig(canAccessCommunity: hasAccessToCommunity, accessDeniedMessage: nil)
         }
 
+        // The sinks and the task below capture `self` weakly, not unowned: they can run once this repository is gone.
+        // Its last reference can go away off the main thread, while the main queue is delivering a database value: a
+        // refresh in flight holds the repository until it ends, and a community switch replaces the core off the main
+        // actor (`switchCommunity` is nonisolated async). The refresh task can also start after the release.
         communityConfigDatabase
             .configPublisher()
-            .sink { [unowned self] config in
+            .sink { [weak self] config in
+                guard let self else { return }
                 storedCommunityConfig = config
                 publishCommunityConfig()
             }.store(in: &storage)
 
         userConfigDatabase
             .configPublisher()
-            .sink { [unowned self] config in
+            .sink { [weak self] config in
+                guard let self else { return }
                 userConfig = config
                 if let config {
                     userCommunityAccessSyncStore.set(hasAccessToCommunity: config.canAccessCommunity)
@@ -117,10 +141,10 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
             appStateMonitor.appStatePublisher
         )
         .first(where: { $0 && $1 == .active })
-        .sink { [unowned self] _ in
-            Task {
+        .sink { [weak self] _ in
+            Task { [weak self] in
                 do {
-                    try await refreshCommunityConfig()
+                    try await self?.refreshCommunityConfig()
                 } catch {
                     if #available(iOS 14, *) {
                         Logger.config.debug("Error while refreshing the community config: \(error)")
@@ -144,6 +168,12 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
         if let termsAcceptanceModeOverride, let current = config {
             config = current.withTermsAcceptanceMode(termsAcceptanceModeOverride)
         }
+        if let forceNicknameChoiceOverride, let current = config {
+            config = current.withForceNicknameChoice(forceNicknameChoiceOverride)
+        }
+        if let consentTextsOverride, let current = config {
+            config = current.withConsentTexts(consentTextsOverride)
+        }
         communityConfig = config
     }
 
@@ -164,6 +194,16 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
 
     func debugOverrideTermsAcceptanceMode(_ mode: TermsAcceptanceMode?) {
         termsAcceptanceModeOverride = mode
+        publishCommunityConfig()
+    }
+
+    func debugOverrideForceNicknameChoice(_ enabled: Bool?) {
+        forceNicknameChoiceOverride = enabled
+        publishCommunityConfig()
+    }
+
+    func debugOverrideConsentTexts(_ texts: ConsentTexts?) {
+        consentTextsOverride = texts
         publishCommunityConfig()
     }
 
@@ -216,8 +256,14 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
             nbFailingAttempts = 0
         } catch {
             nbFailingAttempts += 1
-            plannedRefreshCommunityConfig = Task {
-                try await planRefreshCommunityConfig(in: Double(nbFailingAttempts) * 5)
+            let retryDelay = Double(nbFailingAttempts) * 5
+            // weak: a released repository stops retrying, instead of being kept alive by the retry it planned.
+            plannedRefreshCommunityConfig = Task { [weak self] in
+                let nanoseconds = retryDelay * 1_000_000_000
+                guard nanoseconds <= Double(UInt64.max) else { return }
+                try await Task.sleep(nanoseconds: UInt64(nanoseconds))
+                guard !Task.isCancelled else { return }
+                try await self?.doRefreshCommunityConfig()
             }
             if let error = error as? RemoteClientError {
                 throw .serverError(ServerError(remoteClientError: error))
@@ -225,13 +271,5 @@ class ConfigRepositoryDefault: ConfigRepository, InjectableObject, @unchecked Se
                 throw .other(error)
             }
         }
-    }
-
-    private func planRefreshCommunityConfig(in timeInterval: TimeInterval) async throws {
-        let nanoTimeInterval = timeInterval * 1_000_000_000
-        guard nanoTimeInterval <= Double(UInt64.max) else { return }
-        try await Task.sleep(nanoseconds: UInt64(nanoTimeInterval))
-        guard !Task.isCancelled else { return }
-        try await doRefreshCommunityConfig()
     }
 }

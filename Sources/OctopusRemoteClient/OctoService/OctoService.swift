@@ -98,13 +98,15 @@ class OctoServiceClient: ServiceClient, OctoService {
     private let client: Com_Octopuscommunity_OctoObjectServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
+         sdkIdentity: @escaping @Sendable () -> SdkIdentity,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_OctoObjectServiceAsyncClient(
             channel: unaryChannel,
             interceptors: OctoServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier,
+                   sdkIdentity: sdkIdentity)
     }
 
     public func get(octoObjectInfo: OctoObjectInfo, options: GetOptions, incrementViewCount: Bool,

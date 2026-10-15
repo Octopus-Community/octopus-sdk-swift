@@ -14,10 +14,14 @@ public struct ContentOptions: Equatable, Sendable, Hashable {
     public struct PostOptions: Equatable, Sendable, Hashable {
         public let enablePictures: Bool
         public let enablePolls: Bool
+        /// Whether a post must carry text. When `false`, a post that carries an image (with or without a
+        /// poll) may be published without text; as soon as it has text, the usual length rules apply.
+        public let textRequired: Bool
 
-        public init(enablePictures: Bool, enablePolls: Bool) {
+        public init(enablePictures: Bool, enablePolls: Bool, textRequired: Bool = true) {
             self.enablePictures = enablePictures
             self.enablePolls = enablePolls
+            self.textRequired = textRequired
         }
     }
 
@@ -47,9 +51,10 @@ public struct ContentOptions: Equatable, Sendable, Hashable {
         self.reply = reply
     }
 
-    /// Default when the community sets no content options: everything enabled (today's behaviour).
+    /// Default when the community sets no content options: everything enabled and post text required
+    /// (today's behaviour).
     public static let allEnabled = ContentOptions(
-        post: .init(enablePictures: true, enablePolls: true),
+        post: .init(enablePictures: true, enablePolls: true, textRequired: true),
         comment: .init(enablePictures: true),
         reply: .init(enablePictures: true))
 }
@@ -60,7 +65,8 @@ extension ContentOptions {
         // the field is explicitly present, otherwise fall back to `true`. Same for absent sub-messages.
         post = PostOptions(
             enablePictures: proto.hasPost ? (proto.post.hasEnablePictures ? proto.post.enablePictures : true) : true,
-            enablePolls: proto.hasPost ? (proto.post.hasEnablePolls ? proto.post.enablePolls : true) : true)
+            enablePolls: proto.hasPost ? (proto.post.hasEnablePolls ? proto.post.enablePolls : true) : true,
+            textRequired: proto.hasPost ? (proto.post.hasTextRequired ? proto.post.textRequired : true) : true)
         comment = CommentOptions(
             enablePictures: proto.hasComment
                 ? (proto.comment.hasEnablePictures ? proto.comment.enablePictures : true) : true)
@@ -70,7 +76,9 @@ extension ContentOptions {
     }
 
     init(from entity: CommunityConfigEntity) {
-        post = PostOptions(enablePictures: entity.postEnablePictures, enablePolls: entity.postEnablePolls)
+        post = PostOptions(enablePictures: entity.postEnablePictures,
+                           enablePolls: entity.postEnablePolls,
+                           textRequired: entity.postTextRequired)
         comment = CommentOptions(enablePictures: entity.commentEnablePictures)
         reply = ReplyOptions(enablePictures: entity.replyEnablePictures)
     }

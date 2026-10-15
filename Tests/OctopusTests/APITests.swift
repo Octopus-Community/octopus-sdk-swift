@@ -10,8 +10,10 @@ import Octopus
 
 @Suite(.disabled("Disabled because we only need that they compile"))
 class APITests {
+    private let connectionMode = ConnectionMode.sso(.init(loginRequired: { }))
+
     @Test func testOctopusSDKApi() async throws {
-        _ = try OctopusSDK(apiKey: "API_KEY")
+        _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
     }
 
     @Test func testConnectionModeSSOWithAssociatedFields() throws {
@@ -35,7 +37,7 @@ class APITests {
         let withApiServer = OctopusSDK.Configuration(apiServer: apiServer)
         _ = OctopusSDK.Configuration(apiServer: apiServer, appManagedAudioSession: true)
         _ = OctopusSDK.Configuration(apiServer: try .init(host: "api.example.com", port: 8443))
-        _ = try OctopusSDK(apiKey: "API_KEY", configuration: withApiServer)
+        _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode, configuration: withApiServer)
     }
 
     @Test func testApiServerValidationErrorApi() {
@@ -53,10 +55,6 @@ class APITests {
             loginRequired: { }
         )
         _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
-    }
-
-    @Test func testConnectionModeOctopus() throws {
-        _ = try OctopusSDK(apiKey: "API_KEY", connectionMode: .octopus(deepLink: "DEEP_LINK"))
     }
 
     @Test func testConnectUser() async throws {
@@ -121,14 +119,14 @@ class APITests {
     }
 
     @Test func testNotSeenNotificationCount() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = octopus.notSeenNotificationsCount
         _ = octopus.$notSeenNotificationsCount
         try await octopus.updateNotSeenNotificationsCount()
     }
 
     @Test func testSetPushNotifToken() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         octopus.set(notificationDeviceToken: "")
     }
 
@@ -138,23 +136,23 @@ class APITests {
     }
 
     @Test func testTrackCommunityAccess() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         octopus.track(hasAccessToCommunity: true)
     }
 
     @Test func testOverrideCommunityAccess() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         try await octopus.overrideCommunityAccess(true)
     }
 
     @Test func testHasCommunityAccess() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = octopus.hasAccessToCommunity
         _ = octopus.$hasAccessToCommunity
     }
 
     @Test func testTrackCustomEvent() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         try await octopus.track(customEvent: CustomEvent(name: "evt1"))
         try await octopus.track(customEvent: CustomEvent(
             name: "evt1",
@@ -172,7 +170,7 @@ class APITests {
     }
 
     @Test func testFetchOrCreateClientObjectRelatedPost() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil)
         let post: OctopusPost = try await octopus.fetchOrCreateClientObjectRelatedPost(
             content: clientPost,
@@ -205,7 +203,7 @@ class APITests {
     }
 
     @Test func testSetReactionOnPost() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         do {
             try await octopus.set(reaction: .clap, postId: "")
             try await octopus.set(reaction: nil, postId: "")
@@ -223,12 +221,12 @@ class APITests {
     }
 
     @Test func testSetDisplayClientObjectCallback() throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         octopus.set(displayClientObjectCallback: { _ in })
     }
 
     @Test func testGroups() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let groups: [OctopusGroup] = octopus.groups
         if let group = groups.first {
             _ = group.id
@@ -241,7 +239,7 @@ class APITests {
     }
 
     @Test func testSetOnNavigateToUrlCallback() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         octopus.set(onNavigateToURLCallback: { url in
             _ = url.host
             return .handledByApp
@@ -249,7 +247,7 @@ class APITests {
     }
 
     @Test func testSetOnNavigateToProfileCallback() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         octopus.set(onNavigateToProfileCallback: { clientUserId in
             let _: String = clientUserId
         })
@@ -258,7 +256,7 @@ class APITests {
     }
 
     @Test func testSetOnNavigateToProfileEditCallback() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         octopus.set(onNavigateToProfileEditCallback: { fieldToEdit in
             let _: ConnectionMode.SSOConfiguration.ProfileField? = fieldToEdit
         })
@@ -267,26 +265,27 @@ class APITests {
     }
 
     @Test func testSwitchCommunity() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
-        try await octopus.switchCommunity(apiKey: "")
-        try await octopus.switchCommunity(apiKey: "", connectionMode: .octopus(deepLink: nil))
-        try await octopus.switchCommunity(apiKey: "", connectionMode: .octopus(deepLink: nil), configuration: .init())
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
+        try await octopus.switchCommunity(apiKey: "", connectionMode: connectionMode)
+        try await octopus.switchCommunity(apiKey: "", connectionMode: connectionMode, configuration: .init())
 
     }
 
     @Test func testSwitchCommunityWithApiServer() async throws {
         let octopus = try OctopusSDK(
             apiKey: "API_KEY",
+            connectionMode: connectionMode,
             configuration: .init(apiServer: try .init(host: "first.example.com"))
         )
         try await octopus.switchCommunity(
             apiKey: "API_KEY_2",
+            connectionMode: connectionMode,
             configuration: .init(apiServer: try .init(host: "second.example.com", port: 8443))
         )
     }
 
     @Test func testEvents() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = octopus.eventPublisher.sink { event in
             switch event {
             case let .postCreated(context):
@@ -486,7 +485,7 @@ class APITests {
     }
 
     @Test func testCommunityDataApi() async throws {
-        let octopusSdk = try OctopusSDK(apiKey: "API_KEY")
+        let octopusSdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
 
         // Both entry points (Unified Profile): by client user id and by Octopus profile id
         let _: OctopusCommunityData? = try await octopusSdk.fetchCommunityData(clientUserId: "CLIENT_USER_ID")
@@ -509,7 +508,7 @@ class APITests {
     }
 
     @Test func testSyncFollowGroupsAPI() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
 
         let action = OctopusSyncFollowGroup.Action(
             groupId: "g1", followed: true, actionDate: Date()
@@ -565,14 +564,14 @@ extension APITests {
 /// Deprecated APIs (tests are still here to ensure old APIs can still be called)
 extension APITests {
     @Test func testGetOrCreateClientObjectRelatedPostId() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
                                     signature: nil)
         let _: String = try await octopus.getOrCreateClientObjectRelatedPostId(content: clientPost)
     }
 
     @Test func testFetchOrCreateClientObjectRelatedPostOldSignature() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil,
                                     signature: nil)
         let post = try await octopus.fetchOrCreateClientObjectRelatedPost(content: clientPost)
@@ -626,7 +625,7 @@ extension APITests {
     }
 
     @Test func testRefreshEntitlements() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         do {
             try await octopus.refreshEntitlements()
         } catch {
@@ -635,7 +634,7 @@ extension APITests {
     }
 
     @Test func testGroupAccessDeniedCallback() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         octopus.set(groupAccessDeniedCallback: { groupId in
             let _: String = groupId
         })
@@ -643,19 +642,19 @@ extension APITests {
     }
 
     @Test func testOctopusSDKProfile() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let _: OctopusProfile? = octopus.profile
     }
 
     @Test func testOctopusGroupCanAccess() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         for group in octopus.groups {
             let _: Bool = group.canAccess
         }
     }
 
     @Test func testOctopusGroupCanCreateChildren() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         for group in octopus.groups {
             let _: Bool = group.canCreateChildren
         }
@@ -666,7 +665,7 @@ extension APITests {
 /// Deprecated APIs (tests are still here to ensure old APIs can still be called)
 extension APITests {
     @Test func testTopics() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let _: [Topic] = octopus.topics
         try await octopus.fetchTopics()
     }
@@ -684,7 +683,7 @@ extension APITests {
     }
 
     @Test func testSetReactionOnClientObjectRelatedPost() async throws {
-        let octopus = try OctopusSDK(apiKey: "API_KEY")
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         try await octopus.set(reaction: .clap, clientObjectRelatedPostId: "")
     }
 }

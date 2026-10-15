@@ -14,11 +14,6 @@ import os
 class PostDetailViewModel: ObservableObject {
 
     struct Post: Equatable {
-        enum Attachment: Equatable {
-            case image(ImageMedia)
-            case video(VideoMedia)
-            case poll(DisplayablePoll)
-        }
         struct BridgeCTA: Equatable {
             let text: TranslatableText
             let clientObjectId: String
@@ -29,7 +24,7 @@ class PostDetailViewModel: ObservableObject {
         }
         let uuid: String
         let text: TranslatableText
-        let attachment: Attachment?
+        let attachments: PostAttachmentsViewData
         let author: Author
         let relativeDate: String
         let topic: String?
@@ -114,9 +109,14 @@ class PostDetailViewModel: ObservableObject {
     let octopus: OctopusSDK
     let postUuid: String
     let connectedActionChecker: ConnectedActionChecker
+    private let nicknameChoiceClosedSubject = PassthroughSubject<Void, Never>()
     private let translationStore: ContentTranslationPreferenceStore
     private var newestFirstCommentsFeed: Feed<Comment, Never>?
-    private var commentToScrollTo: String?
+    /// The comment the screen opened on, until the screen has scrolled to it.
+    private var scrollTarget: PendingScrollTarget
+    /// Whether the screen opens on a comment. Its list is then built whole from the start: a lazy list has
+    /// not built a row far below the fold yet, so a scroll to it would find nothing and be lost.
+    let opensOnComment: Bool
     private var scrollToMostRecentComment: Bool
     private var shouldFocusComment: Bool
     private var pendingScrollToBottom = false
@@ -148,7 +148,8 @@ class PostDetailViewModel: ObservableObject {
          hasFeaturedComment: Bool) {
         self.octopus = octopus
         self.postUuid = postUuid
-        self.commentToScrollTo = commentToScrollTo
+        self.scrollTarget = PendingScrollTarget(id: commentToScrollTo)
+        self.opensOnComment = commentToScrollTo != nil
         self.scrollToMostRecentComment = scrollToMostRecentComment
         self.shouldFocusComment = comment
         self.pendingScrollToBottom = scrollToMostRecentComment
@@ -313,11 +314,7 @@ class PostDetailViewModel: ObservableObject {
             }
             if self.comments != newComments {
                 self.comments = newComments
-                if let commentToScrollTo = self.commentToScrollTo,
-                   self.comments?.contains(where: { $0.uuid == commentToScrollTo }) ?? false {
-                    self.scrollToId = "Comment-\(commentToScrollTo)"
-                    self.commentToScrollTo = nil
-                }
+                scrollToTargetIfListed()
                 if #available(iOS 14, *) { Logger.comments.trace("Comments list updated done") }
             }
         }.store(in: &storage)
@@ -470,8 +467,17 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
+    /// Scrolls to the comment the screen opened on, once it is listed and its load has settled.
+    private func scrollToTargetIfListed() {
+        guard let id = scrollTarget.takeIfListed(comments?.map(\.uuid) ?? []) else { return }
+        scrollToId = ResponseKind.comment.scrollAnchorId(for: id)
+    }
+
     private func set(feed: Feed<Comment, Never>) {
         guard feed.id != self.feed?.id else { return }
+        // Started before subscribing: a feed that already holds the comment publishes it at once, and a scroll
+        // then would be undone as the load below replaces those items.
+        scrollTarget.loadStarted()
         comments = nil
         self.feed = feed
         feedStorage = []
@@ -490,18 +496,39 @@ class PostDetailViewModel: ObservableObject {
                 hasMoreData = $0
             }.store(in: &feedStorage)
 
+        guard let loadUntil = scrollTarget.id else {
+            Task {
+                await feed.populateWithLocalData(pageSize: 10)
+            }
+            if scrollToMostRecentComment {
+                loadAllComments(scrollToBottom: true)
+                scrollToMostRecentComment = false
+            } else {
+                refreshFeed()
+            }
+            return
+        }
+        // The local first page replaces whatever the feed already holds, so the load until the comment runs after it.
         Task {
             await feed.populateWithLocalData(pageSize: 10)
+            await loadAllComments(until: loadUntil, in: feed)
+            // A newer feed set meanwhile runs its own load: only that one settles the target.
+            guard self.feed?.id == feed.id else { return }
+            scrollTarget.loadSettled()
+            scrollToTargetIfListed()
         }
+    }
 
-        if let commentToScrollTo {
-            loadAllComments(until: commentToScrollTo)
-        } else if scrollToMostRecentComment {
-            loadAllComments(scrollToBottom: true)
-            scrollToMostRecentComment = false
-        } else {
-            refreshFeed()
-        }
+    /// Called when the member closes the nickname choice screen without confirming their nickname: forwarded to
+    /// the composer, which drops the contribution it held.
+    func nicknameChoiceClosed() {
+        nicknameChoiceClosedSubject.send()
+    }
+
+    /// Emits when the member closes the nickname choice screen without confirming their nickname. The composer,
+    /// whose view model this one does not own, listens to it alongside ``ensureConnected(action:)``.
+    var nicknameChoiceClosedPublisher: AnyPublisher<Void, Never> {
+        nicknameChoiceClosedSubject.eraseToAnyPublisher()
     }
 
     func ensureConnected(action: UserAction) -> Bool {
@@ -576,17 +603,14 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    private func loadAllComments(until id: String) {
-        guard let feed else { return }
-        Task {
-            defer { hasLoadedComments = true }
-            do {
-                try await feed.fetchAll(until: id)
-                commentsLoadFailure = nil
-            } catch {
-                if #available(iOS 14, *) { Logger.replies.debug("Error: \(error)") }
-                if comments?.isEmpty ?? true { commentsLoadFailure = ScreenStateFailure(error) }
-            }
+    private func loadAllComments(until id: String, in feed: Feed<Comment, Never>) async {
+        defer { hasLoadedComments = true }
+        do {
+            try await feed.fetchAll(until: id)
+            commentsLoadFailure = nil
+        } catch {
+            if #available(iOS 14, *) { Logger.replies.debug("Error: \(error)") }
+            if comments?.isEmpty ?? true { commentsLoadFailure = ScreenStateFailure(error) }
         }
     }
 
@@ -826,23 +850,22 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
-    func vote(pollAnswerId: String) -> Bool {
+    /// Casts the vote; returns whether it was cast, so the poll gives its options back otherwise.
+    func vote(pollAnswerId: String) async -> Bool {
         guard ensureConnected(action: .vote) else { return false }
         guard let post = internalPost else {
             error = .localizationKey("Error.Unknown")
             return false
         }
-        Task {
-            await vote(pollAnswerId: pollAnswerId, post: post)
-        }
-        return true
+        return await vote(pollAnswerId: pollAnswerId, post: post)
     }
 
-    private func vote(pollAnswerId: String, post: OctopusCore.Post) async {
+    private func vote(pollAnswerId: String, post: OctopusCore.Post) async -> Bool {
         do {
             try await octopus.core.postsRepository.vote(
                 pollAnswerId: pollAnswerId, post: post,
                 parentIsTranslated: translationStore.displayTranslation(for: post.uuid))
+            return true
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -870,6 +893,7 @@ class PostDetailViewModel: ObservableObject {
             case .other:
                 self.error = .localizationKey("Error.Unknown")
             }
+            return false
         }
     }
 

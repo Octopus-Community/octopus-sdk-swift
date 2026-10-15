@@ -39,7 +39,7 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
     private(set) var storedDeviceTokenSetOnce: Bool!
 
     @Published private var deviceTokenSetOnce: Bool
-    @Published private var pushNotifPermissionGranted = false // real value will be set in init
+    @Published private var pushNotifPermissionGranted = false // real value set by a task that init starts
     private var lastPushNotifPermissionGrantedUpdateTask: Task<Void, Never> = Task {}
     private var storage = [AnyCancellable]()
 
@@ -59,15 +59,9 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
 
         // set it to false only to correctly init the repository. It is set with the correct value right after
         deviceTokenSetOnce = false
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($canHandlePushNotifications, $deviceTokenSetOnce, $pushNotifPermissionGranted)
         deviceTokenSetOnce = storedDeviceTokenSetOnce
-
-        // Listen to the app state in order to update the push notification permission infos
-        appStateMonitor.appStatePublisher
-            .removeDuplicates()
-            .sink { [unowned self] in
-                guard $0 == .active else { return }
-                updatePushNotifPermissionGranted()
-        }.store(in: &storage)
 
         // whenever the `deviceTokenSetOnce` value changes, updated its stored value
         $deviceTokenSetOnce.sink { [unowned self] in
@@ -92,6 +86,18 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
         // weak, not unowned: delivery is asynchronous now, so it can outlive this repository
         .sink { [weak self] pushNotifPermissionGranted, deviceTokenSetOnce in
             self?.canHandlePushNotifications = pushNotifPermissionGranted && deviceTokenSetOnce
+        }.store(in: &storage)
+
+        // Listen to the app state in order to update the push notification permission infos.
+        // Kept last: the app state is replayed on subscription, so when the app is active this starts a task that
+        // soon writes `pushNotifPermissionGranted` on the main actor. `PublishedPublishers` above is what keeps that
+        // write from racing the creation of its publisher; subscribing to the values before anything can write
+        // them is a second safeguard.
+        appStateMonitor.appStatePublisher
+            .removeDuplicates()
+            .sink { [unowned self] in
+                guard $0 == .active else { return }
+                updatePushNotifPermissionGranted()
         }.store(in: &storage)
     }
 

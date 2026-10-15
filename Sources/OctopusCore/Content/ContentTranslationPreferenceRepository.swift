@@ -36,7 +36,8 @@ public class ContentTranslationPreferenceRepositoryDefault: ContentTranslationPr
     @Published private(set) var contentDisplayTranslations: [String: Bool] = [:]
 
     init(injector: Injector) {
-
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($contentDisplayTranslations)
     }
 
     /// Returns whether the given content should display the original text.

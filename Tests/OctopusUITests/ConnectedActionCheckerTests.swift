@@ -26,6 +26,7 @@ struct ConnectedActionCheckerTests {
                            isGuest: Bool = false,
                            hasConfirmedNickname: Bool = true,
                            nicknameLock: ProfileFieldLockState = .editable,
+                           isNicknameAppManaged: Bool = false,
                            hasError: Bool = false,
                            userBannedMessage: String? = nil) -> Sut.ConnectionDecisionState {
         .connected(communityConfigAvailable: configAvailable,
@@ -33,6 +34,7 @@ struct ConnectedActionCheckerTests {
                    profileIsGuest: isGuest,
                    profileHasConfirmedNickname: hasConfirmedNickname,
                    nicknameLock: nicknameLock,
+                   isNicknameAppManaged: isNicknameAppManaged,
                    hasError: hasError,
                    userBannedMessage: userBannedMessage)
     }
@@ -43,9 +45,7 @@ struct ConnectedActionCheckerTests {
         // The exact triad the popup used to key on: SSO + client user connected + a stored error,
         // while the action is allowed to proceed (nickname already confirmed).
         let decision = Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(hasConfirmedNickname: true, hasError: true),
-            isSSO: true,
             clientUserConnected: true,
             action: .post)
 
@@ -55,9 +55,7 @@ struct ConnectedActionCheckerTests {
     @Test func connectedWithoutError_proceeds_sameAsWithError() {
         // Control: the healthy path already proceeded — the fix makes the error path behave identically.
         let decision = Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(hasConfirmedNickname: true, hasError: false),
-            isSSO: true,
             clientUserConnected: true,
             action: .post)
 
@@ -71,9 +69,8 @@ struct ConnectedActionCheckerTests {
         // few moments." to a banned user — an invitation to retry what can never succeed, hiding the
         // reason the backend already sent, already localized.
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: .notConnected(userBannedMessage: "Your account has been blocked until 2026-10-01."),
-            isSSO: true, clientUserConnected: true, action: .post)
+            clientUserConnected: true, action: .post)
                 == .block(.banned(.localizedString("Your account has been blocked until 2026-10-01."))))
     }
 
@@ -82,10 +79,9 @@ struct ConnectedActionCheckerTests {
     /// state, and the first strong action hits the force-login gate.
     @Test func strongActionAsGuestWithForceLogin_sso_clientConnected_banned_showsServerMessage() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: true, isGuest: true, hasError: true,
                              userBannedMessage: "Your account has been blocked."),
-            isSSO: true, clientUserConnected: true, action: .post)
+            clientUserConnected: true, action: .post)
                 == .block(.banned(.localizedString("Your account has been blocked."))))
     }
 
@@ -94,9 +90,8 @@ struct ConnectedActionCheckerTests {
     /// host's login screen, a dead end: there is no account to sign into, and no sign-in lifts a ban.
     @Test func banned_withoutClientUser_showsServerMessageRatherThanLogin() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: .notConnected(userBannedMessage: "Your account has been blocked."),
-            isSSO: true, clientUserConnected: false, action: .post)
+            clientUserConnected: false, action: .post)
                 == .block(.banned(.localizedString("Your account has been blocked."))))
     }
 
@@ -104,9 +99,8 @@ struct ConnectedActionCheckerTests {
     /// straight through to `requireSSOLogin` too.
     @Test func banned_withoutClientUser_weakAction_showsServerMessage() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: .notConnected(userBannedMessage: "Your account has been blocked."),
-            isSSO: true, clientUserConnected: false, action: .reaction)
+            clientUserConnected: false, action: .reaction)
                 == .block(.banned(.localizedString("Your account has been blocked."))))
     }
 
@@ -118,20 +112,18 @@ struct ConnectedActionCheckerTests {
     @Test(arguments: [true, false])
     func banned_strongAction_blocksWhateverTheForceLoginSetting(nicknameConfirmed: Bool) {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: false, isGuest: true, hasConfirmedNickname: nicknameConfirmed,
                              hasError: true, userBannedMessage: "You are banned."),
-            isSSO: true, clientUserConnected: true, action: .post)
+            clientUserConnected: true, action: .post)
                 == .block(.banned(.localizedString("You are banned."))))
     }
 
     /// A ban on a logged-in user is just as final as one on a guest.
     @Test func banned_nonGuest_strongAction_blocks() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: false, isGuest: false, hasError: true,
                              userBannedMessage: "You are banned."),
-            isSSO: true, clientUserConnected: true, action: .post)
+            clientUserConnected: true, action: .post)
                 == .block(.banned(.localizedString("You are banned."))))
     }
 
@@ -140,94 +132,114 @@ struct ConnectedActionCheckerTests {
     /// anyway. See also `weakActionAsGuestWithForceLogin_proceeds`.
     @Test func banned_weakAction_stillProceeds() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: false, isGuest: true, hasError: true,
                              userBannedMessage: "You are banned."),
-            isSSO: true, clientUserConnected: true, action: .reaction) == .proceed)
+            clientUserConnected: true, action: .reaction) == .proceed)
     }
 
     /// The spurious-popup guard, restated against this change: a lingering error that is *not* a ban must
     /// still let the action through, which is what keeps `banBlock` keyed on the message rather than on `hasError`.
     @Test func lingeringNonBanError_strongAction_stillProceeds() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: false, isGuest: false, hasError: true, userBannedMessage: nil),
-            isSSO: true, clientUserConnected: true, action: .post) == .proceed)
-    }
-
-    /// The SDK's own magic-link screen is just as much of a dead end for a banned guest.
-    ///
-    /// The case matters as much as the message: it must be `.banned`, never `.error`. The router answers
-    /// `.error` by re-running `linkClientUserToOctopusUser`, and in magic-link mode that call is a
-    /// `preconditionFailure` — so returning `.error` here would trap the host app.
-    @Test func banned_nonSSO_showsServerMessageRatherThanLogin() {
-        #expect(Sut.decision(
-            magicLinkRequestActive: false,
-            state: .notConnected(userBannedMessage: "Your account has been blocked."),
-            isSSO: false, clientUserConnected: false, action: .post)
-                == .block(.banned(.localizedString("Your account has been blocked."))))
+            clientUserConnected: true, action: .post) == .proceed)
     }
 
     // MARK: - Guarded branches still intact (lock the refactor)
 
-    @Test func magicLinkPending_blocksWithLogin() {
-        #expect(Sut.decision(magicLinkRequestActive: true, state: .notConnected(userBannedMessage: nil),
-                             isSSO: true, clientUserConnected: true, action: .post) == .block(.login))
-    }
-
     @Test func notConnected_sso_clientConnected_blocksWithSSOError() {
-        #expect(Sut.decision(magicLinkRequestActive: false, state: .notConnected(userBannedMessage: nil),
-                             isSSO: true, clientUserConnected: true, action: .post) == ssoUnknown)
+        #expect(Sut.decision(state: .notConnected(userBannedMessage: nil),
+                             clientUserConnected: true, action: .post) == ssoUnknown)
     }
 
     @Test func notConnected_sso_clientNotConnected_requiresSSOLogin() {
-        #expect(Sut.decision(magicLinkRequestActive: false, state: .notConnected(userBannedMessage: nil),
-                             isSSO: true, clientUserConnected: false, action: .post) == .requireSSOLogin)
-    }
-
-    @Test func notConnected_nonSSO_blocksWithLogin() {
-        #expect(Sut.decision(magicLinkRequestActive: false, state: .notConnected(userBannedMessage: nil),
-                             isSSO: false, clientUserConnected: false, action: .post) == .block(.login))
+        #expect(Sut.decision(state: .notConnected(userBannedMessage: nil),
+                             clientUserConnected: false, action: .post) == .requireSSOLogin)
     }
 
     @Test func connected_configMissing_blocksWithLoadConfig() {
-        #expect(Sut.decision(magicLinkRequestActive: false, state: connected(configAvailable: false),
-                             isSSO: true, clientUserConnected: true, action: .post) == .block(.loadConfig))
+        #expect(Sut.decision(state: connected(configAvailable: false),
+                             clientUserConnected: true, action: .post) == .block(.loadConfig))
     }
 
     @Test func strongActionAsGuestWithForceLogin_sso_clientConnected_blocksWithSSOError() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: true, isGuest: true),
-            isSSO: true, clientUserConnected: true, action: .post) == ssoUnknown)
+            clientUserConnected: true, action: .post) == ssoUnknown)
     }
 
     @Test func strongActionAsGuestWithForceLogin_sso_clientNotConnected_requiresSSOLogin() {
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: true, isGuest: true),
-            isSSO: true, clientUserConnected: false, action: .post) == .requireSSOLogin)
+            clientUserConnected: false, action: .post) == .requireSSOLogin)
     }
 
-    @Test func strongActionAsGuestWithForceLogin_nonSSO_blocksWithLogin() {
+    @Test(arguments: [UserAction.post, .comment, .reply])
+    func editableNicknameNotConfirmed_blocksWithTheContribution(action: UserAction) {
+        // The nickname choice screen names the contribution it holds back, so the block carries it.
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
-            state: connected(forceLogin: true, isGuest: true),
-            isSSO: false, clientUserConnected: false, action: .post) == .block(.login))
-    }
-
-    @Test func editableNicknameNotConfirmed_blocksWithNicknameValidation() {
-        #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(hasConfirmedNickname: false, nicknameLock: .editable),
-            isSSO: true, clientUserConnected: true, action: .post) == .block(.validateNickname))
+            clientUserConnected: true, action: action) == .block(.validateNickname(action)))
+    }
+
+    // MARK: - A nickname managed by the host app is never chosen in the SDK
+
+    /// The host app owns the nickname, so the member cannot edit it in the SDK. The profile merger marks
+    /// it confirmed only when the host sends a nickname that differs from the stored one, so a member whose
+    /// host nickname is the stored one (or absent) is still unconfirmed: that must not open the screen.
+    @Test(arguments: [UserAction.post, .comment, .reply])
+    func appManagedNickname_nonGuest_notConfirmed_proceeds(action: UserAction) {
+        #expect(Sut.decision(
+            state: connected(isGuest: false, hasConfirmedNickname: false, isNicknameAppManaged: true),
+            clientUserConnected: true, action: action) == .proceed)
+    }
+
+    /// A nickname the host app does not manage keeps the screen for an unconfirmed member.
+    @Test(arguments: [UserAction.post, .comment, .reply])
+    func notAppManagedNickname_nonGuest_notConfirmed_stillBlocks(action: UserAction) {
+        #expect(Sut.decision(
+            state: connected(isGuest: false, hasConfirmedNickname: false, isNicknameAppManaged: false),
+            clientUserConnected: true, action: action) == .block(.validateNickname(action)))
+    }
+
+    private func ssoMode(appManagedFields: Set<OctopusCore.ConnectionMode.SSOConfiguration.ProfileField>)
+        -> OctopusCore.ConnectionMode {
+        .sso(.init(appManagedFields: appManagedFields, loginRequired: { }, modifyUser: { _ in }))
+    }
+
+    @Test func nicknameInAppManagedFields_nonGuest_isAppManaged() {
+        #expect(Sut.isNicknameAppManaged(connectionMode: ssoMode(appManagedFields: [.nickname]), isGuest: false))
+        #expect(Sut.isNicknameAppManaged(connectionMode: ssoMode(appManagedFields: [.nickname, .picture, .bio]),
+                                         isGuest: false))
+    }
+
+    @Test func nicknameNotInAppManagedFields_isNotAppManaged() {
+        #expect(!Sut.isNicknameAppManaged(connectionMode: ssoMode(appManagedFields: []), isGuest: false))
+        #expect(!Sut.isNicknameAppManaged(connectionMode: ssoMode(appManagedFields: [.picture, .bio]),
+                                          isGuest: false))
+    }
+
+    /// Same rule as the profile edition and the picture of the nickname screen: the host app only manages
+    /// the profile of a member it signed in, so a guest's nickname is never app-managed.
+    @Test func nicknameInAppManagedFields_guest_isNotAppManaged() {
+        #expect(!Sut.isNicknameAppManaged(connectionMode: ssoMode(appManagedFields: [.nickname]), isGuest: true))
+    }
+
+    /// The consequence for the gate: a guest who has not confirmed a nickname, in a community that does
+    /// not force login, still chooses one before contributing, even when the host app manages nicknames.
+    @Test func guest_appManagedNicknameConfig_notConfirmed_stillBlocks() {
+        let isAppManaged = Sut.isNicknameAppManaged(connectionMode: ssoMode(appManagedFields: [.nickname]),
+                                                    isGuest: true)
+        #expect(Sut.decision(
+            state: connected(forceLogin: false, isGuest: true, hasConfirmedNickname: false,
+                             isNicknameAppManaged: isAppManaged),
+            clientUserConnected: false, action: .post) == .block(.validateNickname(.post)))
     }
 
     @Test func weakActionAsGuestWithForceLogin_proceeds() {
         // The strong-action gate only applies to strong actions; a reaction proceeds.
         #expect(Sut.decision(
-            magicLinkRequestActive: false,
             state: connected(forceLogin: true, isGuest: true, hasError: true),
-            isSSO: true, clientUserConnected: true, action: .reaction) == .proceed)
+            clientUserConnected: true, action: .reaction) == .proceed)
     }
 }

@@ -24,20 +24,18 @@ class URLManager {
             /// - Parameter url: the url to open
             /// - Returns: `.handledByApp` if the link is handled by the app, `.handledByOctopus` if the link should be
             /// opened normally by Octopus.
-            if url.host == "www.octopuscommunity.com" && url.path == "/contact" {
-                let mailtoUrl = URL(string: "mailto:contact@octopuscommunity.com?subject=Contact")!
-                UIApplication.shared.open(mailtoUrl)
+            ///
+            /// The sample reads the policy chosen in Settings › Host app integration at every tap, so a change
+            /// applies to the next link. Your app would usually only keep the rule of `HostURLPolicy.sampleRule`.
+            switch HostIntegrationStore.instance.urlPolicy.decision(for: url) {
+            case let .openInApp(appURL):
+                UIApplication.shared.open(appURL)
                 // link has been handled by app, let the Octopus SDK know that it should do nothing more
                 return .handledByApp
-            } else if url.host == "www.google.com" {
-                let newUrl = URL(string: "https://www.qwant.com/")!
-                UIApplication.shared.open(newUrl)
-                // link has been handled by app, let the Octopus SDK know that it should do nothing more
-                return .handledByApp
+            case .letOctopusOpen:
+                // Let the SDK handle the link by returning `handledByOctopus`
+                return .handledByOctopus
             }
-
-            // Let the SDK handle the other links by returning `handledByOctopus`
-            return .handledByOctopus
         })
     }
 }

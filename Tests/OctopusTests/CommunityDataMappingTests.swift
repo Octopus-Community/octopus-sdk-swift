@@ -61,7 +61,7 @@ struct CommunityDataMappingTests {
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .appStateMonitor,
-                               .magicLinkMonitor, .userProfileFetchMonitor, .authProvider,
+                               .userProfileFetchMonitor, .authProvider,
                                .blockedUserIdsProvider, .configRepository)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
@@ -73,10 +73,7 @@ struct CommunityDataMappingTests {
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
         injector.register { ClientUserProfileDatabase(injector: $0) }
-        injector.register { ClientUserProvider(
-            connectionMode: .sso(.init(appManagedFields: [], loginRequired: {}, modifyUser: { _ in })),
-            injector: $0)
-        }
+        injector.register { ClientUserProvider(injector: $0) }
         injector.register { ClientUserProfileMerger(appManagedFields: [], injector: $0) }
         injector.register { FrictionlessProfileMigrator(injector: $0) }
         injector.register { GamificationRepository(injector: $0) }
@@ -140,7 +137,7 @@ struct CommunityDataMappingTests {
             contentOptions: .allEnabled,
             exposeClientUserId: false,
             termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false))
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
 
         mocks.userService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {

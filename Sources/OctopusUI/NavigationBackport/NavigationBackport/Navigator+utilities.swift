@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Navigator where Screen: NBScreen {
+extension Navigator where Screen: NBScreen {
   /// Pushes a new screen via a push navigation.
   /// - Parameter screen: The screen to push.
   func push(_ screen: Screen) {
@@ -37,7 +37,7 @@ public extension Navigator where Screen: NBScreen {
   }
 }
 
-public extension Navigator where Screen: NBScreen & Equatable {
+extension Navigator where Screen: NBScreen & Equatable {
   /// Pops to the topmost (most recently pushed) screen in the stack
   /// equal to the given screen. If no screens are found,
   /// the screens array will be unchanged.
@@ -49,7 +49,7 @@ public extension Navigator where Screen: NBScreen & Equatable {
   }
 }
 
-public extension Navigator where Screen: NBScreen & Identifiable {
+extension Navigator where Screen: NBScreen & Identifiable {
   /// Pops to the topmost (most recently pushed) identifiable screen in the stack
   /// with the given ID. If no screens are found, the screens array will be unchanged.
   /// - Parameter id: The id of the screen to goBack to.
@@ -60,7 +60,7 @@ public extension Navigator where Screen: NBScreen & Identifiable {
   }
 }
 
-public extension Navigator where Screen == AnyHashable {
+extension Navigator where Screen == AnyHashable {
   /// Pops to the topmost (most recently pushed) identifiable screen in the stack
   /// with the given ID. If no screens are found, the screens array will be unchanged.
   /// - Parameter id: The id of the screen to goBack to.

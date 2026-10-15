@@ -8,33 +8,37 @@ import OctopusCore
 
 struct ConnectionRouter: ViewModifier {
     @Environment(\.octopusTheme) private var theme
-    let octopus: OctopusSDK
     @Binding var noConnectedReplacementAction: ConnectedActionReplacement?
+    /// Called when the member closes the nickname choice screen without confirming their nickname, so that the
+    /// composer it held a contribution for drops it.
+    let onNicknameChoiceClosed: (@MainActor () -> Void)?
 
     @Compat.StateObject private var viewModel: ConnectionRouterViewModel
 
-    @State private var openLogin = false
     @State private var openNicknameValidation = false
+    @State private var nicknameChoiceContribution: UserAction = .post
     @State private var displayLoadConfigError = false
     @State private var displaySSOError = false
     @State private var displayableSSOError: DisplayableString?
     @State private var displayBanned = false
     @State private var bannedMessage: DisplayableString?
 
-    init(octopus: OctopusSDK, noConnectedReplacementAction: Binding<ConnectedActionReplacement?>) {
-        self.octopus = octopus
+    init(octopus: OctopusSDK, noConnectedReplacementAction: Binding<ConnectedActionReplacement?>,
+         onNicknameChoiceClosed: (@MainActor () -> Void)?) {
         _viewModel = Compat.StateObject(wrappedValue: ConnectionRouterViewModel(octopus: octopus))
         _noConnectedReplacementAction = noConnectedReplacementAction
+        self.onNicknameChoiceClosed = onNicknameChoiceClosed
     }
 
     func body(content: Content) -> some View {
         content
-            .octopusFullScreenCover(isPresented: $openLogin) {
-                MagicLinkView(octopus: octopus)
-                    .environment(\.dismissModal, $openLogin)
-            }
             .octopusFullScreenCover(isPresented: $openNicknameValidation) {
-                ValidateNicknameScreen(octopus: viewModel.octopus, isPresented: $openNicknameValidation)
+                ValidateNicknameView(octopus: viewModel.octopus, contribution: nicknameChoiceContribution,
+                                     isPresented: $openNicknameValidation,
+                                     close: {
+                                         onNicknameChoiceClosed?()
+                                         openNicknameValidation = false
+                                     })
             }
             .compatAlert(
                 "Common.Error",
@@ -51,8 +55,7 @@ struct ConnectionRouter: ViewModifier {
                 message: { error in
                     error.textView
                 })
-            // No Retry: a ban is the server's settled answer, and the exchange that would be retried is
-            // SSO-only — in magic-link mode calling it traps.
+            // No Retry: a ban is the server's settled answer, no exchange lifts it.
             .compatAlert(
                 "Common.Error",
                 isPresented: $displayBanned,
@@ -91,8 +94,9 @@ struct ConnectionRouter: ViewModifier {
             .onValueChanged(of: noConnectedReplacementAction) {
                 defer { noConnectedReplacementAction = nil }
                 switch $0 {
-                case .login: openLogin = true
-                case .validateNickname: openNicknameValidation = true
+                case let .validateNickname(contribution):
+                    nicknameChoiceContribution = contribution
+                    openNicknameValidation = true
                 case .loadConfig: displayLoadConfigError = true
                 case let .error(error):
                     displayableSSOError = error
@@ -108,8 +112,13 @@ struct ConnectionRouter: ViewModifier {
 }
 
 extension View {
-    func connectionRouter(octopus: OctopusSDK, noConnectedReplacementAction: Binding<ConnectedActionReplacement?>) -> some View {
-        modifier(ConnectionRouter(octopus: octopus, noConnectedReplacementAction: noConnectedReplacementAction))
+    /// - Parameter onNicknameChoiceClosed: called when the member closes the nickname choice screen without
+    ///   confirming their nickname. A view whose contributions can open that screen passes it so the held
+    ///   contribution is dropped.
+    func connectionRouter(octopus: OctopusSDK, noConnectedReplacementAction: Binding<ConnectedActionReplacement?>,
+                          onNicknameChoiceClosed: (@MainActor () -> Void)? = nil) -> some View {
+        modifier(ConnectionRouter(octopus: octopus, noConnectedReplacementAction: noConnectedReplacementAction,
+                                  onNicknameChoiceClosed: onNicknameChoiceClosed))
     }
 }
 
@@ -136,12 +145,6 @@ class ConnectionRouterViewModel: ObservableObject {
     }
 
     private func linkClientUserToOctopusUser() async {
-        // There is no client user to link outside SSO, and the magic-link repository answers this call
-        // with a `preconditionFailure` — so a replacement that reaches here in `.octopus` mode would trap
-        // the host app. `ConnectedActionChecker.decision` only ever asks for it behind an `isSSO` check,
-        // but that is a convention its callers cannot see: a branch added above that check would crash,
-        // which is exactly how the ban replacement did before it was split into its own case.
-        guard case .sso = octopus.core.connectionRepository.connectionMode else { return }
         do {
             try await octopus.core.connectionRepository.linkClientUserToOctopusUser()
             ssoError = nil

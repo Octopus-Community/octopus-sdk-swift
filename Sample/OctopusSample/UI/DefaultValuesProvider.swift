@@ -17,6 +17,10 @@ enum DefaultValuesProvider {
     /// Token of the internal feature-env directory. Never log this value.
     static let featureEnvsToken = Bundle.main.infoDictionary?["OCTOPUS_FEATURE_ENVS_TOKEN"] as? String ?? ""
 
+    /// `owner/name` of the GitHub repository Settings › Send feedback files into, empty by default, which hides
+    /// the row. Never a public repository: the pre-filled issue carries the last 50 Debug console lines.
+    static let feedbackRepo = Bundle.main.infoDictionary?["OCTOPUS_FEEDBACK_REPO"] as? String ?? ""
+
     /// Whether the feature-env picker can work. When false, the scenario is hidden entirely.
     static var featureEnvsConfigured: Bool { !featureEnvsHost.isEmpty && !featureEnvsToken.isEmpty }
 
@@ -25,8 +29,13 @@ enum DefaultValuesProvider {
     /// `UserDefaults` exposes `-key value` launch arguments, which is what QA tooling uses.
     static var featureEnvTicketArgument: String? { launchArgument("featureEnvTicket") }
 
-    /// Optional community id or name fragment, when an env has several and the first one is not the
-    /// wanted one: `-featureEnvCommunity "Pictures Off"`.
+    /// Optional community to target inside the env: `-featureEnvCommunity "Pictures Off"`.
+    ///
+    /// The directory lists a community once per API key, under the same id and name, so the value is
+    /// matched as follows. An exact API key (case-sensitive) targets that very entry. Otherwise it picks
+    /// the entries whose id is the value, or whose name or description contains it (case-insensitive),
+    /// an exact id or name winning over a longer name that merely contains it. Among those — all of the
+    /// env's entries when the argument is absent — the client key wins over the community's other keys.
     static var featureEnvCommunityArgument: String? { launchArgument("featureEnvCommunity") }
 
     private static func launchArgument(_ key: String) -> String? {

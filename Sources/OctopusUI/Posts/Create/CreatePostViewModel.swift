@@ -16,30 +16,12 @@ class CreatePostViewModel: ObservableObject {
         let name: String
     }
 
-    enum Attachment: Equatable {
-        case image(ImageAndData)
-        case poll(EditablePoll)
-
-        var hasImage: Bool {
-            switch self {
-            case .image: return true
-            default: return false
-            }
-        }
-
-        var hasPoll: Bool {
-            switch self {
-            case .poll: return true
-            default: return false
-            }
-        }
-    }
-
     @Published private(set) var isLoading = false
     @Published private(set) var dismiss = false
     @Published var alertError: DisplayableString?
     @Published var text: String = ""
-    @Published var attachment: Attachment?
+    @Published var image: ImageAndData?
+    @Published var poll: EditablePoll?
     @Published private(set) var textError: DisplayableString?
     @Published private(set) var pictureError: DisplayableString?
     @Published private(set) var pollError: DisplayableString?
@@ -53,8 +35,13 @@ class CreatePostViewModel: ObservableObject {
     /// config is loaded, so behaviour is unchanged unless the community disables a capability.
     @Published private(set) var picturesEnabled = true
     @Published private(set) var pollsEnabled = true
+    /// Whether a post needs text. Default `true` until the community config is loaded; when `false`, a post
+    /// with an image can be published without text.
+    @Published private(set) var textRequired = true
     /// How the community requires legal acceptance. Default `.implicit` until the config loads.
     @Published private(set) var termsAcceptanceMode: TermsAcceptanceMode = .implicit
+    /// The community's custom consent wordings, `nil` for the SDK ones (until the config loads, or when unset).
+    @Published private(set) var consentTexts: ConsentTexts?
     /// Drives the explicit terms-acceptance bottom sheet (explicit modes only).
     @Published var displayConsentSheet = false
     /// Set once the user accepts in the consent sheet, so the re-entered `send()` bypasses the gate.
@@ -65,9 +52,12 @@ class CreatePostViewModel: ObservableObject {
     let termsOfUseUrl: URL
 
     var sendButtonAvailable: Bool {
-        !isLoading &&
-        Validators.Post.validate(text: text, attachment: .init(from: attachment), ignoreTooShort: true).isSuccess &&
-        Validators.Post.validate(attachment: .init(from: attachment))
+        Self.canSend(text: text, hasImage: image != nil, poll: writablePoll, textRequired: textRequired,
+                     isLoading: isLoading)
+    }
+
+    private var writablePoll: WritablePoll? {
+        poll?.writablePoll
     }
 
     var textMaxLength: Int { Validators.Post.maxTextLength }
@@ -85,7 +75,7 @@ class CreatePostViewModel: ObservableObject {
         )
     }
 
-    private var isWaitingToSendPost = false
+    private var pendingSend: PendingSendReason?
     private let defaultTopicId: String?
     private let cta: WritableCTA?
     private let creationSource: PostsRepository.CreationSource
@@ -113,7 +103,7 @@ class CreatePostViewModel: ObservableObject {
 
         if let defaultText { self.text = defaultText }
         if let defaultImage, let image = UIImage(data: defaultImage) {
-            self.attachment = .image(ImageAndData(imageData: defaultImage, image: image))
+            self.image = ImageAndData(imageData: defaultImage, image: image)
         }
 
         let externalLinksRepository = octopus.core.externalLinksRepository
@@ -132,8 +122,8 @@ class CreatePostViewModel: ObservableObject {
                 guard forceLoginOnStrongActions != nil else {
                     return
                 }
-                if isWaitingToSendPost {
-                    isWaitingToSendPost = false
+                if let pendingSend, pendingSend.resumesOnConfigChange {
+                    self.pendingSend = nil
                     DispatchQueue.main.async { [weak self] in
                         self?.send()
                     }
@@ -148,15 +138,22 @@ class CreatePostViewModel: ObservableObject {
             }.store(in: &storage)
 
         octopus.core.configRepository.communityConfigPublisher
+            .map { $0?.consentTexts }
+            .removeDuplicates()
+            .sink { [unowned self] in consentTexts = $0 }
+            .store(in: &storage)
+
+        octopus.core.configRepository.communityConfigPublisher
             .map { ($0?.contentOptions ?? .allEnabled).post }
             .removeDuplicates()
             .sink { [unowned self] postOptions in
                 picturesEnabled = postOptions.enablePictures
                 pollsEnabled = postOptions.enablePolls
+                textRequired = postOptions.textRequired
                 // Safety net (not bypassable): if polls are disabled, never leave a poll editor open.
-                // Pictures don't clear an existing/prefilled attachment — bridge images are unaffected.
-                if !postOptions.enablePolls, attachment?.hasPoll == true {
-                    attachment = nil
+                // Pictures don't clear an existing/prefilled image — bridge images are unaffected.
+                if !postOptions.enablePolls, poll != nil {
+                    poll = nil
                 }
             }.store(in: &storage)
 
@@ -165,21 +162,11 @@ class CreatePostViewModel: ObservableObject {
             $alertError,
             $isLoading.removeDuplicates()
         ).sink { [unowned self] profile, _, _ in
+            resolvePendingSend(profile: profile)
             guard let profile else { return }
             userHasAcceptedCgu = profile.hasAcceptedCgu
-            if !profile.isGuest || profile.hasConfirmedNickname {
-                if isWaitingToSendPost {
-                    isWaitingToSendPost = false
-                    DispatchQueue.main.async { [weak self] in
-                        self?.send()
-                    }
-                }
-            }
-            if let pictureUrl = profile.pictureUrl {
-                userAvatar = .image(url: pictureUrl, name: profile.nickname)
-            } else {
-                userAvatar = .defaultImage(name: profile.nickname)
-            }
+            userAvatar = .member(pictureUrl: profile.pictureUrl, name: profile.nickname,
+                                 community: profile.defaultAvatar)
         }.store(in: &storage)
 
         octopus.core.topicsRepository.$topics.sink { [unowned self] newTopics in
@@ -191,12 +178,11 @@ class CreatePostViewModel: ObservableObject {
             }
         }.store(in: &storage)
 
-        Publishers.CombineLatest3(
-            $text,
-            $attachment,
-            $selectedTopic)
-            .sink { [unowned self] text, _, selectedTopic in
-                hasChanges = !text.isEmpty || attachment != nil || selectedTopic?.topicId != defaultTopicId
+        Publishers.CombineLatest4($text, $image, $poll, $selectedTopic)
+            .sink { [unowned self] text, image, poll, selectedTopic in
+                hasChanges = Self.hasChanges(text: text, hasImage: image != nil, hasPoll: poll != nil,
+                                             selectedTopicId: selectedTopic?.topicId,
+                                             defaultTopicId: defaultTopicId)
             }.store(in: &storage)
 
         $text
@@ -209,33 +195,36 @@ class CreatePostViewModel: ObservableObject {
                 }
             }.store(in: &storage)
 
-        $attachment
+        $image
             .removeDuplicates()
             .receive(on: DispatchQueue.main) // needed because we can reset the picture
-            .sink { [weak self] attachment in
+            .sink { [weak self] image in
                 guard let self else { return }
-                switch attachment {
-                case let .image(imageAndData):
-                    switch Validators.Picture.validate(imageAndData.image) {
-                    case .sideTooSmall, .ratioTooBig:
-                        alertError = .localizationKey(
-                            "Picture.Selection.Error_maxRatio:\(Validators.Picture.maxRatioStr)_minSize:\(Int(Validators.Picture.minSize))")
-                        self.attachment = nil
-                    case .valid:
-                        pictureError = nil
-                    }
-                case .poll:
-                    // validation is done inside the EditablePoll directly
-                    pollError = nil
-                case .none:
+                guard let image else {
                     pictureError = nil
-                    pollError = nil
+                    return
                 }
+                switch Validators.Picture.validate(image.image) {
+                case .sideTooSmall, .ratioTooBig:
+                    alertError = .localizationKey(
+                        "Picture.Selection.Error_maxRatio:\(Validators.Picture.maxRatioStr)_minSize:\(Int(Validators.Picture.minSize))")
+                    // Only the picture is dropped: an attached poll is kept.
+                    self.image = nil
+                case .valid:
+                    pictureError = nil
+                }
+            }.store(in: &storage)
+
+        $poll
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                // validation is done inside the EditablePoll directly
+                self?.pollError = nil
             }.store(in: &storage)
     }
 
-    /// Whether the connected user's only remaining blocker before publishing is the first-post
-    /// nickname-confirmation ("congrats") screen — so the consent sheet can be presented *before* it.
+    /// Whether the connected user's only remaining blocker before publishing is the nickname choice
+    /// screen — so the consent sheet can be presented *before* it.
     /// Returns `false` when the user is not connected or still owes a (forced) login, since those must
     /// come first.
     private var isBlockedOnlyByFirstPostNicknameValidation: Bool {
@@ -247,27 +236,54 @@ class CreatePostViewModel: ObservableObject {
         return ConnectedActionChecker.needsNicknameValidation(
             for: .post,
             hasConfirmedNickname: profile?.hasConfirmedNickname ?? false,
-            nicknameLock: config.profileFieldsLock.nickname)
+            nicknameLock: config.profileFieldsLock.nickname,
+            isNicknameAppManaged: ConnectedActionChecker.isNicknameAppManaged(
+                octopus: octopus, isGuest: profile?.isGuest ?? true))
+    }
+
+    /// Sends, keeps or drops the contribution held by `ensureConnected`, depending on the connected profile.
+    private func resolvePendingSend(profile: CurrentUserProfile?) {
+        guard let pendingSend else { return }
+        switch pendingSend.resolution(for: profile.map(PendingSendReason.Profile.init)) {
+        case .keepWaiting:
+            break
+        case .drop:
+            self.pendingSend = nil
+        case .send:
+            self.pendingSend = nil
+            DispatchQueue.main.async { [weak self] in
+                self?.send()
+            }
+        }
+    }
+
+    /// Called when the member closes the nickname choice screen without confirming their nickname: the
+    /// contribution it held is not sent, now or once the nickname is confirmed later. The draft stays.
+    func nicknameChoiceClosed() {
+        pendingSend = nil
     }
 
     func send() {
         guard let topic = selectedTopic else { return }
         let post = WritablePost(
             topicId: topic.topicId,
+            // A blank text is sent empty by the repository when the post may omit it.
             text: text,
-            attachment: .init(from: attachment),
+            image: image?.imageData,
+            poll: writablePoll,
             cta: cta
         )
-        switch Validators.Post.validate(text: post.text, attachment: post.attachment) {
+        switch Validators.Post.validate(text: post.text, hasPoll: post.poll != nil, hasImage: post.image != nil,
+                                        textRequired: textRequired) {
         case let .failure(error):
             if error == .tooShort {
                 textError = .localizationKey("Error.Text.TooShort_minLength:\(textMinLength)")
             }
         default: break
         }
-        guard Validators.Post.validate(post: post) else { return }
+        guard Validators.Post.validate(post: post, textRequired: textRequired) else { return }
 
-        // The first-post nickname-confirmation ("congrats") screen must not appear before the user has
+        // The nickname choice screen must not appear before the user has
         // accepted the community's legal documents. When the connected user's only remaining blocker
         // before publishing is that screen and explicit consent is still pending, present the consent
         // sheet first; the nickname screen then follows once consent is accepted (on the re-entered
@@ -281,7 +297,8 @@ class CreatePostViewModel: ObservableObject {
         }
 
         guard connectedActionChecker.ensureConnected(action: .post, actionWhenNotConnected: authenticationActionBinding) else {
-            isWaitingToSendPost = true
+            pendingSend = .held(isBlockedOnlyByNicknameChoice: isBlockedOnlyByFirstPostNicknameValidation,
+                                profileId: ConnectedActionChecker.connectedProfile(octopus: octopus)?.id)
             isLoading = false
             return
         }
@@ -369,7 +386,23 @@ class CreatePostViewModel: ObservableObject {
     }
 
     func createPoll() {
-        attachment = .poll(EditablePoll())
+        poll = EditablePoll()
+    }
+
+    /// Whether the draft has content (text, image or poll) or a topic other than the default one.
+    static func hasChanges(text: String, hasImage: Bool, hasPoll: Bool,
+                           selectedTopicId: String?, defaultTopicId: String?) -> Bool {
+        !text.isEmpty || hasImage || hasPoll || selectedTopicId != defaultTopicId
+    }
+
+    /// Whether the publish button is enabled. The minimum text length is not checked here: it is reported
+    /// when the user taps the button (see `send()`), so a too-short text keeps the button enabled.
+    static func canSend(text: String, hasImage: Bool, poll: WritablePoll?, textRequired: Bool,
+                        isLoading: Bool) -> Bool {
+        !isLoading &&
+        Validators.Post.validate(text: text, hasPoll: poll != nil, hasImage: hasImage,
+                                 textRequired: textRequired, ignoreTooShort: true).isSuccess &&
+        Validators.Post.validate(poll: poll)
     }
 
     private static func resolveDefaultTopic(
@@ -386,18 +419,5 @@ class CreatePostViewModel: ObservableObject {
 
     private func topicValid() -> Bool {
         return selectedTopic != nil
-    }
-}
-
-private extension WritablePost.Attachment {
-    init?(from attachment: CreatePostViewModel.Attachment?) {
-        switch attachment {
-        case let .image(imageAndData):
-            self = .image(imageAndData.imageData)
-        case let .poll(editablePoll):
-            let poll = WritablePoll(options: editablePoll.options.map { .init(text: $0.text) })
-            self = .poll(poll)
-        case .none: return nil
-        }
     }
 }

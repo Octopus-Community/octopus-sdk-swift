@@ -13,6 +13,12 @@ public struct CurrentUserProfile: Equatable, Sendable {
     public let email: String?
     public let bio: String?
     public let pictureUrl: URL?
+    /// See `MinimalProfile.defaultAvatar`: shown like a picture on "my profile", but it is not one: nothing to
+    /// remove.
+    public let defaultAvatar: DefaultAvatar?
+    /// The default the member would get if they removed their picture now: shown in the profile edit preview once
+    /// they tap "remove", before saving. Never set together with `defaultAvatar`.
+    public let defaultAvatarIfPictureRemoved: DefaultAvatar?
 
     public let tags: ProfileTags
 
@@ -35,7 +41,7 @@ public struct CurrentUserProfile: Equatable, Sendable {
     public let entitlements: Set<String>
 
     /// The connected user's id in the host app's own system (Unified Profile), from `connectUser`.
-    /// Populated in SSO mode for a non-guest user; `nil` otherwise (guest, or held independently of
+    /// Populated for a non-guest user; `nil` otherwise (guest, or held independently of
     /// the backend `exposeClientUserId` flag). See `MinimalProfile.clientUserId`.
     public let clientUserId: String?
 
@@ -57,6 +63,8 @@ extension CurrentUserProfile {
         email = storableProfile.email
         bio = storableProfile.bio?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
         pictureUrl = storableProfile.pictureUrl
+        defaultAvatar = storableProfile.defaultAvatar
+        defaultAvatarIfPictureRemoved = storableProfile.defaultAvatarIfPictureRemoved
         tags = storableProfile.tags
 
         totalMessages = storableProfile.totalMessages

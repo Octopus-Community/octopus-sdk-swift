@@ -15,9 +15,13 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
         try FeatureEnvsDirectory.decode(try fixture(), now: now)
     }
 
-    private func fixture() throws -> Data {
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "feature-envs-sample",
-                                                           withExtension: "json"))
+    /// Envs listing a community once per API key, as the directory does, other keys first.
+    private func decodedPerKeyFixture() throws -> [FeatureEnv] {
+        try FeatureEnvsDirectory.decode(try fixture(named: "feature-envs-per-key-sample"), now: now)
+    }
+
+    private func fixture(named name: String = "feature-envs-sample") throws -> Data {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: name, withExtension: "json"))
         return try Data(contentsOf: url)
     }
 
@@ -229,7 +233,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
         let selection = FeatureEnvSelection(envName: "feat-x", ticket: "TICKET-1", apiHost: "api-x.example.com",
                                             expiresAt: Date(timeIntervalSince1970: 1_800_000_000),
                                             communityId: "c", communityName: "Seed", apiKey: "k")
-        let config = SDKConfig(authKind: .octopus).with(featureEnv: selection)
+        let config = SDKConfig(authKind: .sso(appManagedFields: [])).with(featureEnv: selection)
         let decoded = try JSONDecoder().decode(SDKConfig.self, from: try JSONEncoder().encode(config))
         XCTAssertEqual(decoded.featureEnv, selection)
         XCTAssertNil(decoded.with(featureEnv: nil).featureEnv)
@@ -237,9 +241,16 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
 
     /// Configs persisted before this feature must keep decoding.
     func testLegacySdkConfigWithoutFeatureEnvStillDecodes() throws {
-        let legacy = try JSONEncoder().encode(LegacySDKConfig(authKind: .init(octopus: .init())))
+        let legacy = try JSONEncoder().encode(LegacySDKConfig(authKind: .init(sso: .init())))
         let decoded = try JSONDecoder().decode(SDKConfig.self, from: legacy)
         XCTAssertNil(decoded.featureEnv)
+    }
+
+    /// The Octopus authentication mode is gone: a config saved with it must fail to decode, which is what
+    /// sends the Sample back to its config screen at launch rather than building an SDK it cannot build.
+    func testSdkConfigPersistedWithOctopusAuthNoLongerDecodes() {
+        let persisted = Data(#"{"authKind":{"octopus":{}}}"#.utf8)
+        XCTAssertThrowsError(try JSONDecoder().decode(SDKConfig.self, from: persisted))
     }
 
     // MARK: Launch-argument resolution (`-featureEnvTicket`)
@@ -282,11 +293,47 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
         XCTAssertNil(FeatureEnvSelection.resolve(ticket: "TICKET-1000", communityHint: "nope", in: envs))
     }
 
+    // MARK: A community listed once per API key
+
+    func testWithoutAHintTheClientKeyWinsOverTheKeysListedBeforeIt() throws {
+        XCTAssertEqual(try resolvedPerKeyApiKey(ticket: "TICKET-2000", communityHint: nil), "key-client")
+    }
+
+    func testAnIdOrNameHintTakesTheClientKeyOfThatExactCommunity() throws {
+        XCTAssertEqual(try resolvedPerKeyApiKey(ticket: "TICKET-2000", communityHint: "S1"), "key-client")
+        XCTAssertEqual(try resolvedPerKeyApiKey(ticket: "TICKET-2000", communityHint: "seed community"),
+                       "key-client")
+    }
+
+    /// "Seed Community (Pictures Off)", listed first, also contains the hint: the exact name still wins.
+    func testTheExactNameWinsOverAnEarlierLongerNameContainingIt() throws {
+        XCTAssertEqual(try resolvedPerKeyApiKey(ticket: "TICKET-3000", communityHint: "seed community"),
+                       "key-delta-client")
+    }
+
+    func testAnExactKeyHintTargetsThatVeryEntry() throws {
+        XCTAssertEqual(try resolvedPerKeyApiKey(ticket: "TICKET-2000", communityHint: "key-server"), "key-server")
+    }
+
+    func testADescriptionHintTargetsThatVeryEntry() throws {
+        XCTAssertEqual(try resolvedPerKeyApiKey(ticket: "TICKET-2000", communityHint: "no backdate"),
+                       "key-server-nb")
+    }
+
+    private func resolvedPerKeyApiKey(ticket: String, communityHint: String?) throws -> String {
+        let envs = try decodedPerKeyFixture()
+        return try XCTUnwrap(FeatureEnvSelection.resolve(ticket: ticket, communityHint: communityHint,
+                                                         in: envs)).apiKey
+    }
+
     /// Mirrors what `SDKConfig` encoded to before `featureEnv` existed.
     private struct LegacySDKConfig: Encodable {
         struct AuthKind: Encodable {
-            struct Octopus: Encodable { }
-            let octopus: Octopus
+            struct SSO: Encodable {
+                var appManagedFields: [String] = []
+                var forceLoginOnStrongActions = false
+            }
+            let sso: SSO
         }
         let authKind: AuthKind
     }

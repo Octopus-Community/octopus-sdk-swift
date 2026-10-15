@@ -32,6 +32,8 @@ class SessionStore {
         startTimestampKey = "\(self.prefix).startTimestamp"
         firstSessionKey = "\(self.prefix).firstSession"
         lastKnownTimestampKey = "\(self.prefix).lastKnownTimestamp"
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($session)
 
         migrateUserDefaultsIfNeeded()
 

@@ -1,6 +1,6 @@
 import Foundation
 
-public extension Navigator {
+extension Navigator {
   /// Any changes can be made to the screens array passed to the transform closure. If those
   /// changes are not supported within a single update by SwiftUI, the changes will be
   /// applied in stages.

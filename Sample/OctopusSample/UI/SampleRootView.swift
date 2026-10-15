@@ -21,6 +21,8 @@ struct SampleRootView: View {
                 SampleTabView()
             }
         }
+        // Settings › Appearance: System / Light / Dark for every window, sheets and covers included, at once.
+        .onReceive(SampleAppearanceStore.instance.$appearance) { $0.applyToWindows() }
         .onReceive(SDKConfigManager.instance.$sdkConfig) {
             displaySDKConfig = DefaultValuesProvider.internalDemoMode && $0 == nil
             applyFeatureEnvLaunchArgumentIfPossible(config: $0)

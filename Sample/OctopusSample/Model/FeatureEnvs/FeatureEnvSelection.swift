@@ -51,7 +51,10 @@ extension FeatureEnvSelection {
     }
 
     /// Picks the env matching `ticket` (or `name`, so an env whose ticket is null stays reachable) and one
-    /// of its communities: the one whose id or name contains `communityHint`, the first one otherwise.
+    /// of its communities: the one whose API key is `communityHint`, else those whose id or name is the
+    /// hint — or, failing that, whose name or description contains it — else all of them. Among those,
+    /// the client key wins over the community's other keys, which the directory may list first; the first
+    /// one is taken when none is a client key.
     ///
     /// Used by the launch-argument path (`-featureEnvTicket`), so QA tooling can target an env without
     /// walking the UI. Returns `nil` when nothing matches, and the caller keeps the default community.
@@ -62,16 +65,32 @@ extension FeatureEnvSelection {
                 ?? envs.first(where: { $0.name.lowercased() == wanted }) else { return nil }
         // `usableCommunities`: one without an API key would switch the SDK to a community every call then
         // fails to authenticate against, with nothing naming the cause.
-        let candidates = env.usableCommunities
-        let community: FeatureEnv.Community? = if let hint = communityHint?.lowercased(), !hint.isEmpty {
-            candidates.first {
-                $0.communityId.lowercased() == hint || $0.communityName.lowercased().contains(hint)
+        guard let community = pickCommunity(in: env.usableCommunities, hint: communityHint) else { return nil }
+        return FeatureEnvSelection(env: env, community: community)
+    }
+
+    private static func pickCommunity(in communities: [FeatureEnv.Community], hint rawHint: String?)
+    -> FeatureEnv.Community? {
+        let hint = rawHint?.isEmpty == false ? rawHint : nil
+        // Matched as is: the key is the one field that tells apart the entries of a community listed once
+        // per key, so it targets that very entry.
+        if let hint, let byKey = communities.first(where: { $0.apiKey == hint }) { return byKey }
+        let wanted = hint?.lowercased()
+        let candidates = if let wanted {
+            communities.filter {
+                $0.communityId.lowercased() == wanted
+                    || $0.communityName.lowercased().contains(wanted)
+                    || $0.description?.lowercased().contains(wanted) == true
             }
         } else {
-            candidates.first
+            communities
         }
-        guard let community else { return nil }
-        return FeatureEnvSelection(env: env, community: community)
+        // "Seed" also matches "Seed (Pictures Off)": an exact id or name comes first.
+        let exact = candidates.filter {
+            $0.communityId.lowercased() == wanted || $0.communityName.lowercased() == wanted
+        }
+        let pool = exact.isEmpty ? candidates : exact
+        return pool.first(where: \.isClientKey) ?? pool.first
     }
 
     /// The SDK endpoint for this selection, or `nil` when the stored host is not usable.

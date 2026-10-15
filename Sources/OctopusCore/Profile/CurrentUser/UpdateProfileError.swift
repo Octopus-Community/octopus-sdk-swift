@@ -16,7 +16,9 @@ public enum UpdateProfile {
         case unknown
         case bannedWordUsed([String])
         case maxCharLimitReached
-        case alreadyTaken
+        /// The nickname is used by another member. `suggestions` are available nicknames derived from it, only
+        /// sent when the update asked for them (`EditableProfile.wantNicknameSuggestions`); empty otherwise.
+        case alreadyTaken(suggestions: [String])
         case badFormat
         case emptyFile
         case fileSizeTooBig
@@ -42,7 +44,7 @@ extension ValidationErrors where Field == UpdateProfile.Field, ErrorDetail == Up
             }
             let detail: ErrorDetail = switch error.details {
             case let .bannedWordUsed(bannedWords):  .bannedWordUsed(bannedWords.words)
-            case .alreadyTaken:                     .alreadyTaken
+            case let .alreadyTaken(alreadyTaken):   .alreadyTaken(suggestions: alreadyTaken.suggestions)
             case .badFormat:                        .badFormat
             case .emptyFile:                        .emptyFile
             case .fileSizeTooBig:                   .fileSizeTooBig

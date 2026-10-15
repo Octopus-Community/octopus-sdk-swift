@@ -7,6 +7,16 @@
     "· %@" : {
 
     },
+    "%@ — expires in %lld d" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ — expires in %2$lld d"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -27,15 +37,31 @@
         }
       }
     },
+    "%lld" : {
+
+    },
     "%lld comments" : {
 
     },
-    "%lld unseen notification%@" : {
+    "%lld events" : {
+
+    },
+    "%lld of %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$lld unseen notification%2$@"
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld entries" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld entries"
           }
         }
       }
@@ -53,10 +79,16 @@
         }
       }
     },
+    "● %@" : {
+
+    },
     "A connection (or the device's own)" : {
 
     },
-    "A/B Testing" : {
+    "A GitHub issue will be opened in the sample's repository, pre-filled with:" : {
+
+    },
+    "About" : {
 
     },
     "Account" : {
@@ -65,16 +97,10 @@
     "Act as if offline" : {
 
     },
-    "Action date" : {
+    "actionDate offset" : {
 
     },
-    "Actions" : {
-
-    },
-    "Add action" : {
-
-    },
-    "Analytics" : {
+    "API Key" : {
 
     },
     "APNs device token" : {
@@ -84,6 +110,7 @@
 
     },
     "App Version: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -159,28 +186,16 @@
         }
       }
     },
-    "Applied lock" : {
-
-    },
-    "Applied mode" : {
-
-    },
-    "Applied options" : {
-
-    },
-    "Applied override" : {
+    "Appearance" : {
 
     },
     "Applied sections" : {
 
     },
+    "Applies live: the next profile tap follows the switch, no restart needed." : {
+
+    },
     "Ask for notification permission" : {
-
-    },
-    "Associated Fields" : {
-
-    },
-    "Authentication mode" : {
 
     },
     "Available Groups" : {
@@ -195,28 +210,37 @@
     "Back to the default community" : {
 
     },
-    "Background" : {
+    "Backend flag override" : {
 
     },
-    "Batch follow/unfollow groups with per-action timestamps." : {
+    "Background" : {
 
     },
     "Bio" : {
 
     },
-    "Bridge" : {
-
-    },
     "Bridge to Client Object" : {
 
     },
-    "Can access the community" : {
+    "Built with the Octopus SDK for iOS" : {
+
+    },
+    "Callback and URL changes apply at once: the iOS SDK reads each callback when it needs it." : {
+
+    },
+    "Cancel" : {
 
     },
     "Canele Recipe" : {
 
     },
     "Center the title" : {
+
+    },
+    "Change" : {
+
+    },
+    "Changing the preset re-themes the community tab immediately — no restart." : {
 
     },
     "Clear image" : {
@@ -231,22 +255,25 @@
     "clientUserId" : {
 
     },
-    "Community Data" : {
+    "Cohort can access" : {
+
+    },
+    "Collapse" : {
+
+    },
+    "Collapsed" : {
+
+    },
+    "Community navigation" : {
+
+    },
+    "Community opens full screen" : {
 
     },
     "Configuration" : {
 
     },
     "Connection Error (displayed by the app)" : {
-
-    },
-    "Consent" : {
-
-    },
-    "Content" : {
-
-    },
-    "Content Options" : {
 
     },
     "Copied!" : {
@@ -258,28 +285,28 @@
     "CTA" : {
 
     },
-    "Current entitlements (from SDK)" : {
-
-    },
     "Current environment" : {
 
     },
-    "Custom events" : {
+    "Custom entitlement" : {
 
     },
     "Custom theme" : {
 
     },
-    "Customize the theme of the Octopus UI" : {
+    "Debug Console" : {
 
     },
-    "Debug" : {
+    "Debug info" : {
 
     },
-    "Edit entitlements" : {
+    "Developer tools" : {
 
     },
-    "Edit user" : {
+    "e.g. customer:vip" : {
+
+    },
+    "Edit profile" : {
 
     },
     "Edit your profile" : {
@@ -297,7 +324,13 @@
     "Error: %@" : {
 
     },
-    "Events" : {
+    "Events log" : {
+
+    },
+    "Expand" : {
+
+    },
+    "Expanded" : {
 
     },
     "expires in %lld d" : {
@@ -316,13 +349,13 @@
     "Feature Environments" : {
 
     },
-    "Followed" : {
+    "Fields the app owns" : {
+
+    },
+    "Follow" : {
 
     },
     "Force login on strong actions" : {
-
-    },
-    "Force Octopus A/B Tests Cohort" : {
 
     },
     "Gamification level: %lld" : {
@@ -334,6 +367,9 @@
     "Gamification: disabled for this community" : {
 
     },
+    "Granted" : {
+
+    },
     "Group" : {
 
     },
@@ -343,25 +379,22 @@
     "Group Sections" : {
 
     },
-    "Groups" : {
+    "Hide API key" : {
 
     },
-    "Have a post directly linked to a specific object (article, product, item...) of your app" : {
+    "Host app integration" : {
 
     },
     "Host App Profile" : {
 
     },
-    "Host app screen" : {
+    "I understand, start" : {
 
     },
     "Icons" : {
 
     },
     "Identifier: %@" : {
-
-    },
-    "If you are managing an AB Test to enable/disable community access to your users, inform the SDK if the user cannot access the community UI to improve the analytics data we provide." : {
 
     },
     "Image" : {
@@ -373,13 +406,13 @@
     "Initial Screen" : {
 
     },
-    "Integrate some of your custom events to the analytics we provide to you." : {
-
-    },
-    "Interact with the SDK to see events appear here" : {
-
-    },
     "Label" : {
+
+    },
+    "Language" : {
+
+    },
+    "Live community config" : {
 
     },
     "Live environments" : {
@@ -397,25 +430,13 @@
     "Login" : {
 
     },
-    "Logout" : {
-
-    },
     "Messages: %@" : {
-
-    },
-    "Modal" : {
 
     },
     "Mode" : {
 
     },
-    "More" : {
-
-    },
     "Navigation Bar" : {
-
-    },
-    "Navigation mode (internal)" : {
 
     },
     "Nickname" : {
@@ -427,16 +448,19 @@
     "No device token yet. Grant the notification permission, then come back to this screen." : {
 
     },
-    "No events yet" : {
+    "No existing community to match this configuration" : {
 
     },
-    "No existing community to match this configuration" : {
+    "No group matches '%@'" : {
 
     },
     "No live feature env right now." : {
 
     },
-    "No unseen notifications" : {
+    "No scenario matches \"%@\"." : {
+
+    },
+    "Non-default server" : {
 
     },
     "None" : {
@@ -448,34 +472,25 @@
     "Not existing Group" : {
 
     },
+    "Not run yet" : {
+
+    },
     "not-existing-group-id" : {
 
     },
-    "Notification Badge" : {
+    "Note" : {
 
     },
-    "Notifications" : {
+    "now" : {
 
     },
-    "Notifications denied. Tap to open Settings." : {
+    "now + 5 min" : {
 
     },
-    "Notifications enabled. Tap to open Settings." : {
-
-    },
-    "Octo Tab" : {
-
-    },
-    "Octopus" : {
+    "now − 5 min" : {
 
     },
     "Octopus community data" : {
-
-    },
-    "Octopus SDK lets you override the language use in the UI." : {
-
-    },
-    "Octopus SDK publishes events to inform you about what the user is doing inside the community. You can use these events to feed your own analytics tool." : {
 
     },
     "OK" : {
@@ -484,19 +499,7 @@
     "Once offline — open with nothing cached: the state replaces the list, with a Retry. Tap Retry: it passes through the loader, never through the empty state. A list that already has content keeps it and reports through a toast." : {
 
     },
-    "onNavigateToProfile wired" : {
-
-    },
-    "onNavigateToProfile: %@" : {
-
-    },
-    "onNavigateToProfileEdit wired" : {
-
-    },
-    "onNavigateToProfileEdit: %@" : {
-
-    },
-    "Open a specific post or group directly" : {
+    "onNavigateToURLCallback" : {
 
     },
     "Open community" : {
@@ -511,9 +514,6 @@
     "Open Octopus Home Screen" : {
 
     },
-    "Open on a sheet" : {
-
-    },
     "Open Post" : {
 
     },
@@ -526,28 +526,19 @@
     "Open Profile Directly" : {
 
     },
-    "Open the Octopus Community" : {
+    "Open the app's profile" : {
 
     },
-    "Open the Octopus SDK in a non full screen sheet" : {
+    "Parameters" : {
 
     },
-    "Override cohort attribution" : {
-
-    },
-    "Override the language of the SDK" : {
+    "Pending — the current session still carries the previous set. Reconnect to apply." : {
 
     },
     "Pick an image" : {
 
     },
-    "Pick the entitlements you want to claim. Saving will mint a fresh JWT and refresh the SDK." : {
-
-    },
     "Picture" : {
-
-    },
-    "Point the sample at a live backend feature env (per ticket) instead of the default community." : {
 
     },
     "Post text" : {
@@ -556,16 +547,7 @@
     "Prefill rejected" : {
 
     },
-    "Presentation" : {
-
-    },
-    "Profile" : {
-
-    },
-    "Profile Field Lock" : {
-
-    },
-    "Push Device Token" : {
+    "Profile, sign-in, links: now in Settings › Developer tools" : {
 
     },
     "Push Token" : {
@@ -577,10 +559,13 @@
     "Replace image" : {
 
     },
-    "Result" : {
+    "Reset" : {
 
     },
-    "Results" : {
+    "Reset Configuration?" : {
+
+    },
+    "Result" : {
 
     },
     "Retry" : {
@@ -589,76 +574,62 @@
     "Save" : {
 
     },
-    "Save & refresh" : {
-
-    },
     "Save & retry" : {
 
     },
     "Saving…" : {
 
     },
-    "Scenarios" : {
-
-    },
     "Screen states" : {
 
     },
-    "Screen states (offline)" : {
+    "SDK · %@" : {
 
     },
     "SDK Configuration" : {
 
     },
-    "SDK configured with: %@" : {
-
-    },
     "SDK currently sees" : {
 
     },
-    "Security" : {
+    "Search logs..." : {
+
+    },
+    "Search scenarios" : {
 
     },
     "See their Octopus posts" : {
 
     },
-    "Select a group" : {
-
-    },
     "Select a recipe to open" : {
 
     },
-    "Select the language by tapping on the name." : {
+    "Selected: %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Selected: %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "Send feedback" : {
 
     },
-    "Send CustomEvent1" : {
+    "Session" : {
 
     },
-    "Send Purchase event" : {
+    "Show API key" : {
 
     },
-    "Show and copy the APNs device token registered for this build" : {
+    "SSO login" : {
 
     },
-    "Some App Managed Fields" : {
-
-    },
-    "Sometimes, you need to change of community. Although it is not something we recommend, it can be useful for example when you have one community per country." : {
-
-    },
-    "SSO" : {
+    "Switch community" : {
 
     },
     "Switch Community" : {
-
-    },
-    "Sync" : {
-
-    },
-    "Sync Follow Groups" : {
-
-    },
-    "Terms Acceptance" : {
 
     },
     "Testing" : {
@@ -667,31 +638,28 @@
     "Text" : {
 
     },
-    "The following switch simulates an A/B test.\nWhen off, the community is hidden to the user." : {
+    "The identity the sample signs its local JWT with." : {
 
     },
-    "The following switch will permanently override the internal cohort attribution for the current user." : {
+    "The same community, in the container your app gives it." : {
 
     },
     "The token value does not reveal whether it is a sandbox or production token — that depends on the build's aps-environment entitlement (Debug = development, Release/TestFlight = production)." : {
 
     },
-    "This group is not accessible to your current entitlements. Adjust them below to gain access." : {
+    "Theme preset" : {
 
     },
-    "This is your app's content" : {
+    "This group is not accessible to your current entitlements. Adjust them below to gain access." : {
 
     },
     "This is your app's login flow" : {
 
     },
-    "To increase user engagement, let your users know that they have not seen internal notifications" : {
+    "Unfollow" : {
 
     },
-    "Track A/B Tests" : {
-
-    },
-    "Unified Profile" : {
+    "Unified profile" : {
 
     },
     "Unique Identifier" : {
@@ -707,6 +675,21 @@
 
     },
     "Use primary color on nav bar" : {
+
+    },
+    "User ID" : {
+
+    },
+    "Versions" : {
+
+    },
+    "What this user is allowed to see and do in the community." : {
+
+    },
+    "What went wrong, or what you expected?" : {
+
+    },
+    "You will see: %@" : {
 
     }
   },

@@ -30,11 +30,8 @@ class OpenUserProfileBubbleViewModel: ObservableObject {
                 badgeCount = nil
                 return
             }
-            if let pictureUrl = profile.pictureUrl {
-                avatar = .image(url: pictureUrl, name: profile.nickname)
-            } else {
-                avatar = .defaultImage(name: profile.nickname)
-            }
+            avatar = .member(pictureUrl: profile.pictureUrl, name: profile.nickname,
+                             community: profile.defaultAvatar)
             badgeCount = switch profile.notificationBadgeCount {
             case 0: nil
             case 1..<100: String(profile.notificationBadgeCount)

@@ -23,11 +23,7 @@ class OctopusHomeScreenViewModel: ObservableObject {
     init(octopus: OctopusSDK) {
         self.octopus = octopus
 
-        Publishers.CombineLatest(
-            octopus.core.configRepository.userConfigPublisher,
-            mainFlowPath.$isLocked
-        ).sink { [unowned self] userConfig, isLocked in
-            guard !isLocked else { return }
+        octopus.core.configRepository.userConfigPublisher.sink { [unowned self] userConfig in
             guard userConfig?.canAccessCommunity ?? true else {
                 displayOnboarding = false
                 displayCommunityAccessDenied = true

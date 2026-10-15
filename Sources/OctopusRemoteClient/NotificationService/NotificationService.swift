@@ -39,12 +39,14 @@ class NotificationServiceClient: ServiceClient, NotificationService {
     private let client: Com_Octopuscommunity_NotificationServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
+         sdkIdentity: @escaping @Sendable () -> SdkIdentity,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_NotificationServiceAsyncClient(
             channel: unaryChannel, interceptors: NotificationServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier,
+                   sdkIdentity: sdkIdentity)
     }
 
     func getUserNotifications(

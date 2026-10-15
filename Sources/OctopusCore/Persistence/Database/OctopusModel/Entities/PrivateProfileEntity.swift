@@ -14,6 +14,12 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var email: String?
     @NSManaged public var bio: String?
     @NSManaged public var pictureUrl: URL?
+    @NSManaged public var defaultAvatarBackgroundHex: String?
+    @NSManaged public var defaultAvatarInitialsHex: String?
+    @NSManaged public var defaultAvatarImageUrl: String?
+    @NSManaged public var defaultAvatarIfPictureRemovedBackgroundHex: String?
+    @NSManaged public var defaultAvatarIfPictureRemovedInitialsHex: String?
+    @NSManaged public var defaultAvatarIfPictureRemovedImageUrl: String?
 
     @NSManaged public var tagsRawValue: Int
 
@@ -58,6 +64,20 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
         entitlementsRaw = json
     }
 
+    /// See `StorableCurrentUserProfile.defaultAvatarIfPictureRemoved`. Same storage as `defaultAvatar`.
+    var defaultAvatarIfPictureRemoved: DefaultAvatar? {
+        get {
+            DefaultAvatar(backgroundHex: defaultAvatarIfPictureRemovedBackgroundHex,
+                          initialsHex: defaultAvatarIfPictureRemovedInitialsHex,
+                          imageUrl: defaultAvatarIfPictureRemovedImageUrl)
+        }
+        set {
+            defaultAvatarIfPictureRemovedBackgroundHex = newValue?.backgroundHex
+            defaultAvatarIfPictureRemovedInitialsHex = newValue?.initialsHex
+            defaultAvatarIfPictureRemovedImageUrl = newValue?.imageUrl?.absoluteString
+        }
+    }
+
     var hasSeenOnboarding: Bool? { hasSeenOnboardingOptional?.boolValue }
     var hasAcceptedCgu: Bool? { hasAcceptedCguOptional?.boolValue }
     var hasConfirmedNickname: Bool? { hasConfirmedNicknameOptional?.boolValue }
@@ -90,3 +110,5 @@ class PrivateProfileEntity: NSManagedObject, Identifiable {
         return request
     }
 }
+
+extension PrivateProfileEntity: DefaultAvatarStoring {}

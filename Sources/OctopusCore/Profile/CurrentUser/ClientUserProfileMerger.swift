@@ -90,11 +90,22 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
            let clientNickname = clientUser.profile.nickname?.nilIfEmpty,
            // check with the original nickname first because the nickname can vary from the one requested
            (profileOriginalNickname ?? profileNickname) != clientNickname {
-            if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profileNickname), new: \(clientNickname))") }
-            nickname = .updated(clientNickname)
-            hasConfirmedNickname = appManagedFields.contains(.nickname) ? .updated(true) : .unchanged
-            findAvailableNickname = !appManagedFields.contains(.nickname)
-            hasUpdate = true
+            if profileNickname == clientNickname {
+                // The host sends the variant the user ended up with: there is no nickname to send. Sending it
+                // again would, when the app does not manage the nickname, ask the server to look for an available
+                // one. When it does manage it, the nickname is still confirmed, but only along with another
+                // change: on its own it is not worth a call.
+                nickname = .unchanged
+                hasConfirmedNickname = appManagedFields.contains(.nickname) && !profileHasConfirmedNickname
+                    ? .updated(true) : .unchanged
+                findAvailableNickname = false
+            } else {
+                if #available(iOS 14, *) { Logger.profile.trace("Nickname changed (old: \(profileNickname), new: \(clientNickname))") }
+                nickname = .updated(clientNickname)
+                hasConfirmedNickname = appManagedFields.contains(.nickname) ? .updated(true) : .unchanged
+                findAvailableNickname = !appManagedFields.contains(.nickname)
+                hasUpdate = true
+            }
         } else {
             nickname = .unchanged
             hasConfirmedNickname = .unchanged

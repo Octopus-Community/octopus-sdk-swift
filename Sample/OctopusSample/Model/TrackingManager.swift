@@ -11,6 +11,9 @@ import Octopus
 class TrackingManager {
     static let instance = TrackingManager()
 
+    /// The log keeps the newest events only, like the Debug console (`SampleDebugLog.maxEntries`).
+    static let maxEvents = 200
+
     @Published private(set) var events: [OctopusEvent] = []
 
     private var storage = [AnyCancellable]()
@@ -22,8 +25,8 @@ class TrackingManager {
         storage = []
         events = []
         octopus.eventPublisher.sink { [unowned self] event in
-            // Store this new event in a list, just to display it in the Events Scenario
-            events.append(event)
+            // Store this new event in a capped list, just to display it in the Events Scenario
+            Self.append(event, to: &events, max: Self.maxEvents)
 
             // here you convert Octopus Events into events for your analytics tool
             // for example, for Firebase:
@@ -37,5 +40,18 @@ class TrackingManager {
             //     ])
             // }
         }.store(in: &storage)
+    }
+
+    /// Empties the local log the Events scenario shows. The SDK stream itself is untouched.
+    func clear() {
+        events = []
+    }
+
+    /// Appends `element`, dropping the oldest entries so that `log` never holds more than `max`.
+    static func append<Element>(_ element: Element, to log: inout [Element], max: Int) {
+        if log.count >= max {
+            log.removeFirst(log.count - max + 1)
+        }
+        log.append(element)
     }
 }

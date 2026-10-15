@@ -65,4 +65,14 @@ class MockConfigRepository: ConfigRepository, InjectableObject, @unchecked Senda
         guard let communityConfig, let mode else { return }
         self.communityConfig = communityConfig.withTermsAcceptanceMode(mode)
     }
+
+    public func debugOverrideForceNicknameChoice(_ enabled: Bool?) {
+        guard let communityConfig, let enabled else { return }
+        self.communityConfig = communityConfig.withForceNicknameChoice(enabled)
+    }
+
+    public func debugOverrideConsentTexts(_ texts: ConsentTexts?) {
+        guard let communityConfig, let texts else { return }
+        self.communityConfig = communityConfig.withConsentTexts(texts)
+    }
 }

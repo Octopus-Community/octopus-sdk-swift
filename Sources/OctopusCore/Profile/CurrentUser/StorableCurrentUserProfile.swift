@@ -13,6 +13,11 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
     let email: String?
     let bio: String?
     let pictureUrl: URL?
+    /// See `MinimalProfile.defaultAvatar`. When non-nil, `pictureUrl` is nil.
+    let defaultAvatar: DefaultAvatar?
+    /// The default the member would get if they removed their picture now: shown in the profile edit preview once
+    /// they tap "remove", before saving. Never set together with `defaultAvatar`.
+    let defaultAvatarIfPictureRemoved: DefaultAvatar?
 
     let tags: ProfileTags
 
@@ -52,7 +57,9 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
          descPostFeedId: String, ascPostFeedId: String,
          descCommentFeedId: String = "", ascCommentFeedId: String = "",
          blockedProfileIds: [String],
-         entitlements: Set<String> = []) {
+         entitlements: Set<String> = [],
+         defaultAvatar: DefaultAvatar? = nil,
+         defaultAvatarIfPictureRemoved: DefaultAvatar? = nil) {
         self.id = id
         self.userId = userId
         self.nickname = nickname
@@ -60,6 +67,8 @@ struct StorableCurrentUserProfile: Sendable, Equatable {
         self.email = email
         self.bio = bio
         self.pictureUrl = pictureUrl
+        self.defaultAvatar = defaultAvatar
+        self.defaultAvatarIfPictureRemoved = defaultAvatarIfPictureRemoved
         self.tags = tags
         self.totalMessages = totalMessages
         self.accountCreationDate = accountCreationDate
@@ -90,6 +99,8 @@ extension StorableCurrentUserProfile {
         email = entity.email
         bio = entity.bio
         pictureUrl = entity.pictureUrl
+        defaultAvatar = entity.defaultAvatar
+        defaultAvatarIfPictureRemoved = entity.defaultAvatarIfPictureRemoved
         tags = entity.tags
         totalMessages = entity.totalMessages
         accountCreationDate = entity.accountCreationDate
@@ -137,7 +148,14 @@ extension StorableCurrentUserProfile {
         hasConfirmedBio = profile.hasHasConfirmedBio_p ? profile.hasConfirmedBio_p : nil
         hasConfirmedPicture = profile.hasHasConfirmedPicture_p ? profile.hasConfirmedPicture_p : nil
         isGuest = profile.isGuest
-        pictureUrl = profile.hasPictureURL ? URL(string: profile.pictureURL) : nil
+        let defaultAvatar = profile.hasDefaultAvatar ? DefaultAvatar(from: profile.defaultAvatar) : nil
+        self.defaultAvatar = defaultAvatar
+        // Only a preview of what removing the picture gives: it does not replace the picture.
+        defaultAvatarIfPictureRemoved = profile.hasDefaultAvatarIfPictureRemoved
+            ? DefaultAvatar(from: profile.defaultAvatarIfPictureRemoved) : nil
+        // Same rule as MinimalProfile. The server never copies the default image into the member's own profile;
+        // this only keeps the rule in one shape.
+        pictureUrl = defaultAvatar == nil && profile.hasPictureURL ? URL(string: profile.pictureURL) : nil
         if profile.hasNotSeenNotificationsCount {
             notificationBadgeCount = Int(profile.notSeenNotificationsCount)
         } else {

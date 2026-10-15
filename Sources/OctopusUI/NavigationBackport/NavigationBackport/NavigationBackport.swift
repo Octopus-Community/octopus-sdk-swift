@@ -9,7 +9,7 @@ enum NavigationBackport {
   ///   - start: The initial state.
   ///   - end: The goal state.
   /// - Returns: A series of state updates from the start to end.
-  public static func calculateSteps<Screen>(from start: [Screen], to end: [Screen]) -> [[Screen]] {
+  static func calculateSteps<Screen>(from start: [Screen], to end: [Screen]) -> [[Screen]] {
     let replacableScreens = end.prefix(start.count)
     let remainingScreens = start.count < end.count ? end.suffix(from: start.count) : []
 

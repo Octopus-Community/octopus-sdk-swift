@@ -22,15 +22,10 @@ struct DisplayablePost: Equatable {
             let ctaText: TranslatableText
             let targetUrl: URL
         }
-        enum Attachment: Equatable {
-            case image(ImageMedia)
-            case video(VideoMedia)
-            case poll(DisplayablePoll)
-        }
         /// The whole post text. Truncation is decided by the cell (whether it is expanded) and
         /// applied at render time, so no shortened copy is kept here.
         let text: TranslatableText
-        let attachment: Attachment?
+        let attachments: PostAttachmentsViewData
         let bridgeInfo: BridgeInfo?
         let customAction: CustomAction?
         fileprivate let _liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>
@@ -43,12 +38,12 @@ struct DisplayablePost: Equatable {
 
         let featuredComment: DisplayableFeedResponse?
 
-        init(text: TranslatableText, attachment: Attachment?,
+        init(text: TranslatableText, attachments: PostAttachmentsViewData,
              bridgeInfo: BridgeInfo?, customAction: CustomAction?,
              featuredComment: DisplayableFeedResponse?,
              liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>) {
             self.text = text
-            self.attachment = attachment
+            self.attachments = attachments
             self.bridgeInfo = bridgeInfo
             self.customAction = customAction
             self.featuredComment = featuredComment
@@ -57,7 +52,7 @@ struct DisplayablePost: Equatable {
 
         static func == (lhs: DisplayablePost.PostContent, rhs: DisplayablePost.PostContent) -> Bool {
             return lhs.text == rhs.text &&
-            lhs.attachment == rhs.attachment &&
+            lhs.attachments == rhs.attachments &&
             lhs.bridgeInfo == rhs.bridgeInfo &&
             lhs.featuredComment == rhs.featuredComment
         }
@@ -142,7 +137,7 @@ extension DisplayablePost {
 
             content = .published(PostContent(
                 text: post.text,
-                attachment: PostContent.Attachment(from: post),
+                attachments: PostAttachmentsViewData(from: post),
                 bridgeInfo: bridgeInfo,
                 customAction: customAction,
                 featuredComment: featuredComment,
@@ -169,42 +164,13 @@ extension DisplayablePost {
     }
 }
 
-extension DisplayablePost.PostContent.Attachment {
-    init?(from post: Post) {
-        if let poll = post.poll {
-            self = .poll(DisplayablePoll(from: poll))
-        } else if let media = post.medias.first(where: { $0.kind == .video }),
-                  let videoMedia = VideoMedia(from: media) {
-            self = .video(videoMedia)
-        } else if let media = post.medias.first(where: { $0.kind == .image }),
-                  let imageMedia = ImageMedia(from: media) {
-            self = .image(imageMedia)
-        } else {
-            return nil
-        }
-    }
-}
-
 extension DisplayablePost {
-    var hasVideo: Bool {
-        switch content {
-        case let .published(content):
-            switch content.attachment {
-            case .video: return true
-            default: return false
-            }
-        default: return false
-        }
-    }
+    var hasVideo: Bool { publishedAttachments?.hasVideo ?? false }
 
-    var videoId: String? {
-        switch content {
-        case let .published(content):
-            switch content.attachment {
-            case let .video(video): return video.videoId
-            default: return nil
-            }
-        default: return nil
-        }
+    var videoId: String? { publishedAttachments?.videoId }
+
+    private var publishedAttachments: PostAttachmentsViewData? {
+        guard case let .published(content) = content else { return nil }
+        return content.attachments
     }
 }

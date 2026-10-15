@@ -4,12 +4,21 @@
         <attribute name="avatarLock" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="bioLock" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="commentEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="consentBelowText" optional="YES" attributeType="String"/>
+        <attribute name="consentImplicitNotice" optional="YES" attributeType="String"/>
+        <attribute name="consentPrivacyLabel" optional="YES" attributeType="String"/>
+        <attribute name="consentRulesLabel" optional="YES" attributeType="String"/>
+        <attribute name="consentSingleLabel" optional="YES" attributeType="String"/>
+        <attribute name="consentTermsLabel" optional="YES" attributeType="String"/>
+        <attribute name="consentTextsMode" optional="YES" attributeType="Integer 16" usesScalarValueType="NO"/>
         <attribute name="displayAccountAge" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="exposeClientUserId" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="forceLoginOnStrongActions" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="forceNicknameChoice" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="nicknameLock" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="postEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="postEnablePolls" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="postTextRequired" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="replyEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="showCommentsOnOtherProfiles" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="termsAcceptanceMode" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>

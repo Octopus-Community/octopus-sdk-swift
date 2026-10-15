@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import Combine
 import SwiftUI
 import Octopus
 
@@ -21,11 +22,13 @@ struct CreateCommentView: View {
     init(octopus: OctopusSDK, postId: String,
          translationStore: ContentTranslationPreferenceStore,
          textFocused: Binding<Bool>, hasChanges: Binding<Bool>,
-         ensureConnected: @escaping (UserAction) -> Bool) {
+         ensureConnected: @escaping (UserAction) -> Bool,
+         nicknameChoiceClosed: AnyPublisher<Void, Never>) {
         _viewModel = Compat.StateObject(wrappedValue: CreateCommentViewModel(
             octopus: octopus, postId: postId,
             translationStore: translationStore,
-            ensureConnected: ensureConnected))
+            ensureConnected: ensureConnected,
+            nicknameChoiceClosed: nicknameChoiceClosed))
         self._textFocused = textFocused
         self._hasChanges = hasChanges
         self.ensureConnected = ensureConnected
@@ -48,6 +51,7 @@ struct CreateCommentView: View {
             termsOfUseUrl: viewModel.termsOfUseUrl,
             privacyPolicyUrl: viewModel.privacyPolicyUrl,
             communityGuidelinesUrl: viewModel.communityGuidelinesUrl,
+            consentTexts: viewModel.consentTexts,
             send: viewModel.send,
             userProfileTapped: { dispatchCurrentUserProfileTap(octopus: viewModel.octopus, navigator: navigator) },
             resetAlertError: { viewModel.alertError = nil },
@@ -58,6 +62,7 @@ struct CreateCommentView: View {
         .termsConsentSheet(
             isPresented: $viewModel.displayConsentSheet,
             mode: viewModel.termsAcceptanceMode,
+            consentTexts: viewModel.consentTexts,
             contribution: .comment,
             termsUrl: viewModel.termsOfUseUrl,
             privacyUrl: viewModel.privacyPolicyUrl,

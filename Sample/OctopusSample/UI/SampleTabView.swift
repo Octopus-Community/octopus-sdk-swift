@@ -8,128 +8,133 @@ import OctopusUI
 import Octopus
 import OctopusCore
 
+/// The sample shell: three tabs, Scenarios · Community · Settings, in the order and with the test ids of the
+/// Android sample. The app always starts on Scenarios.
+///
+/// - Scenarios and Settings are host-app screens, each in its own navigation container.
+/// - Community hosts `OctopusHomeScreen` directly, with no container around it (the SDK owns its navigation),
+///   or, in the Full screen `CommunityNavigation` mode, presents it above the tabs.
+///
+/// Every tab stays alive while another one is shown, so each keeps its own navigation stack. Full screen and
+/// sheet presentations are owned here so they escape the tabs' navigation.
 struct SampleTabView: View {
-    private enum Tab: Int, Hashable {
-        case modal
-        case embedded
-        case more
-        case account
-    }
-
-    private let savedSelectedTabKey = "savedSelectedTab"
-
-    // First value is true if we are in internal demo mode.
-    @State private var openOctopusAsModal: Bool
-    @State private var selectedTab: Tab
+    @ObservedObject private var router = SampleTabRouter.instance
+    @StateObjectCompat private var communityBadge = CommunityTabBadgeViewModel()
 
     @State private var fullScreenItem: ScreenBuilder?
     @State private var sheetScreenItem: ScreenBuilder?
 
-    @State private var id = UUID()
-
     init() {
-        let userDefaults = UserDefaults.standard
-        let savedSelectedTab = Tab(rawValue: userDefaults.integer(forKey: savedSelectedTabKey)) ?? .modal
-        _selectedTab = State(initialValue: savedSelectedTab)
-        _openOctopusAsModal = State(initialValue: userDefaults.object(forKey: savedSelectedTabKey) != nil && savedSelectedTab == .modal ?
-                                    DefaultValuesProvider.internalDemoMode : false)
         _ = AppUserManager.instance // only here to force the AppUserManager instance to be started
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // This example shows you that you can display an OctopusHomeScreen as a full screen modal
-            ModalOctopusView(openOctopusAsModal: $openOctopusAsModal)
-                .tabItem {
-                    VStack {
-                        Image(systemName: "building.2")
-                        Text("Modal")
-                    }
-
-                }.tag(Tab.modal)
-
-            // This example shows you that you can display an OctopusHomeScreen as view
-            EmbeddedOctopusAuthView()
-                .tabItem {
-                    VStack {
-                        Image(systemName: "building")
-                        Text("Octo Tab")
-                    }
-                }.tag(Tab.embedded)
-
-            // Entry point for a list of specific, advanced examples
-            ScenariosView(
-                showFullScreen: {
-                    fullScreenItem = ScreenBuilder(builder: $0)
-                },
-                showInSheet: {
-                    sheetScreenItem = ScreenBuilder(builder: $0)
-                }
-            )
-            .tabItem {
-                VStack {
-                    Image(systemName: "ellipsis")
-                    Text("More")
-                }
-            }.tag(Tab.more)
-
-            if shouldDisplayAccountTab {
-                AccountView()
-                    .tabItem {
-                        VStack {
-                            Image(systemName: "person.crop.circle")
-                            Text("Account")
-                        }
-                    }
-                    .tag(Tab.account)
-                    .id(id) // to recompute if we need to display it
-            }
-        }
-        .modify {
-            // only apply UITabbar color appearance on iOS < 26
+        tabView
+            .tint(SampleTokens.Colors.accentText)
+            .sampleTabBarNeverMinimize()
+            .modify {
+                // only apply UITabbar color appearance on iOS < 26
 #if compiler(>=6.2)
-            if #available(iOS 26.0, *) { $0 } else {
+                if #available(iOS 26.0, *) { $0 } else {
+                    $0.onAppear {
+                        UITabBar.appearance().barTintColor = UIColor.systemGroupedBackground
+                        UITabBar.appearance().backgroundColor = UIColor.systemGroupedBackground
+                    }
+                }
+#else
                 $0.onAppear {
                     UITabBar.appearance().barTintColor = UIColor.systemGroupedBackground
                     UITabBar.appearance().backgroundColor = UIColor.systemGroupedBackground
                 }
-            }
-#else
-            $0.onAppear {
-                UITabBar.appearance().barTintColor = UIColor.systemGroupedBackground
-                UITabBar.appearance().backgroundColor = UIColor.systemGroupedBackground
-            }
 #endif
-        }
-        .onAppear {
-            UserDefaults.standard.set(selectedTab.rawValue, forKey: savedSelectedTabKey)
-        }
-        .onValueChanged(of: selectedTab) {
-            UserDefaults.standard.set($0.rawValue, forKey: savedSelectedTabKey)
-        }
-        .fullScreenCover(item: $fullScreenItem) {
-            AnyView($0.builder())
-        }
-        .sheet(item: $sheetScreenItem) {
-            AnyView($0.builder())
-        }
-        .onReceive(NotificationManager.instance.$handleOctopusNotificationUserInfo) {
-            guard $0 != nil else { return }
-            // when a notification is received, we display the Octopus UI
-            selectedTab = .modal
-            openOctopusAsModal = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .apiKeyChanged)) { _ in
-            id = UUID()
-        }
-        .connectionErrorAlert()
+            }
+            .fullScreenCover(isPresented: $router.isCommunityFullScreenPresented) {
+                CommunityFullScreenView(octopusNotificationUserInfo: $router.pendingNotificationUserInfo)
+            }
+            .fullScreenCover(item: $fullScreenItem) {
+                AnyView($0.builder())
+            }
+            .sheet(item: $sheetScreenItem) {
+                AnyView($0.builder())
+            }
+            .onAppear {
+                communityBadge.refresh()
+            }
+            .onReceive(NotificationManager.instance.$handleOctopusNotificationUserInfo) {
+                guard let userInfo = $0 else { return }
+                // The shell is the only consumer of a tapped push: it closes any open scenario presentation
+                // and hands the payload to the community of the current navigation mode, once.
+                router.routeNotification(userInfo: userInfo)
+            }
+            .onReceive(router.dismissPresentations) { _ in
+                fullScreenItem = nil
+                sheetScreenItem = nil
+            }
+            .connectionErrorAlert()
     }
 
-    var shouldDisplayAccountTab: Bool {
-        switch SDKConfigManager.instance.sdkConfig?.authKind {
-        case .octopus: return false
-        default: return true
+    /// `Tab` values on iOS 18+ (the API the iOS 26 tab bar is built for), `tabItem` before. Both carry the
+    /// same three tabs, ids and badge.
+    @ViewBuilder
+    private var tabView: some View {
+        if #available(iOS 18.0, *) {
+            TabView(selection: selection) {
+                Tab(value: SampleTab.scenarios) { scenariosTab } label: { tabLabel(.scenarios) }
+                Tab(value: SampleTab.community) { communityTab } label: { tabLabel(.community) }
+                    .badge(communityBadgeText)
+                Tab(value: SampleTab.settings) { settingsTab } label: { tabLabel(.settings) }
+            }
+        } else {
+            TabView(selection: selection) {
+                scenariosTab
+                    .tabItem { tabLabel(.scenarios) }
+                    .tag(SampleTab.scenarios)
+                communityTab
+                    .tabItem { tabLabel(.community) }
+                    .badge(communityBadgeText)
+                    .tag(SampleTab.community)
+                settingsTab
+                    .tabItem { tabLabel(.settings) }
+                    .tag(SampleTab.settings)
+            }
         }
+    }
+
+    /// Every tab bar tap goes through the router, a tap on the tab already selected included: that is how
+    /// a second tap on Community brings the SDK back to its feed.
+    private var selection: Binding<SampleTab> {
+        Binding(get: { router.selectedTab }, set: { router.select($0) })
+    }
+
+    // Entry point for a list of specific, advanced examples
+    private var scenariosTab: some View {
+        SampleNavigationContainer {
+            ScenariosView(
+                showFullScreen: { fullScreenItem = ScreenBuilder(builder: $0) },
+                showInSheet: { sheetScreenItem = ScreenBuilder(builder: $0) }
+            )
+        }
+        // Scenarios is the launch tab, so its content is always loaded first: it sets the ids of all three.
+        .sampleTabBarIdentifiers(SampleTab.allCases.map(\.accessibilityId))
+    }
+
+    // This example shows you that you can display an OctopusHomeScreen as a tab of your app
+    private var communityTab: some View {
+        CommunityTabView(router: router)
+    }
+
+    private var settingsTab: some View {
+        SampleNavigationContainer {
+            SettingsView()
+        }
+    }
+
+    private var communityBadgeText: Text? {
+        communityBadge.badgeText.map { Text(verbatim: $0) }
+    }
+
+    private func tabLabel(_ tab: SampleTab) -> some View {
+        Label(tab.title, systemImage: tab.systemImage)
     }
 }
 

@@ -34,8 +34,8 @@ struct PostSummaryView: View {
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
     let commentReactionTapped: (ReactionKind?, String) -> Void
-    let voteOnPoll: (String, String) -> Bool
-    let displayContentModeration: (String) -> Void
+    let voteOnPoll: (String, String) async -> Bool
+    let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
     /// The 2pt separator closing the summary (used between posts in the feed). Set `false` when the post
     /// is shown as context for something below it (e.g. the profile Comments cell), where it's redundant.
@@ -74,7 +74,7 @@ struct PostSummaryView: View {
                 width: width,
                 zoomableImageInfo: $zoomableImageInfo,
                 reactionTapped: { reactionTapped($0, post.uuid) },
-                voteOnPoll: { voteOnPoll($0, post.uuid) },
+                voteOnPoll: { await voteOnPoll($0, post.uuid) },
                 displayProfile: displayProfile,
                 openGroup: openGroup,
                 deletePost: { deletePost(post.uuid) },
@@ -162,23 +162,35 @@ struct PostSummaryView: View {
         let topic = post.topic ?? ""
         switch post.content {
         case let .published(postContent):
-            var textToRead = accessibilityTextToRead(text: postContent.text, ellipsize: ellipsizeText)
-            switch postContent.attachment {
-            case .image: return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
-            case .video: return "Accessibility.Post.Summary.TextAndVideo_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
-            case let .poll(poll):
-                let pollOptionsToRead = poll.options.enumerated()
+            let attachments = postContent.attachments
+            let pollOptionsToRead = attachments.poll.map { poll in
+                poll.options.enumerated()
                     .map { index, pollOption in
-                        let indexToRead = L10n("Accessibility.Poll.IdxOption_index:%lld_count:%lld", locale: languageManager.overridenLocale, index + 1, poll.options.count)
+                        let indexToRead = L10n("Accessibility.Poll.IdxOption_index:%lld_count:%lld",
+                                               locale: languageManager.overridenLocale, index + 1, poll.options.count)
                         let pollOptionToRead = pollOption.text.getText(translated: true)
-                        let isSelectedToRead = postContent.liveMeasuresValue.userInteractions.pollVoteId == pollOption.id ? L10n("Accessibility.Common.Selected", locale: languageManager.overridenLocale) : ""
+                        let isSelected = postContent.liveMeasuresValue.userInteractions.pollVoteId == pollOption.id
+                        let isSelectedToRead = isSelected
+                            ? L10n("Accessibility.Common.Selected", locale: languageManager.overridenLocale)
+                            : ""
                         return "\(indexToRead): \(pollOptionToRead)\(isSelectedToRead)"
                     }
                     .joined(separator: ", ")
-                textToRead = "\(textToRead), \(pollOptionsToRead)"
-                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
-            case .none:
-                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(post.relativeDate)_topic:\(topic)_text:\(textToRead)"
+            }
+            let textToRead = PostSummaryAccessibility.textToRead(
+                accessibilityTextToRead(text: postContent.text, ellipsize: ellipsizeText),
+                pollOptionsToRead: pollOptionsToRead)
+            let date = post.relativeDate
+            let hasText = !postContent.text.originalText.isEmpty
+            switch PostSummaryAccessibility.template(for: attachments, hasText: hasText) {
+            case .imageOnly:
+                return "Accessibility.Post.Summary.ImageOnly_author:\(authorName)_date:\(date)_topic:\(topic)"
+            case .textAndImage:
+                return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(date)_topic:\(topic)_text:\(textToRead)"
+            case .textAndVideo:
+                return "Accessibility.Post.Summary.TextAndVideo_author:\(authorName)_date:\(date)_topic:\(topic)_text:\(textToRead)"
+            case .textOnly:
+                return "Accessibility.Post.Summary.TextOnly_author:\(authorName)_date:\(date)_topic:\(topic)_text:\(textToRead)"
             }
 
         case let .moderated(reasons):
@@ -217,7 +229,7 @@ struct PostSummaryView: View {
                     originalText: "Un texte",
                     originalLanguage: "fr",
                     translatedText: "A text"),
-                attachment: nil,
+                attachments: .empty,
                 bridgeInfo: nil,
                 customAction: nil,
                 featuredComment: nil,
@@ -275,7 +287,7 @@ struct PostSummaryView: View {
                     originalText: "Un texte",
                     originalLanguage: "fr",
                     translatedText: "A text"),
-                attachment: .image(.init(
+                attachments: .image(.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
                     size: CGSize(width: 700, height: 750))),
                 bridgeInfo: nil,
@@ -335,7 +347,7 @@ struct PostSummaryView: View {
                     originalText: "Un texte\navec retour à la ligne",
                     originalLanguage: "fr",
                     translatedText: "A text\nwith a line break"),
-                attachment: .poll(
+                attachments: .poll(
                     DisplayablePoll(options: [
                         .init(id: "1", text: .init(
                             originalText: "Option 1",
@@ -403,7 +415,7 @@ struct PostSummaryView: View {
                 text: .init(
                     originalText: "Un texte\navec retour à la ligne",
                     originalLanguage: nil),
-                attachment: .image(.init(
+                attachments: .image(.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
                     size: CGSize(width: 700, height: 750))),
                 bridgeInfo: nil,
@@ -467,7 +479,7 @@ struct PostSummaryView: View {
                     originalText: "Un texte",
                     originalLanguage: "fr",
                     translatedText: "A text"),
-                attachment: .image(.init(
+                attachments: .image(.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
                     size: CGSize(width: 700, height: 750))),
                 bridgeInfo: .init(
@@ -538,7 +550,7 @@ struct PostSummaryView: View {
                     originalText: "Un texte",
                     originalLanguage: "fr",
                     translatedText: "A text"),
-                attachment: .image(.init(
+                attachments: .image(.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
                     size: CGSize(width: 700, height: 750))),
                 bridgeInfo: nil,

@@ -35,7 +35,7 @@ struct CurrentUserProfileSummaryView: View {
          gamificationRulesViewManager: GamificationRulesViewManager, canClose: Bool = false,
          navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: CurrentUserProfileSummaryViewModel(
-            octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
+            octopus: octopus, translationStore: translationStore,
             gamificationRulesViewManager: gamificationRulesViewManager))
         self.mainFlowPath = mainFlowPath
         self.canClose = canClose
@@ -83,7 +83,7 @@ struct CurrentUserProfileSummaryView: View {
                         displayProfile: { _, _ in },
                         openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                         displayContentModeration: {
-                            mainFlowPath.reportTarget = .content(contentId: $0)
+                            mainFlowPath.reportTarget = $0
                         }) {
                             // One CTA now, not the previous post/poll pair (Screen states spec).
                             if viewModel.canCreatePost {
@@ -137,26 +137,6 @@ struct CurrentUserProfileSummaryView: View {
             guard shouldDismiss else { return }
             navigator.popToRoot()
         }
-        // Logout confirmation (overflow menu row, Octopus-owned profile only) — mirrors the former
-        // `SettingsListView` alert: acknowledge, then pop to the community root.
-        .modify {
-            if #available(iOS 15.0, *) {
-                $0.alert(
-                    Text("Settings.LogOut.Done.Title", bundle: .module),
-                    isPresented: $viewModel.logoutDone, actions: {
-                        Button(action: { navigator.popToRoot() }) {
-                            Text("Common.Ok", bundle: .module)
-                        }
-                    })
-            } else {
-                $0.alert(isPresented: $viewModel.logoutDone) {
-                    Alert(title: Text("Settings.LogOut.Done.Title", bundle: .module),
-                          dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        navigator.popToRoot()
-                    }))
-                }
-            }
-        }
         .onReceive(viewModel.$forceDisplayGamificationRules) {
             guard $0 else { return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
@@ -176,6 +156,7 @@ struct CurrentUserProfileSummaryView: View {
 
     /// The Comments tab content. Reuses the same navigation closures (and `.postClicked`
     /// tracking) as the Posts tab, so tapping into a comment/post behaves identically from either tab.
+    /// A tap that opens the post on a comment sends no `.postClicked`, like a featured comment in the feed.
     @ViewBuilder
     private var commentsView: some View {
         if let commentsViewModel = viewModel.commentsViewModel {
@@ -248,8 +229,7 @@ struct CurrentUserProfileSummaryView: View {
 
     /// The "…" overflow menu. It used to push a separate "Community settings" screen
     /// (`SettingsListView`); it now opens the same menu as the Activity screen (PO feedback,
-    /// 2026-07-17) — legal links + report, plus the account-settings and logout rows for an
-    /// Octopus-owned profile. The Unified Profile "View/Edit my profile" rows stay hidden here:
+    /// 2026-07-17) — legal links + report. The Unified Profile "View/Edit my profile" rows stay hidden here:
     /// this legacy screen only shows when Unified Profile is inactive, and profile edition is
     /// already available on the screen itself.
     @ViewBuilder
@@ -263,11 +243,7 @@ struct CurrentUserProfileSummaryView: View {
             communityGuidelinesUrl: externalLinks.communityGuidelines,
             privacyPolicyUrl: externalLinks.privacyPolicy,
             termsOfUseUrl: externalLinks.termsOfUse,
-            onReportContent: { navigator.push(.reportExplanation) },
-            showAccountSettings: viewModel.octopusOwnedProfile,
-            onAccountSettings: { navigator.push(.settingsAccount) },
-            showLogout: viewModel.octopusOwnedProfile,
-            onLogout: viewModel.logout)
+            onReportContent: { navigator.push(.reportExplanation) })
     }
 }
 

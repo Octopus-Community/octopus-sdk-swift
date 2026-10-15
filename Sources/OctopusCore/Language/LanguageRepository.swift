@@ -21,6 +21,8 @@ public class LanguageRepository: InjectableObject, @unchecked Sendable {
     private var storage = [AnyCancellable]()
 
     init(injector: Injector) {
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($localeIdentifier, $overridenLocale)
         if let overridenLocaleIdentifier {
             overridenLocale = Locale(identifier: overridenLocaleIdentifier)
         }

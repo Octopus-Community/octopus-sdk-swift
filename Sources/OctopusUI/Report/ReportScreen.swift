@@ -12,10 +12,13 @@ struct ReportScreen: View {
 
     let octopus: OctopusSDK
     let target: ReportTarget
+    /// Called with the reported profile's id once the user blocked it from the "Report sent" alert and
+    /// dismissed the "This user is blocked" alert. Profile reports only: a content report never calls it.
+    var onBlocked: (String) -> Void = { _ in }
 
     var body: some View {
         NavigationView {
-            ReportView(octopus: octopus, target: target)
+            ReportView(octopus: octopus, target: target, onBlocked: onBlocked)
         }
         .navigationViewStyle(.stack)
         .accentColor(theme.colors.primary)
@@ -29,11 +32,18 @@ private struct ReportView: View {
 
     @Compat.StateObject private var viewModel: ReportViewModel
 
-    init(octopus: OctopusSDK, target: ReportTarget) {
+    let target: ReportTarget
+    let onBlocked: (String) -> Void
+
+    init(octopus: OctopusSDK, target: ReportTarget, onBlocked: @escaping (String) -> Void) {
+        self.target = target
+        self.onBlocked = onBlocked
         let context: ReportViewModel.Context
         switch target {
-        case .content(let contentId): context = .content(contentId: contentId)
-        case .profile(let profileId): context = .profile(profileId: profileId)
+        case let .content(contentId, blockableProfileId):
+            context = .content(contentId: contentId, blockableProfileId: blockableProfileId)
+        case let .profile(profileId, blockableProfileId):
+            context = .profile(profileId: profileId, blockableProfileId: blockableProfileId)
         }
         _viewModel = Compat.StateObject(wrappedValue: ReportViewModel(octopus: octopus, context: context))
     }
@@ -54,27 +64,102 @@ private struct ReportView: View {
         .toolbar(leading: cancelButtonBarItem, trailing: EmptyView())
         .emitScreenDisplayed(viewModel.context.isContent ? .reportContent : .reportProfile,
                              trackingApi: trackingApi)
-        .errorAlert(viewModel.$error)
+        // Leaving mid-send would drop the error alert, and after a block the screen it closes.
+        .modify {
+            if #available(iOS 15.0, *) {
+                $0.interactiveDismissDisabled(viewModel.moderationInProgress)
+            } else { $0 }
+        }
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
                     Text("Moderation.Common.Done.Title", bundle: .module),
                     isPresented: $viewModel.moderationSent, actions: {
-                        Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                            Text("Common.Ok", bundle: .module)
+                        if viewModel.profileIdToBlock != nil {
+                            Button(role: .cancel, action: { presentationMode.wrappedValue.dismiss() }) {
+                                Text("Common.NotNow", bundle: .module)
+                            }
+                            Button(role: .destructive, action: viewModel.blockProfile) {
+                                Text("Block.Profile.Button", bundle: .module)
+                            }
+                        } else {
+                            Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                                Text("Common.Ok", bundle: .module)
+                            }
                         }
                     }, message: {
-                        Text("Moderation.Common.Done.Message", bundle: .module)
+                        sentMessage
                     })
             } else {
                 $0.alert(isPresented: $viewModel.moderationSent) {
-                    Alert(title: Text("Moderation.Common.Done.Title", bundle: .module),
-                          message: Text("Moderation.Common.Done.Message", bundle: .module),
-                          dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }))
+                    if viewModel.profileIdToBlock != nil {
+                        Alert(title: Text("Moderation.Common.Done.Title", bundle: .module),
+                              message: sentMessage,
+                              primaryButton: .cancel(Text("Common.NotNow", bundle: .module), action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }),
+                              secondaryButton: .destructive(Text("Block.Profile.Button", bundle: .module),
+                                                            action: viewModel.blockProfile))
+                    } else {
+                        Alert(title: Text("Moderation.Common.Done.Title", bundle: .module),
+                              message: sentMessage,
+                              dismissButton: .default(Text("Common.Ok", bundle: .module), action: {
+                            presentationMode.wrappedValue.dismiss()
+                        }))
+                    }
                 }
             }
+        }
+        .background(blockDoneAlertAnchor)
+        .background(errorAlertAnchor)
+    }
+
+    /// The "Report sent" message, followed by the block question when blocking is offered.
+    private var sentMessage: Text {
+        let message = Text("Moderation.Common.Done.Message", bundle: .module)
+        guard viewModel.profileIdToBlock != nil else { return message }
+        return message + Text(verbatim: "\n\n") + Text("Moderation.Common.Done.Block.Question", bundle: .module)
+    }
+
+    /// The existing "This user is blocked" confirmation, shown once the offered block succeeded. Hosted
+    /// on its own view so that it does not compete with the "Report sent" alert on iOS 13 and 14.
+    private var blockDoneAlertAnchor: some View {
+        Color.clear
+            .modify {
+                if #available(iOS 15.0, *) {
+                    $0.alert(
+                        Text("Block.Profile.Done.Title", bundle: .module),
+                        isPresented: $viewModel.blockDone, actions: {
+                            Button(action: closeAfterBlock) {
+                                Text("Common.Ok", bundle: .module)
+                            }
+                        })
+                } else {
+                    $0.alert(isPresented: $viewModel.blockDone) {
+                        Alert(title: Text("Block.Profile.Done.Title", bundle: .module),
+                              dismissButton: .default(Text("Common.Ok", bundle: .module), action: closeAfterBlock))
+                    }
+                }
+            }
+    }
+
+    /// The error alert, on its own view for the same reason as `blockDoneAlertAnchor`: a failed block shows it
+    /// right after the "Report sent" alert. After a failed block, dismissing it closes the screen.
+    private var errorAlertAnchor: some View {
+        Color.clear
+            .errorAlert(viewModel.$error, onDismiss: {
+                guard viewModel.closeAfterError else { return }
+                presentationMode.wrappedValue.dismiss()
+            })
+    }
+
+    /// Closes the report flow. Only a profile report also asks to close the reported profile's screen: after a
+    /// content report, the blocked author's content disappears on its own and the screen it was reported from
+    /// (the author's profile included) stays open.
+    private func closeAfterBlock() {
+        presentationMode.wrappedValue.dismiss()
+        if case .profile(let profileId, _) = target {
+            onBlocked(profileId)
         }
     }
 
@@ -86,8 +171,9 @@ private struct ReportView: View {
             }) {
                 Text("Common.Cancel", bundle: .module)
                     .font(theme.fonts.navBarItem)
-                    .foregroundColor(theme.colors.gray900)
+                    .foregroundColor(viewModel.moderationInProgress ? theme.colors.gray500 : theme.colors.gray900)
             }
+            .disabled(viewModel.moderationInProgress)
         }
     }
 }

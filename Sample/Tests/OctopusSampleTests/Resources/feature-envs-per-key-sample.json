@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-08-04T14:38:21.695Z",
+  "count": 2,
+  "featureEnvs": [
+    {
+      "name": "feat-gamma",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/example-g",
+      "ticket": "TICKET-2000",
+      "expiresAt": "2026-08-14T06:51:17.131Z",
+      "expiresInDays": 10,
+      "endpoints": { "api": "https://api-feat-gamma.example.com" },
+      "communities": [
+        { "communityId": "S1", "communityName": "Seed Community", "apiKey": "key-server", "description": "server key" },
+        { "communityId": "S1", "communityName": "Seed Community", "apiKey": "key-server-nb", "description": "server key (no backdate)" },
+        { "communityId": "S1", "communityName": "Seed Community", "apiKey": "key-client", "description": "client key" },
+        { "communityId": "S2", "communityName": "Seed Community (Pictures Off)", "apiKey": "key-pictures-off", "description": "client key" }
+      ]
+    },
+    {
+      "name": "feat-delta",
+      "status": "active",
+      "owner": "owner",
+      "branch": "feat/example-d",
+      "ticket": "TICKET-3000",
+      "expiresAt": "2026-08-14T06:51:17.131Z",
+      "expiresInDays": 10,
+      "endpoints": { "api": "https://api-feat-delta.example.com" },
+      "communities": [
+        { "communityId": "S2", "communityName": "Seed Community (Pictures Off)", "apiKey": "key-delta-pictures-off", "description": "client key" },
+        { "communityId": "S1", "communityName": "Seed Community", "apiKey": "key-delta-server", "description": "server key" },
+        { "communityId": "S1", "communityName": "Seed Community", "apiKey": "key-delta-client", "description": "client key" }
+      ]
+    }
+  ]
+}

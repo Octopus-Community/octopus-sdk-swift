@@ -43,6 +43,8 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
         networkMonitor = injector.getInjected(identifiedBy: Injected.networkMonitor)
         postFeedsStore = injector.getInjected(identifiedBy: Injected.postFeedsStore)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($topics, $canCreateAnyPost)
 
         topicsDatabase.topicsPublisher()
             .removeDuplicates()

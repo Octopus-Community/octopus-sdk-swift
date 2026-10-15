@@ -664,6 +664,43 @@ class FeedTests: XCTestCase {
         })
     }
 
+    func testFetchAllUntilAnItemAlreadyListedLocallyStillReachesTheServer() async throws {
+        // Preconditions: the target is in the local first page, but the server has a newer item
+        try await feedsDatabase.upsert(
+            feedItemInfos: ["1", "2"].map {
+                FeedItemInfo(feedId: "1", itemId: $0, updateDate: Date(), featuredChildId: nil)
+            },
+            feedId: "1")
+        try await postsDatabase.upsert(posts: createPosts(ids: ["1", "2"]))
+
+        let feed = Feed(id: "1", feedManager: postFeedManager)
+        await feed.populateWithLocalData(pageSize: 10)
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2"] }
+
+        mockFeedService.injectNextInitializeFeed(.with {
+            $0.items = ["1", "2", "3"].map { id in .with { $0.octoObjectID = id } }
+        })
+        injectBatchItems(["3"])
+
+        try await feed.fetchAll(until: "1")
+
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2", "3"] }
+    }
+
+    func testFetchAllUntilAnItemOnlyOnTheServerLoadsUntilIt() async throws {
+        let feed = Feed(id: "1", feedManager: postFeedManager)
+        await feed.populateWithLocalData(pageSize: 10)
+
+        mockFeedService.injectNextInitializeFeed(.with {
+            $0.items = ["1", "2", "3"].map { id in .with { $0.octoObjectID = id } }
+        })
+        injectBatchItems(["1", "2", "3"])
+
+        try await feed.fetchAll(until: "3")
+
+        try await assertWithTimeout { await feed.items?.map(\.uuid) == ["1", "2", "3"] }
+    }
+
     private func injectBatchItems(_ items: [String]) {
         let posts = items.map { itemId in
             Com_Octopuscommunity_OctoObject.with {

@@ -31,19 +31,21 @@ public struct WritableCTA: Sendable, Equatable {
 }
 
 public struct WritablePost: Sendable, Equatable {
-    public enum Attachment: Sendable, Equatable {
-        case image(Data)
-        case poll(WritablePoll)
-    }
-    public let text: String
-    public internal(set) var attachment: Attachment?
+    /// The text of the post. The repository sends a blank text empty when the post may omit it.
+    public internal(set) var text: String
+    /// The picture attached to the post. The repository swaps in the resized bytes before sending.
+    public internal(set) var image: Data?
+    /// The poll attached to the post. A post may carry an image and a poll together.
+    public let poll: WritablePoll?
     public let parentId: String
     public let cta: WritableCTA?
 
-    public init(topicId: String, text: String, attachment: Attachment?, cta: WritableCTA? = nil) {
+    public init(topicId: String, text: String, image: Data? = nil, poll: WritablePoll? = nil,
+                cta: WritableCTA? = nil) {
         self.parentId = topicId
         self.text = text
-        self.attachment = attachment
+        self.image = image
+        self.poll = poll
         self.cta = cta
     }
 }
@@ -56,17 +58,17 @@ extension WritablePost {
             $0.content = .with {
                 $0.post = .with {
                     $0.text = text
-                    switch attachment {
-                    case let .image(imageData):
+                    if let image {
                         $0.media = .with {
                             $0.images = [
                                 .with {
-                                    $0.file = .bytes(imageData)
+                                    $0.file = .bytes(image)
                                     $0.isOptimized = imageIsCompressed
                                 }
                             ]
                         }
-                    case let .poll(poll):
+                    }
+                    if let poll {
                         $0.poll = .with {
                             $0.answers = poll.options.map { option in
                                 .with {
@@ -74,7 +76,6 @@ extension WritablePost {
                                 }
                             }
                         }
-                    case .none: break
                     }
                     if let cta {
                         $0.cta = .with {

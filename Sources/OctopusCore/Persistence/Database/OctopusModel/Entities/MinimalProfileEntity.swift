@@ -10,6 +10,9 @@ class MinimalProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var profileId: String
     @NSManaged public var nickname: String
     @NSManaged public var avatarUrl: URL?
+    @NSManaged public var defaultAvatarBackgroundHex: String?
+    @NSManaged public var defaultAvatarInitialsHex: String?
+    @NSManaged public var defaultAvatarImageUrl: String?
     @NSManaged public var tagsRawValue: Int
     @NSManaged public var gamificationLevel: Int
     @NSManaged public var clientUserId: String?
@@ -21,6 +24,7 @@ class MinimalProfileEntity: NSManagedObject, Identifiable {
         profileId = profile.uuid
         nickname = profile.nickname
         avatarUrl = profile.avatarUrl
+        defaultAvatar = profile.defaultAvatar
         if !profile.tags.isEmpty || replaceSecondaryInfosIfNil {
             tagsRawValue = profile.tags.rawValue
         } // else we do not change tagsRawValue
@@ -49,3 +53,5 @@ extension MinimalProfileEntity {
         return request
     }
 }
+
+extension MinimalProfileEntity: DefaultAvatarStoring {}

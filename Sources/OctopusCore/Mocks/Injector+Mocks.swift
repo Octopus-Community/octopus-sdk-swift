@@ -12,7 +12,6 @@ enum Mock {
     case authProvider
     case securedStorage
     case networkMonitor
-    case magicLinkMonitor
     case userProfileFetchMonitor
     case appStateMonitor
     case blockedUserIdsProvider
@@ -31,8 +30,6 @@ extension Injector {
                 register { _ in MockSecuredStorage() }
             case .networkMonitor:
                 register { _ in MockNetworkMonitor() }
-            case .magicLinkMonitor:
-                register { _ in MockMagicLinkMonitor() }
             case .userProfileFetchMonitor:
                 register { _ in MockUserProfileFetchMonitor() }
             case .appStateMonitor:

@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import Combine
 import Octopus
 
 /// Singleton that bridges the SDK's `onNavigateToProfileCallback` to a published property that
@@ -23,9 +24,11 @@ class ClientProfileManager: ObservableObject {
     @Published var tappedClientUserId: String?
 
     /// Whether `onNavigateToProfileCallback` is currently wired on the SDK — the host-side half of
-    /// the Unified Profile AND-gate. Toggle it from the Unified Profile scenario to exercise the
-    /// "callback unwired → SDK keeps its native profile screens" path. Wired by default.
-    @Published private(set) var isCallbackWired: Bool = true
+    /// the Unified Profile AND-gate. Driven by `UnifiedProfileManager` (the Config switch, and the
+    /// Unified Profile scenario's finer controls). Starts from the persisted switch, so a new SDK
+    /// instance is never wired against it, even for the moment before that manager applies its state.
+    @Published private(set) var isCallbackWired: Bool =
+        UserDefaults.standard.bool(forKey: UnifiedProfileManager.storageKey)
 
     /// One-shot event fired when the SDK invokes `onNavigateToProfileEditCallback` — the "Edit my
     /// profile" item of the connected-user Activity screen's top-right menu (Unified Profile). The
@@ -36,12 +39,19 @@ class ClientProfileManager: ObservableObject {
     /// Whether `onNavigateToProfileEditCallback` is currently wired on the SDK. Independent of
     /// `isCallbackWired`: the Activity menu shows "Edit my profile" only when this is wired, so the
     /// scenario can exercise both the wired (item shown → host edit screen) and unwired (item hidden)
-    /// paths. Wired by default.
-    @Published private(set) var isEditCallbackWired: Bool = true
+    /// paths. Starts from Settings › Host app integration, wired by default, and follows it.
+    @Published private(set) var isEditCallbackWired: Bool = HostIntegrationStore.instance.isProfileEditWired
 
     private weak var octopus: OctopusSDK?
+    private var storage = [AnyCancellable]()
 
-    private init() { }
+    private init() {
+        HostIntegrationStore.instance.$isProfileEditWired
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] in self?.setEditCallbackWired($0) }
+            .store(in: &storage)
+    }
 
     /// Function called when the Octopus SDK is created. Stores the instance and (re)applies the
     /// current wiring state to it.

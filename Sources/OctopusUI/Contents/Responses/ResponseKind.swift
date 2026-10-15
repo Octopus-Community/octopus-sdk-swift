@@ -12,6 +12,16 @@ enum ResponseKind {
 }
 
 extension ResponseKind {
+    /// The id a list gives a comment or reply row so a scroll request (`scrollToId`) can reach it. The row's
+    /// own `.id` in `ResponseFeedItemView` cannot serve: it changes with the accessibility grouping to
+    /// rebuild the cell, so a list and a view model that both build the anchor here never drift apart.
+    func scrollAnchorId(for uuid: String) -> String {
+        switch self {
+        case .comment: "Comment-\(uuid)"
+        case .reply: "Reply-\(uuid)"
+        }
+    }
+
     var canReply: Bool {
         switch self {
         case .comment: true

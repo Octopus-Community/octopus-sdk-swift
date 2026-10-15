@@ -117,7 +117,7 @@ public struct OctopusProfileScreen: View {
             gamificationRulesViewManager: gamificationRulesViewManager)
         // set the environment, this will set the default environment if no other has been set, and avoid re-creating
         // the default env each time it is accessed
-        .environment(\.octopusTheme, theme)
+        .environmentThemeSizedForTextSize()
         .environment(\.trackingApi, trackingApi)
         .environment(\.urlOpener, urlOpener)
         .sharedEnvironmentObjects(SharedEnvironmentObjects(

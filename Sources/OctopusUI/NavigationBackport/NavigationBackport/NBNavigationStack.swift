@@ -3,7 +3,7 @@ import SwiftUI
 
 @available(iOS, deprecated: 16.0, message: "Use SwiftUI's Navigation API beyond iOS 15")
 /// A replacement for SwiftUI's `NavigationStack` that's available on older OS versions.
-public struct NBNavigationStack<Root: View, Data: Hashable>: View {
+struct NBNavigationStack<Root: View, Data: Hashable>: View {
   @Binding var externalTypedPath: [Data]
   @State var internalTypedPath: [Data] = []
   @Compat.StateObject var path: NavigationPathHolder
@@ -44,7 +44,7 @@ public struct NBNavigationStack<Root: View, Data: Hashable>: View {
     }
   }
 
-  public var body: some View {
+  var body: some View {
     content
       .environmentObject(path)
       .environmentObject(Unobserved(object: path))
@@ -137,7 +137,7 @@ public struct NBNavigationStack<Root: View, Data: Hashable>: View {
     #endif
   }
 
-  public init(path: Binding<[Data]>?, @ViewBuilder root: () -> Root) {
+  init(path: Binding<[Data]>?, @ViewBuilder root: () -> Root) {
     _externalTypedPath = path ?? .constant([])
     self.root = root()
     _path = Compat.StateObject(wrappedValue: NavigationPathHolder(path: path?.wrappedValue ?? []))
@@ -148,13 +148,13 @@ public struct NBNavigationStack<Root: View, Data: Hashable>: View {
   }
 }
 
-public extension NBNavigationStack where Data == AnyHashable {
+extension NBNavigationStack where Data == AnyHashable {
   init(@ViewBuilder root: () -> Root) {
     self.init(path: nil, root: root)
   }
 }
 
-public extension NBNavigationStack where Data == AnyHashable {
+extension NBNavigationStack where Data == AnyHashable {
   init(path: Binding<NBNavigationPath>, @ViewBuilder root: () -> Root) {
     let path = Binding(
       get: { path.wrappedValue.elements },

@@ -99,7 +99,7 @@ struct CreatePostViewModelTests {
 
     // MARK: - default image seeding (mirrors the branch inside CreatePostViewModel.init)
 
-    @Test func defaultImageSeedsAttachment() {
+    @Test func defaultImageSeedsImage() {
         guard let onePixel = UIImage(systemName: "circle") else {
             Issue.record("Cannot create system image for test")
             return
@@ -108,22 +108,114 @@ struct CreatePostViewModelTests {
             Issue.record("Cannot encode system image to PNG")
             return
         }
-        let attachment = seedImageAttachment(from: data)
-        switch attachment {
-        case let .image(imageAndData):
-            #expect(imageAndData.imageData == data)
-        default:
-            Issue.record("Expected .image attachment")
-        }
+        #expect(seedImage(from: data)?.imageData == data)
     }
 
-    @Test func defaultImageNilProducesNoAttachment() {
-        #expect(seedImageAttachment(from: nil) == nil)
+    @Test func defaultImageNilProducesNoImage() {
+        #expect(seedImage(from: nil) == nil)
     }
 
-    @Test func defaultImageMalformedProducesNoAttachment() {
+    @Test func defaultImageMalformedProducesNoImage() {
         let bogus = Data([0xFF, 0xD8, 0xFF]) // truncated JPEG header
-        #expect(seedImageAttachment(from: bogus) == nil)
+        #expect(seedImage(from: bogus) == nil)
+    }
+
+    // MARK: - poll mapping
+
+    @Test func editablePollMapsOptionsInOrder() {
+        var poll = EditablePoll()
+        poll.options[0].text = "Red"
+        poll.options[1].text = "Blue"
+        #expect(poll.writablePoll.options.map(\.text) == ["Red", "Blue"])
+    }
+
+    // MARK: - hasChanges
+
+    @MainActor
+    @Test func hasChangesWhenImageDeletedButPollRemains() {
+        #expect(CreatePostViewModel.hasChanges(text: "", hasImage: false, hasPoll: true,
+                                               selectedTopicId: "topic", defaultTopicId: "topic"))
+    }
+
+    @MainActor
+    @Test func hasChangesWhenPollDeletedButImageRemains() {
+        #expect(CreatePostViewModel.hasChanges(text: "", hasImage: true, hasPoll: false,
+                                               selectedTopicId: "topic", defaultTopicId: "topic"))
+    }
+
+    @MainActor
+    @Test func noChangesWhenDraftIsEmptyAndTopicIsDefault() {
+        #expect(!CreatePostViewModel.hasChanges(text: "", hasImage: false, hasPoll: false,
+                                                selectedTopicId: "topic", defaultTopicId: "topic"))
+    }
+
+    @MainActor
+    @Test func hasChangesWhenTopicChanged() {
+        #expect(CreatePostViewModel.hasChanges(text: "", hasImage: false, hasPoll: false,
+                                               selectedTopicId: "other", defaultTopicId: "topic"))
+    }
+
+    // MARK: - publish button
+
+    private static let validPoll = WritablePoll(options: [.init(text: "Red"), .init(text: "Blue")])
+
+    @MainActor
+    @Test func imageWithoutTextCannotBePublishedWhenTextIsRequired() {
+        #expect(!CreatePostViewModel.canSend(text: "", hasImage: true, poll: nil, textRequired: true,
+                                             isLoading: false))
+    }
+
+    @MainActor
+    @Test func imageWithoutTextCanBePublishedWhenTextIsOptional() {
+        #expect(CreatePostViewModel.canSend(text: "", hasImage: true, poll: nil, textRequired: false,
+                                            isLoading: false))
+    }
+
+    @MainActor
+    @Test func imageWithBlankTextCanBePublishedWhenTextIsOptional() {
+        #expect(CreatePostViewModel.canSend(text: "  \n", hasImage: true, poll: nil, textRequired: false,
+                                            isLoading: false))
+    }
+
+    @MainActor
+    @Test(arguments: [false, true])
+    func draftWithoutImageNeedsTextEvenWhenTextIsOptional(hasPoll: Bool) {
+        // Also covers removing the image while the text is empty: publishing is disabled again.
+        #expect(!CreatePostViewModel.canSend(text: "", hasImage: false, poll: hasPoll ? Self.validPoll : nil,
+                                             textRequired: false, isLoading: false))
+    }
+
+    @MainActor
+    @Test func imageAndPollWithoutTextCanBePublishedWhenTextIsOptional() {
+        #expect(CreatePostViewModel.canSend(text: "", hasImage: true, poll: Self.validPoll, textRequired: false,
+                                            isLoading: false))
+    }
+
+    @MainActor
+    @Test func invalidPollBlocksPublishingWhenTextIsOptional() {
+        let invalidPoll = WritablePoll(options: [.init(text: "Red")])
+        #expect(!CreatePostViewModel.canSend(text: "", hasImage: true, poll: invalidPoll, textRequired: false,
+                                             isLoading: false))
+    }
+
+    @MainActor
+    @Test func shortTextKeepsThePublishButtonEnabled() {
+        // The minimum length is reported on tap, not by disabling the button.
+        #expect(CreatePostViewModel.canSend(text: "abc", hasImage: true, poll: nil, textRequired: false,
+                                            isLoading: false))
+    }
+
+    @MainActor
+    @Test func tooLongTextBlocksPublishingWhenTextIsOptional() {
+        let text = String(repeating: "a", count: Validators.Post.maxTextLength + 1)
+        #expect(!CreatePostViewModel.canSend(text: text, hasImage: true, poll: nil, textRequired: false,
+                                             isLoading: false))
+    }
+
+    @MainActor
+    @Test func loadingBlocksPublishing() {
+        #expect(!CreatePostViewModel.canSend(text: "", hasImage: true, poll: nil, textRequired: false,
+                                             isLoading: true))
     }
 }
 
@@ -155,8 +247,8 @@ extension CreatePostViewModelTests {
     }
 
     /// Mirrors the image-seeding branch inside `CreatePostViewModel.init`.
-    private func seedImageAttachment(from data: Data?) -> CreatePostViewModel.Attachment? {
+    private func seedImage(from data: Data?) -> ImageAndData? {
         guard let data, let image = UIImage(data: data) else { return nil }
-        return .image(ImageAndData(imageData: data, image: image))
+        return ImageAndData(imageData: data, image: image)
     }
 }

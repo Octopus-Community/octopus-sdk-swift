@@ -26,6 +26,8 @@ public class ToastsRepository: InjectableObject, @unchecked Sendable {
     private var gamificationToastAlreadyDisplayed = Set<GamificationAction>()
 
     init(injector: Injector) {
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($toasts)
         let configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
         let appStateMonitor = injector.getInjected(identifiedBy: Injected.appStateMonitor)
         configRepository.communityConfigPublisher

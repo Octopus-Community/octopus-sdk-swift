@@ -27,7 +27,7 @@ extension PostViewData {
             self.content = .published(PostPublishedContent(
                 catchPhrase: published.bridgeInfo?.catchPhrase,
                 text: EllipsizableTranslatedText(text: published.text, ellipsize: ellipsize),
-                attachment: Self.mapAttachment(published.attachment),
+                attachments: published.attachments,
                 cta: Self.mapCTA(bridgeInfo: published.bridgeInfo, customAction: published.customAction),
                 liveMeasuresPublisher: published.liveMeasures,
                 liveMeasuresValue: published.liveMeasuresValue
@@ -35,17 +35,6 @@ extension PostViewData {
         case let .moderated(reasons):
             self.tags = [.moderated]
             self.content = .moderated(reasons: reasons)
-        }
-    }
-
-    private static func mapAttachment(
-        _ attachment: DisplayablePost.PostContent.Attachment?
-    ) -> PostAttachmentViewData? {
-        switch attachment {
-        case let .image(image): return .image(image)
-        case let .video(video): return .video(video)
-        case let .poll(poll):   return .poll(poll)
-        case .none:             return nil
         }
     }
 
@@ -84,21 +73,10 @@ extension PostViewData {
         self.content = .published(PostPublishedContent(
             catchPhrase: post.catchPhrase,
             text: EllipsizableTranslatedText(text: post.text, ellipsize: false),
-            attachment: Self.mapDetailAttachment(post.attachment),
+            attachments: post.attachments,
             cta: Self.mapDetailCTA(bridgeCTA: post.bridgeCTA, customAction: post.customAction),
             liveMeasuresPublisher: Empty<LiveMeasures, Never>().eraseToAnyPublisher(),
             liveMeasuresValue: liveMeasures))
-    }
-
-    private static func mapDetailAttachment(
-        _ attachment: PostDetailViewModel.Post.Attachment?
-    ) -> PostAttachmentViewData? {
-        switch attachment {
-        case let .image(image): return .image(image)
-        case let .video(video): return .video(video)
-        case let .poll(poll):   return .poll(poll)
-        case .none:             return nil
-        }
     }
 
     private static func mapDetailCTA(

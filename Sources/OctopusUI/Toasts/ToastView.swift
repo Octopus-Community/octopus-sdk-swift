@@ -69,9 +69,19 @@ struct ToastView: View {
             .buttonStyle(.plain)
         }
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(backgroundColor)
-                .shadow(radius: 2, y: 2)
+            // A toast floats over the screen content and its color comes from the client's theme, which
+            // may be translucent: the content would then bleed through the message. The community
+            // background goes underneath so the color keeps the look it has elsewhere in the SDK, and the
+            // system background under that keeps the toast opaque even if the community one is not.
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color(.systemBackground))
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(theme.colors.background)
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(backgroundColor)
+            }
+            .shadow(radius: 2, y: 2)
         )
         .padding(.horizontal, 16)
         .transition(.toast(isManual: dismissManually, fromTop: toast.category == .error))

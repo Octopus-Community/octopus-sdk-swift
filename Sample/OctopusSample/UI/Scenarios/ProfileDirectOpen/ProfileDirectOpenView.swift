@@ -10,7 +10,7 @@ import OctopusUI
 /// A view that shows how to open `OctopusProfileScreen` directly, either for the connected user or for
 /// another user resolved from the host app's own clientUserId.
 struct ProfileDirectOpenView: View {
-    @StateObjectCompat private var viewModel = OctopusAuthSDKViewModel()
+    @StateObjectCompat private var viewModel = SampleSDKViewModel()
 
     @State private var clientUserId = ""
     @State private var displayOwnProfile = false
@@ -32,7 +32,7 @@ struct ProfileDirectOpenView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Open profile by clientUserId")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 TextField("clientUserId", text: $clientUserId)
@@ -53,7 +53,7 @@ struct ProfileDirectOpenView: View {
                 .disabled(clientUserId.isEmpty)
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .sampleCardSurface()
 
             Spacer()
         }
@@ -67,12 +67,15 @@ struct ProfileDirectOpenView: View {
                 clientUserId = hostUserId
             }
         }
+        .dismissedOnPushRouting($displayOwnProfile)
         .sheet(isPresented: $displayOwnProfile) {
             OctopusProfileScreen(octopus: viewModel.octopus)
         }
+        .dismissedOnPushRouting($displayProfileForClientUserId)
         .sheet(isPresented: $displayProfileForClientUserId) {
             OctopusProfileScreen(octopus: viewModel.octopus, clientUserId: clientUserId)
         }
+        .sampleScreenBackground()
         .hostAppFooter()
     }
 }

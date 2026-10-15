@@ -226,6 +226,95 @@ struct PostViewDataMappingTests {
         #expect(PostViewData(from: falsePost).canBeBlockedByUser == false)
     }
 
+    // MARK: - Attachments forwarding
+
+    @Test func feedMapping_forwardsImageAndPoll() async throws {
+        let post = Self.makeDisplayable(contentKind: .imageAndPoll)
+        guard case let .published(content) = PostViewData(from: post).content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(content.attachments == Self.imageAndPoll)
+    }
+
+    @Test func detailMapping_forwardsImageAndPoll() async throws {
+        let post = Self.makeDetailPost(attachments: Self.imageAndPoll)
+        guard case let .published(content) = PostViewData(from: post).content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(content.attachments == Self.imageAndPoll)
+    }
+
+    // MARK: - Text presence
+
+    @Test func feedMapping_imageOnlyPost_hasNoText() async throws {
+        guard case let .published(content) = PostViewData(from: Self.makeDisplayable(contentKind: .imageOnly)).content
+        else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(!content.text.hasText)
+    }
+
+    @Test func feedMapping_textPost_hasText() async throws {
+        guard case let .published(content) = PostViewData(from: Self.makeDisplayable(contentKind: .textOnly)).content
+        else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(content.text.hasText)
+    }
+
+    @Test func detailMapping_blankText_hasNoText() async throws {
+        // `TranslatableText` trims its text, so a whitespace-only body counts as no text.
+        let post = Self.makeDetailPost(text: "  \n", attachments: Self.imageAndPoll)
+        guard case let .published(content) = PostViewData(from: post).content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(!content.text.hasText)
+    }
+
+    // MARK: - Translation toggle
+
+    @Test func translatedText_hasTranslation() async throws {
+        guard case let .published(content) = PostViewData(from: Self.makeDisplayable(contentKind: .translatedText))
+            .content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(content.hasTranslation)
+    }
+
+    @Test func untranslatedTextWithoutPoll_hasNoTranslation() async throws {
+        guard case let .published(content) = PostViewData(from: Self.makeDisplayable(contentKind: .textOnly))
+            .content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(!content.hasTranslation)
+    }
+
+    @Test func translatedPollWithoutText_hasTranslation() async throws {
+        let post = Self.makeDetailPost(text: "", attachments: Self.imageAndTranslatedPoll)
+        guard case let .published(content) = PostViewData(from: post).content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(!content.text.hasTranslation)
+        #expect(content.hasTranslation)
+    }
+
+    @Test func untranslatedPollWithoutText_hasNoTranslation() async throws {
+        let post = Self.makeDetailPost(text: "", attachments: Self.imageAndPoll)
+        guard case let .published(content) = PostViewData(from: post).content else {
+            Issue.record("expected published content")
+            return
+        }
+        #expect(!content.hasTranslation)
+    }
+
     // MARK: - Fixtures
 
     enum ContentKind {
@@ -233,8 +322,25 @@ struct PostViewDataMappingTests {
         case longText(String)
         case bridgeWithCTA
         case customAction(url: URL)
+        case imageAndPoll
+        case imageOnly
+        case translatedText
         case moderated
     }
+
+    static let imageAndPoll = PostAttachmentsViewData(
+        media: .image(.init(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750))),
+        poll: DisplayablePoll(options: [
+            .init(id: "1", text: .init(originalText: "Red", originalLanguage: nil)),
+            .init(id: "2", text: .init(originalText: "Blue", originalLanguage: nil))
+        ]))
+
+    static let imageAndTranslatedPoll = PostAttachmentsViewData(
+        media: .image(.init(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750))),
+        poll: DisplayablePoll(options: [
+            .init(id: "1", text: .init(originalText: "Rouge", originalLanguage: nil, translatedText: "Red")),
+            .init(id: "2", text: .init(originalText: "Bleu", originalLanguage: nil, translatedText: "Blue"))
+        ]))
 
     static func makeDisplayable(
         contentKind: ContentKind,
@@ -264,18 +370,18 @@ struct PostViewDataMappingTests {
         case .textOnly:
             content = .published(.init(
                 text: .init(originalText: "Un texte", originalLanguage: nil),
-                attachment: nil, bridgeInfo: nil, customAction: nil, featuredComment: nil,
+                attachments: .empty, bridgeInfo: nil, customAction: nil, featuredComment: nil,
                 liveMeasuresPublisher: emptyMeasures))
         case let .longText(text):
             content = .published(.init(
                 text: .init(originalText: text, originalLanguage: nil),
-                attachment: nil, bridgeInfo: nil, customAction: nil, featuredComment: nil,
+                attachments: .empty, bridgeInfo: nil, customAction: nil, featuredComment: nil,
                 liveMeasuresPublisher: emptyMeasures))
         case .bridgeWithCTA:
             content = .published(.init(
                 text: .init(originalText: "Un texte", originalLanguage: nil),
-                attachment: .image(.init(url: URL(string: "https://example.com/i.jpg")!,
-                                        size: CGSize(width: 700, height: 750))),
+                attachments: .image(.init(url: URL(string: "https://example.com/i.jpg")!,
+                                          size: CGSize(width: 700, height: 750))),
                 bridgeInfo: .init(
                     objectId: "clientObjectId",
                     catchPhrase: .init(originalText: "Catch", originalLanguage: nil),
@@ -285,11 +391,28 @@ struct PostViewDataMappingTests {
         case let .customAction(url):
             content = .published(.init(
                 text: .init(originalText: "Un texte", originalLanguage: nil),
-                attachment: nil, bridgeInfo: nil,
+                attachments: .empty, bridgeInfo: nil,
                 customAction: .init(
                     ctaText: .init(originalText: "Voir", originalLanguage: nil),
                     targetUrl: url),
                 featuredComment: nil,
+                liveMeasuresPublisher: emptyMeasures))
+        case .imageAndPoll:
+            content = .published(.init(
+                text: .init(originalText: "Which one?", originalLanguage: nil),
+                attachments: imageAndPoll, bridgeInfo: nil, customAction: nil, featuredComment: nil,
+                liveMeasuresPublisher: emptyMeasures))
+        case .imageOnly:
+            content = .published(.init(
+                text: .init(originalText: "", originalLanguage: nil),
+                attachments: .image(.init(url: URL(string: "https://example.com/i.jpg")!,
+                                          size: CGSize(width: 700, height: 750))),
+                bridgeInfo: nil, customAction: nil, featuredComment: nil,
+                liveMeasuresPublisher: emptyMeasures))
+        case .translatedText:
+            content = .published(.init(
+                text: .init(originalText: "Un texte", originalLanguage: "fr", translatedText: "A text"),
+                attachments: .empty, bridgeInfo: nil, customAction: nil, featuredComment: nil,
                 liveMeasuresPublisher: emptyMeasures))
         case .moderated:
             content = .moderated(reasons: [.localizedString("Reason")])
@@ -317,7 +440,7 @@ struct PostViewDataMappingTests {
         text: String = "Some detail text",
         topic: String? = "Help",
         groupId: String? = "group-uuid",
-        attachment: PostDetailViewModel.Post.Attachment? = nil,
+        attachments: PostAttachmentsViewData = .empty,
         bridgeCTA: PostDetailViewModel.Post.BridgeCTA? = nil,
         customAction: PostDetailViewModel.Post.CustomAction? = nil,
         aggregatedInfo: AggregatedInfo = .init(
@@ -334,7 +457,7 @@ struct PostViewDataMappingTests {
         return PostDetailViewModel.Post(
             uuid: uuid,
             text: TranslatableText(originalText: text, originalLanguage: nil),
-            attachment: attachment,
+            attachments: attachments,
             author: author,
             relativeDate: "3d ago",
             topic: topic,

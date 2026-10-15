@@ -136,7 +136,14 @@ public struct OctopusTheme: Sendable {
         /// Font used for navigation bar items.
         public let navBarItem: Font
 
+        /// The text styles still on their default font: the only ones `resized(for:)` sizes again, the fonts given
+        /// by the host are kept as they are.
+        let defaultStyles: Set<Style>
+
         /// Constructor of fonts
+        ///
+        /// The default fonts follow the Dynamic Type text size, even when it changes while the Octopus UI is
+        /// displayed: there is no need to create the theme again.
         /// - Parameters:
         ///   - title1: the font for the title1 text style. Default value is scaled system font with base size of 26
         ///   - title2: the font for the title2 text style. Default value is scaled system font with base size of 22
@@ -147,12 +154,18 @@ public struct OctopusTheme: Sendable {
         ///   - navBarItem: the font for the navigation bar items. Default value is system `.body` to match the default
         ///                 font used for navigation bar items
         public init(
-            title1: Font = Font.system(size: UIFontMetrics(forTextStyle: .title1).scaledValue(for: 26)),
-            title2: Font = Font.system(size: UIFontMetrics(forTextStyle: .title2).scaledValue(for: 22)),
-            body1: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 18)),
-            body2: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 16)),
-            caption1: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption1).scaledValue(for: 14)),
-            caption2: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption2).scaledValue(for: 12)),
+            title1: Font = Font.system(size: UIFontMetrics(forTextStyle: .title1).scaledValue(for: 26))
+                .weight(.regular),
+            title2: Font = Font.system(size: UIFontMetrics(forTextStyle: .title2).scaledValue(for: 22))
+                .weight(.regular),
+            body1: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 18))
+                .weight(.regular),
+            body2: Font = Font.system(size: UIFontMetrics(forTextStyle: .body).scaledValue(for: 16))
+                .weight(.regular),
+            caption1: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption1).scaledValue(for: 14))
+                .weight(.regular),
+            caption2: Font = Font.system(size: UIFontMetrics(forTextStyle: .caption2).scaledValue(for: 12))
+                .weight(.regular),
             navBarItem: Font = .body
         ) {
             self.title1 = title1
@@ -162,6 +175,80 @@ public struct OctopusTheme: Sendable {
             self.caption1 = caption1
             self.caption2 = caption2
             self.navBarItem = navBarItem
+            // A font equal to the default one is the default one. The defaults carry a `.weight(.regular)` that a
+            // host font has no reason to carry, so that a fixed `.system(size: 16)` given by the host never passes
+            // for the default `body2`, which it would equal when the theme is created at the default text size.
+            let fonts: [Style: Font] = [
+                .title1: title1, .title2: title2, .body1: body1, .body2: body2,
+                .caption1: caption1, .caption2: caption2,
+            ]
+            self.defaultStyles = Set(Style.allCases.filter { fonts[$0] == $0.defaultFont() })
+        }
+
+        private init(title1: Font, title2: Font, body1: Font, body2: Font, caption1: Font, caption2: Font,
+                     navBarItem: Font, defaultStyles: Set<Style>) {
+            self.title1 = title1
+            self.title2 = title2
+            self.body1 = body1
+            self.body2 = body2
+            self.caption1 = caption1
+            self.caption2 = caption2
+            self.navBarItem = navBarItem
+            self.defaultStyles = defaultStyles
+        }
+
+        /// The same fonts, with the default ones sized for `sizeCategory`.
+        ///
+        /// A default font is a system font of a fixed size, computed for the text size in effect when the theme was
+        /// created: without this, a theme kept by the host would never follow a text size change.
+        func resized(for sizeCategory: UIContentSizeCategory) -> Fonts {
+            let traits = UITraitCollection(preferredContentSizeCategory: sizeCategory)
+            func font(_ style: Style, _ font: Font) -> Font {
+                defaultStyles.contains(style) ? style.defaultFont(compatibleWith: traits) : font
+            }
+            return Fonts(
+                title1: font(.title1, title1), title2: font(.title2, title2),
+                body1: font(.body1, body1), body2: font(.body2, body2),
+                caption1: font(.caption1, caption1), caption2: font(.caption2, caption2),
+                navBarItem: navBarItem, defaultStyles: defaultStyles)
+        }
+
+        /// The text styles whose default font is a system font scaled with the text size. `navBarItem` is not one of
+        /// them: its default, `.body`, already follows the text size on its own.
+        enum Style: CaseIterable, Sendable {
+            case title1, title2, body1, body2, caption1, caption2
+
+            /// The default font of the style, sized for the text size of `traits`, or the app's one without traits.
+            ///
+            /// Without traits, it is the exact expression of the default values of `init`, so that a font left to
+            /// its default compares equal to it. Keep the `.weight(.regular)` of both: it is what tells a default
+            /// font from a system font of the same size given by the host.
+            func defaultFont(compatibleWith traits: UITraitCollection? = nil) -> Font {
+                let metrics = UIFontMetrics(forTextStyle: textStyle)
+                guard let traits else { return Font.system(size: metrics.scaledValue(for: baseSize)).weight(.regular) }
+                return Font.system(size: metrics.scaledValue(for: baseSize, compatibleWith: traits)).weight(.regular)
+            }
+
+            private var baseSize: CGFloat {
+                switch self {
+                case .title1: 26
+                case .title2: 22
+                case .body1: 18
+                case .body2: 16
+                case .caption1: 14
+                case .caption2: 12
+                }
+            }
+
+            private var textStyle: UIFont.TextStyle {
+                switch self {
+                case .title1: .title1
+                case .title2: .title2
+                case .body1, .body2: .body
+                case .caption1: .caption1
+                case .caption2: .caption2
+                }
+            }
         }
     }
 
@@ -185,4 +272,9 @@ public struct OctopusTheme: Sendable {
             self.fonts = fonts
             self.assets = assets
         }
+
+    /// The same theme, with its default fonts sized for `sizeCategory`. See `Fonts.resized(for:)`.
+    func resized(for sizeCategory: UIContentSizeCategory) -> OctopusTheme {
+        OctopusTheme(colors: colors, fonts: fonts.resized(for: sizeCategory), assets: assets)
+    }
 }

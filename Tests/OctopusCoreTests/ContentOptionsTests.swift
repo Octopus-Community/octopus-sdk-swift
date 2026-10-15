@@ -41,6 +41,7 @@ final class ContentOptionsTests: XCTestCase {
         XCTAssertTrue(community.contentOptions.post.enablePolls)
         XCTAssertTrue(community.contentOptions.comment.enablePictures)
         XCTAssertTrue(community.contentOptions.reply.enablePictures)
+        XCTAssertTrue(community.contentOptions.post.textRequired)
     }
 
     func testMissingFieldsWithinContentOptionsDefaultToEnabled() {
@@ -57,6 +58,52 @@ final class ContentOptionsTests: XCTestCase {
         XCTAssertTrue(community.contentOptions.post.enablePolls)      // unset ⇒ true
         XCTAssertTrue(community.contentOptions.comment.enablePictures) // absent ⇒ true
         XCTAssertTrue(community.contentOptions.reply.enablePictures)   // absent ⇒ true
+        XCTAssertTrue(community.contentOptions.post.textRequired)      // unset ⇒ true
+    }
+
+    func testTextRequiredFalseMappedFromProto() {
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.contentOptions = .with {
+                $0.post = .with { $0.textRequired = false }
+            }
+        }
+
+        let community = CommunityConfig(from: config)
+
+        XCTAssertFalse(community.contentOptions.post.textRequired)
+        XCTAssertTrue(community.contentOptions.post.enablePictures) // unset ⇒ true
+        XCTAssertTrue(community.contentOptions.post.enablePolls)    // unset ⇒ true
+    }
+
+    func testTextRequiredTrueMappedFromProto() {
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.contentOptions = .with {
+                $0.post = .with { $0.textRequired = true }
+            }
+        }
+
+        let community = CommunityConfig(from: config)
+
+        XCTAssertTrue(community.contentOptions.post.textRequired)
+    }
+
+    func testTextRequiredDefaultsToTrueWhenPostConfigIsAbsent() {
+        // contentOptions present, post sub-message absent.
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.contentOptions = .with {
+                $0.comment = .with { $0.enablePictures = false }
+            }
+        }
+
+        let community = CommunityConfig(from: config)
+
+        XCTAssertTrue(community.contentOptions.post.textRequired)
+    }
+
+    func testPostOptionsKeepTextRequiredByDefault() {
+        // The public initializer gained `textRequired` with a default: existing call sites keep today's behaviour.
+        XCTAssertTrue(ContentOptions.PostOptions(enablePictures: false, enablePolls: false).textRequired)
+        XCTAssertTrue(ContentOptions.allEnabled.post.textRequired)
     }
 
     func testContentOptionsPersistThroughDatabase() async throws {
@@ -73,10 +120,32 @@ final class ContentOptionsTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: options,
                                      exposeClientUserId: false, termsAcceptanceMode: .implicit,
-                                     showCommentsOnOtherProfiles: false)
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
+        XCTAssertEqual(stored.contentOptions, options)
+    }
+
+    func testTextRequiredPersistsThroughDatabase() async throws {
+        let injector = Injector()
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+
+        let options = ContentOptions(
+            post: .init(enablePictures: true, enablePolls: true, textRequired: false),
+            comment: .init(enablePictures: true),
+            reply: .init(enablePictures: true))
+        let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
+                                     gamificationConfig: nil, displayConfig: nil,
+                                     profileFieldsLock: .allEditable, contentOptions: options,
+                                     exposeClientUserId: false, termsAcceptanceMode: .implicit,
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+        try await db.upsert(config: config)
+
+        let stored = try await firstNonNil(db.configPublisher())
+        XCTAssertFalse(stored.contentOptions.post.textRequired)
         XCTAssertEqual(stored.contentOptions, options)
     }
 

@@ -107,7 +107,7 @@ struct PrefilledPostForm: View {
             ImagePickerView(state: state)
         } else {
             Text("Image picking requires iOS 16+ in the sample app.")
-                .foregroundColor(.secondary)
+                .foregroundColor(SampleTokens.Colors.textSecondary)
         }
     }
 

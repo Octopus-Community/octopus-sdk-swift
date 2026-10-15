@@ -67,7 +67,7 @@ struct ProfileSummaryView: View {
                         displayProfile: { _, _ in },
                         openGroup: { navigator.push(.groupDetail(groupId: $0)) },
                         displayContentModeration: {
-                            mainFlowPath.reportTarget = .content(contentId: $0)
+                            mainFlowPath.reportTarget = $0
                         }) {
                             ScreenState(
                                 image: theme.assets.icons.screenStates.emptyContent,
@@ -89,6 +89,10 @@ struct ProfileSummaryView: View {
         .emitScreenDisplayed(.otherUserProfile(.init(profileId: viewModel.profileId)), trackingApi: trackingApi)
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
+            presentationMode.wrappedValue.dismiss()
+        }
+        .onReceive(mainFlowPath.profileBlockedAfterReport) { blockedProfileId in
+            guard blockedProfileId == viewModel.profileId else { return }
             presentationMode.wrappedValue.dismiss()
         }
         .actionSheet(isPresented: $openActions) {
@@ -123,6 +127,7 @@ struct ProfileSummaryView: View {
 
     /// The Comments tab content. Reuses the same navigation closures (and `.postClicked`
     /// tracking) as the Posts tab above, so tapping into a comment/post behaves identically from either tab.
+    /// A tap that opens the post on a comment sends no `.postClicked`, like a featured comment in the feed.
     @ViewBuilder
     private var commentsView: some View {
         if let commentsViewModel = viewModel.commentsViewModel {
@@ -147,7 +152,8 @@ struct ProfileSummaryView: View {
         var buttons: [ActionSheet.Button] = []
         buttons.append(.destructive(Text("Moderation.Profile.Button", bundle: .module)) {
             guard viewModel.ensureConnected(action: .moderation) else { return }
-            mainFlowPath.reportTarget = .profile(profileId: viewModel.profileId)
+            mainFlowPath.reportTarget = .profile(
+                profileId: viewModel.profileId, canBeBlocked: viewModel.profile?.canBeBlocked == true)
         })
         if viewModel.profile?.canBeBlocked == true {
             buttons.append(.destructive(Text("Block.Profile.Button", bundle: .module)) {
@@ -176,7 +182,8 @@ struct ProfileSummaryView: View {
             Menu(content: {
                 DestructiveMenuButton(action: {
                     guard viewModel.ensureConnected(action: .moderation) else { return }
-                    mainFlowPath.reportTarget = .profile(profileId: viewModel.profileId)
+                    mainFlowPath.reportTarget = .profile(
+                        profileId: viewModel.profileId, canBeBlocked: viewModel.profile?.canBeBlocked == true)
                 }) {
                     Label(title: { Text("Moderation.Profile.Button", bundle: .module) },
                           icon: { Image(uiImage: theme.assets.icons.profile.report) })
@@ -403,10 +410,6 @@ private struct ProfileContentView<CommentsView: View, PostsView: View>: View {
     }
 
     private var avatar: Author.Avatar {
-        if let pictureUrl = profile.pictureUrl {
-            return .image(url: pictureUrl, name: profile.nickname ?? "")
-        } else {
-            return .defaultImage(name: profile.nickname ?? "")
-        }
+        .member(pictureUrl: profile.pictureUrl, name: profile.nickname ?? "", community: profile.defaultAvatar)
     }
 }

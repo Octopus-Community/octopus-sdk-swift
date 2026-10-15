@@ -14,13 +14,19 @@ import SwiftProtobuf
 class SSOConnectionTests: XCTestCase {
     private var injector: Injector!
     private var mockUserService: MockUserService!
-    private var userDataStorage: UserDataStorage!
+    // Built on first use, so that a test can make the secured storage unreadable before the session is read.
+    private lazy var userDataStorage: UserDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
     private var userProfileDatabase: CurrentUserProfileDatabase!
     private var userConfigDatabase: UserConfigDatabase!
     private var storage = [AnyCancellable]()
+    /// Stands for the device being unlocked or the app coming back.
+    private var sessionReadTrigger: PassthroughSubject<Void, Never>!
+    private let connectionMode = ConnectionMode.sso(
+        .init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
 
     override func setUp() {
-        let connectionMode = ConnectionMode.sso(.init(appManagedFields: [], loginRequired: { }, modifyUser: { _ in }))
+        let sessionReadTrigger = PassthroughSubject<Void, Never>()
+        self.sessionReadTrigger = sessionReadTrigger
         injector = Injector()
         injector.register { _ in try! ModelCoreDataStack(inRam: true) }
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
@@ -28,7 +34,9 @@ class SSOConnectionTests: XCTestCase {
         injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
                                .userProfileFetchMonitor, .blockedUserIdsProvider, .appStateMonitor)
-        injector.register { UserDataStorage(injector: $0) }
+        injector.register {
+            UserDataStorage(injector: $0, sessionReadTriggers: sessionReadTrigger.eraseToAnyPublisher())
+        }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
@@ -39,7 +47,7 @@ class SSOConnectionTests: XCTestCase {
         injector.register { CommentsDatabase(injector: $0) }
         injector.register { PostsDatabase(injector: $0) }
         injector.register { FeedItemInfosDatabase(injector: $0) }
-        injector.register { ClientUserProvider(connectionMode: connectionMode, injector: $0) }
+        injector.register { ClientUserProvider(injector: $0) }
         injector.register { ClientUserProfileDatabase(injector: $0) }
         injector.register { UserConfigDatabase(injector: $0) }
         injector.register { CommunityConfigDatabase(injector: $0) }
@@ -53,7 +61,6 @@ class SSOConnectionTests: XCTestCase {
         mockUserService = (injector.getInjected(identifiedBy: Injected.remoteClient)
             .userService as! MockUserService)
 
-        userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
         userProfileDatabase = injector.getInjected(identifiedBy: Injected.currentUserProfileDatabase)
         userConfigDatabase = injector.getInjected(identifiedBy: Injected.userConfigDatabase)
     }
@@ -62,7 +69,7 @@ class SSOConnectionTests: XCTestCase {
         // Precondition: no client user data, no user id, no profile in db
         try await setupWithNonConnectedWithoutErrorState()
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
         switch connectionRepository.connectionState {
         case .notConnected(nil):
             break
@@ -129,6 +136,181 @@ class SSOConnectionTests: XCTestCase {
         await fulfillment(of: [notConnectedExpectation, guestExpectation], timeout: 5, enforceOrder: true)
         // The repository is only observed through its publisher, so it must be kept alive until the end.
         withExtendedLifetime(connectionRepository) { }
+    }
+
+    /// Before the device's first unlock after a reboot the stored session cannot be read. Connecting a guest then
+    /// would replace the user's session: the guest connection waits for the session to be read, and only happens
+    /// if there is none.
+    func testNoGuestConnectionWhileTheSessionIsUnreadable() async throws {
+        let notConnectedExpectation = XCTestExpectation(description: "State is not connected")
+        let guestExpectation = XCTestExpectation(description: "Guest profile present")
+        let securedStorage = injector.getInjected(identifiedBy: Injected.securedStorage) as! MockSecuredStorage
+        securedStorage.readError = SecuredStorageError.unavailableUntilFirstUnlock
+        _ = userDataStorage
+
+        mockUserService.injectNextGetGuestJwtResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "fakeJWT"
+                $0.userID = "userId"
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "Guest"
+                    $0.isGuest = true
+                }
+            })
+        })
+
+        let connectionRepository = makeConnectionRepository { state in
+            switch state {
+            case .notConnected(nil):
+                notConnectedExpectation.fulfill()
+            case let .connected(user, nil) where user.profile.isGuest:
+                guestExpectation.fulfill()
+            default:
+                XCTFail("State is \(state).")
+            }
+        }
+        await fulfillment(of: [notConnectedExpectation], timeout: 5)
+        // leave time for a guest connection to happen if it were not waiting
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0, "no guest while the session is unreadable")
+
+        // the device is unlocked, and there turns out to be no stored session
+        securedStorage.readError = nil
+        sessionReadTrigger.send()
+
+        await fulfillment(of: [guestExpectation], timeout: 5)
+        withExtendedLifetime(connectionRepository) { }
+    }
+
+    /// The case the guest connection waits for: a session stored before the reboot, unreadable until the device
+    /// is unlocked, comes back as it was. No guest is connected over it, not even for a moment.
+    func testAStoredSessionReadOnUnlockIsKeptWithoutAGuest() async throws {
+        let notConnectedExpectation = XCTestExpectation(description: "State is not connected")
+        let connectedExpectation = XCTestExpectation(description: "Stored user connected")
+        let securedStorage = injector.getInjected(identifiedBy: Injected.securedStorage) as! MockSecuredStorage
+        try storeSession(in: securedStorage, userId: "userId", clientUserId: "clientUserId")
+        try await userProfileDatabase.upsert(profile: StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "ClientUser", isGuest: false))
+        securedStorage.readError = SecuredStorageError.unavailableUntilFirstUnlock
+        _ = userDataStorage
+        // were a guest connection attempted, it would succeed and show
+        mockUserService.injectNextGetGuestJwtResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "guestJWT"
+                $0.userID = "guestUserId"
+                $0.profile = .with {
+                    $0.id = "guestProfileId"
+                    $0.nickname = "Guest"
+                    $0.isGuest = true
+                }
+            })
+        })
+
+        let connectionRepository = makeConnectionRepository { state in
+            switch state {
+            case .notConnected(nil):
+                notConnectedExpectation.fulfill()
+            case let .connected(user, nil) where user.profile.userId == "userId" && !user.profile.isGuest:
+                connectedExpectation.fulfill()
+            default:
+                XCTFail("State is \(state).")
+            }
+        }
+        await fulfillment(of: [notConnectedExpectation], timeout: 5)
+
+        securedStorage.readError = nil
+        sessionReadTrigger.send()
+
+        await fulfillment(of: [connectedExpectation], timeout: 5)
+        // leave time for a connection attempt started by the session read to show
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0, "no guest may be connected over the stored session")
+        XCTAssertEqual(mockUserService.getJwtCallCount, 0, "the stored session needs no new token")
+        XCTAssertEqual(userDataStorage.userData?.jwtToken, "jwt")
+        XCTAssertEqual(try securedStorage.value(forKey: "user_jwtToken"), "jwt", "the stored session is untouched")
+        withExtendedLifetime(connectionRepository) { }
+    }
+
+    /// A host connecting its user while the session is unreadable cannot tell who is connected yet: the SDK gives
+    /// up rather than connect a guest that could later replace the stored session.
+    func testConnectUserGivesUpWhileTheSessionIsUnreadable() async throws {
+        let securedStorage = injector.getInjected(identifiedBy: Injected.securedStorage) as! MockSecuredStorage
+        try storeSession(in: securedStorage, userId: "userId", clientUserId: "clientUserId")
+        securedStorage.readError = SecuredStorageError.unavailableUntilFirstUnlock
+        _ = userDataStorage
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
+        connectionRepository.unreadableSessionTimeout = 0.1
+        var tokenRequested = false
+
+        do {
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUserId", profile: .init(nickname: "ClientUser", bio: nil, picture: nil)),
+                tokenProvider: { tokenRequested = true; return "clientToken" })
+            XCTFail("connectUser must fail while the session is unreadable")
+        } catch {
+            XCTAssertTrue(isUnreadableSessionError(error), "unexpected error \(error)")
+        }
+
+        XCTAssertFalse(tokenRequested)
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0, "no guest may be connected")
+        XCTAssertEqual(mockUserService.getJwtCallCount, 0)
+        XCTAssertNil(userDataStorage.userData)
+        securedStorage.readError = nil
+        XCTAssertEqual(try securedStorage.value(forKey: "user_jwtToken"), "jwt", "the stored session is untouched")
+    }
+
+    /// The unlock notification can be missed while the app is suspended: `connectUser` reads the session again
+    /// on its own rather than fail while the Keychain has become readable.
+    func testConnectUserReadsTheSessionAgainWithoutTheUnlockNotification() async throws {
+        let securedStorage = injector.getInjected(identifiedBy: Injected.securedStorage) as! MockSecuredStorage
+        try storeSession(in: securedStorage, userId: "userId", clientUserId: "clientUserId")
+        try await userProfileDatabase.upsert(profile: StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "ClientUser", isGuest: false))
+        securedStorage.readError = SecuredStorageError.unavailableUntilFirstUnlock
+        _ = userDataStorage
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
+
+        // the device is unlocked, but no notification tells the SDK
+        securedStorage.readError = nil
+        do {
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUserId", profile: .init(nickname: "ClientUser", bio: nil, picture: nil)),
+                tokenProvider: { "clientToken" })
+        } catch {
+            // Past the session, the connection can fail for reasons this test does not set up (community access…)
+            XCTAssertFalse(isUnreadableSessionError(error), "connectUser gave up on a session that had become readable")
+        }
+
+        XCTAssertFalse(userDataStorage.sessionIsUnreadable)
+        XCTAssertEqual(userDataStorage.userData?.id, "userId", "the stored session is the one read")
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
+    /// The device being unlocked while `connectUser` waits: it goes on with the session it can read now.
+    func testConnectUserGoesOnWhenTheDeviceIsUnlockedDuringTheWait() async throws {
+        let securedStorage = injector.getInjected(identifiedBy: Injected.securedStorage) as! MockSecuredStorage
+        try storeSession(in: securedStorage, userId: "userId", clientUserId: "clientUserId")
+        try await userProfileDatabase.upsert(profile: StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "ClientUser", isGuest: false))
+        securedStorage.readError = SecuredStorageError.unavailableUntilFirstUnlock
+        // locked for the read at init and the first two reads of the wait, then unlocked
+        securedStorage.readErrorLastsForReads = 3
+        _ = userDataStorage
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
+
+        do {
+            try await connectionRepository.connectUser(
+                .init(userId: "clientUserId", profile: .init(nickname: "ClientUser", bio: nil, picture: nil)),
+                tokenProvider: { "clientToken" })
+        } catch {
+            // Past the session, the connection can fail for reasons this test does not set up (community access…)
+            XCTAssertFalse(isUnreadableSessionError(error), "connectUser gave up although the device was unlocked")
+        }
+
+        XCTAssertFalse(userDataStorage.sessionIsUnreadable)
+        XCTAssertEqual(userDataStorage.userData?.id, "userId", "the stored session is the one read")
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
     }
 
     func testFromNonConnectedToGuestWithError() async throws {
@@ -327,7 +509,7 @@ class SSOConnectionTests: XCTestCase {
         try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
             id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
         let guestExpectation = XCTestExpectation(description: "Guest profile present")
         connectionRepository.$connectionState.sink { state in
             if case let .connected(user, nil) = state, user.profile.isGuest {
@@ -466,7 +648,7 @@ class SSOConnectionTests: XCTestCase {
         try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
             id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
         let guestExpectation = XCTestExpectation(description: "Guest profile present")
         connectionRepository.$connectionState.sink { state in
             if case let .connected(user, nil) = state, user.profile.isGuest {
@@ -543,7 +725,7 @@ class SSOConnectionTests: XCTestCase {
         let configRepository: ConfigRepository = injector.getInjected(identifiedBy: Injected.configRepository)
         try? await TaskUtils.wait(for: configRepository.userConfig?.canAccessCommunity == true, timeout: 2)
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode, injector: injector)
         let connectedExpectation = XCTestExpectation(description: "Client user connected")
         connectionRepository.$connectionState.sink { state in
             if case let .connected(user, nil) = state, !user.profile.isGuest {
@@ -601,14 +783,12 @@ class SSOConnectionTests: XCTestCase {
         try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
             id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-
         let connectedExpectation = XCTestExpectation(description: "Connected as guest")
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             if case let .connected(user, nil) = state, user.profile.isGuest {
                 connectedExpectation.fulfill()
             }
-        }.store(in: &storage)
+        }
         await fulfillment(of: [connectedExpectation], timeout: 5)
 
         // Any churn would call getGuestJwt and mint a *different* guest.
@@ -632,20 +812,132 @@ class SSOConnectionTests: XCTestCase {
         XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
     }
 
+    /// When the exchange of the client token fails, the SDK keeps the guest session but remembers the client
+    /// user, to connect them later. A `disconnectUser()` in that state must forget the client user: it used to
+    /// keep them, and the reconnection that follows a disconnect then signed that very user in.
+    func testDisconnectUserFromAGuestFallbackForgetsTheClientUser() async throws {
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
+
+        let guestExpectation = XCTestExpectation(description: "Connected as guest")
+        let clientUserConnectedExpectation = XCTestExpectation(description: "Client user connected")
+        clientUserConnectedExpectation.isInverted = true
+        let connectionRepository = makeConnectionRepository { state in
+            guard case let .connected(user, _) = state else { return }
+            if user.profile.isGuest {
+                guestExpectation.fulfill()
+            } else {
+                clientUserConnectedExpectation.fulfill()
+            }
+        }
+        await fulfillment(of: [guestExpectation], timeout: 5)
+
+        // The exchange fails: the session stays a guest, with the client user remembered.
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .fail(.with { $0.errors = [] })
+        })
+        try? await connectionRepository.connectUser(
+            .init(userId: "clientUserId", profile: .init(nickname: "Client", bio: nil, picture: nil)),
+            tokenProvider: { "CLIENT_TOKEN" })
+        XCTAssertEqual(userDataStorage.clientUserData?.id, "clientUserId")
+        XCTAssertEqual(userDataStorage.userData?.id, "guestUserId")
+
+        // The next exchange would succeed: a disconnect that kept the client user would use it.
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "clientJWT"
+                $0.userID = "clientOctopusUserId"
+                $0.profile = .with {
+                    $0.id = "clientProfileId"
+                    $0.nickname = "Client"
+                    $0.isGuest = false
+                }
+            })
+        })
+
+        try await connectionRepository.disconnectUser()
+
+        await fulfillment(of: [clientUserConnectedExpectation], timeout: 1)
+        XCTAssertNil(userDataStorage.clientUserData)
+        // Already a guest: the guest identity is kept, no new guest is minted.
+        XCTAssertEqual(userDataStorage.userData?.id, "guestUserId")
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
+    /// A client user refused as banned leaves the guest session carrying their ban. Once a disconnect has
+    /// forgotten that client user, the guest must not be told they are banned any more.
+    func testDisconnectUserFromAGuestFallbackClearsTheClientUserBan() async throws {
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
+
+        let guestExpectation = XCTestExpectation(description: "Connected as guest")
+        let connectionRepository = makeConnectionRepository { state in
+            if case let .connected(user, nil) = state, user.profile.isGuest {
+                guestExpectation.fulfill()
+            }
+        }
+        await fulfillment(of: [guestExpectation], timeout: 5)
+
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .fail(.with {
+                $0.errors = [.with {
+                    $0.errorCode = .userBanned
+                    $0.message = "You have been banned"
+                }]
+            })
+        })
+        try? await connectionRepository.connectUser(
+            .init(userId: "clientUserId", profile: .init(nickname: "Client", bio: nil, picture: nil)),
+            tokenProvider: { "CLIENT_TOKEN" })
+        XCTAssertEqual(connectionRepository.connectionState.userBannedMessage, "You have been banned")
+
+        try await connectionRepository.disconnectUser()
+
+        XCTAssertNil(connectionRepository.connectionState.userBannedMessage)
+        XCTAssertNil(userDataStorage.clientUserData)
+        guard case let .connected(user, nil) = connectionRepository.connectionState else {
+            XCTFail("State is \(connectionRepository.connectionState), expected the guest without error")
+            return
+        }
+        XCTAssertEqual(user.profile.userId, "guestUserId")
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
+    /// `logout()` is also reached without `disconnectUser()`: on a community switch, when the server no longer
+    /// knows the profile, or when another client user signs in. On a guest session that still remembers a client
+    /// user, it must forget that client user and keep the guest.
+    func testLogoutOnGuestForgetsTheRememberedClientUser() async throws {
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
+        userDataStorage.store(clientUserData: .init(id: "clientUserId"))
+
+        let guestExpectation = XCTestExpectation(description: "Connected as guest")
+        let connectionRepository = makeConnectionRepository { state in
+            if case let .connected(user, nil) = state, user.profile.isGuest {
+                guestExpectation.fulfill()
+            }
+        }
+        await fulfillment(of: [guestExpectation], timeout: 5)
+
+        try await connectionRepository.logout()
+
+        XCTAssertNil(userDataStorage.clientUserData)
+        XCTAssertEqual(userDataStorage.userData?.id, "guestUserId")
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
     /// A guest has no account to log out from: `logout()` must be a no-op for a guest (matching
     /// Android's `!isGuest` guard), preserving the guest identity instead of destroying it.
     func testLogoutOnGuestPreservesIdentity() async throws {
         try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
             id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil), injector: injector)
-
         let connectedExpectation = XCTestExpectation(description: "Connected as guest")
-        connectionRepository.$connectionState.sink { state in
+        let connectionRepository = makeConnectionRepository { state in
             if case let .connected(user, nil) = state, user.profile.isGuest {
                 connectedExpectation.fulfill()
             }
-        }.store(in: &storage)
+        }
         await fulfillment(of: [connectedExpectation], timeout: 5)
 
         try await connectionRepository.logout()
@@ -653,6 +945,71 @@ class SSOConnectionTests: XCTestCase {
         // The guest identity must survive an explicit logout.
         XCTAssertEqual(userDataStorage.userData?.id, "guestUserId")
         XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
+    /// A guest JWT is only valid on the community that issued it, and the session is stored in a Keychain service
+    /// shared by every community: kept across a community switch, it would be read by the next community's core
+    /// and rejected by its server. The switch drops it, without forging a guest on the community being left.
+    func testLogoutBeforeCommunitySwitchOnGuestDropsTheGuestSession() async throws {
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "guestProfileId", userId: "guestUserId", nickname: "Guest", isGuest: true))
+        userDataStorage.store(clientUserData: .init(id: "clientUserId"))
+
+        let guestExpectation = XCTestExpectation(description: "Connected as guest")
+        let connectionRepository = makeConnectionRepository { state in
+            if case let .connected(user, nil) = state, user.profile.isGuest {
+                guestExpectation.fulfill()
+            }
+        }
+        await fulfillment(of: [guestExpectation], timeout: 5)
+
+        try await connectionRepository.logoutBeforeCommunitySwitch()
+
+        XCTAssertNil(userDataStorage.userData)
+        XCTAssertNil(userDataStorage.clientUserData)
+        XCTAssertEqual(mockUserService.getGuestJwtCallCount, 0)
+    }
+
+    /// The switch logs a client user out as `logout()` does.
+    func testLogoutBeforeCommunitySwitchOnClientUserDropsTheSession() async throws {
+        try await setupWithExistingGuestProfile(StorableCurrentUserProfile.create(
+            id: "profileId", userId: "userId", nickname: "Guest", isGuest: true))
+
+        let guestExpectation = XCTestExpectation(description: "Connected as guest")
+        let clientExpectation = XCTestExpectation(description: "Connected as client user")
+        let connectionRepository = makeConnectionRepository { state in
+            guard case let .connected(user, nil) = state else { return }
+            if user.profile.isGuest {
+                guestExpectation.fulfill()
+            } else {
+                clientExpectation.fulfill()
+            }
+        }
+        await fulfillment(of: [guestExpectation], timeout: 5)
+
+        mockUserService.injectNextGetJwtFromClientResponse(.with {
+            $0.result = .success(.with {
+                $0.jwt = "fakeJWT"
+                $0.userID = "userId"
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "ClientNickName"
+                    $0.hasSeenOnboarding_p = false
+                    $0.hasAcceptedCgu_p = false
+                    $0.hasConfirmedNickname_p = false
+                    $0.isGuest = false
+                }
+            })
+        })
+        try await connectionRepository.connectUser(
+            .init(userId: "clientUserId", profile: .init(nickname: "ClientNickName", bio: nil, picture: nil)),
+            tokenProvider: { "CLIENT_TOKEN" })
+        await fulfillment(of: [clientExpectation], timeout: 5)
+
+        try await connectionRepository.logoutBeforeCommunitySwitch()
+
+        XCTAssertNil(userDataStorage.userData)
+        XCTAssertNil(userDataStorage.clientUserData)
     }
 
     /// Builds the repository and starts observing its state without letting the main queue run in between.
@@ -665,6 +1022,16 @@ class SSOConnectionTests: XCTestCase {
     /// whole window behind it: the queue is serial and FIFO, so nothing the initialiser schedules there can
     /// be delivered until the subscription is in place.
     ///
+    /// The observer is called one main queue turn after a state is published, not from the emission itself.
+    /// `@Published` emits from `willSet`, before the property is written, and the repository writes its connected
+    /// states from a sink on the main queue. Fulfilling an expectation straight from the emission therefore wakes
+    /// the awaiting test while that sink is still mid-assignment, and what the test calls next reads the previous
+    /// state: `logout()` then misses that the session is a guest one and drops the guest identity. Hopping
+    /// once lands after that sink has returned, so the state handed to the observer is also the one the
+    /// repository reads. The hop keeps the order: the initial value is queued while the main queue is held,
+    /// ahead of every later change. States written off the main queue (the error path of `connect()`, logout)
+    /// are not covered: the hop only narrows the gap for them.
+    ///
     /// Safe whichever thread the test body runs on: the parked block is released before this returns, so a
     /// test that happens to run on the main queue simply finds the semaphore already signalled.
     private func makeConnectionRepository(observingState observe: @escaping (ConnectionState) -> Void)
@@ -673,9 +1040,12 @@ class SSOConnectionTests: XCTestCase {
         DispatchQueue.main.async { mainQueueHeld.wait() }
         defer { mainQueueHeld.signal() }
 
-        let connectionRepository = SSOConnectionRepository(connectionMode: .octopus(deepLink: nil),
+        let connectionRepository = SSOConnectionRepository(connectionMode: connectionMode,
                                                           injector: injector)
-        connectionRepository.$connectionState.sink(receiveValue: observe).store(in: &storage)
+        connectionRepository.$connectionState
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: observe)
+            .store(in: &storage)
         return connectionRepository
     }
 
@@ -726,5 +1096,20 @@ class SSOConnectionTests: XCTestCase {
             }.store(in: &storage)
 
         await fulfillment(of: [profileInDbExpectation], timeout: 5)
+    }
+
+    /// Whether `error` is the one `connectUser` throws when it gives up on an unreadable session.
+    private func isUnreadableSessionError(_ error: Error) -> Bool {
+        guard case let ConnectionError.unknown(underlying) = error,
+              case InternalError.explainedError(_)? = underlying else { return false }
+        return true
+    }
+
+    /// Writes a session straight into the secured storage, as a previous launch would have left it.
+    private func storeSession(in securedStorage: MockSecuredStorage, userId: String, clientUserId: String) throws {
+        try securedStorage.set(userId, key: "user_id")
+        try securedStorage.set("jwt", key: "user_jwtToken")
+        try securedStorage.set(clientUserId, key: "user_clientId")
+        try securedStorage.set(clientUserId, key: "client_user_id")
     }
 }

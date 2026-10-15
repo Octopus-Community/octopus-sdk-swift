@@ -45,6 +45,7 @@ struct InitialScreenView: View {
             }
         }
         .navigationBarTitle("Initial Screen", displayMode: .inline)
+        .dismissedOnPushRouting($initialScreenToDisplay)
         .sheet(item: $initialScreenToDisplay) { screen in
             OctopusUIView(octopus: octopus, initialScreen: screen)
         }
@@ -52,6 +53,7 @@ struct InitialScreenView: View {
             groupsCancellable = octopus.$groups.sink { self.groups = $0 }
             Task { try? await octopus.fetchGroups() }
         }
+        .sampleScreenBackground()
         .hostAppFooter()
     }
 
@@ -59,11 +61,11 @@ struct InitialScreenView: View {
         VStack(spacing: 16) {
             HStack {
                 Image(systemName: "number")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
                 TextField("Enter a Post ID", text: $postId)
             }
             .padding(10)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color(.secondarySystemBackground)))
+            .sampleCardSurface(cornerRadius: SampleTokens.Radius.medium)
             .padding(.horizontal)
 
             Button(action: {
@@ -76,8 +78,8 @@ struct InitialScreenView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                .foregroundColor(.white)
+                .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                .foregroundColor(SampleTokens.Colors.buttonText)
             }
             .disabled(postId.isEmpty)
             .opacity(postId.isEmpty ? 0.4 : 1)
@@ -90,48 +92,52 @@ struct InitialScreenView: View {
 
     private var groupContent: some View {
         List {
-            Section(header: Text("Available Groups")) {
-                ForEach(groups, id: \.id) { group in
+            Group {
+                Section(header: Text("Available Groups")) {
+                    ForEach(groups, id: \.id) { group in
+                        Button(action: {
+                            initialScreenToDisplay = .group(.init(groupId: group.id))
+                        }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(group.name)
+                                        .font(.body)
+                                    Text(group.id)
+                                        .font(.caption)
+                                        .foregroundColor(SampleTokens.Colors.textSecondary)
+                                }
+                                Spacer()
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.caption)
+                                    .foregroundColor(.accentColor)
+                            }
+                        }
+                    }
+                }
+                Section(header: Text("Testing")) {
                     Button(action: {
-                        initialScreenToDisplay = .group(.init(groupId: group.id))
+                        initialScreenToDisplay = .group(.init(groupId: "not-existing-group-id"))
                     }) {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(group.name)
-                                    .font(.body)
-                                Text(group.id)
+                                Text("Not existing Group")
+                                    .foregroundColor(.red)
+                                Text("not-existing-group-id")
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(SampleTokens.Colors.textSecondary)
                             }
                             Spacer()
-                            Image(systemName: "arrow.up.right.square")
+                            Image(systemName: "xmark.circle")
                                 .font(.caption)
-                                .foregroundColor(.accentColor)
-                        }
-                    }
-                }
-            }
-            Section(header: Text("Testing")) {
-                Button(action: {
-                    initialScreenToDisplay = .group(.init(groupId: "not-existing-group-id"))
-                }) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Not existing Group")
                                 .foregroundColor(.red)
-                            Text("not-existing-group-id")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
-                        Spacer()
-                        Image(systemName: "xmark.circle")
-                            .font(.caption)
-                            .foregroundColor(.red)
                     }
                 }
             }
+            .sampleRowSurface()
         }
         .listStyle(.grouped)
+        .sampleListBackground()
     }
 
     private var prefilledPostContent: some View {

@@ -30,7 +30,7 @@ struct ResponseView: View {
     let blockAuthor: (String) -> Void
     let openCreateReply: () -> Void
     let openRepliesList: () -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
 
     @State private var displayDeleteAlert = false
     @State private var displayBlockAlert = false
@@ -48,7 +48,7 @@ struct ResponseView: View {
         blockAuthor: @escaping (String) -> Void,
         openCreateReply: @escaping () -> Void,
         openRepliesList: @escaping () -> Void,
-        displayContentModeration: @escaping (String) -> Void
+        displayContentModeration: @escaping (ReportTarget) -> Void
     ) {
         self.response = response
         self.context = context
@@ -73,7 +73,7 @@ struct ResponseView: View {
             zoomableImageInfo: $zoomableImageInfo,
             iOS13ActionSheetIsPresented: $iOS13ActionSheetIsPresented,
             onDelete: { displayDeleteAlert = true },
-            onReport: { displayContentModeration(response.uuid) },
+            onReport: { displayContentModeration(reportTarget) },
             onBlockAuthor: { displayBlockAlert = true },
             reactionTapped: reactionTapped,
             displayProfile: displayProfile,
@@ -101,6 +101,11 @@ struct ResponseView: View {
         }
     }
 
+    /// What the Report entries report, with the author the "Report sent" alert may offer to block.
+    private var reportTarget: ReportTarget {
+        .content(contentId: response.uuid, author: response.author, authorCanBeBlocked: response.canBeBlockedByUser)
+    }
+
     private var iOS13ActionSheetButtons: [ActionSheet.Button] {
         var buttons: [ActionSheet.Button] = []
         if response.canBeDeleted {
@@ -110,7 +115,7 @@ struct ResponseView: View {
         }
         if response.canBeModerated {
             buttons.append(.destructive(Text("Moderation.Content.Button", bundle: .module)) {
-                displayContentModeration(response.uuid)
+                displayContentModeration(reportTarget)
             })
         }
         if response.canBeBlockedByUser {

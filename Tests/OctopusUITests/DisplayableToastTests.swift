@@ -4,7 +4,7 @@
 
 import Foundation
 import Testing
-import OctopusCore
+@testable import OctopusCore
 @testable import OctopusUI
 
 /// Unit-tests for how a `Toast` is displayed, the two traits the Screen states spec added: the
@@ -38,5 +38,19 @@ struct DisplayableToastTests {
         // The category is what puts the toast at the top of the screen and paints it with the error color.
         #expect(DisplayableToast(toast: .error(.unknown)).category == .error)
         #expect(DisplayableToast(toast: .userAction(.postCreated)).category == .success)
+    }
+
+    /// The string VoiceOver announces goes through `L10n` with a plain `String` key, which the string catalog cannot
+    /// check: a key missing from it is read out as is instead of the sentence.
+    @Test(arguments: [
+        GamificationAction.reaction, .comment, .post, .reply, .vote, .postCommented, .profileCompleted, .dailySession
+    ])
+    func everyGamificationToastIsAnnouncedWithItsTranslatedSentence(action: GamificationAction) {
+        let toast = GamificationToast(action: action, formattedPoints: "42")
+
+        let announcement = toast.localizedString(locale: Locale(identifier: "en"))
+
+        #expect(!announcement.hasPrefix("Gamification.Toast."))
+        #expect(announcement.contains("42"))
     }
 }

@@ -46,6 +46,7 @@ class PublicProfileDatabase: InjectableObject {
             profileEntity.nickname = profile.nickname
             profileEntity.bio = profile.bio
             profileEntity.pictureUrl = profile.pictureUrl
+            profileEntity.defaultAvatar = profile.defaultAvatar
             profileEntity.tagsRawValue = profile.tags.rawValue
             profileEntity.totalMessagesOptional = profile.totalMessages.map { NSNumber(integerLiteral: $0) }
             profileEntity.accountCreationDate = profile.accountCreationDate

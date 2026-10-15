@@ -26,6 +26,8 @@ public struct UpdateProfileData: Sendable {
     public let hasConfirmedBio: FieldUpdate<Bool>
     public let hasConfirmedPicture: FieldUpdate<Bool>
     public let optFindAvailableNickname: Bool
+    /// Asks the server, when the nickname is already taken, for available nicknames derived from it.
+    public let wantNicknameSuggestions: Bool
 
     public init(nickname: FieldUpdate<String> = .notUpdated,
                 bio: FieldUpdate<String?> = .notUpdated,
@@ -35,7 +37,8 @@ public struct UpdateProfileData: Sendable {
                 hasConfirmedNickname: FieldUpdate<Bool> = .notUpdated,
                 hasConfirmedBio: FieldUpdate<Bool> = .notUpdated,
                 hasConfirmedPicture: FieldUpdate<Bool> = .notUpdated,
-                optFindAvailableNickname: Bool = false
+                optFindAvailableNickname: Bool = false,
+                wantNicknameSuggestions: Bool = false
     ) {
         self.nickname = nickname
         self.bio = bio
@@ -46,6 +49,7 @@ public struct UpdateProfileData: Sendable {
         self.hasConfirmedBio = hasConfirmedBio
         self.hasConfirmedPicture = hasConfirmedPicture
         self.optFindAvailableNickname = optFindAvailableNickname
+        self.wantNicknameSuggestions = wantNicknameSuggestions
     }
 }
 
@@ -72,10 +76,6 @@ public protocol UserService {
 
     func deleteUser(userId: String, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_DeleteUserResponse
-
-    func deleteAccount(userId: String, reason: Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReason,
-                       authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> Com_Octopuscommunity_DeleteMyProfileResponse
 
     func reportUser(profileId: String, reasons: [Com_Octopuscommunity_ReportReasonCode],
                     authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
@@ -115,12 +115,14 @@ class UserServiceClient: ServiceClient, UserService {
     private let client: Com_Octopuscommunity_UserServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
+         sdkIdentity: @escaping @Sendable () -> SdkIdentity,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_UserServiceAsyncClient(
             channel: unaryChannel, interceptors: UserServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier,
+                   sdkIdentity: sdkIdentity)
     }
 
     func getPublicProfile(
@@ -214,6 +216,9 @@ class UserServiceClient: ServiceClient, UserService {
                 }
                 $0.optFindAvailableNickname = profile.optFindAvailableNickname
             }
+            if profile.wantNicknameSuggestions {
+                $0.wantNicknameSuggestions = true
+            }
 
             // TODO: Djavan only set to true when it is a profile update, not only hasSeenOnboarding or hasAcceptedCgu
             $0.fetchUserBlockList = true
@@ -235,19 +240,6 @@ class UserServiceClient: ServiceClient, UserService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.deleteUser(
-                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
-        }
-    }
-
-    func deleteAccount(userId: String, reason: Com_Octopuscommunity_DeleteMyProfileRequest.DeleteMyProfileReason,
-                       authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
-    -> Com_Octopuscommunity_DeleteMyProfileResponse {
-        let request = Com_Octopuscommunity_DeleteMyProfileRequest.with {
-            $0.userID = userId
-            $0.reason = reason
-        }
-        return try await callRemote(authenticationMethod) {
-            try await client.deleteMyProfile(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

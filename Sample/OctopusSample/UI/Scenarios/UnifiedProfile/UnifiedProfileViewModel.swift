@@ -2,18 +2,15 @@
 //  Copyright © 2026 Octopus Community. All rights reserved.
 //
 
+import Combine
 import Foundation
-@_spi(OctopusInternalTesting) import Octopus
 
-/// View model of UnifiedProfileView.
-///
-/// Applies a DEBUG-only override of the `CommunityConfig.exposeClientUserId` activation flag
-/// (Unified Profile), so the feature can be exercised in the sample before the backend
-/// serves the flag. Unified Profile is active only when this flag is on **and**
-/// `onNavigateToProfileCallback` is wired — the sample always wires the callback by default via
-/// `ClientProfileManager`.
+/// The Unified Profile scenario: the switch that sets both inputs at once, and the "Backend flag override" controls
+/// that move the community flag alone. Both read and write the shared `UnifiedProfileManager`, so the Config
+/// screen's switch and this scenario never disagree.
 @MainActor
 class UnifiedProfileViewModel: ObservableObject {
+    /// The "Backend flag override" choices, as on Android.
     enum Mode: Int, CaseIterable, Identifiable {
         case backend = 0
         case forceActive = 1
@@ -24,12 +21,18 @@ class UnifiedProfileViewModel: ObservableObject {
         var label: String {
             switch self {
             case .backend: "Use backend value"
-            case .forceActive: "Force active"
-            case .forceInactive: "Force inactive"
+            case .forceActive: "Force flag on"
+            case .forceInactive: "Force flag off"
             }
         }
 
-        var testId: String { "qa-preset-unifiedProfile-\(rawValue)" }
+        var testId: String {
+            switch self {
+            case .backend: "expose-override-backend"
+            case .forceActive: "expose-override-on"
+            case .forceInactive: "expose-override-off"
+            }
+        }
 
         var overrideValue: Bool? {
             switch self {
@@ -38,39 +41,56 @@ class UnifiedProfileViewModel: ObservableObject {
             case .forceInactive: false
             }
         }
+
+        init(overrideValue: Bool?) {
+            switch overrideValue {
+            case nil: self = .backend
+            case true?: self = .forceActive
+            case false?: self = .forceInactive
+            }
+        }
     }
 
-    @Published private(set) var appliedMode: Mode = .backend
+    @Published private(set) var appliedMode: Mode
+    @Published private(set) var callbackWired: Bool
+    /// The persisted switch.
+    @Published private(set) var isEnabled: Bool
+    /// Whether profile taps open the host's Client profile right now: the flag forced on and the callback wired.
+    @Published private(set) var isActive: Bool
 
-    /// Whether the host wired `onNavigateToProfileCallback` — the second input of the Unified
-    /// Profile AND-gate. Backed by `ClientProfileManager`; wired by default.
-    @Published var callbackWired: Bool = ClientProfileManager.instance.isCallbackWired
+    private let manager: UnifiedProfileManager
+    private var storage = [AnyCancellable]()
 
-    /// Whether the host wired `onNavigateToProfileEditCallback` — gates the "Edit my profile" item of
-    /// the connected-user Activity screen's top-right menu. Backed by `ClientProfileManager`; wired
-    /// by default.
-    @Published var editCallbackWired: Bool = ClientProfileManager.instance.isEditCallbackWired
+    init(manager: UnifiedProfileManager? = nil) {
+        let manager = manager ?? .instance
+        self.manager = manager
+        appliedMode = Mode(overrideValue: manager.state.exposeClientUserIdOverride)
+        callbackWired = manager.state.profileCallbackWired
+        isEnabled = manager.isEnabled
+        isActive = manager.state.isSwitchOn
+        manager.$state
+            .sink { [unowned self] state in
+                appliedMode = Mode(overrideValue: state.exposeClientUserIdOverride)
+                callbackWired = state.profileCallbackWired
+                isActive = state.isSwitchOn
+                isEnabled = manager.isEnabled
+            }
+            .store(in: &storage)
+    }
 
-    private let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
+    /// The switch: forces the flag on and wires the callback, or clears the override and unwires it.
+    func setEnabled(_ isOn: Bool) {
+        manager.setEnabled(isOn)
+        isEnabled = manager.isEnabled
+    }
 
+    /// Moves the community flag alone, until the SDK restarts.
     func apply(_ mode: Mode) {
-        octopus.debugOverrideExposeClientUserId(mode.overrideValue)
-        appliedMode = mode
+        manager.setExposeClientUserIdOverride(mode.overrideValue)
     }
 
-    /// Wire or unwire the host's `onNavigateToProfileCallback` live, so both halves of the AND-gate
-    /// can be exercised from the scenario (flag on + unwired → native profile; flag on + wired →
-    /// host / Octopus activity).
-    func setCallbackWired(_ wired: Bool) {
-        ClientProfileManager.instance.setCallbackWired(wired)
-        callbackWired = wired
-    }
-
-    /// Wire or unwire the host's `onNavigateToProfileEditCallback` live, so the connected-user
-    /// Activity menu's "Edit my profile" item can be exercised both shown (wired → host edit screen)
-    /// and hidden (unwired).
-    func setEditCallbackWired(_ wired: Bool) {
-        ClientProfileManager.instance.setEditCallbackWired(wired)
-        editCallbackWired = wired
+    /// The switch's subtitle: the current effective behavior, as on Android.
+    static func effectLine(active: Bool) -> String {
+        active ? "Profile taps open Client profile" : "Profile taps open native profiles"
     }
 }

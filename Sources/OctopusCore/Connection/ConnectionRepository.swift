@@ -13,11 +13,6 @@ public struct User: Sendable {
     let jwtToken: String
 }
 
-public struct MagicLinkRequest {
-    public let email: String
-    public let error: MagicLinkConfirmationError?
-}
-
 public enum ConnectionState {
     case notConnected(Error?)
     case connected(User, Error?)
@@ -60,17 +55,17 @@ extension Injected {
 
 public protocol ConnectionRepository: Sendable {
     var connectionStatePublisher: AnyPublisher<ConnectionState, Never> { get }
-    var magicLinkRequestPublisher: AnyPublisher<MagicLinkRequest?, Never> { get }
     var connectionState: ConnectionState { get }
-    var magicLinkRequest: MagicLinkRequest? { get }
     var clientUserConnected: Bool { get }
     var connectionMode: ConnectionMode { get }
-    func sendMagicLink(to email: String) async throws(MagicLinkEmailEntryError)
-    func cancelMagicLink()
-    func checkMagicLinkConfirmed() async throws(MagicLinkConfirmationError) -> Bool
     func onAuthenticatedCallFailed() async throws
-    func logout(preventReconnection: Bool) async throws
-    func deleteAccount(reason: DeleteAccountReason) async throws(AuthenticatedActionError)
+    func logout() async throws
+    /// Ends the session before the SDK is rebuilt on another community, a guest session included.
+    ///
+    /// The session is stored in a Keychain service shared by every community, and a guest JWT is only valid on the
+    /// community that issued it. Kept, as `logout()` keeps it, the next community's core would read it and send it
+    /// to a server that rejects it, failing the first calls until the SDK notices and forges a guest of its own.
+    func logoutBeforeCommunitySwitch() async throws
 
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws
     func disconnectUser() async throws
@@ -79,14 +74,14 @@ public protocol ConnectionRepository: Sendable {
     /// occured, during the automatic call, you might have to call it again when a user needs to be authenticated.
     func linkClientUserToOctopusUser() async throws(ExchangeTokenError)
     /// Refresh the connected user's entitlements via the backend.
-    /// SSO-only — non-SSO repositories throw `.notInSSOMode`.
+    /// Throws `.noClientTokenProvider` while no `tokenProvider` has been registered through `connectUser`.
     func refreshEntitlements() async throws(RefreshEntitlementsCoreError)
 }
 
 /// Internal error type for `refreshEntitlements`. Translated to `OctopusRefreshEntitlementsError`
 /// at the public SDK boundary.
 public enum RefreshEntitlementsCoreError: Error {
-    case notInSSOMode
+    case noClientTokenProvider
     case notConnected
     case noNetwork
     /// The user has been banned from the community — message is BE-provided.
@@ -105,42 +100,6 @@ public struct RefreshEntitlementsServerError: Error, Sendable, CustomStringConve
     }
 
     public var description: String { messages.joined(separator: ", ") }
-}
-
-/// All errors that can be thrown during authentication with magic link
-public enum MagicLinkEmailEntryError: Error {
-    public struct DetailedError: Sendable {
-        public enum Reason: Sendable {
-            case userBanned
-            case unknown
-        }
-        public let reason: Reason
-        public let message: String
-
-        init(from error: Com_Octopuscommunity_GenerateLinkResponse.GenerateLinkErrorDetail) {
-            message = error.message
-            reason = switch error.errorCode {
-            case .userBanned:
-                .userBanned
-            case .unknownError, .UNRECOGNIZED:
-                .unknown
-            }
-        }
-    }
-    case noNetwork
-    case detailedError(DetailedError)
-    case server(ServerError)
-    case unknown(Error?)
-}
-
-/// All errors that can be thrown during authentication with magic link
-public enum MagicLinkConfirmationError: Error {
-    case noNetwork
-    case noMagicLink
-    case magicLinkExpired
-    case needNewMagicLink
-    case userBanned(String)
-    case unknown(Error?)
 }
 
 public enum ExchangeTokenError: Error {

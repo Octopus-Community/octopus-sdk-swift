@@ -43,17 +43,19 @@ extension OctopusEvent {
         case reportContent
         /// The report profile screen
         case reportProfile
-        /// The validate nickname screen (displayed after a user with a non-modified nickname has created a post)
+        /// The nickname choice screen (displayed before the first post, comment or reply of a member who has not
+        /// confirmed a nickname yet)
         case validateNickname
         /// The settings screen
+        @available(*, deprecated, message: "No longer emitted since 1.13.0: the settings moved to the profile's menu.")
         case settingsList
         /// The account settings screen.
-        /// Only visible if the SDK is configured in Octopus authentication (not SSO)
+        @available(*, deprecated, message: "No longer emitted since 1.15.0: user accounts are managed by your app.")
         case settingsAccount
         /// The report explanation screen
         case reportExplanation
         /// The delete account screen.
-        /// Only visible if the SDK is configured in Octopus authentication (not SSO)
+        @available(*, deprecated, message: "No longer emitted since 1.15.0: user accounts are managed by your app.")
         case deleteAccount
     }
 }
@@ -135,10 +137,7 @@ extension OctopusEvent.Screen {
         case .reportContent: .reportContent
         case .reportProfile: .reportProfile
         case .validateNickname: .validateNickname
-        case .settingsList: .settingsList
-        case .settingsAccount: .settingsAccount
         case .reportExplanation: .reportExplanation
-        case .deleteAccount: .deleteAccount
         }
     }
 }

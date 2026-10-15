@@ -1,0 +1,129 @@
+name: Changed paths
+
+# Which PR-time jobs a pull request needs, from the paths it changes: a pull request that only touches
+# docs has nothing to build, one that touches no workflow has nothing for actionlint. Called by
+# build-sdk.yml and api-check.yml, so the path lists live in one place; each caller reads the outputs
+# of its own jobs.
+#
+# Rules every caller follows (.github/BRANCH_PROTECTION.md, "Skipping what a PR does not touch"):
+# - filter with a job-level `if:`, never with `paths:` on the trigger: the jobs behind these outputs
+#   are required contexts, and a workflow that never triggers leaves them pending, which blocks the
+#   merge with nothing red to look at, while a job skipped by its `if:` reports Success;
+# - call this only on a pull request, and run every filtered job when the call did not succeed
+#   (`needs.changes.result != 'success'`): a dependent job is skipped when its `needs` fails, and a
+#   skipped required context is green, so a detection that breaks would otherwise let pull requests
+#   merge untested. A cancelled run reports those jobs as cancelled, which is red, not skipped.
+#
+# Published with build-sdk.yml, which calls it: not export-ignored.
+on:
+  workflow_call:
+    outputs:
+      build:
+        description: "'true' when `Build and test the package` is needed"
+        value: ${{ jobs.classify.outputs.build }}
+      lint:
+        description: "'true' when `SwiftLint` is needed"
+        value: ${{ jobs.classify.outputs.lint }}
+      workflows:
+        description: "'true' when `Lint workflows (actionlint)` is needed"
+        value: ${{ jobs.classify.outputs.workflows }}
+      api:
+        description: "'true' when `Public API check` is needed"
+        value: ${{ jobs.classify.outputs.api }}
+
+jobs:
+  # No `name:`: the context stays `changes / classify`, both segments job ids, like the guards'.
+  classify:
+    # Same break-glass as build-sdk.yml, rewritten the same way for the public repository.
+    runs-on: macos-26
+    timeout-minutes: 5
+    # Listing the files of a pull request is the one read this job needs; it checks nothing out. The
+    # caller job has to grant it too: a called workflow cannot exceed its caller's permissions.
+    permissions:
+      pull-requests: read
+    outputs:
+      build: ${{ steps.classify.outputs.build }}
+      lint: ${{ steps.classify.outputs.lint }}
+      workflows: ${{ steps.classify.outputs.workflows }}
+      api: ${{ steps.classify.outputs.api }}
+    steps:
+    # Through the REST API rather than a third-party action or a deep checkout. A rename lists its
+    # old path too: moving a file out of Sources/ changes the package as much as editing it. The
+    # endpoint stops at 3000 files, so a list that long may be partial and runs everything.
+    #
+    # The build and the API check use a list of what they can skip, never of what they need: a path
+    # nobody thought of runs them rather than skipping them.
+    # - Build: Sample/, CocoaPodsValidationApp/ and the podspecs are skippable because the package
+    #   scheme compiles none of them. Markdown under Sources/ and Tests/ can be a target resource, so
+    #   it is never skipped.
+    # - API check: Tests/ cannot change the public API; API/ and Scripts/ hold the baselines and the
+    #   scripts the check tests, so they run it.
+    # A change to this file runs everything: the lists it edits are not trusted to classify it.
+    # .gitattributes runs the build and the API check: an eol or filter attribute changes the files
+    # a checkout produces.
+    - name: Classify the changed paths
+      id: classify
+      env:
+        GH_TOKEN: ${{ github.token }}
+        API_URL: ${{ github.api_url }}
+        REPO: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        set -euo pipefail
+        files="$RUNNER_TEMP/changed-paths.txt"
+        python3 - > "$files" <<'PY'
+        import json, os, re, urllib.request
+        url = f"{os.environ['API_URL']}/repos/{os.environ['REPO']}/pulls/{os.environ['PR_NUMBER']}/files?per_page=100"
+        while url:
+            request = urllib.request.Request(url, headers={
+                "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                "Accept": "application/vnd.github+json",
+            })
+            with urllib.request.urlopen(request, timeout=30) as response:
+                for entry in json.load(response):
+                    print(entry["filename"])
+                    if entry.get("previous_filename"):
+                        print(entry["previous_filename"])
+                link = re.search(r'<([^>]+)>;\s*rel="next"', response.headers.get("Link", ""))
+                url = link.group(1) if link else None
+        PY
+        echo "Changed paths:"
+        cat "$files"
+
+        build=false lint=false workflows=false api=false
+        if [ "$(wc -l < "$files")" -ge 3000 ]; then
+          build=true lint=true workflows=true api=true
+        fi
+        while IFS= read -r path; do
+          if [ "$path" = .github/workflows/changed-paths.yml ]; then
+            build=true lint=true workflows=true api=true
+          fi
+          case "$path" in
+            Sources/*|Tests/*|Package.swift|Package.resolved|.github/workflows/build-sdk.yml) build=true ;;
+            *.md|.claude/*|InternalDocs/*|changelog.d/*|API/*|Scripts/*|Sample/*|CocoaPodsValidationApp/*) ;;
+            *.podspec|SharedPodSpecConfig.rb|LICENSES/*|.github/*|*.swiftlint.yml|.swiftlint-version) ;;
+            .gitignore|Brewfile|Gemfile|Gemfile.lock) ;;
+            *) build=true ;;
+          esac
+          case "$path" in
+            Sources/*|API/*|Scripts/*|Package.swift|Package.resolved|.github/workflows/api-check.yml) api=true ;;
+            *.md|.claude/*|InternalDocs/*|changelog.d/*|Tests/*|Sample/*|CocoaPodsValidationApp/*) ;;
+            *.podspec|SharedPodSpecConfig.rb|LICENSES/*|.github/*|*.swiftlint.yml|.swiftlint-version) ;;
+            .gitignore|Brewfile|Gemfile|Gemfile.lock) ;;
+            *) api=true ;;
+          esac
+          case "$path" in
+            *.swift|.swiftlint.yml|*/.swiftlint.yml|.swiftlint-version|.github/workflows/build-sdk.yml) lint=true ;;
+          esac
+          case "$path" in
+            .github/workflows/*|.github/actionlint.yml|.github/actionlint.yaml) workflows=true ;;
+          esac
+        done < "$files"
+
+        echo "build=$build lint=$lint workflows=$workflows api=$api"
+        {
+          echo "build=$build"
+          echo "lint=$lint"
+          echo "workflows=$workflows"
+          echo "api=$api"
+        } >> "$GITHUB_OUTPUT"

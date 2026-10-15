@@ -9,6 +9,9 @@ struct PoweredByOctopusView: View {
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var displayConfigManager: DisplayConfigManager
 
+    // Grows with the text and the logo, like the space character it replaces
+    @Compat.ScaledMetric(relativeTo: .caption1) private var textLogoSpacing: CGFloat = 4
+
     @State private var textHeight: CGFloat = 0
     @State private var isShowingPopover = false
 
@@ -19,7 +22,8 @@ struct PoweredByOctopusView: View {
             Button(action: { isShowingPopover = true }) {
                 switch displayConfigManager.poweredByConfig {
                 case .normal:
-                    HStack(alignment: .center, spacing: 0) {
+                    // The gap is set here rather than as a trailing space in the translations, which get trimmed
+                    HStack(alignment: .center, spacing: textLogoSpacing) {
                         Text("Common.PoweredBy", bundle: .module)
                             .font(theme.fonts.caption1)
                             .fontWeight(.medium)

@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>Octopus Sample for iOS</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -25,10 +27,10 @@
 	<string>$(OCTOPUS_FEATURE_ENVS_HOST)</string>
 	<key>OCTOPUS_FEATURE_ENVS_TOKEN</key>
 	<string>$(OCTOPUS_FEATURE_ENVS_TOKEN)</string>
+	<key>OCTOPUS_FEEDBACK_REPO</key>
+	<string>$(OCTOPUS_FEEDBACK_REPO)</string>
 	<key>OCTOPUS_INTERNAL_DEMO_MODE</key>
 	<string>$(OCTOPUS_INTERNAL_DEMO_MODE)</string>
-	<key>OCTOPUS_MAGICLINK_FORCED_LOGIN_API_KEY</key>
-	<string>$(OCTOPUS_MAGICLINK_FORCED_LOGIN_API_KEY)</string>
 	<key>OCTOPUS_REMOTE_BASE_URL</key>
 	<string>$(OCTOPUS_REMOTE_BASE_URL)</string>
 	<key>OCTOPUS_SSO_ALL_MANAGED_FIELDS_FORCED_LOGIN_API_KEY</key>

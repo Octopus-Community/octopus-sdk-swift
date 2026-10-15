@@ -12,7 +12,6 @@ struct WritablePostCTATests {
         let post = WritablePost(
             topicId: "topic-id",
             text: "hello hello",
-            attachment: nil,
             cta: WritableCTA(url: URL(string: "https://example.com")!, label: "See more")
         )
         let proto = post.rwOctoObject(imageIsCompressed: false)
@@ -25,7 +24,6 @@ struct WritablePostCTATests {
         let post = WritablePost(
             topicId: "topic-id",
             text: "hello hello",
-            attachment: nil,
             cta: nil
         )
         let proto = post.rwOctoObject(imageIsCompressed: false)

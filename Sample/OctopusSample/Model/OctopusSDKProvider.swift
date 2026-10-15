@@ -35,6 +35,8 @@ class OctopusSDKProvider: ObservableObject {
     @Published private(set) var currentFeatureEnv: FeatureEnvSelection?
     /// Set at launch when a persisted selection was dropped (expired, or unusable host).
     @Published private(set) var featureEnvDroppedAtLaunch: FeatureEnvSelection?
+    /// The API key the SDK runs on right now, for the Scenarios live config card (shown masked only).
+    @Published private(set) var currentApiKey: String = ""
 
     private var storage = [AnyCancellable]()
 
@@ -79,6 +81,11 @@ class OctopusSDKProvider: ObservableObject {
         try await octopus.switchCommunity(apiKey: initializationData.apiKey,
                                           connectionMode: initializationData.connectionMode,
                                           configuration: initializationData.configuration)
+        currentApiKey = initializationData.apiKey
+        // `switchCommunity` rebuilds the SDK core, and its debug overrides with it, without `octopus`'s `didSet`
+        // firing: apply the persisted debug state again, or the new community would run without it.
+        applyForcedConnectivity()
+        UnifiedProfileManager.instance.set(octopus: octopus)
     }
 
     /// Applies (or clears) a feature env and rebuilds the SDK on it. Refused while another switch is
@@ -112,8 +119,8 @@ class OctopusSDKProvider: ObservableObject {
             featureEnvDroppedAtLaunch = nil
             // `switchCommunity` mutates the same `OctopusSDK` object, so `octopus`'s `didSet` never
             // fires and nothing downstream knows the community changed. Same notification as
-            // `SwitchCommunityViewModel`: `SampleTabView` re-`id`s the tree (rebuilding
-            // `OctopusHomeScreen`, as the SDK's own `switchCommunity` doc requires) and `AppUserManager`
+            // `SwitchCommunityViewModel`: `CommunityTabView` re-`id`s its
+            // `OctopusHomeScreen` (rebuilding it, as the SDK's own `switchCommunity` doc requires) and `AppUserManager`
             // reconnects the user. Without it the community UI keeps rendering the previous community.
             NotificationCenter.default.post(name: .apiKeyChanged, object: nil)
         } catch {
@@ -182,17 +189,28 @@ class OctopusSDKProvider: ObservableObject {
         storage = []
         applyForcedConnectivity()
 
+        // The Scenarios "Push registration" toggle gates the sink: off, new device tokens stay in the app.
         NotificationManager.instance.$notificationDeviceToken
-            .sink { [unowned self] notificationDeviceToken in
-                guard let notificationDeviceToken else { return }
+            .combineLatest(FeatureToggles.instance.$pushRegistrationEnabled)
+            .sink { [unowned self] notificationDeviceToken, pushRegistrationEnabled in
+                guard let notificationDeviceToken, pushRegistrationEnabled else { return }
                 print("Setting notification device token to octopus SDK")
                 octopus.set(notificationDeviceToken: notificationDeviceToken)
             }.store(in: &storage)
 
         TrackingManager.instance.set(octopus: octopus)
+        // The sample's own log, read by Developer tools and the Debug console. Not part of the integration.
+        if let octopus { SampleDebugLog.instance.attach(octopus: octopus) }
         URLManager.instance.set(octopus: octopus)
         GroupAccessDeniedManager.instance.set(octopus: octopus)
         ClientProfileManager.instance.set(octopus: octopus)
+        // After `ClientProfileManager`: the Unified Profile state decides the profile callback wiring. Main-actor
+        // isolated, like the SDK override it applies.
+        if let octopus {
+            Task { @MainActor in
+                UnifiedProfileManager.instance.set(octopus: octopus)
+            }
+        }
     }
 
     private func initializeSDK() {
@@ -206,11 +224,11 @@ class OctopusSDKProvider: ObservableObject {
         initializeSdkInSSOWithNoFieldsAssociated()
         // initializeSdkInSSOFullAssociated()
         // initializeSdkInSSOWithSomeFieldsAssociated
-        // initializeSdkWithOctopusAuth
     }
 
     /// Initialize the Octopus SDK in SSO with all fields that are app managed (i.e. fully associated)
     private func initializeSdkInSSOFullAssociated() {
+        currentApiKey = APIKeys.apiKey
         octopus = try! OctopusSDK(
             apiKey: APIKeys.apiKey,
             connectionMode: .sso(.init(
@@ -227,6 +245,7 @@ class OctopusSDKProvider: ObservableObject {
 
     /// Initialize the Octopus SDK in SSO with some fields that are app managed (i.e. associated)
     private func initializeSdkInSSOWithSomeFieldsAssociated() {
+        currentApiKey = APIKeys.apiKey
         octopus = try! OctopusSDK(
             apiKey: APIKeys.apiKey,
             connectionMode: .sso(.init(
@@ -243,6 +262,7 @@ class OctopusSDKProvider: ObservableObject {
 
     /// Initialize the Octopus SDK in SSO with no app managed fields (i.e. SSO Dissociated)
     private func initializeSdkInSSOWithNoFieldsAssociated() {
+        currentApiKey = APIKeys.apiKey
         octopus = try! OctopusSDK(
             apiKey: APIKeys.apiKey,
             connectionMode: .sso(.init(
@@ -253,17 +273,10 @@ class OctopusSDKProvider: ObservableObject {
         )
     }
 
-    /// Initialize the Octopus SDK in Octopus auth (i.e. authentification will be done with a MagicLink)
-    private func initializeSdkWithOctopusAuth() {
-        octopus = try! OctopusSDK(
-            apiKey: APIKeys.apiKey,
-            connectionMode: .octopus(deepLink: nil) // EDIT THE DEEPLINK IF YOU WANT TO
-        )
-    }
-
     private func initializeSDKForInternalUsage() {
         let initializationData = sdkInitializationDataFromConfig()
         printSdkCreation(connectionMode: initializationData.connectionMode)
+        currentApiKey = initializationData.apiKey
         octopus = try! OctopusSDK(apiKey: initializationData.apiKey,
                                   connectionMode: initializationData.connectionMode,
                                   configuration: initializationData.configuration)
@@ -276,7 +289,6 @@ class OctopusSDKProvider: ObservableObject {
         }
         let featureEnvData = resolveFeatureEnv(sdkConfig.featureEnv)
         let connectionMode: ConnectionMode = switch sdkConfig.authKind {
-        case .octopus: .octopus(deepLink: "com.octopuscommunity.sample://magic-link")
         case let .sso(appManagedFields, _):
                 .sso(
                     .init(
@@ -295,24 +307,12 @@ class OctopusSDKProvider: ObservableObject {
                     )
                 )
         }
-        let apiKey = switch sdkConfig.authKind {
-        case .octopus: APIKeys.octopusAuth
-        case let .sso(appManagedFields, forceLoginOnStrongActions):
-            if appManagedFields.isEmpty {
-                if forceLoginOnStrongActions {
-                    APIKeys.ssoNoManagedFieldsForceLogin
-                } else {
-                    APIKeys.ssoNoManagedFields
-                }
-            } else if Set(appManagedFields) == Set(SDKConfig.ProfileField.allCases) {
-                APIKeys.ssoAllManagedFields
-            } else {
-                APIKeys.ssoSomeManagedFields
-            }
-        }
-        return (apiKey: featureEnvData.selection?.apiKey ?? apiKey,
+        // A usable feature env brings its own key and endpoint; otherwise the custom key and host typed on
+        // Configuration win over the demo preset and the demo server.
+        let apiServer = featureEnvData.apiServer ?? sdkConfig.customServer?.apiServer()
+        return (apiKey: SampleConfigSummary.resolvedApiKey(sdkConfig, featureEnv: featureEnvData.selection),
                 connectionMode: connectionMode,
-                configuration: OctopusSDK.Configuration(apiServer: featureEnvData.apiServer))
+                configuration: OctopusSDK.Configuration(apiServer: apiServer))
     }
 
     /// Decides whether a persisted feature env can still be used, and publishes the outcome.
@@ -347,7 +347,6 @@ class OctopusSDKProvider: ObservableObject {
 
     private func printSdkCreation(connectionMode: ConnectionMode) {
         switch connectionMode {
-        case .octopus: print("Create SDK with connection mode: Octopus")
         case let .sso(config):
             if config.appManagedFields.isEmpty {
                 print("Create SDK with connection mode: SSO with no app managed fields")

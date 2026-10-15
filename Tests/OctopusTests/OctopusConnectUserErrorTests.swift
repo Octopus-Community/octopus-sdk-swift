@@ -52,7 +52,9 @@ struct OctopusConnectUserErrorTests {
 
     @Test func connectionErrorProfileUpdateValidation() {
         let validationErrors = makeValidationErrors(
-            [.linkedToField(.nickname): [.init(localizedMessage: "Already taken", detail: .alreadyTaken)]])
+            [.linkedToField(.nickname): [
+                .init(localizedMessage: "Already taken", detail: .alreadyTaken(suggestions: []))
+            ]])
         let updateError: UpdateProfile.Error = .validation(validationErrors)
         let error = OctopusConnectUserError(from: ConnectionError.profileUpdateError(updateError) as Error)
         guard case let .profileError(profileErrors) = error else {

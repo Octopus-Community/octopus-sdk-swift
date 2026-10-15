@@ -59,7 +59,7 @@ class ConfigCoreDataStack: InjectableObject, @unchecked Sendable {
         }
     }
 
-    func teardown() throws {
-        try stackManager.reset()
+    func teardown() async throws {
+        try await stackManager.teardown()
     }
 }

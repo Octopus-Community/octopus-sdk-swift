@@ -10,7 +10,10 @@ import Octopus
 import OctopusUI
 
 struct ContentView: View {
-    let octopus = try! OctopusSDK(apiKey: "SECRET")
+    let octopus = try! OctopusSDK(
+        apiKey: "SECRET",
+        connectionMode: .sso(.init(loginRequired: { }))
+    )
     var body: some View {
         OctopusHomeScreen(octopus: octopus)
     }

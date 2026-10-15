@@ -18,7 +18,7 @@ struct CommentDetailRepliesView: View {
     let deleteReply: (String) -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
 
     var body: some View {
         ForEach(replies, id: \.uuid) { reply in
@@ -33,6 +33,7 @@ struct CommentDetailRepliesView: View {
                     blockAuthor: blockAuthor,
                     reactionTapped: reactionTapped,
                     displayContentModeration: displayContentModeration)
+                .id(reply.kind.scrollAnchorId(for: reply.uuid))
                 .onAppear {
                     reply.displayEvents.onAppear()
                 }

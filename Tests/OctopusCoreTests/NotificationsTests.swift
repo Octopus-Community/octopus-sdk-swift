@@ -132,7 +132,7 @@ class NotificationsTests: XCTestCase {
     private func createProfile(id: String, userId: String, nickname: String) -> CurrentUserProfile {
         CurrentUserProfile(
             id: id, userId: userId, nickname: nickname, originalNickname: nil, email: nil, bio: nil, pictureUrl: nil,
-            tags: [],
+            defaultAvatar: nil, defaultAvatarIfPictureRemoved: nil, tags: [],
             totalMessages: nil, accountCreationDate: nil,
             gamificationLevel: nil, gamificationScore: nil,
             hasSeenOnboarding: false, hasAcceptedCgu: false, hasConfirmedNickname: false,

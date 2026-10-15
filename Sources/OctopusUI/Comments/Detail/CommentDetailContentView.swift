@@ -16,7 +16,7 @@ struct CommentDetailContentView: View {
     let deleteComment: () -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
     let displayParentPost: (String, String) -> Void
 
     var body: some View {

@@ -9,7 +9,7 @@ import OctopusUI
 
 /// A view that shows how to customize the theme.
 struct CustomThemeView: View {
-    @StateObjectCompat private var viewModel = OctopusAuthSDKViewModel()
+    @StateObjectCompat private var viewModel = SampleSDKViewModel()
 
     enum IconFamily: CaseIterable {
         case notCustomized
@@ -73,7 +73,7 @@ struct CustomThemeView: View {
                     VStack(spacing: 8) {
                         Text("Navigation Bar")
                             .font(.subheadline).bold()
-                            .foregroundColor(.secondary)
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Toggle(isOn: $titleCentered) {
                             Text("Center the title")
@@ -86,24 +86,24 @@ struct CustomThemeView: View {
                         }
                     }
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                    .sampleCardSurface()
 
                     VStack(spacing: 8) {
                         Text("Background")
                             .font(.subheadline).bold()
-                            .foregroundColor(.secondary)
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Toggle(isOn: $customBackground) {
                             Text("Use custom community background color")
                         }
                     }
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                    .sampleCardSurface()
 
                     VStack(spacing: 8) {
                         Text("Icons")
                             .font(.subheadline).bold()
-                            .foregroundColor(.secondary)
+                            .foregroundColor(SampleTokens.Colors.textSecondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         ForEach(IconFamily.allCases.indices, id: \.self) { index in
                             let iconFamily = IconFamily.allCases[index]
@@ -119,7 +119,7 @@ struct CustomThemeView: View {
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                         Text(iconFamily.comment)
                                             .font(.caption)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(SampleTokens.Colors.textSecondary)
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                     }
                                     .multilineTextAlignment(.leading)
@@ -133,7 +133,7 @@ struct CustomThemeView: View {
                         }
                     }
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+                    .sampleCardSurface()
                 }
                 .padding()
             }
@@ -155,11 +155,13 @@ struct CustomThemeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor))
-                .foregroundColor(.white)
+                .background(RoundedRectangle(cornerRadius: 10).fill(SampleTokens.Colors.buttonBackground))
+                .foregroundColor(SampleTokens.Colors.buttonText)
             }
             .padding()
         }
+        .sampleScreenBackground()
+        .navigationBarTitle("Custom theme", displayMode: .inline)
         .hostAppFooter()
     }
 }
@@ -223,9 +225,6 @@ extension CustomThemeView.IconFamily {
                             deletePoll: IconSet.contentPostCreationDeletePoll,
                             deletePollOption: IconSet.contentPostCreationDeletePollOption
                         ),
-                        emptyFeedInGroups: IconSet.contentPostEmptyFeedInGroups,
-                        emptyFeedInCurrentUserProfile: IconSet.contentPostEmptyFeedInCurrentUserProfile,
-                        emptyFeedInOtherUserProfile: IconSet.contentPostEmptyFeedInOtherUserProfile,
                         notAvailable: IconSet.contentPostNotAvailable,
                         commentCount: IconSet.contentPostCommentCount,
                         viewCount: IconSet.contentPostViewCount,
@@ -238,7 +237,6 @@ extension CustomThemeView.IconFamily {
                             addPicture: IconSet.contentCommentCreationAddPicture,
                             deletePicture: IconSet.contentCommentCreationDeletePicture
                         ),
-                        emptyFeed: IconSet.contentCommentEmptyFeed,
                         notAvailable: IconSet.contentCommentNotAvailable,
                         seeReply: IconSet.contentCommentSeeReply,
                         likeNotSelected: IconSet.contentCommentLikeNotSelected
@@ -277,7 +275,6 @@ extension CustomThemeView.IconFamily {
                     addPicture: IconSet.profileAddPicture,
                     editPicture: IconSet.profileEditPicture,
                     addBio: IconSet.profileAddBio,
-                    emptyNotifications: IconSet.profileEmptyNotifications,
                     report: IconSet.profileReport,
                     notConnected: IconSet.profileNotConnected,
                     blockUser: IconSet.profileBlockUser
@@ -288,11 +285,8 @@ extension CustomThemeView.IconFamily {
                     rulesHeader: IconSet.gamificationRulesHeader
                 ),
                 settings: .init(
-                    account: IconSet.settingsAccount,
                     help: IconSet.settingsHelp,
-                    info: IconSet.settingsInfo,
-                    logout: IconSet.settingsLogout,
-                    deleteAccountWarning: IconSet.settingsDeleteAccountWarning
+                    info: IconSet.settingsInfo
                 ),
                 common: .init(
                     radio: .init(on: IconSet.commonRadioOn, off: IconSet.commonRadioOff),
@@ -322,9 +316,6 @@ extension CustomThemeView.IconFamily {
                             deletePoll: IconSet.contentPostCreationDeletePoll,
                             deletePollOption: IconSet.contentPostCreationDeletePollOption
                         ),
-                        emptyFeedInGroups: IconSet.contentPostEmptyFeedInGroups,
-                        emptyFeedInCurrentUserProfile: IconSet.contentPostEmptyFeedInCurrentUserProfile,
-                        emptyFeedInOtherUserProfile: IconSet.contentPostEmptyFeedInOtherUserProfile,
                         notAvailable: IconSet.contentPostNotAvailable,
                         commentCount: IconSet.contentPostCommentCount,
                         viewCount: IconSet.contentPostViewCount,
@@ -337,7 +328,6 @@ extension CustomThemeView.IconFamily {
                             addPicture: IconSet.contentCommentCreationAddPicture,
                             deletePicture: IconSet.contentCommentCreationDeletePicture
                         ),
-                        emptyFeed: IconSet.contentCommentEmptyFeed,
                         notAvailable: IconSet.contentCommentNotAvailable,
                         seeReply: IconSet.contentCommentSeeReply,
                         likeNotSelected: IconSet.contentCommentLikeNotSelected
@@ -376,7 +366,6 @@ extension CustomThemeView.IconFamily {
                     addPicture: IconSet.profileAddPicture,
                     editPicture: IconSet.profileEditPicture,
                     addBio: IconSet.profileAddBio,
-                    emptyNotifications: IconSet.profileEmptyNotifications,
                     report: IconSet.profileReport,
                     notConnected: IconSet.profileNotConnected,
                     blockUser: IconSet.profileBlockUser
@@ -387,11 +376,8 @@ extension CustomThemeView.IconFamily {
                     rulesHeader: IconSet.gamificationRulesHeader
                 ),
                 settings: .init(
-                    account: IconSet.settingsAccount,
                     help: IconSet.settingsHelp,
-                    info: IconSet.settingsInfo,
-                    logout: IconSet.settingsLogout,
-                    deleteAccountWarning: IconSet.settingsDeleteAccountWarning
+                    info: IconSet.settingsInfo
                 ),
                 common: .init(
                     radio: .init(on: IconSet.commonRadioOn, off: IconSet.commonRadioOff),
@@ -427,9 +413,6 @@ extension CustomThemeView.IconFamily {
                             deletePoll: icon,
                             deletePollOption: icon
                         ),
-                        emptyFeedInGroups: icon,
-                        emptyFeedInCurrentUserProfile: icon,
-                        emptyFeedInOtherUserProfile: icon,
                         notAvailable: icon,
                         commentCount: icon,
                         viewCount: icon,
@@ -442,7 +425,6 @@ extension CustomThemeView.IconFamily {
                             // addPicture: icon, defaultAddPicture will be user
                             // deletePicture: icon, defaultDeletePicture will be user
                         ),
-                        emptyFeed: icon,
                         notAvailable: icon,
                         // openReplyCreation: icon, defaultOpenResponseCreation will be used
                         seeReply: icon,
@@ -482,7 +464,6 @@ extension CustomThemeView.IconFamily {
                     addPicture: icon,
                     editPicture: icon,
                     addBio: icon,
-                    emptyNotifications: icon,
                     // report: icon, defaultReport will be used
                     notConnected: icon,
                     blockUser: icon
@@ -493,11 +474,8 @@ extension CustomThemeView.IconFamily {
                     rulesHeader: icon
                 ),
                 settings: .init(
-                    account: icon,
                     help: icon,
-                    info: icon,
-                    logout: icon,
-                    deleteAccountWarning: icon
+                    info: icon
                 ),
                 common: .init(
                     radio: .init(on: icon, off: icon),

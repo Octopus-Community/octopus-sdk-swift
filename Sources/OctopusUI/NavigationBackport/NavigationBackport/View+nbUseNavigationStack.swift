@@ -1,6 +1,6 @@
 import SwiftUI
 
-public extension View {
+extension View {
   @available(iOS, deprecated: 16.0, message: "Use SwiftUI's Navigation API beyond iOS 15")
   /// Sets the policy for whether to use SwiftUI's built-in `NavigationStack` when available (i.e. when the SwiftUI
   /// version includes it). The default behaviour is to never use `NavigationStack` - instead `NavigationView`

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-public extension ObservableObject {
+extension ObservableObject {
   /// Any changes can be made to the screens array passed to the transform closure. If those
   /// changes are not supported within a single update by SwiftUI, the changes will be
   /// applied in stages. An async version of this function is also available.

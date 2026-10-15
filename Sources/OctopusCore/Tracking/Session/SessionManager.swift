@@ -50,6 +50,8 @@ class SessionManager: @unchecked Sendable {
         currentSessionStore = SessionStore(prefix: "\(kind.storePrefix).current", userDefaults: userDefaults)
         previousSessionStore = SessionStore(prefix: "\(kind.storePrefix).previous", userDefaults: userDefaults)
         firstSessionHasBeenRecordedKey = "OctopusSDK.tracking.\(kind.storePrefix).firstSessionHasBeenRecordedKey"
+        // See `PublishedPublishers`: done before anything can write these values.
+        PublishedPublishers.create($currentSession, $previousSession)
 
         migrateUserDefaultsIfNeeded()
 

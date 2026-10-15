@@ -493,71 +493,79 @@ public nonisolated struct Com_Octopuscommunity_CreateUserResponse: Sendable {
   public init() {}
 }
 
-public nonisolated struct Com_Octopuscommunity_UpdateProfileRequest: Sendable {
+public nonisolated struct Com_Octopuscommunity_UpdateProfileRequest: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var userID: String = String()
+  public var userID: String {
+    get {_storage._userID}
+    set {_uniqueStorage()._userID = newValue}
+  }
 
   public var update: Com_Octopuscommunity_ProfileUpdate {
-    get {_update ?? Com_Octopuscommunity_ProfileUpdate()}
-    set {_update = newValue}
+    get {_storage._update ?? Com_Octopuscommunity_ProfileUpdate()}
+    set {_uniqueStorage()._update = newValue}
   }
   /// Returns true if `update` has been explicitly set.
-  public var hasUpdate: Bool {self._update != nil}
+  public var hasUpdate: Bool {_storage._update != nil}
   /// Clears the value of `update`. Subsequent reads from it will return its default value.
-  public mutating func clearUpdate() {self._update = nil}
+  public mutating func clearUpdate() {_uniqueStorage()._update = nil}
 
   ///Default to false
   public var fetchUserBlockList: Bool {
-    get {_fetchUserBlockList ?? false}
-    set {_fetchUserBlockList = newValue}
+    get {_storage._fetchUserBlockList ?? false}
+    set {_uniqueStorage()._fetchUserBlockList = newValue}
   }
   /// Returns true if `fetchUserBlockList` has been explicitly set.
-  public var hasFetchUserBlockList: Bool {self._fetchUserBlockList != nil}
+  public var hasFetchUserBlockList: Bool {_storage._fetchUserBlockList != nil}
   /// Clears the value of `fetchUserBlockList`. Subsequent reads from it will return its default value.
-  public mutating func clearFetchUserBlockList() {self._fetchUserBlockList = nil}
+  public mutating func clearFetchUserBlockList() {_uniqueStorage()._fetchUserBlockList = nil}
 
   ///Default to false
   public var fetchNotificationsBadge: Bool {
-    get {_fetchNotificationsBadge ?? false}
-    set {_fetchNotificationsBadge = newValue}
+    get {_storage._fetchNotificationsBadge ?? false}
+    set {_uniqueStorage()._fetchNotificationsBadge = newValue}
   }
   /// Returns true if `fetchNotificationsBadge` has been explicitly set.
-  public var hasFetchNotificationsBadge: Bool {self._fetchNotificationsBadge != nil}
+  public var hasFetchNotificationsBadge: Bool {_storage._fetchNotificationsBadge != nil}
   /// Clears the value of `fetchNotificationsBadge`. Subsequent reads from it will return its default value.
-  public mutating func clearFetchNotificationsBadge() {self._fetchNotificationsBadge = nil}
+  public mutating func clearFetchNotificationsBadge() {_uniqueStorage()._fetchNotificationsBadge = nil}
 
   ///Default to false
   public var fetchTotalMessages: Bool {
-    get {_fetchTotalMessages ?? false}
-    set {_fetchTotalMessages = newValue}
+    get {_storage._fetchTotalMessages ?? false}
+    set {_uniqueStorage()._fetchTotalMessages = newValue}
   }
   /// Returns true if `fetchTotalMessages` has been explicitly set.
-  public var hasFetchTotalMessages: Bool {self._fetchTotalMessages != nil}
+  public var hasFetchTotalMessages: Bool {_storage._fetchTotalMessages != nil}
   /// Clears the value of `fetchTotalMessages`. Subsequent reads from it will return its default value.
-  public mutating func clearFetchTotalMessages() {self._fetchTotalMessages = nil}
+  public mutating func clearFetchTotalMessages() {_uniqueStorage()._fetchTotalMessages = nil}
 
   ///Default to false
   public var fetchGamification: Bool {
-    get {_fetchGamification ?? false}
-    set {_fetchGamification = newValue}
+    get {_storage._fetchGamification ?? false}
+    set {_uniqueStorage()._fetchGamification = newValue}
   }
   /// Returns true if `fetchGamification` has been explicitly set.
-  public var hasFetchGamification: Bool {self._fetchGamification != nil}
+  public var hasFetchGamification: Bool {_storage._fetchGamification != nil}
   /// Clears the value of `fetchGamification`. Subsequent reads from it will return its default value.
-  public mutating func clearFetchGamification() {self._fetchGamification = nil}
+  public mutating func clearFetchGamification() {_uniqueStorage()._fetchGamification = nil}
+
+  public var wantNicknameSuggestions: Bool {
+    get {_storage._wantNicknameSuggestions ?? false}
+    set {_uniqueStorage()._wantNicknameSuggestions = newValue}
+  }
+  /// Returns true if `wantNicknameSuggestions` has been explicitly set.
+  public var hasWantNicknameSuggestions: Bool {_storage._wantNicknameSuggestions != nil}
+  /// Clears the value of `wantNicknameSuggestions`. Subsequent reads from it will return its default value.
+  public mutating func clearWantNicknameSuggestions() {_uniqueStorage()._wantNicknameSuggestions = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _update: Com_Octopuscommunity_ProfileUpdate? = nil
-  fileprivate var _fetchUserBlockList: Bool? = nil
-  fileprivate var _fetchNotificationsBadge: Bool? = nil
-  fileprivate var _fetchTotalMessages: Bool? = nil
-  fileprivate var _fetchGamification: Bool? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public nonisolated struct Com_Octopuscommunity_ProfileUpdate: Sendable {
@@ -1012,6 +1020,8 @@ public nonisolated struct Com_Octopuscommunity_UpdateProfileResponse: Sendable {
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
 
+      public var suggestions: [String] = []
+
       public var unknownFields = SwiftProtobuf.UnknownStorage()
 
       public init() {}
@@ -1172,109 +1182,129 @@ public nonisolated struct Com_Octopuscommunity_GetPublicProfileResponse: Sendabl
   fileprivate var _profile: Com_Octopuscommunity_PublicProfile? = nil
 }
 
-public nonisolated struct Com_Octopuscommunity_PublicProfile: Sendable {
+public nonisolated struct Com_Octopuscommunity_PublicProfile: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var id: String = String()
+  public var id: String {
+    get {_storage._id}
+    set {_uniqueStorage()._id = newValue}
+  }
 
   public var nickname: String {
-    get {_nickname ?? String()}
-    set {_nickname = newValue}
+    get {_storage._nickname ?? String()}
+    set {_uniqueStorage()._nickname = newValue}
   }
   /// Returns true if `nickname` has been explicitly set.
-  public var hasNickname: Bool {self._nickname != nil}
+  public var hasNickname: Bool {_storage._nickname != nil}
   /// Clears the value of `nickname`. Subsequent reads from it will return its default value.
-  public mutating func clearNickname() {self._nickname = nil}
+  public mutating func clearNickname() {_uniqueStorage()._nickname = nil}
 
   public var pictureURL: String {
-    get {_pictureURL ?? String()}
-    set {_pictureURL = newValue}
+    get {_storage._pictureURL ?? String()}
+    set {_uniqueStorage()._pictureURL = newValue}
   }
   /// Returns true if `pictureURL` has been explicitly set.
-  public var hasPictureURL: Bool {self._pictureURL != nil}
+  public var hasPictureURL: Bool {_storage._pictureURL != nil}
   /// Clears the value of `pictureURL`. Subsequent reads from it will return its default value.
-  public mutating func clearPictureURL() {self._pictureURL = nil}
+  public mutating func clearPictureURL() {_uniqueStorage()._pictureURL = nil}
 
   public var bio: String {
-    get {_bio ?? String()}
-    set {_bio = newValue}
+    get {_storage._bio ?? String()}
+    set {_uniqueStorage()._bio = newValue}
   }
   /// Returns true if `bio` has been explicitly set.
-  public var hasBio: Bool {self._bio != nil}
+  public var hasBio: Bool {_storage._bio != nil}
   /// Clears the value of `bio`. Subsequent reads from it will return its default value.
-  public mutating func clearBio() {self._bio = nil}
+  public mutating func clearBio() {_uniqueStorage()._bio = nil}
 
-  public var descPostFeedID: String = String()
+  public var descPostFeedID: String {
+    get {_storage._descPostFeedID}
+    set {_uniqueStorage()._descPostFeedID = newValue}
+  }
 
-  public var ascPostFeedID: String = String()
+  public var ascPostFeedID: String {
+    get {_storage._ascPostFeedID}
+    set {_uniqueStorage()._ascPostFeedID = newValue}
+  }
 
-  public var descCommentFeedID: String = String()
+  public var descCommentFeedID: String {
+    get {_storage._descCommentFeedID}
+    set {_uniqueStorage()._descCommentFeedID = newValue}
+  }
 
-  public var ascCommentFeedID: String = String()
+  public var ascCommentFeedID: String {
+    get {_storage._ascCommentFeedID}
+    set {_uniqueStorage()._ascCommentFeedID = newValue}
+  }
 
-  public var tags: [Com_Octopuscommunity_ProfileTag] = []
+  public var tags: [Com_Octopuscommunity_ProfileTag] {
+    get {_storage._tags}
+    set {_uniqueStorage()._tags = newValue}
+  }
 
   public var gamificationScore: Com_Octopuscommunity_PublicGamificationScore {
-    get {_gamificationScore ?? Com_Octopuscommunity_PublicGamificationScore()}
-    set {_gamificationScore = newValue}
+    get {_storage._gamificationScore ?? Com_Octopuscommunity_PublicGamificationScore()}
+    set {_uniqueStorage()._gamificationScore = newValue}
   }
   /// Returns true if `gamificationScore` has been explicitly set.
-  public var hasGamificationScore: Bool {self._gamificationScore != nil}
+  public var hasGamificationScore: Bool {_storage._gamificationScore != nil}
   /// Clears the value of `gamificationScore`. Subsequent reads from it will return its default value.
-  public mutating func clearGamificationScore() {self._gamificationScore = nil}
+  public mutating func clearGamificationScore() {_uniqueStorage()._gamificationScore = nil}
 
   public var totalMessages: Int32 {
-    get {_totalMessages ?? 0}
-    set {_totalMessages = newValue}
+    get {_storage._totalMessages ?? 0}
+    set {_uniqueStorage()._totalMessages = newValue}
   }
   /// Returns true if `totalMessages` has been explicitly set.
-  public var hasTotalMessages: Bool {self._totalMessages != nil}
+  public var hasTotalMessages: Bool {_storage._totalMessages != nil}
   /// Clears the value of `totalMessages`. Subsequent reads from it will return its default value.
-  public mutating func clearTotalMessages() {self._totalMessages = nil}
+  public mutating func clearTotalMessages() {_uniqueStorage()._totalMessages = nil}
 
   public var accountCreatedAt: UInt64 {
-    get {_accountCreatedAt ?? 0}
-    set {_accountCreatedAt = newValue}
+    get {_storage._accountCreatedAt ?? 0}
+    set {_uniqueStorage()._accountCreatedAt = newValue}
   }
   /// Returns true if `accountCreatedAt` has been explicitly set.
-  public var hasAccountCreatedAt: Bool {self._accountCreatedAt != nil}
+  public var hasAccountCreatedAt: Bool {_storage._accountCreatedAt != nil}
   /// Clears the value of `accountCreatedAt`. Subsequent reads from it will return its default value.
-  public mutating func clearAccountCreatedAt() {self._accountCreatedAt = nil}
+  public mutating func clearAccountCreatedAt() {_uniqueStorage()._accountCreatedAt = nil}
 
   ///The user's id in the client's own system. Absent when the community does not expose client user ids, or the user has none.
   public var clientUserID: String {
-    get {_clientUserID ?? String()}
-    set {_clientUserID = newValue}
+    get {_storage._clientUserID ?? String()}
+    set {_uniqueStorage()._clientUserID = newValue}
   }
   /// Returns true if `clientUserID` has been explicitly set.
-  public var hasClientUserID: Bool {self._clientUserID != nil}
+  public var hasClientUserID: Bool {_storage._clientUserID != nil}
   /// Clears the value of `clientUserID`. Subsequent reads from it will return its default value.
-  public mutating func clearClientUserID() {self._clientUserID = nil}
+  public mutating func clearClientUserID() {_uniqueStorage()._clientUserID = nil}
+
+  public var defaultAvatar: Com_Octopuscommunity_DefaultAvatar {
+    get {_storage._defaultAvatar ?? Com_Octopuscommunity_DefaultAvatar()}
+    set {_uniqueStorage()._defaultAvatar = newValue}
+  }
+  /// Returns true if `defaultAvatar` has been explicitly set.
+  public var hasDefaultAvatar: Bool {_storage._defaultAvatar != nil}
+  /// Clears the value of `defaultAvatar`. Subsequent reads from it will return its default value.
+  public mutating func clearDefaultAvatar() {_uniqueStorage()._defaultAvatar = nil}
 
   ///JSON string
   public var metadata: String {
-    get {_metadata ?? String()}
-    set {_metadata = newValue}
+    get {_storage._metadata ?? String()}
+    set {_uniqueStorage()._metadata = newValue}
   }
   /// Returns true if `metadata` has been explicitly set.
-  public var hasMetadata: Bool {self._metadata != nil}
+  public var hasMetadata: Bool {_storage._metadata != nil}
   /// Clears the value of `metadata`. Subsequent reads from it will return its default value.
-  public mutating func clearMetadata() {self._metadata = nil}
+  public mutating func clearMetadata() {_uniqueStorage()._metadata = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _nickname: String? = nil
-  fileprivate var _pictureURL: String? = nil
-  fileprivate var _bio: String? = nil
-  fileprivate var _gamificationScore: Com_Octopuscommunity_PublicGamificationScore? = nil
-  fileprivate var _totalMessages: Int32? = nil
-  fileprivate var _accountCreatedAt: UInt64? = nil
-  fileprivate var _clientUserID: String? = nil
-  fileprivate var _metadata: String? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public nonisolated struct Com_Octopuscommunity_GetPrivateProfileRequest: Sendable {
@@ -1527,6 +1557,30 @@ public nonisolated struct Com_Octopuscommunity_PrivateProfile: @unchecked Sendab
   public var hasAccountCreatedAt: Bool {_storage._accountCreatedAt != nil}
   /// Clears the value of `accountCreatedAt`. Subsequent reads from it will return its default value.
   public mutating func clearAccountCreatedAt() {_uniqueStorage()._accountCreatedAt = nil}
+
+  /// The member themself: show it on "my profile", but it is not removable.
+  public var defaultAvatar: Com_Octopuscommunity_DefaultAvatar {
+    get {_storage._defaultAvatar ?? Com_Octopuscommunity_DefaultAvatar()}
+    set {_uniqueStorage()._defaultAvatar = newValue}
+  }
+  /// Returns true if `defaultAvatar` has been explicitly set.
+  public var hasDefaultAvatar: Bool {_storage._defaultAvatar != nil}
+  /// Clears the value of `defaultAvatar`. Subsequent reads from it will return its default value.
+  public mutating func clearDefaultAvatar() {_uniqueStorage()._defaultAvatar = nil}
+
+  /// The default the member would get if they removed their picture now. Set only while they have a
+  /// picture (pictureUrl is not empty) and the community uses its own colors or images; absent otherwise,
+  /// and always absent when defaultAvatar is set. Show it in the profile edit screen's preview once the
+  /// member removes their picture, before they save. The UpdateProfile response that removes the picture
+  /// then carries the member's actual default in defaultAvatar.
+  public var defaultAvatarIfPictureRemoved: Com_Octopuscommunity_DefaultAvatar {
+    get {_storage._defaultAvatarIfPictureRemoved ?? Com_Octopuscommunity_DefaultAvatar()}
+    set {_uniqueStorage()._defaultAvatarIfPictureRemoved = newValue}
+  }
+  /// Returns true if `defaultAvatarIfPictureRemoved` has been explicitly set.
+  public var hasDefaultAvatarIfPictureRemoved: Bool {_storage._defaultAvatarIfPictureRemoved != nil}
+  /// Clears the value of `defaultAvatarIfPictureRemoved`. Subsequent reads from it will return its default value.
+  public mutating func clearDefaultAvatarIfPictureRemoved() {_uniqueStorage()._defaultAvatarIfPictureRemoved = nil}
 
   public var usersBlockList: [String] {
     get {_storage._usersBlockList}
@@ -3109,58 +3163,111 @@ nonisolated extension Com_Octopuscommunity_CreateUserResponse.Error: SwiftProtob
 
 nonisolated extension Com_Octopuscommunity_UpdateProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UpdateProfileRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}update\0\u{1}fetchUserBlockList\0\u{1}fetchNotificationsBadge\0\u{1}fetchTotalMessages\0\u{1}fetchGamification\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}update\0\u{1}fetchUserBlockList\0\u{1}fetchNotificationsBadge\0\u{1}fetchTotalMessages\0\u{1}fetchGamification\0\u{1}wantNicknameSuggestions\0")
+
+  fileprivate class _StorageClass {
+    var _userID: String = String()
+    var _update: Com_Octopuscommunity_ProfileUpdate? = nil
+    var _fetchUserBlockList: Bool? = nil
+    var _fetchNotificationsBadge: Bool? = nil
+    var _fetchTotalMessages: Bool? = nil
+    var _fetchGamification: Bool? = nil
+    var _wantNicknameSuggestions: Bool? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _userID = source._userID
+      _update = source._update
+      _fetchUserBlockList = source._fetchUserBlockList
+      _fetchNotificationsBadge = source._fetchNotificationsBadge
+      _fetchTotalMessages = source._fetchTotalMessages
+      _fetchGamification = source._fetchGamification
+      _wantNicknameSuggestions = source._wantNicknameSuggestions
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
-      case 2: try { try decoder.decodeSingularMessageField(value: &self._update) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self._fetchUserBlockList) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self._fetchNotificationsBadge) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self._fetchTotalMessages) }()
-      case 6: try { try decoder.decodeSingularBoolField(value: &self._fetchGamification) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._userID) }()
+        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._update) }()
+        case 3: try { try decoder.decodeSingularBoolField(value: &_storage._fetchUserBlockList) }()
+        case 4: try { try decoder.decodeSingularBoolField(value: &_storage._fetchNotificationsBadge) }()
+        case 5: try { try decoder.decodeSingularBoolField(value: &_storage._fetchTotalMessages) }()
+        case 6: try { try decoder.decodeSingularBoolField(value: &_storage._fetchGamification) }()
+        case 7: try { try decoder.decodeSingularBoolField(value: &_storage._wantNicknameSuggestions) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.userID.isEmpty {
-      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._userID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._userID, fieldNumber: 1)
+      }
+      try { if let v = _storage._update {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._fetchUserBlockList {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._fetchNotificationsBadge {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._fetchTotalMessages {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+      } }()
+      try { if let v = _storage._fetchGamification {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
+      } }()
+      try { if let v = _storage._wantNicknameSuggestions {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 7)
+      } }()
     }
-    try { if let v = self._update {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._fetchUserBlockList {
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
-    } }()
-    try { if let v = self._fetchNotificationsBadge {
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
-    } }()
-    try { if let v = self._fetchTotalMessages {
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
-    } }()
-    try { if let v = self._fetchGamification {
-      try visitor.visitSingularBoolField(value: v, fieldNumber: 6)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_UpdateProfileRequest, rhs: Com_Octopuscommunity_UpdateProfileRequest) -> Bool {
-    if lhs.userID != rhs.userID {return false}
-    if lhs._update != rhs._update {return false}
-    if lhs._fetchUserBlockList != rhs._fetchUserBlockList {return false}
-    if lhs._fetchNotificationsBadge != rhs._fetchNotificationsBadge {return false}
-    if lhs._fetchTotalMessages != rhs._fetchTotalMessages {return false}
-    if lhs._fetchGamification != rhs._fetchGamification {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._userID != rhs_storage._userID {return false}
+        if _storage._update != rhs_storage._update {return false}
+        if _storage._fetchUserBlockList != rhs_storage._fetchUserBlockList {return false}
+        if _storage._fetchNotificationsBadge != rhs_storage._fetchNotificationsBadge {return false}
+        if _storage._fetchTotalMessages != rhs_storage._fetchTotalMessages {return false}
+        if _storage._fetchGamification != rhs_storage._fetchGamification {return false}
+        if _storage._wantNicknameSuggestions != rhs_storage._wantNicknameSuggestions {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3774,18 +3881,29 @@ nonisolated extension Com_Octopuscommunity_UpdateProfileResponse.Error.BadFormat
 
 nonisolated extension Com_Octopuscommunity_UpdateProfileResponse.Error.AlreadyTaken: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdateProfileResponse.Error.protoMessageName + ".AlreadyTaken"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}suggestions\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    // Load everything into unknown fields
-    while try decoder.nextFieldNumber() != nil {}
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedStringField(value: &self.suggestions) }()
+      default: break
+      }
+    }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.suggestions.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.suggestions, fieldNumber: 1)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_UpdateProfileResponse.Error.AlreadyTaken, rhs: Com_Octopuscommunity_UpdateProfileResponse.Error.AlreadyTaken) -> Bool {
+    if lhs.suggestions != rhs.suggestions {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4022,98 +4140,167 @@ nonisolated extension Com_Octopuscommunity_GetPublicProfileResponse: SwiftProtob
 
 nonisolated extension Com_Octopuscommunity_PublicProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PublicProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{2}\u{6}descPostFeedId\0\u{1}ascPostFeedId\0\u{1}descCommentFeedId\0\u{1}ascCommentFeedId\0\u{2}\u{7}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}\u{9}clientUserId\0\u{2}u\u{e}metadata\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{2}\u{6}descPostFeedId\0\u{1}ascPostFeedId\0\u{1}descCommentFeedId\0\u{1}ascCommentFeedId\0\u{2}\u{7}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}\u{9}clientUserId\0\u{2}\u{a}defaultAvatar\0\u{2}k\u{e}metadata\0")
+
+  fileprivate class _StorageClass {
+    var _id: String = String()
+    var _nickname: String? = nil
+    var _pictureURL: String? = nil
+    var _bio: String? = nil
+    var _descPostFeedID: String = String()
+    var _ascPostFeedID: String = String()
+    var _descCommentFeedID: String = String()
+    var _ascCommentFeedID: String = String()
+    var _tags: [Com_Octopuscommunity_ProfileTag] = []
+    var _gamificationScore: Com_Octopuscommunity_PublicGamificationScore? = nil
+    var _totalMessages: Int32? = nil
+    var _accountCreatedAt: UInt64? = nil
+    var _clientUserID: String? = nil
+    var _defaultAvatar: Com_Octopuscommunity_DefaultAvatar? = nil
+    var _metadata: String? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _id = source._id
+      _nickname = source._nickname
+      _pictureURL = source._pictureURL
+      _bio = source._bio
+      _descPostFeedID = source._descPostFeedID
+      _ascPostFeedID = source._ascPostFeedID
+      _descCommentFeedID = source._descCommentFeedID
+      _ascCommentFeedID = source._ascCommentFeedID
+      _tags = source._tags
+      _gamificationScore = source._gamificationScore
+      _totalMessages = source._totalMessages
+      _accountCreatedAt = source._accountCreatedAt
+      _clientUserID = source._clientUserID
+      _defaultAvatar = source._defaultAvatar
+      _metadata = source._metadata
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self._nickname) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self._pictureURL) }()
-      case 4: try { try decoder.decodeSingularStringField(value: &self._bio) }()
-      case 10: try { try decoder.decodeSingularStringField(value: &self.descPostFeedID) }()
-      case 11: try { try decoder.decodeSingularStringField(value: &self.ascPostFeedID) }()
-      case 12: try { try decoder.decodeSingularStringField(value: &self.descCommentFeedID) }()
-      case 13: try { try decoder.decodeSingularStringField(value: &self.ascCommentFeedID) }()
-      case 20: try { try decoder.decodeRepeatedEnumField(value: &self.tags) }()
-      case 30: try { try decoder.decodeSingularMessageField(value: &self._gamificationScore) }()
-      case 40: try { try decoder.decodeSingularInt32Field(value: &self._totalMessages) }()
-      case 41: try { try decoder.decodeSingularUInt64Field(value: &self._accountCreatedAt) }()
-      case 50: try { try decoder.decodeSingularStringField(value: &self._clientUserID) }()
-      case 999: try { try decoder.decodeSingularStringField(value: &self._metadata) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._id) }()
+        case 2: try { try decoder.decodeSingularStringField(value: &_storage._nickname) }()
+        case 3: try { try decoder.decodeSingularStringField(value: &_storage._pictureURL) }()
+        case 4: try { try decoder.decodeSingularStringField(value: &_storage._bio) }()
+        case 10: try { try decoder.decodeSingularStringField(value: &_storage._descPostFeedID) }()
+        case 11: try { try decoder.decodeSingularStringField(value: &_storage._ascPostFeedID) }()
+        case 12: try { try decoder.decodeSingularStringField(value: &_storage._descCommentFeedID) }()
+        case 13: try { try decoder.decodeSingularStringField(value: &_storage._ascCommentFeedID) }()
+        case 20: try { try decoder.decodeRepeatedEnumField(value: &_storage._tags) }()
+        case 30: try { try decoder.decodeSingularMessageField(value: &_storage._gamificationScore) }()
+        case 40: try { try decoder.decodeSingularInt32Field(value: &_storage._totalMessages) }()
+        case 41: try { try decoder.decodeSingularUInt64Field(value: &_storage._accountCreatedAt) }()
+        case 50: try { try decoder.decodeSingularStringField(value: &_storage._clientUserID) }()
+        case 60: try { try decoder.decodeSingularMessageField(value: &_storage._defaultAvatar) }()
+        case 999: try { try decoder.decodeSingularStringField(value: &_storage._metadata) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.id.isEmpty {
-      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._id.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._id, fieldNumber: 1)
+      }
+      try { if let v = _storage._nickname {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+      } }()
+      try { if let v = _storage._pictureURL {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+      } }()
+      try { if let v = _storage._bio {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+      } }()
+      if !_storage._descPostFeedID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._descPostFeedID, fieldNumber: 10)
+      }
+      if !_storage._ascPostFeedID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._ascPostFeedID, fieldNumber: 11)
+      }
+      if !_storage._descCommentFeedID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._descCommentFeedID, fieldNumber: 12)
+      }
+      if !_storage._ascCommentFeedID.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._ascCommentFeedID, fieldNumber: 13)
+      }
+      if !_storage._tags.isEmpty {
+        try visitor.visitPackedEnumField(value: _storage._tags, fieldNumber: 20)
+      }
+      try { if let v = _storage._gamificationScore {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 30)
+      } }()
+      try { if let v = _storage._totalMessages {
+        try visitor.visitSingularInt32Field(value: v, fieldNumber: 40)
+      } }()
+      try { if let v = _storage._accountCreatedAt {
+        try visitor.visitSingularUInt64Field(value: v, fieldNumber: 41)
+      } }()
+      try { if let v = _storage._clientUserID {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 50)
+      } }()
+      try { if let v = _storage._defaultAvatar {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 60)
+      } }()
+      try { if let v = _storage._metadata {
+        try visitor.visitSingularStringField(value: v, fieldNumber: 999)
+      } }()
     }
-    try { if let v = self._nickname {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
-    } }()
-    try { if let v = self._pictureURL {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
-    } }()
-    try { if let v = self._bio {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
-    } }()
-    if !self.descPostFeedID.isEmpty {
-      try visitor.visitSingularStringField(value: self.descPostFeedID, fieldNumber: 10)
-    }
-    if !self.ascPostFeedID.isEmpty {
-      try visitor.visitSingularStringField(value: self.ascPostFeedID, fieldNumber: 11)
-    }
-    if !self.descCommentFeedID.isEmpty {
-      try visitor.visitSingularStringField(value: self.descCommentFeedID, fieldNumber: 12)
-    }
-    if !self.ascCommentFeedID.isEmpty {
-      try visitor.visitSingularStringField(value: self.ascCommentFeedID, fieldNumber: 13)
-    }
-    if !self.tags.isEmpty {
-      try visitor.visitPackedEnumField(value: self.tags, fieldNumber: 20)
-    }
-    try { if let v = self._gamificationScore {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 30)
-    } }()
-    try { if let v = self._totalMessages {
-      try visitor.visitSingularInt32Field(value: v, fieldNumber: 40)
-    } }()
-    try { if let v = self._accountCreatedAt {
-      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 41)
-    } }()
-    try { if let v = self._clientUserID {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 50)
-    } }()
-    try { if let v = self._metadata {
-      try visitor.visitSingularStringField(value: v, fieldNumber: 999)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_PublicProfile, rhs: Com_Octopuscommunity_PublicProfile) -> Bool {
-    if lhs.id != rhs.id {return false}
-    if lhs._nickname != rhs._nickname {return false}
-    if lhs._pictureURL != rhs._pictureURL {return false}
-    if lhs._bio != rhs._bio {return false}
-    if lhs.descPostFeedID != rhs.descPostFeedID {return false}
-    if lhs.ascPostFeedID != rhs.ascPostFeedID {return false}
-    if lhs.descCommentFeedID != rhs.descCommentFeedID {return false}
-    if lhs.ascCommentFeedID != rhs.ascCommentFeedID {return false}
-    if lhs.tags != rhs.tags {return false}
-    if lhs._gamificationScore != rhs._gamificationScore {return false}
-    if lhs._totalMessages != rhs._totalMessages {return false}
-    if lhs._accountCreatedAt != rhs._accountCreatedAt {return false}
-    if lhs._clientUserID != rhs._clientUserID {return false}
-    if lhs._metadata != rhs._metadata {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._id != rhs_storage._id {return false}
+        if _storage._nickname != rhs_storage._nickname {return false}
+        if _storage._pictureURL != rhs_storage._pictureURL {return false}
+        if _storage._bio != rhs_storage._bio {return false}
+        if _storage._descPostFeedID != rhs_storage._descPostFeedID {return false}
+        if _storage._ascPostFeedID != rhs_storage._ascPostFeedID {return false}
+        if _storage._descCommentFeedID != rhs_storage._descCommentFeedID {return false}
+        if _storage._ascCommentFeedID != rhs_storage._ascCommentFeedID {return false}
+        if _storage._tags != rhs_storage._tags {return false}
+        if _storage._gamificationScore != rhs_storage._gamificationScore {return false}
+        if _storage._totalMessages != rhs_storage._totalMessages {return false}
+        if _storage._accountCreatedAt != rhs_storage._accountCreatedAt {return false}
+        if _storage._clientUserID != rhs_storage._clientUserID {return false}
+        if _storage._defaultAvatar != rhs_storage._defaultAvatar {return false}
+        if _storage._metadata != rhs_storage._metadata {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4209,7 +4396,7 @@ nonisolated extension Com_Octopuscommunity_GetPrivateProfileResponse: SwiftProto
 
 nonisolated extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PrivateProfile"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}email\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{1}hasSeenOnboarding\0\u{1}hasAcceptedCgu\0\u{2}\u{2}isGuest\0\u{1}descPostFeedId\0\u{1}ascPostFeedId\0\u{1}originalNickname\0\u{1}descCommentFeedId\0\u{1}ascCommentFeedId\0\u{2}\u{6}notSeenNotificationsCount\0\u{2}\u{a}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}\u{9}entitlements\0\u{2}(usersBlockList\0\u{2}\u{d}hasConfirmedNickname\0\u{1}hasConfirmedPicture\0\u{1}hasConfirmedBio\0\u{2}t\u{d}metadata\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}email\0\u{1}nickname\0\u{1}pictureUrl\0\u{1}bio\0\u{1}hasSeenOnboarding\0\u{1}hasAcceptedCgu\0\u{2}\u{2}isGuest\0\u{1}descPostFeedId\0\u{1}ascPostFeedId\0\u{1}originalNickname\0\u{1}descCommentFeedId\0\u{1}ascCommentFeedId\0\u{2}\u{6}notSeenNotificationsCount\0\u{2}\u{a}tags\0\u{2}\u{a}gamificationScore\0\u{2}\u{a}totalMessages\0\u{1}accountCreatedAt\0\u{2}\u{9}entitlements\0\u{2}\u{a}defaultAvatar\0\u{1}defaultAvatarIfPictureRemoved\0\u{2}\u{1d}usersBlockList\0\u{2}\u{d}hasConfirmedNickname\0\u{1}hasConfirmedPicture\0\u{1}hasConfirmedBio\0\u{2}t\u{d}metadata\0")
 
   fileprivate class _StorageClass {
     var _id: String = String()
@@ -4234,6 +4421,8 @@ nonisolated extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message
     var _gamificationScore: Com_Octopuscommunity_PrivateGamificationScore? = nil
     var _totalMessages: Int32? = nil
     var _accountCreatedAt: UInt64? = nil
+    var _defaultAvatar: Com_Octopuscommunity_DefaultAvatar? = nil
+    var _defaultAvatarIfPictureRemoved: Com_Octopuscommunity_DefaultAvatar? = nil
     var _usersBlockList: [String] = []
     var _metadata: String? = nil
 
@@ -4268,6 +4457,8 @@ nonisolated extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message
       _gamificationScore = source._gamificationScore
       _totalMessages = source._totalMessages
       _accountCreatedAt = source._accountCreatedAt
+      _defaultAvatar = source._defaultAvatar
+      _defaultAvatarIfPictureRemoved = source._defaultAvatarIfPictureRemoved
       _usersBlockList = source._usersBlockList
       _metadata = source._metadata
     }
@@ -4307,6 +4498,8 @@ nonisolated extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message
         case 50: try { try decoder.decodeSingularInt32Field(value: &_storage._totalMessages) }()
         case 51: try { try decoder.decodeSingularUInt64Field(value: &_storage._accountCreatedAt) }()
         case 60: try { try decoder.decodeRepeatedStringField(value: &_storage._entitlements) }()
+        case 70: try { try decoder.decodeSingularMessageField(value: &_storage._defaultAvatar) }()
+        case 71: try { try decoder.decodeSingularMessageField(value: &_storage._defaultAvatarIfPictureRemoved) }()
         case 100: try { try decoder.decodeRepeatedStringField(value: &_storage._usersBlockList) }()
         case 113: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedNickname_p) }()
         case 114: try { try decoder.decodeSingularBoolField(value: &_storage._hasConfirmedPicture_p) }()
@@ -4381,6 +4574,12 @@ nonisolated extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message
       if !_storage._entitlements.isEmpty {
         try visitor.visitRepeatedStringField(value: _storage._entitlements, fieldNumber: 60)
       }
+      try { if let v = _storage._defaultAvatar {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 70)
+      } }()
+      try { if let v = _storage._defaultAvatarIfPictureRemoved {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 71)
+      } }()
       if !_storage._usersBlockList.isEmpty {
         try visitor.visitRepeatedStringField(value: _storage._usersBlockList, fieldNumber: 100)
       }
@@ -4427,6 +4626,8 @@ nonisolated extension Com_Octopuscommunity_PrivateProfile: SwiftProtobuf.Message
         if _storage._gamificationScore != rhs_storage._gamificationScore {return false}
         if _storage._totalMessages != rhs_storage._totalMessages {return false}
         if _storage._accountCreatedAt != rhs_storage._accountCreatedAt {return false}
+        if _storage._defaultAvatar != rhs_storage._defaultAvatar {return false}
+        if _storage._defaultAvatarIfPictureRemoved != rhs_storage._defaultAvatarIfPictureRemoved {return false}
         if _storage._usersBlockList != rhs_storage._usersBlockList {return false}
         if _storage._metadata != rhs_storage._metadata {return false}
         return true

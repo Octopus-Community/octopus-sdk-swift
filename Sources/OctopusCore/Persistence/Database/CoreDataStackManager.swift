@@ -9,6 +9,9 @@ import os
 
 /// Object that is in charge of loading a core data stack
 class CoreDataStackManager: @unchecked Sendable {
+    /// The URL of an in-RAM store: SQLite keeps it in memory, there is no file to delete.
+    private static let inRamStoreURL = URL(fileURLWithPath: "/dev/null")
+
     private let persistentContainer: NSPersistentContainer
     lazy var saveContext: NSManagedObjectContext = {
         let context = persistentContainer.newBackgroundContext()
@@ -43,6 +46,11 @@ class CoreDataStackManager: @unchecked Sendable {
         }
 
         self.load(inRam: inRam)
+        // Created here, before the stack is shared, rather than on first use: every write and the teardown must
+        // go through this one context, and a lazy var created from two threads at once (a migration task and the
+        // databases' init) can make two. The stores are loaded by now, since they are added synchronously
+        // (`shouldAddStoreAsynchronously` is left to false).
+        _ = saveContext
     }
 
     private static func loadModel(name: String) throws(CoreDataErrors) -> NSManagedObjectModel {
@@ -73,7 +81,7 @@ class CoreDataStackManager: @unchecked Sendable {
     ///     - retry: Whether the app should retry loading persistent stores in case of error
     private func load(inRam: Bool, retry: Bool = true) {
         if inRam {
-            persistentContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+            persistentContainer.persistentStoreDescriptions.first!.url = Self.inRamStoreURL
         }
 
         persistentContainer.loadPersistentStores { [weak self] persistentStoreDescription, error in
@@ -100,11 +108,21 @@ class CoreDataStackManager: @unchecked Sendable {
         }
     }
 
+    /// Removes the persistent stores of a stack that is not used anymore, as when switching community.
+    ///
+    /// The stack's owner can still be alive, and so can a write it started: the stores are removed on the queue of
+    /// `saveContext`, the context every write goes through, so a write queued before the teardown is saved first
+    /// and one queued after it finds no store and is dropped by `performAsync(_:)`, instead of a `save()` reaching
+    /// a coordinator whose store is gone.
+    func teardown() async throws {
+        try await saveContext.performOnQueue { [self] in try reset() }
+    }
+
     /// Remove all existing persistent stores associated to the persistent container
     ///
     /// - Note: Call this method to completely wipe all stored datas. `load(inRam:)`
     ///     must be called to recreate a brand new file.
-    func reset() throws {
+    private func reset() throws {
         for persistentStore in persistentContainer.persistentStoreCoordinator.persistentStores {
             try persistentContainer.persistentStoreCoordinator.remove(persistentStore)
 
@@ -128,6 +146,7 @@ class CoreDataStackManager: @unchecked Sendable {
 
     /// Delete .sqlite, .sqlite-wal, .sqlite-shm files
     private func deleteSQLiteFiles(at storeURL: URL) throws {
+        guard storeURL.path != Self.inRamStoreURL.path else { return }
         let urls = [
             storeURL,
             storeURL.deletingPathExtension().appendingPathExtension("sqlite-wal"),

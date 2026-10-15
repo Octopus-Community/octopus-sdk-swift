@@ -6,12 +6,13 @@ name: Build SDK
 on:
   push:
     branches: [ "main", "next", "hotfix" ]
+  # No `branches:` filter: a pull request to any base builds. An empty filter (`branches: [ ]`)
+  # reads the same to GitHub but is rejected by actionlint as a filter that matches nothing.
   pull_request:
-    branches: [ ] # build on all branches
 
 # Least-privilege default: every job here checks the repo out and builds it, none of them writes
-# through GITHUB_TOKEN. The checkouts below pass their own token, so tightening GITHUB_TOKEN does
-# not affect them. Any future step that needs to write (a comment, a commit, a release) gets a
+# through GITHUB_TOKEN. The checkouts that need the private submodule pass their own token, and the
+# others only read this repository, so tightening GITHUB_TOKEN does not affect them. Any future step that needs to write (a comment, a commit, a release) gets a
 # commented job-level elevation rather than widening this line.
 permissions:
   contents: read
@@ -28,8 +29,28 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
 
 jobs:
+  # Which of the jobs below a pull request needs, from the paths it changes. The path lists, and
+  # the two rules every job here follows with them, are in changed-paths.yml: filter per job, never
+  # with `paths:` on the trigger, and run the job whenever this call was skipped (on a push) or
+  # failed, so a broken detection cannot turn a required context green. A cancelled run reports the
+  # jobs as cancelled, never as skipped.
+  changes:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/changed-paths.yml
+    permissions:
+      pull-requests: read
+
   lint:
     name: SwiftLint
+    needs: changes
+    # `!cancelled()` rather than `always()`, so a cancelled run does not start it. See `changes`.
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.lint == 'true') }}
+    # Break-glass: `PR_BUILD_RUNNER` (a bare scalar runner label, unset in the normal state) moves
+    # this job and `build` off the self-hosted parc in one `gh variable set`. Unset, the default is
+    # the multi-label `[self-hosted, macOS]`, spelled as a JSON array because an expression cannot
+    # produce a YAML sequence. Only a macOS runner with the pinned Xcode and an iPhone 17 runtime
+    # can actually stand in for the parc — see .github/BRANCH_PROTECTION.md, "Runners and the
+    # break-glass switch". The release script rewrites the default for the public repository.
     runs-on: macos-26
     # Downloads the pinned SwiftLint (once per version on a persistent runner, every
     # run on a fresh one), then lints; observed runs sit well under this. The cap
@@ -37,10 +58,8 @@ jobs:
     # holding it for the 6h default.
     timeout-minutes: 20
     steps:
+    # No submodule, hence no CI_PAT: the proto sources are excluded from the lint (.swiftlint.yml).
     - uses: actions/checkout@v6
-      with:
-        submodules: 'true'
-        token: ${{ secrets.CI_PAT }}
 
     # Pinned, because `brew install swiftlint` serves whatever is current and a new SwiftLint
     # release adds rules enabled by default. Through brew, the persistent self-hosted Mac kept the
@@ -80,6 +99,9 @@ jobs:
 
   build:
     name: Build and test the package
+    needs: changes
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.build == 'true') }}
+    # Same break-glass as `lint` above.
     runs-on: macos-26
     # A cold `xcodebuild test` on the package (simulator boot + full test suite)
     # is the longest PR-time job here; 60 min leaves headroom over a cache miss
@@ -144,3 +166,44 @@ jobs:
       run: |
         xcrun simctl shutdown "${{ steps.simulator.outputs.udid }}" 2>/dev/null || true
         xcrun simctl delete "${{ steps.simulator.outputs.udid }}"
+
+  workflow-lint:
+    name: Lint workflows (actionlint)
+    needs: changes
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.workflows == 'true') }}
+    # Schema, expression and (when shellcheck is on the runner) shell checks for every workflow,
+    # the same job the other Octopus SDK repos run. Follows `PR_BUILD_RUNNER` like the jobs above;
+    # unlike them it also runs on hosted Linux, which is why the installer below picks its binary
+    # from `uname -s` as well as `uname -m`.
+    runs-on: macos-26
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v6
+
+    # Pinned and checksum-verified. Checksums from actionlint_1.7.12_checksums.txt (actionlint names
+    # the Intel build `amd64`). `shasum -a 256` exists on both macOS and Ubuntu; `sha256sum` does
+    # not exist on macOS.
+    - name: Install actionlint
+      env:
+        ACTIONLINT_VERSION: "1.7.12"
+        ACTIONLINT_SHA256_DARWIN_ARM64: "aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f"
+        ACTIONLINT_SHA256_DARWIN_AMD64: "5b44c3bc2255115c9b69e30efc0fecdf498fdb63c5d58e17084fd5f16324c644"
+        ACTIONLINT_SHA256_LINUX_AMD64: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+      run: |
+        set -euo pipefail
+        case "$(uname -s)/$(uname -m)" in
+          Darwin/arm64)  os="darwin"; arch="arm64"; sha="$ACTIONLINT_SHA256_DARWIN_ARM64" ;;
+          Darwin/x86_64) os="darwin"; arch="amd64"; sha="$ACTIONLINT_SHA256_DARWIN_AMD64" ;;
+          Linux/x86_64)  os="linux";  arch="amd64"; sha="$ACTIONLINT_SHA256_LINUX_AMD64" ;;
+          *) echo "Unsupported platform: $(uname -s)/$(uname -m)" >&2; exit 1 ;;
+        esac
+        curl -fsSL -o "$RUNNER_TEMP/actionlint.tar.gz" \
+          "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_${os}_${arch}.tar.gz"
+        echo "${sha}  $RUNNER_TEMP/actionlint.tar.gz" | shasum -a 256 -c -
+        tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+        "$RUNNER_TEMP/actionlint" -version
+
+    # Shell linting of `run:` blocks happens only when shellcheck is on the runner; without it
+    # actionlint still validates the YAML and the expressions.
+    - name: Lint workflows
+      run: '"$RUNNER_TEMP/actionlint" -color'

@@ -24,6 +24,7 @@ struct AppEditUserScreen: View {
                     AppEditUserView(nickname: $nickname, bio: $bio, picture: $picture)
                 }
             }
+            .sampleScreenBackground()
             .navigationBarTitle("Edit your profile")
             .navigationBarItems(
                 leading: Button(action: { presentationMode.wrappedValue.dismiss() }) {
@@ -46,8 +47,8 @@ struct AppEditUserScreen: View {
                 bio = viewModel.appUser?.bio ?? ""
                 picture = viewModel.appUser?.picture
             }
-            .presentationBackground(Color(.systemBackground))
-            .hostAppFooter()
+            .presentationBackground(SampleTokens.Colors.background)
+            .hostAppFooter(debugConsole: false)
         }
     }
 }

@@ -12,6 +12,7 @@ import OctopusCore
 private struct TermsConsentSheetModifier: ViewModifier {
     @Binding var isPresented: Bool
     let mode: TermsAcceptanceMode
+    let consentTexts: ConsentTexts?
     let contribution: ConsentContribution
     let termsUrl: URL
     let privacyUrl: URL
@@ -23,6 +24,7 @@ private struct TermsConsentSheetModifier: ViewModifier {
             if mode.isExplicit {
                 TermsConsentSheet(
                     mode: mode,
+                    consentTexts: consentTexts,
                     contribution: contribution,
                     termsUrl: termsUrl,
                     privacyUrl: privacyUrl,
@@ -43,6 +45,7 @@ extension View {
     func termsConsentSheet(
         isPresented: Binding<Bool>,
         mode: TermsAcceptanceMode,
+        consentTexts: ConsentTexts?,
         contribution: ConsentContribution,
         termsUrl: URL,
         privacyUrl: URL,
@@ -52,6 +55,7 @@ extension View {
         modifier(TermsConsentSheetModifier(
             isPresented: isPresented,
             mode: mode,
+            consentTexts: consentTexts,
             contribution: contribution,
             termsUrl: termsUrl,
             privacyUrl: privacyUrl,

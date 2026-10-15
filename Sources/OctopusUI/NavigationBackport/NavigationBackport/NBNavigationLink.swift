@@ -3,18 +3,18 @@ import SwiftUI
 
 @available(iOS, deprecated: 16.0, message: "Use SwiftUI's Navigation API beyond iOS 15")
 /// When value is non-nil, shows the destination associated with its type.
-public struct NBNavigationLink<P: Hashable, Label: View>: View {
+struct NBNavigationLink<P: Hashable, Label: View>: View {
   var value: P?
   var label: Label
 
   @EnvironmentObject var pathHolder: Unobserved<NavigationPathHolder>
 
-  public init(value: P?, @ViewBuilder label: () -> Label) {
+  init(value: P?, @ViewBuilder label: () -> Label) {
     self.value = value
     self.label = label()
   }
 
-  public var body: some View {
+  var body: some View {
     // TODO: Ensure this button is styled more like a NavigationLink within a List.
     // See: https://gist.github.com/tgrapperon/034069d6116ff69b6240265132fd9ef7
     Button(
@@ -27,7 +27,7 @@ public struct NBNavigationLink<P: Hashable, Label: View>: View {
   }
 }
 
-public extension NBNavigationLink where Label == Text {
+extension NBNavigationLink where Label == Text {
   init(_ titleKey: LocalizedStringKey, value: P?) {
     self.init(value: value) { Text(titleKey) }
   }

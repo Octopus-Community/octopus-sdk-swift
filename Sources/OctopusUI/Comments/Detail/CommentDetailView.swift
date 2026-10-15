@@ -59,6 +59,7 @@ struct CommentDetailView: View {
                     displayGoToParentButton: displayGoToParentButton,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
+                    opensOnScrollTarget: viewModel.opensOnReply,
                     zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousReplies: viewModel.loadPreviousReplies,
                     refresh: viewModel.refresh,
@@ -77,7 +78,7 @@ struct CommentDetailView: View {
                     replyReactionTapped: viewModel.setReplyReaction(_:replyId:),
                     displayContentModeration: {
                         guard viewModel.ensureConnected(action: .moderation) else { return }
-                        mainFlowPath.reportTarget = .content(contentId: $0)
+                        mainFlowPath.reportTarget = $0
                     },
                     displayParentPost: {
                         navigator.push(.postDetail(postId: $0, comment: false, commentToScrollTo: $1,
@@ -92,7 +93,8 @@ struct CommentDetailView: View {
                                     translationStore: translationStore,
                                     textFocused: $replyTextFocused,
                                     hasChanges: $replyHasChanges,
-                                    ensureConnected: viewModel.ensureConnected)
+                                    ensureConnected: viewModel.ensureConnected,
+                                    nicknameChoiceClosed: viewModel.nicknameChoiceClosedPublisher)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -105,7 +107,8 @@ struct CommentDetailView: View {
                 LoadingOverlay()
             }
         }
-        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction)
+        .connectionRouter(octopus: viewModel.octopus, noConnectedReplacementAction: $viewModel.authenticationAction,
+                          onNicknameChoiceClosed: viewModel.nicknameChoiceClosed)
         .zoomableImageContainer(zoomableImageInfo: $zoomableImageInfo,
                                 defaultLeadingBarItem: leadingBarItem,
                                 defaultTrailingBarItem: trailingBarItem,
@@ -208,6 +211,8 @@ private struct ContentView: View {
     let displayGoToParentButton: Bool
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
+    /// The list is kept whole so a scroll requested as the screen opens finds its row.
+    var opensOnScrollTarget = false
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
     let refresh: @Sendable () async -> Void
@@ -218,14 +223,15 @@ private struct ContentView: View {
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?) -> Void
     let replyReactionTapped: (ReactionKind?, String) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
     let displayParentPost: (String, String) -> Void
 
     var body: some View {
         Compat.ScrollView(
             scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
             refreshAction: refresh) {
-                LazyIfPossibleVStack(spacing: 0, preventLaziness: scrollToBottom || scrollToId != nil) {
+                LazyIfPossibleVStack(spacing: 0,
+                                     preventLaziness: opensOnScrollTarget || scrollToBottom || scrollToId != nil) {
                     if let comment {
                         CommentDetailContentView(comment: comment,
                                                  displayGoToParentButton: displayGoToParentButton,

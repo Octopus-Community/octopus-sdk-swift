@@ -17,11 +17,10 @@ public struct OctopusProfile: Sendable {
     /// ``OctopusGroup/canAccess``.
     public let entitlements: Set<String>
 
-    /// The connected user's id in your own app's system — the id you passed to `connectUser` in SSO
-    /// mode (Unified Profile).
+    /// The connected user's id in your own app's system — the id you passed to `connectUser`
+    /// (Unified Profile).
     ///
-    /// `nil` for guests and for users authenticated by Octopus (magic-link) mode, which have no host
-    /// identity.
+    /// `nil` for guests, which have no host identity.
     public let clientUserId: String?
 
     /// Whether this profile belongs to an anonymous guest rather than a real, authenticated user.

@@ -81,7 +81,10 @@ class EditProfileViewModel: ObservableObject {
     @Published var nickname = ""
     @Published var bio = ""
     @Published var picture = Picture.unchanged(nil)
+    /// The saved nickname, which the default avatar takes its color from: the initials follow the nickname being
+    /// typed, the color does not change with every character.
     @Published var nicknameForAvatar = ""
+    @Published var communityAvatar: DefaultAvatar?
     @Published private(set) var nicknameError: DisplayableString?
     @Published private(set) var bioError: DisplayableString?
     @Published private(set) var pictureError: DisplayableString?
@@ -92,7 +95,6 @@ class EditProfileViewModel: ObservableObject {
 
     let octopus: OctopusSDK
     private let validator: Validators.CurrentUserProfile
-    private let preventDismissAfterUpdate: Bool
 
     private var storage = [AnyCancellable]()
     private var savedProfile: CurrentUserProfile?
@@ -141,10 +143,9 @@ class EditProfileViewModel: ObservableObject {
         )
     }
 
-    init(octopus: OctopusSDK, preventDismissAfterUpdate: Bool) {
+    init(octopus: OctopusSDK) {
         self.octopus = octopus
         validator = octopus.core.validators.currentUserProfile
-        self.preventDismissAfterUpdate = preventDismissAfterUpdate
 
         Publishers.CombineLatest(
             octopus.core.profileRepository.profilePublisher.compactMap { $0 },
@@ -173,6 +174,10 @@ class EditProfileViewModel: ObservableObject {
                 }
             }
 
+            // set by the server, never edited: it must follow every profile update, whichever fields the app manages.
+            // While the member has a picture, it is the default they would get once they tap "remove".
+            communityAvatar = profile.editPreviewDefaultAvatar
+
             nicknameEditConfig = Self.editConfig(
                 for: .nickname, isAppManaged: appManagedFields.contains(.nickname),
                 lock: lock.nickname, modifyUser: modifyUser)
@@ -194,6 +199,8 @@ class EditProfileViewModel: ObservableObject {
                 bio = profile.bio ?? ""
                 picture = .unchanged(profile.pictureUrl)
                 nicknameForAvatar = profile.nickname
+                // same rule as above
+                communityAvatar = profile.editPreviewDefaultAvatar
             }.store(in: &storage)
 
         // observe connection state to dismiss screen if incorrect state
@@ -251,18 +258,8 @@ class EditProfileViewModel: ObservableObject {
                     case .valid:
                         break
                     }
-                case .deleted:
-                    nicknameForAvatar = nickname
-                case .unchanged:
+                case .deleted, .unchanged:
                     break
-                }
-                pictureError = nil
-            }.store(in: &storage)
-
-        $picture
-            .sink { [unowned self] picture in
-                if case .deleted = picture {
-                    nicknameForAvatar = nickname
                 }
                 pictureError = nil
             }.store(in: &storage)
@@ -283,9 +280,7 @@ class EditProfileViewModel: ObservableObject {
                 if let imageData, let image = UIImage(data: imageData), let imageUrl = profile.pictureUrl {
                     try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: imageUrl)
                 }
-                if !preventDismissAfterUpdate {
-                    dismiss = true
-                }
+                dismiss = true
             } catch let error as UpdateProfile.Error {
                 switch error {
                 case let .validation(argumentError):

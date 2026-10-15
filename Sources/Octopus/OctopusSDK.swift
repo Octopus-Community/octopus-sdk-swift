@@ -94,12 +94,10 @@ public final class OctopusSDK: ObservableObject {
     /// The parameter is the field the user wants to edit, or `nil` to open the full editor. It reuses
     /// the same ``ConnectionMode/SSOConfiguration/ProfileField`` type as SSO's `modifyUser`.
     ///
-    /// This is a **new, additive, mode-agnostic** hook, deliberately independent of SSO's `modifyUser`:
+    /// This is a **new, additive** hook, deliberately independent of SSO's `modifyUser`:
     /// - Unlike `modifyUser` (which defaults to a no-op closure), this callback is independently
     ///   nil-checkable — the activity screen shows its "Edit my profile" menu item only when a host
     ///   genuinely wired it, so the item never dead-ends.
-    /// - Unlike `modifyUser` (SSO-config only), it works in **both** `.octopus` and `.sso` connection
-    ///   modes.
     /// - The SDK's own native profile screen keeps using SSO's `modifyUser` for its edit flow; this
     ///   callback is used **only** by the Unified Profile activity screen's overflow menu. The two
     ///   edit-profile hooks are intentionally separate so wiring one never changes the other.
@@ -125,11 +123,11 @@ public final class OctopusSDK: ObservableObject {
     ///
     /// - Parameters:
     ///   - apiKey: the API key that identifies your community
-    ///   - connectionMode: the kind of connection to handle the user. Default is Octopus connection mode.
+    ///   - connectionMode: the kind of connection to handle the user.
     ///   - configuration: the sdk configuration. Default is default configuration.
     public init(
         apiKey: String,
-        connectionMode: ConnectionMode = .octopus(deepLink: nil),
+        connectionMode: ConnectionMode,
         configuration: Configuration = .init()
     ) throws {
         self.injector = Injector()
@@ -188,7 +186,6 @@ extension OctopusSDK {
     /// Call this function as soon as your user is connected inside your app and each time its profile changes in your
     /// app.
     ///
-    /// - Note: This function should only be called when connectionMode is `.sso`.
     /// - Parameters:
     ///   - user: the user currently connected in your app.
     ///   - tokenProvider: a block called when the user token is needed to authenticate the user on the Octopus SDK
@@ -218,8 +215,6 @@ extension OctopusSDK {
     ///
     /// This is the fire-and-forget version of ``connectUser(_:tokenProvider:)``. Errors are logged but not
     /// propagated to the caller.
-    ///
-    /// - Note: This function should only be called when connectionMode is `.sso`.
     public func connectUser(_ user: ClientUser, tokenProvider: @Sendable @escaping () async throws -> String) {
         let connectionRepository = core.connectionRepository
         Task {
@@ -234,8 +229,6 @@ extension OctopusSDK {
     /// Disconnect the current user.
     ///
     /// Call this function when your user is disconnected.
-    ///
-    /// - Note: This function should only be called when connectionMode is `.sso`.
     /// - Throws: An error if the disconnection fails.
     public func disconnectUser() async throws {
         try await core.connectionRepository.disconnectUser()
@@ -245,8 +238,6 @@ extension OctopusSDK {
     ///
     /// This is the fire-and-forget version of ``disconnectUser()``. Errors are logged but not
     /// propagated to the caller.
-    ///
-    /// - Note: This function should only be called when connectionMode is `.sso`.
     public func disconnectUser() {
         let connectionRepository = core.connectionRepository
         Task {
@@ -422,7 +413,7 @@ extension OctopusSDK {
 
     /// Internal test affordance: locally override the terms-acceptance mode of the community config,
     /// without a backend-driven config. Pass `nil` to clear the override and fall back to the backend
-    /// value (currently `.implicit`). Used by the sample app to exercise the explicit-consent modes.
+    /// value. Used by the sample app to exercise the explicit-consent modes.
     ///
     /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
     /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
@@ -432,6 +423,39 @@ extension OctopusSDK {
     @MainActor
     public func debugOverrideTermsAcceptanceMode(_ mode: TermsAcceptanceMode?) {
         core.configRepository.debugOverrideTermsAcceptanceMode(mode)
+    }
+
+    /// Internal test affordance: locally override whether members must type their nickname before their first
+    /// post, comment or reply (`CommunityConfig.forceNicknameChoice`), without a backend-driven config. Pass
+    /// `nil` to clear the override and fall back to the backend value. Used by the sample app to exercise the
+    /// nickname choice screen.
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter enabled: the value to force, or `nil` to restore the backend-provided config.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideForceNicknameChoice(_ enabled: Bool?) {
+        core.configRepository.debugOverrideForceNicknameChoice(enabled)
+    }
+
+    /// Internal test affordance: locally override the consent texts of the community config (the wordings of the
+    /// consent sheet and of the notice under the composers), on top of the backend value. Pass `nil` to clear the
+    /// override and fall back to the backend value. Used by the sample app to exercise custom consent texts.
+    ///
+    /// The texts only show when their case matches the community's terms-acceptance mode, including a mode set
+    /// with `debugOverrideTermsAcceptanceMode(_:)`; an empty field shows the SDK wording. Like the other
+    /// overrides, it applies once a community config has been loaded.
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter texts: the texts to apply, or `nil` to restore the backend-provided config.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideConsentTexts(_ texts: ConsentTexts?) {
+        core.configRepository.debugOverrideConsentTexts(texts)
     }
 
     /// Internal test affordance: locally redistribute the published groups into the given mock client
@@ -680,8 +704,8 @@ extension OctopusSDK {
 extension OctopusSDK {
     /// Refresh the connected user's entitlements with the backend.
     ///
-    /// In `.sso` connection mode, the SDK fetches a fresh client-signed JWT from the
-    /// previously registered `tokenProvider`, exchanges it with the backend for a new Octopus
+    /// The SDK fetches a fresh client-signed JWT from the `tokenProvider` registered through
+    /// ``connectUser(_:tokenProvider:)``, exchanges it with the backend for a new Octopus
     /// JWT, and re-fetches the profile. Any change in the entitlements set automatically
     /// triggers a topics refetch (via the internal `EntitlementMonitor`); observing views
     /// recompose accordingly.
@@ -692,7 +716,7 @@ extension OctopusSDK {
             try await core.connectionRepository.refreshEntitlements()
         } catch {
             switch error {
-            case .notInSSOMode:
+            case .noClientTokenProvider:
                 throw .noClientTokenProvider
             case .notConnected:
                 throw .userNotConnected
@@ -752,12 +776,10 @@ extension OctopusSDK {
     /// from the Octopus activity screen (Unified Profile), so the host can open its own profile-edit
     /// screen.
     ///
-    /// This is a **new, additive, mode-agnostic** hook, deliberately independent of SSO's `modifyUser`:
+    /// This is a **new, additive** hook, deliberately independent of SSO's `modifyUser`:
     /// - It is independently nil-checkable (unlike `modifyUser`, which defaults to a no-op closure):
     ///   the activity screen shows its "Edit my profile" menu item only when this callback is wired,
     ///   so the item never dead-ends.
-    /// - It works in **both** `.octopus` and `.sso` connection modes (unlike `modifyUser`, which is
-    ///   SSO-config only).
     /// - The SDK's own native profile screen keeps using SSO's `modifyUser` for its edit flow; this
     ///   callback is used **only** by the Unified Profile activity screen. The two edit-profile hooks
     ///   are intentionally kept separate.
@@ -916,18 +938,18 @@ extension OctopusSDK {
     /// - Note:
     ///   - During the call of this function, you must not call any other Octopus function until this function finishes.
     ///   - After this function finishes:
-    ///     - you should call `connectUser` if you are in SSO and have a user, in order to
+    ///     - you should call `connectUser` if you have a user, in order to
     ///       connect this user to the new community.
     ///     - you should reconstruct any OctopusHomeScreen that you have (you can use an `.id` in order to force re-init
     ///       of the view).
     ///
     /// - Parameters:
     ///   - apiKey: the API key that identifies the new community
-    ///   - connectionMode: the kind of connection to handle the user. Default is Octopus connection mode.
+    ///   - connectionMode: the kind of connection to handle the user.
     ///   - configuration: the sdk configuration. Default is default configuration.
     public func switchCommunity(
         apiKey: String,
-        connectionMode: ConnectionMode = .octopus(deepLink: nil),
+        connectionMode: ConnectionMode,
         configuration: Configuration = .init()
     ) async throws {
         storage.removeAll()

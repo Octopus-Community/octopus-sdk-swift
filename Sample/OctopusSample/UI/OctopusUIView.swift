@@ -15,6 +15,9 @@ struct OctopusUIView: View {
     let mainFeedColoredNavBar: Bool
     let initialScreen: OctopusInitialScreen
     let navigationMode: OctopusNavigationMode
+    /// The leading bar item of the community's root screen, for a host container that owns its own exit
+    /// (a modal's Close, a pushed route's Back). `nil` keeps the SDK's default.
+    let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     @Binding var octopusNotificationUserInfo: [AnyHashable: Any]?
 
@@ -40,6 +43,7 @@ struct OctopusUIView: View {
         mainFeedColoredNavBar: Bool = false,
         initialScreen: OctopusInitialScreen = .mainFeed,
         navigationMode: OctopusNavigationMode = .automatic,
+        navBarLeadingAction: OctopusNavBarLeadingAction? = nil,
         octopusNotificationUserInfo: Binding<[AnyHashable: Any]?> = .constant(nil)) {
         self.octopus = octopus
         self.bottomSafeAreaInset = bottomSafeAreaInset
@@ -47,6 +51,7 @@ struct OctopusUIView: View {
         self.mainFeedColoredNavBar = mainFeedColoredNavBar
         self.initialScreen = initialScreen
         self.navigationMode = navigationMode
+        self.navBarLeadingAction = navBarLeadingAction
         self._octopusNotificationUserInfo = octopusNotificationUserInfo
     }
 
@@ -58,20 +63,25 @@ struct OctopusUIView: View {
             mainFeedColoredNavBar: mainFeedColoredNavBar,
             initialScreen: initialScreen,
             navigationMode: navigationMode,
+            navBarLeadingAction: navBarLeadingAction,
             notificationUserInfo: $octopusNotificationUserInfo
         )
         // Force RTL only when an RTL override language is picked; otherwise keep the inherited direction.
         .environment(\.layoutDirection,
                      languageManager.simulatedLayoutDirection == .rightToLeft ? .rightToLeft : inheritedLayoutDirection)
+        .dismissedOnPushRouting($displayAppUserLogin)
         .fullScreenCover(isPresented: $displayAppUserLogin) {
             AppLoginScreen()
         }
+        .dismissedOnPushRouting($displayEditAppUserProfile)
         .fullScreenCover(isPresented: $displayEditAppUserProfile) {
             AppEditUserScreen()
         }
+        .dismissedOnPushRouting($displayGroupAccessDenied)
         .fullScreenCover(isPresented: $displayGroupAccessDenied) {
             GroupAccessDeniedScreen(groupId: groupAccessDeniedGroupId)
         }
+        .dismissedOnPushRouting($displayClientProfile)
         .fullScreenCover(isPresented: $displayClientProfile) {
             ClientProfileScreen(clientUserId: clientProfileClientUserId)
         }

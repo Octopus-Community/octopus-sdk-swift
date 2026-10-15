@@ -14,6 +14,7 @@ class ServiceClient {
     private let apiKey: String
     private let sdkVersion: String
     private let installId: String
+    private let sdkIdentity: @Sendable () -> SdkIdentity
 
     var appSessionId: String?
     var octopusUISessionId: String?
@@ -28,11 +29,13 @@ class ServiceClient {
     // OS Version. Set on the main thread because UIDevice.current.systemVersion is main actor
     var osVersion: String? { sendableOSVersion.value }
 
-    init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String) {
+    init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
+         sdkIdentity: @escaping @Sendable () -> SdkIdentity) {
         self.apiKey = apiKey
         self.sdkVersion = sdkVersion
         self.installId = installId
         self.localeIdentifier = localeIdentifier
+        self.sdkIdentity = sdkIdentity
 
         let osVersionBox = sendableOSVersion
 
@@ -78,11 +81,14 @@ class ServiceClient {
         case .some(false): "false"
         case .none: "not_provided"
         }
+        let identity = sdkIdentity()
         var metadata = [
             ("ApiKey", apiKey),
             ("Accept-Language", localeIdentifier),
             ("platform", "iOS"),
             ("sdkVersion", sdkVersion),
+            ("sdkfamily", identity.family.rawValue),
+            ("sdkfamilyversion", identity.version),
             ("installId", installId),
             ("hascommunityaccess", hasAccessToCommunityValue)]
         if let osVersion {

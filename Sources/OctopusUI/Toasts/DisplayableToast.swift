@@ -81,7 +81,7 @@ extension GamificationToast {
         case .post: L10n("Gamification.Toast.Post_points:%@", locale: locale, formattedPoints)
         case .comment: L10n("Gamification.Toast.Comment_points:%@", locale: locale, formattedPoints)
         case .reply: L10n("Gamification.Toast.Comment_points:%@", locale: locale, formattedPoints)
-        case .postCommented: L10n("Gamification.Toast.PostCommented_points:%@", locale: locale, formattedPoints)
+        case .postCommented: L10n("Gamification.Toast.CommentedPost_points:%@", locale: locale, formattedPoints)
         case .profileCompleted: L10n("Gamification.Toast.ProfileCompleted_points:%@", locale: locale, formattedPoints)
         case .dailySession: L10n("Gamification.Toast.DailySession_points:%@", locale: locale, formattedPoints)
         }

@@ -104,12 +104,8 @@ struct MainFlowNavigationStack<RootView: View>: View {
                                               reply: reply, replyToScrollTo: replyToScrollTo)
                         case let .editProfile(bioFocused, pictureFocused):
                             EditProfileView(octopus: octopus, bioFocused: bioFocused, photoPickerFocused: pictureFocused)
-                        case .settingsAccount:
-                            SettingProfileView(octopus: octopus)
                         case .reportExplanation:
                             ReportExplanationView(octopus: octopus)
-                        case .deleteAccount:
-                            DeleteAccountView(octopus: octopus, mainFlowPath: mainFlowPath)
                         }
                     }
                     .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
@@ -118,7 +114,8 @@ struct MainFlowNavigationStack<RootView: View>: View {
 
         }
         .octopusSheet(item: $mainFlowPath.reportTarget) { target in
-            ReportScreen(octopus: octopus, target: target)
+            ReportScreen(octopus: octopus, target: target,
+                         onBlocked: { mainFlowPath.profileBlockedAfterReport.send($0) })
                 .modify {
                     if #available(iOS 16.0, *) {
                         $0.presentationDragIndicator(.visible)

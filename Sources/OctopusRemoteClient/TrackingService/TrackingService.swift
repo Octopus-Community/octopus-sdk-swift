@@ -22,12 +22,14 @@ class TrackingServiceClient: ServiceClient, TrackingService {
     private let client: Com_Octopuscommunity_TrackingServiceAsyncClient
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
+         sdkIdentity: @escaping @Sendable () -> SdkIdentity,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_TrackingServiceAsyncClient(
             channel: unaryChannel, interceptors: TrackingServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
-        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier)
+        super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier,
+                   sdkIdentity: sdkIdentity)
     }
 
     func track(events: [Com_Octopuscommunity_TrackRequest.Event], authenticationMethod: AuthenticationMethod)

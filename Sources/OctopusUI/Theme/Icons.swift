@@ -48,12 +48,15 @@ extension OctopusTheme.Assets {
 
                 /// Group of icons used during Post creation
                 public fileprivate(set) var creation: Creation
-                /// Image displayed when the post feed of a given group is empty
-                public let emptyFeedInGroups: UIImage
-                /// Image displayed in the current user profile when the current user has not created any post
-                public let emptyFeedInCurrentUserProfile: UIImage
-                /// Image displayed in a user profile when they have not created any post
-                public let emptyFeedInOtherUserProfile: UIImage
+                /// Was displayed when the post feed of a given group is empty
+                @available(*, deprecated, message: "No longer displayed since 1.14.0: an empty list of posts shows `screenStates.emptyContent`.")
+                public var emptyFeedInGroups: UIImage { storedEmptyFeedInGroups }
+                /// Was displayed in the current user profile when the current user has not created any post
+                @available(*, deprecated, message: "No longer displayed since 1.14.0: an empty list of posts shows `screenStates.emptyContent`.")
+                public var emptyFeedInCurrentUserProfile: UIImage { storedEmptyFeedInCurrentUserProfile }
+                /// Was displayed in a user profile when they have not created any post
+                @available(*, deprecated, message: "No longer displayed since 1.14.0: an empty list of posts shows `screenStates.emptyContent`.")
+                public var emptyFeedInOtherUserProfile: UIImage { storedEmptyFeedInOtherUserProfile }
                 /// Displayed when a post is not available anymore (moderated, deleted...)
                 /// Default value is `defaultNotAvailable` set in the Content init.
                 public fileprivate(set) var notAvailable: UIImage
@@ -71,6 +74,12 @@ extension OctopusTheme.Assets {
 
                 fileprivate let notAvailableIsDefault: Bool
                 fileprivate let likeNotSelectedIsDefault: Bool
+
+                // Backing storage of the deprecated icons, so that reading them back raises no deprecation
+                // warning inside the SDK itself.
+                let storedEmptyFeedInGroups: UIImage
+                let storedEmptyFeedInCurrentUserProfile: UIImage
+                let storedEmptyFeedInOtherUserProfile: UIImage
             }
 
             /// Group of icons used for Comments
@@ -96,9 +105,10 @@ extension OctopusTheme.Assets {
 
                 /// Group of icons used during Comment creation
                 public fileprivate(set) var creation: Creation
-                /// Image displayed when the post has no comments
-                public let emptyFeed: UIImage
-                /// Displayed when a post is not available anymore (moderated, deleted...)
+                /// Was displayed when the post has no comments
+                @available(*, deprecated, message: "No longer displayed since 1.14.0: a post without comments shows `screenStates.emptyContent`.")
+                public var emptyFeed: UIImage { storedEmptyFeed }
+                /// Displayed when a comment is not available anymore (moderated, deleted...)
                 /// Default value is `defaultNotAvailable` set in the Content init.
                 public fileprivate(set) var notAvailable: UIImage
                 /// Displayed to see the replies (arrow right)
@@ -109,6 +119,10 @@ extension OctopusTheme.Assets {
 
                 fileprivate let notAvailableIsDefault: Bool
                 fileprivate let likeNotSelectedIsDefault: Bool
+
+                // Backing storage of the deprecated icon, so that reading it back raises no deprecation
+                // warning inside the SDK itself.
+                let storedEmptyFeed: UIImage
             }
 
             /// Group of icons used for Replies
@@ -229,16 +243,25 @@ extension OctopusTheme.Assets {
 
         /// Group of icons used for the settings
         public struct Settings: Sendable {
-            /// Displayed to open the account page (only on Octopus auth mode)
-            public let account: UIImage
+            /// Was displayed to open the account page
+            @available(*, deprecated, message: "No longer displayed since 1.15.0: user accounts are managed by your app.")
+            public var account: UIImage { storedAccount }
             /// Displayed to open the help page
             public let help: UIImage
             /// Displayed to open the info page
             public let info: UIImage
-            /// Displayed to logout the current user (only on Octopus auth mode)
-            public let logout: UIImage
-            /// Displayed to delete the current user (only on Octopus auth mode)
-            public let deleteAccountWarning: UIImage
+            /// Was displayed to logout the current user
+            @available(*, deprecated, message: "No longer displayed since 1.15.0: user accounts are managed by your app.")
+            public var logout: UIImage { storedLogout }
+            /// Was displayed to delete the current user
+            @available(*, deprecated, message: "No longer displayed since 1.15.0: user accounts are managed by your app.")
+            public var deleteAccountWarning: UIImage { storedDeleteAccountWarning }
+
+            // Backing storage of the deprecated icons, so that reading them back raises no deprecation
+            // warning inside the SDK itself.
+            let storedAccount: UIImage
+            let storedLogout: UIImage
+            let storedDeleteAccountWarning: UIImage
         }
 
         /// Group of icons used for the profile
@@ -249,8 +272,9 @@ extension OctopusTheme.Assets {
             public let editPicture: UIImage
             /// Displayed in the current user profile, when the user's bio is empty
             public let addBio: UIImage
-            /// Displayed in the current user profile, when the user has no internal notification
-            public let emptyNotifications: UIImage
+            /// Was displayed in the current user profile, when the user has no internal notification
+            @available(*, deprecated, message: "No longer displayed since 1.14.0: an empty list of notifications shows `screenStates.emptyNotifications`.")
+            public var emptyNotifications: UIImage { storedEmptyNotifications }
             /// Displayed to report a content
             /// Default value is `defaultReport` set in the Icon init.
             public fileprivate(set) var report: UIImage
@@ -260,6 +284,10 @@ extension OctopusTheme.Assets {
             public let blockUser: UIImage
 
             fileprivate let reportIsDefault: Bool
+
+            // Backing storage of the deprecated icon, so that reading it back raises no deprecation
+            // warning inside the SDK itself.
+            let storedEmptyNotifications: UIImage
         }
 
         /// Group of icons used commonly
@@ -279,6 +307,8 @@ extension OctopusTheme.Assets {
             public let activityButton: UIImage
             /// List cell navigation indicator (arrow  right)
             public let listCellNavIndicator: UIImage
+            /// Button that clears a text field (a filled disc with a cross cut out of it)
+            public let clearText: UIImage
         }
 
         /// Group of icons shown when a content area has nothing to display, or when its first load failed
@@ -402,10 +432,6 @@ extension OctopusTheme.Assets.Icons.Content.Post {
     /// Constructor of Post related icons
     /// - Parameters:
     ///   - creation: Group of icons used during Post creation
-    ///   - emptyFeedInGroups: Image displayed when the post feed of a given group is empty
-    ///   - emptyFeedInCurrentUserProfile: Image displayed in the current user profile when the current user has not
-    ///                                    created any post
-    ///   - emptyFeedInOtherUserProfile: Image displayed in a user profile when they have not created any post
     ///   - notAvailable: Displayed when a post is not available anymore (moderated, deleted...)
     ///                   Default value is `defaultNotAvailable` set in the Content init.
     ///   - commentCount: Displayed to indicate the number of comments on a post
@@ -414,6 +440,43 @@ extension OctopusTheme.Assets.Icons.Content.Post {
     ///   - likeNotSelected: Displayed when the current user has not reacted on this post
     ///                      Default value is `defaultLikeNotSelected` set in the Content init.
     ///   - moderated: Displayed on the moderated tag of a moderated post
+    public init(
+        creation: Creation = .init(),
+        notAvailable: UIImage? = nil,
+        commentCount: UIImage? = nil,
+        viewCount: UIImage? = nil,
+        moreReactions: UIImage? = nil,
+        likeNotSelected: UIImage? = nil,
+        moderated: UIImage? = nil
+    ) {
+        self.init(
+            creation: creation,
+            storedEmptyFeedInGroups: nil,
+            storedEmptyFeedInCurrentUserProfile: nil,
+            storedEmptyFeedInOtherUserProfile: nil,
+            notAvailable: notAvailable,
+            commentCount: commentCount,
+            viewCount: viewCount,
+            moreReactions: moreReactions,
+            likeNotSelected: likeNotSelected,
+            moderated: moderated)
+    }
+
+    /// Constructor of Post related icons
+    /// - Parameters:
+    ///   - creation: Group of icons used during Post creation
+    ///   - emptyFeedInGroups: No longer displayed by the SDK
+    ///   - emptyFeedInCurrentUserProfile: No longer displayed by the SDK
+    ///   - emptyFeedInOtherUserProfile: No longer displayed by the SDK
+    ///   - notAvailable: Displayed when a post is not available anymore (moderated, deleted...)
+    ///                   Default value is `defaultNotAvailable` set in the Content init.
+    ///   - commentCount: Displayed to indicate the number of comments on a post
+    ///   - viewCount: Displayed to indicate the number of views
+    ///   - moreReactions: Displayed to open the reaction picker
+    ///   - likeNotSelected: Displayed when the current user has not reacted on this post
+    ///                      Default value is `defaultLikeNotSelected` set in the Content init.
+    ///   - moderated: Displayed on the moderated tag of a moderated post
+    @available(*, deprecated, message: "Use init(creation:notAvailable:commentCount:viewCount:moreReactions:likeNotSelected:moderated:): the empty feed icons are no longer displayed since 1.14.0, an empty list of posts shows `screenStates.emptyContent`.")
     public init(
         creation: Creation = .init(),
         emptyFeedInGroups: UIImage? = nil,
@@ -426,10 +489,36 @@ extension OctopusTheme.Assets.Icons.Content.Post {
         likeNotSelected: UIImage? = nil,
         moderated: UIImage? = nil
     ) {
+        self.init(
+            creation: creation,
+            storedEmptyFeedInGroups: emptyFeedInGroups,
+            storedEmptyFeedInCurrentUserProfile: emptyFeedInCurrentUserProfile,
+            storedEmptyFeedInOtherUserProfile: emptyFeedInOtherUserProfile,
+            notAvailable: notAvailable,
+            commentCount: commentCount,
+            viewCount: viewCount,
+            moreReactions: moreReactions,
+            likeNotSelected: likeNotSelected,
+            moderated: moderated)
+    }
+
+    private init(
+        creation: Creation,
+        storedEmptyFeedInGroups emptyFeedInGroups: UIImage?,
+        storedEmptyFeedInCurrentUserProfile emptyFeedInCurrentUserProfile: UIImage?,
+        storedEmptyFeedInOtherUserProfile emptyFeedInOtherUserProfile: UIImage?,
+        notAvailable: UIImage?,
+        commentCount: UIImage?,
+        viewCount: UIImage?,
+        moreReactions: UIImage?,
+        likeNotSelected: UIImage?,
+        moderated: UIImage?
+    ) {
         self.creation = creation
-        self.emptyFeedInGroups = emptyFeedInGroups?.prepareForSdkUsage() ?? .Gen.noPosts
-        self.emptyFeedInCurrentUserProfile = emptyFeedInCurrentUserProfile?.prepareForSdkUsage() ?? .Gen.noCurrentUserPost
-        self.emptyFeedInOtherUserProfile = emptyFeedInOtherUserProfile?.prepareForSdkUsage() ?? .Gen.noPosts
+        self.storedEmptyFeedInGroups = emptyFeedInGroups?.prepareForSdkUsage() ?? .Gen.noPosts
+        self.storedEmptyFeedInCurrentUserProfile = emptyFeedInCurrentUserProfile?.prepareForSdkUsage()
+            ?? .Gen.noCurrentUserPost
+        self.storedEmptyFeedInOtherUserProfile = emptyFeedInOtherUserProfile?.prepareForSdkUsage() ?? .Gen.noPosts
         self.notAvailable = notAvailable?.prepareForSdkUsage() ?? .Gen.contentNotAvailable
         self.commentCount = commentCount?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.comment
         self.viewCount = viewCount?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.view
@@ -473,12 +562,31 @@ extension OctopusTheme.Assets.Icons.Content.Comment {
     /// Constructor of Comment related icons
     /// - Parameters:
     ///   - creation: Group of icons used during Comment creation
-    ///   - emptyFeed: Image displayed when the post has no comments
-    ///   - notAvailable: Displayed when a post is not available anymore (moderated, deleted...)
+    ///   - notAvailable: Displayed when a comment is not available anymore (moderated, deleted...)
     ///                   Default value is `defaultNotAvailable` set in the Content init.
     ///   - seeReply: Displayed to see the replies (arrow right)
     ///   - likeNotSelected: Displayed when the current user has not reacted on this comment
     ///                      Default value is `defaultLikeNotSelected` set in the Content init.
+    public init(
+        creation: Creation = .init(),
+        notAvailable: UIImage? = nil,
+        seeReply: UIImage? = nil,
+        likeNotSelected: UIImage? = nil
+    ) {
+        self.init(creation: creation, storedEmptyFeed: nil, notAvailable: notAvailable, seeReply: seeReply,
+                  likeNotSelected: likeNotSelected)
+    }
+
+    /// Constructor of Comment related icons
+    /// - Parameters:
+    ///   - creation: Group of icons used during Comment creation
+    ///   - emptyFeed: No longer displayed by the SDK
+    ///   - notAvailable: Displayed when a comment is not available anymore (moderated, deleted...)
+    ///                   Default value is `defaultNotAvailable` set in the Content init.
+    ///   - seeReply: Displayed to see the replies (arrow right)
+    ///   - likeNotSelected: Displayed when the current user has not reacted on this comment
+    ///                      Default value is `defaultLikeNotSelected` set in the Content init.
+    @available(*, deprecated, message: "Use init(creation:notAvailable:seeReply:likeNotSelected:): the empty feed icon is no longer displayed since 1.14.0, a post without comments shows `screenStates.emptyContent`.")
     public init(
         creation: Creation = .init(),
         emptyFeed: UIImage? = nil,
@@ -486,8 +594,19 @@ extension OctopusTheme.Assets.Icons.Content.Comment {
         seeReply: UIImage? = nil,
         likeNotSelected: UIImage? = nil
     ) {
+        self.init(creation: creation, storedEmptyFeed: emptyFeed, notAvailable: notAvailable, seeReply: seeReply,
+                  likeNotSelected: likeNotSelected)
+    }
+
+    private init(
+        creation: Creation,
+        storedEmptyFeed emptyFeed: UIImage?,
+        notAvailable: UIImage?,
+        seeReply: UIImage?,
+        likeNotSelected: UIImage?
+    ) {
         self.creation = creation
-        self.emptyFeed = emptyFeed?.prepareForSdkUsage() ?? .Gen.contentNotAvailable
+        self.storedEmptyFeed = emptyFeed?.prepareForSdkUsage() ?? .Gen.contentNotAvailable
         self.notAvailable = notAvailable?.prepareForSdkUsage() ?? .Gen.contentNotAvailable
         self.seeReply = seeReply?.prepareForSdkUsage() ?? .Gen.arrowRight
         self.likeNotSelected = likeNotSelected?.prepareForSdkUsage() ?? .Gen.AggregatedInfo.like
@@ -739,11 +858,27 @@ extension OctopusTheme.Assets.Icons.Gamification {
 extension OctopusTheme.Assets.Icons.Settings {
     /// Group of icons used for the settings
     /// - Parameters:
-    ///   - account: Displayed to open the account page (only on Octopus auth mode)
     ///   - help: Displayed to open the help page
     ///   - info: Displayed to open the info page
-    ///   - logout: Displayed to logout the current user (only on Octopus auth mode)
-    ///   - deleteAccountWarning: Displayed to delete the current user (only on Octopus auth mode)
+    public init(
+        help: UIImage? = nil,
+        info: UIImage? = nil
+    ) {
+        self.storedAccount = .Gen.Settings.account
+        self.help = help?.prepareForSdkUsage() ?? .Gen.Settings.help
+        self.info = info?.prepareForSdkUsage() ?? .Gen.Settings.info
+        self.storedLogout = .Gen.Settings.logout
+        self.storedDeleteAccountWarning = .Gen.Settings.warning
+    }
+
+    /// Group of icons used for the settings
+    /// - Parameters:
+    ///   - account: No longer displayed by the SDK
+    ///   - help: Displayed to open the help page
+    ///   - info: Displayed to open the info page
+    ///   - logout: No longer displayed by the SDK
+    ///   - deleteAccountWarning: No longer displayed by the SDK
+    @available(*, deprecated, message: "Use init(help:info:): the account, logout and delete account icons are no longer displayed since 1.15.0.")
     public init(
         account: UIImage? = nil,
         help: UIImage? = nil,
@@ -751,11 +886,11 @@ extension OctopusTheme.Assets.Icons.Settings {
         logout: UIImage? = nil,
         deleteAccountWarning: UIImage? = nil
     ) {
-        self.account = account?.prepareForSdkUsage() ?? .Gen.Settings.account
+        self.storedAccount = account?.prepareForSdkUsage() ?? .Gen.Settings.account
         self.help = help?.prepareForSdkUsage() ?? .Gen.Settings.help
         self.info = info?.prepareForSdkUsage() ?? .Gen.Settings.info
-        self.logout = logout?.prepareForSdkUsage() ?? .Gen.Settings.logout
-        self.deleteAccountWarning = deleteAccountWarning?.prepareForSdkUsage() ?? .Gen.Settings.warning
+        self.storedLogout = logout?.prepareForSdkUsage() ?? .Gen.Settings.logout
+        self.storedDeleteAccountWarning = deleteAccountWarning?.prepareForSdkUsage() ?? .Gen.Settings.warning
     }
 }
 
@@ -765,11 +900,33 @@ extension OctopusTheme.Assets.Icons.Profile {
     ///   - addPicture: Displayed in the current user profile, on a default avatar, for the user to add a picture
     ///   - editPicture: Displayed in the profile edit screen, on the user's avatar to change the picture
     ///   - addBio: Displayed in the current user profile, when the user's bio is empty
-    ///   - emptyNotifications: Displayed in the current user profile, when the user has no internal notification
     ///   - report: Displayed to report a content
     ///             Default value is `defaultReport` set in the Icon init.
     ///   - notConnected: Displayed as avatar when the user is not connected (error state)
     ///   - blockUser: Displayed to block a user
+    public init(
+        addPicture: UIImage? = nil,
+        editPicture: UIImage? = nil,
+        addBio: UIImage? = nil,
+        report: UIImage? = nil,
+        notConnected: UIImage? = nil,
+        blockUser: UIImage? = nil
+    ) {
+        self.init(addPicture: addPicture, editPicture: editPicture, addBio: addBio, storedEmptyNotifications: nil,
+                  report: report, notConnected: notConnected, blockUser: blockUser)
+    }
+
+    /// Group of icons used for the profile
+    /// - Parameters:
+    ///   - addPicture: Displayed in the current user profile, on a default avatar, for the user to add a picture
+    ///   - editPicture: Displayed in the profile edit screen, on the user's avatar to change the picture
+    ///   - addBio: Displayed in the current user profile, when the user's bio is empty
+    ///   - emptyNotifications: No longer displayed by the SDK
+    ///   - report: Displayed to report a content
+    ///             Default value is `defaultReport` set in the Icon init.
+    ///   - notConnected: Displayed as avatar when the user is not connected (error state)
+    ///   - blockUser: Displayed to block a user
+    @available(*, deprecated, message: "Use init(addPicture:editPicture:addBio:report:notConnected:blockUser:): the empty notifications icon is no longer displayed since 1.14.0, an empty list of notifications shows `screenStates.emptyNotifications`.")
     public init(
         addPicture: UIImage? = nil,
         editPicture: UIImage? = nil,
@@ -779,10 +936,24 @@ extension OctopusTheme.Assets.Icons.Profile {
         notConnected: UIImage? = nil,
         blockUser: UIImage? = nil
     ) {
+        self.init(addPicture: addPicture, editPicture: editPicture, addBio: addBio,
+                  storedEmptyNotifications: emptyNotifications,
+                  report: report, notConnected: notConnected, blockUser: blockUser)
+    }
+
+    private init(
+        addPicture: UIImage?,
+        editPicture: UIImage?,
+        addBio: UIImage?,
+        storedEmptyNotifications emptyNotifications: UIImage?,
+        report: UIImage?,
+        notConnected: UIImage?,
+        blockUser: UIImage?
+    ) {
         self.addPicture = addPicture?.prepareForSdkUsage() ?? .Gen.add
         self.editPicture = editPicture?.prepareForSdkUsage() ?? .Gen.editPicture
         self.addBio = addBio?.prepareForSdkUsage() ?? .Gen.add
-        self.emptyNotifications = emptyNotifications?.prepareForSdkUsage() ?? .Gen.bell
+        self.storedEmptyNotifications = emptyNotifications?.prepareForSdkUsage() ?? .Gen.bell
         self.report = report?.prepareForSdkUsage() ?? .Gen.flag
         self.notConnected = notConnected?.prepareForSdkUsage() ?? .Gen.notConnected
         self.blockUser = blockUser?.prepareForSdkUsage() ?? .Gen.blockUser
@@ -802,6 +973,7 @@ extension OctopusTheme.Assets.Icons.Common {
     ///   - activityButton: Activity button (Unified Profile), shown in place of the connected user's
     ///                     avatar on the home floating button when Unified Profile is active
     ///   - listCellNavIndicator: List cell navigation indicator (arrow  right)
+    ///   - clearText: Button that clears a text field (a filled disc with a cross cut out of it)
     public init(
         radio: OctopusTheme.Assets.Icons.OnOff? = nil,
         checkbox: OctopusTheme.Assets.Icons.OnOff? = nil,
@@ -809,7 +981,8 @@ extension OctopusTheme.Assets.Icons.Common {
         close: UIImage? = nil,
         moreActions: UIImage? = nil,
         activityButton: UIImage? = nil,
-        listCellNavIndicator: UIImage? = nil
+        listCellNavIndicator: UIImage? = nil,
+        clearText: UIImage? = nil
     ) {
         self.radio = radio ?? .init(on: .Gen.RadioButton.on, off: .Gen.RadioButton.off)
         self.checkbox = checkbox ?? .init(on: .Gen.CheckBox.on, off: .Gen.CheckBox.off)
@@ -818,6 +991,7 @@ extension OctopusTheme.Assets.Icons.Common {
         self.moreActions = moreActions?.prepareForSdkUsage() ?? .Gen.more
         self.activityButton = activityButton?.prepareForSdkUsage() ?? .Gen.activity
         self.listCellNavIndicator = listCellNavIndicator?.prepareForSdkUsage() ?? .Gen.cellNavIndicator
+        self.clearText = clearText?.prepareForSdkUsage() ?? .Gen.clearText
     }
 }
 
@@ -855,6 +1029,8 @@ extension OctopusTheme.Assets.Icons {
     ///   - gamification: Group of icons used for gamification
     ///   - settings: Group of icons used for the settings
     ///   - common: Common icons
+    ///   - screenStates: Illustrations shown on empty lists and failed first loads. Unlike the icons, they keep
+    ///                   their own colors.
     ///   - defaultReport: If set, it will be applied to all report icons (`Content.report` and `Profile.report`)
     ///                    that are not overridden.
     ///

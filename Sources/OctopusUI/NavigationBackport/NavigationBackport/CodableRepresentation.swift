@@ -1,6 +1,6 @@
 import Foundation
 
-public extension NBNavigationPath {
+extension NBNavigationPath {
   /// A codable representation of a navigation path.
   struct CodableRepresentation {
     static let encoder = JSONEncoder()
@@ -39,7 +39,7 @@ extension NBNavigationPath.CodableRepresentation: Encodable {
 
   /// Encodes the representation into the encoder's unkeyed container.
   /// - Parameter encoder: The encoder to use.
-  public func encode(to encoder: Encoder) throws {
+  func encode(to encoder: Encoder) throws {
     var container = encoder.unkeyedContainer()
     for element in elements.reversed() {
       if #available(iOS 14.0, *) {
@@ -67,7 +67,7 @@ extension NBNavigationPath.CodableRepresentation: Encodable {
 }
 
 extension NBNavigationPath.CodableRepresentation: Decodable {
-  public init(from decoder: Decoder) throws {
+  init(from decoder: Decoder) throws {
     var container = try decoder.unkeyedContainer()
     elements = []
     while !container.isAtEnd {
@@ -103,7 +103,7 @@ extension NBNavigationPath.CodableRepresentation: Decodable {
 }
 
 extension NBNavigationPath.CodableRepresentation: Equatable {
-  public static func == (lhs: Self, rhs: Self) -> Bool {
+  static func == (lhs: Self, rhs: Self) -> Bool {
     do {
       let encodedLhs = try encodeExistential(lhs)
       let encodedRhs = try encodeExistential(rhs)

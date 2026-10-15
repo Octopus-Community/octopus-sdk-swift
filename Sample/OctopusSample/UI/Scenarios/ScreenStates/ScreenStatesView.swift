@@ -26,7 +26,7 @@ struct ScreenStatesView: View {
                      "Offline, every list reports rather than spinning, and a list that already has " +
                      "content keeps it and shows a toast instead.")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
 
                 Button(action: { viewModel.goOffline() }) {
                     optionLabel("Act offline", systemImage: "wifi.slash")
@@ -44,12 +44,12 @@ struct ScreenStatesView: View {
                 .accessibilityId("qa-screenStates-clear")
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .sampleCardSurface()
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("SDK currently sees")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
                 Text(viewModel.isOffline ? "No connection" : "A connection (or the device's own)")
                     .font(.footnote)
                 Text("""
@@ -58,12 +58,12 @@ struct ScreenStatesView: View {
                 already has content keeps it and reports through a toast.
                 """)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(SampleTokens.Colors.textSecondary)
                     .padding(.top, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .sampleCardSurface()
 
             Button(action: { presentCommunity = true }) {
                 HStack {
@@ -80,6 +80,7 @@ struct ScreenStatesView: View {
         }
         .padding()
         .navigationBarTitle("Screen states", displayMode: .inline)
+        .dismissedOnPushRouting($presentCommunity)
         .sheet(isPresented: $presentCommunity) {
             OctopusUIView(octopus: octopus)
         }
@@ -87,6 +88,7 @@ struct ScreenStatesView: View {
             // Restore the device's own connectivity so the next scenario boots clean.
             viewModel.clearOverride()
         }
+        .sampleScreenBackground()
         .hostAppFooter()
     }
 

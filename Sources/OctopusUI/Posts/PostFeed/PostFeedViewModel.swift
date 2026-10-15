@@ -268,16 +268,14 @@ class PostFeedViewModel: ObservableObject {
         }
     }
 
-    func vote(pollAnswerId: String, postId: String) -> Bool {
+    /// Casts the vote; returns whether it was cast, so the poll gives its options back otherwise.
+    func vote(pollAnswerId: String, postId: String) async -> Bool {
         guard ensureConnected(.vote) else { return false }
         guard let post = feed.items?.first(where: { $0.id == postId }) else {
             error = .localizationKey("Error.Unknown")
             return false
         }
-        Task {
-            await vote(pollAnswerId: pollAnswerId, post: post)
-        }
-        return true
+        return await vote(pollAnswerId: pollAnswerId, post: post)
     }
 
     func displayClientObject(clientObjectId: String) {
@@ -362,11 +360,12 @@ class PostFeedViewModel: ObservableObject {
         }
     }
 
-    private func vote(pollAnswerId: String, post: Post) async {
+    private func vote(pollAnswerId: String, post: Post) async -> Bool {
         do {
             try await octopus.core.postsRepository.vote(
                 pollAnswerId: pollAnswerId, post: post,
                 parentIsTranslated: translationStore.displayTranslation(for: post.uuid))
+            return true
         } catch {
             switch error {
             case let .validation(argumentError):
@@ -394,6 +393,7 @@ class PostFeedViewModel: ObservableObject {
             case .other:
                 self.error = .localizationKey("Error.Unknown")
             }
+            return false
         }
     }
 

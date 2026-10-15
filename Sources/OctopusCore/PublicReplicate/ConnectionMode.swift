@@ -6,8 +6,6 @@ import Foundation
 
 /// The kind of connection
 public enum ConnectionMode {
-    /// Connection and user management is handled by OctopusSDK
-    case octopus(deepLink: String?)
     /// You provide to OctopusSDK the user and their lifecycle are tight to their lifecycle in your app
     case sso(SSOConfiguration)
 

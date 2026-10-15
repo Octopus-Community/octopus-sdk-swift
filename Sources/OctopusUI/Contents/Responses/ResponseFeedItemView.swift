@@ -27,7 +27,7 @@ struct ResponseFeedItemView: View {
     let deleteResponse: (String) -> Void
     let blockAuthor: (String) -> Void
     let reactionTapped: (ReactionKind?, String) -> Void
-    let displayContentModeration: (String) -> Void
+    let displayContentModeration: (ReportTarget) -> Void
 
     @State private var groupedForAccessibility = true
 

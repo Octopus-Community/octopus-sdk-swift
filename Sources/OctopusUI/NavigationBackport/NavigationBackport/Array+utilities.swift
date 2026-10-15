@@ -1,7 +1,7 @@
 import Foundation
 
 /// Various utilities for pushing and popping.
-public extension Array where Element: NBScreen {
+extension Array where Element: NBScreen {
   /// Pushes a new screen.
   /// - Parameter screen: The screen to push.
   mutating func push(_ screen: Element) {
@@ -52,7 +52,7 @@ public extension Array where Element: NBScreen {
   }
 }
 
-public extension Array where Element: NBScreen & Equatable {
+extension Array where Element: NBScreen & Equatable {
   /// Pops to the topmost (most recently pushed) screen in the stack
   /// equal to the given screen. If no screens are found,
   /// the screens array will be unchanged.
@@ -64,7 +64,7 @@ public extension Array where Element: NBScreen & Equatable {
   }
 }
 
-public extension Array where Element: NBScreen & Identifiable {
+extension Array where Element: NBScreen & Identifiable {
   /// Pops to the topmost (most recently pushed) identifiable screen in the stack
   /// with the given ID. If no screens are found, the screens array will be unchanged.
   /// - Parameter id: The id of the screen to goBack to.
