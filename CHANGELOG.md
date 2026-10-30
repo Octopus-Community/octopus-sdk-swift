@@ -4,6 +4,45 @@ Notable changes to the Octopus iOS SDK, one section per version, most recent fir
 the versions before 1.14.0 lives in the
 [GitHub Releases](https://github.com/Octopus-Community/octopus-sdk-swift/releases).
 
+## 1.15.1 — 2026-10-30
+
+### Fixed
+
+- **Comment and Reply icons stay still when the app comes back to the foreground.** The icons of the
+  Comment and Reply buttons under posts and comments sometimes gave a little bounce when the app
+  returned to the foreground with the community on screen, although nothing had changed. They no
+  longer animate; the Like button keeps its bounce when a member reacts.
+- **Typed text stays readable when the appearance changes.** In the multi-line text fields (post,
+  comment and reply composers, poll options, profile bio), the text already typed kept its
+  light-mode colour when the device switched to dark mode with the field on screen, which made it
+  unreadable on the dark background until the next keystroke. It now follows the appearance at
+  once.
+- **Red icons for Report and Block in the "•••" menus.** When the host app sets a `.tint` above the
+  SDK, the icons of the Report and Block actions of posts, comments, replies and profiles took that
+  tint next to their red title. They are now red like their title.
+- **Apps without the glass effect.** On iOS 26 and later, in an app that opts out of the glass effect
+  (`UIDesignRequiresCompatibility` in its Info.plist), the community screens now draw the opaque
+  navigation bar, pinned tabs and bar buttons of earlier iOS versions instead of a mix of both
+  designs. On every iOS version without the glass effect, the floating Explore Groups button gets a
+  background, so it stays readable over dark content.
+  An app built with Xcode 27 and running on iOS 27 gets the glass effect whatever the key says, and
+  the community screens now follow it there too.
+- **Groups list and profile edition navigation bar in the community background.** Without the glass
+  effect (iOS 16 to 18, or an iOS 26 app that opts out of it), the navigation bar of the groups list and
+  of the profile edition screen turned white once their content scrolled under it, over a custom
+  `background` color. It now takes that background, like the other community screens.
+- **Images zoom from a profile's Comments tab.** Tapping the image of a post or of a comment in a
+  profile's Comments tab did nothing; it now opens the image full screen, like everywhere else.
+- **Repeated images no longer go blank.** When a screen showed the same image more than once, like a
+  post repeated for each of a member's comments in their profile's comments, one of the copies could
+  stay empty for a few seconds.
+- **Bottom margin on devices with a home button.** On iOS 15 and later, when `OctopusHomeScreen`
+  goes down to the bottom edge of its window with no safe area there (a device with a home button
+  and no tab bar below, or a floating iPad window), the SDK adds 16pt to the `bottomSafeAreaInset`
+  you pass, so the "Write a post" button and the profile bubble no longer touch the edge. Nothing
+  changes when the home screen ends above something (a tab bar, a bar of your app, the bottom of a
+  sheet) or above a home indicator.
+
 ## 1.15.0 — 2026-10-15
 
 ### Removed

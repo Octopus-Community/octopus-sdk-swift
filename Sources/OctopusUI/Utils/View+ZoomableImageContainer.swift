@@ -41,7 +41,7 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
                     item: $zoomableImageInfo) {
                         ZoomableImageView(
                             image: zoomableImageInfo != nil ? usableZoomableImageInfo.image : usableZoomableImageInfo.transitionImage ?? usableZoomableImageInfo.image,
-                            identifier: usableZoomableImageInfo.url,
+                            identifier: usableZoomableImageInfo.source,
                             isDisplayed: zoomableImageInfo != nil)
                     }
                     .transition(.identity)
@@ -64,7 +64,7 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
             withAnimation(.spring(duration: zoomAnimationDuration)) {
                 // display the view with the transition image
                 usableZoomableImageInfo = ZoomableImageInfo(
-                    url: zoomableImageInfo.url,
+                    source: zoomableImageInfo.source,
                     image: zoomableImageInfo.transitionImage ?? zoomableImageInfo.image)
                 if zoomableImageInfo.transitionImage != nil {
                     // dispatch the display the full size image
@@ -100,7 +100,7 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
                 $0.toolbarColorScheme(colorScheme, for: .navigationBar)
             } else if defaultNavigationBarOpaque {
                 $0
-            } else if #available(iOS 26.0, *), !defaultNavigationBarPrimaryColor {
+            } else if #available(iOS 26.0, *), GlassEffect.isAvailable, !defaultNavigationBarPrimaryColor {
                 $0
                     .toolbarBackground(.hidden, for: .navigationBar)
             } else if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
@@ -152,7 +152,7 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
                     .font(theme.fonts.navBarItem)
                     .modify {
 #if compiler(>=6.2)
-                        if #available(iOS 26.0, *) {
+                        if #available(iOS 26.0, *), GlassEffect.isAvailable {
                             $0
                         } else {
                             $0.padding(.leading)

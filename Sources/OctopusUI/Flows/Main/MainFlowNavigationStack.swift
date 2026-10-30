@@ -13,6 +13,7 @@ struct MainFlowNavigationStack<RootView: View>: View {
 
     let octopus: OctopusSDK
     let bottomSafeAreaInset: CGFloat
+    let keepsMarginFromScreenEdge: Bool
     let navigationMode: OctopusNavigationMode
     @Compat.StateObject private var mainFlowPath: MainFlowPath
     @ViewBuilder let rootView: RootView
@@ -20,11 +21,13 @@ struct MainFlowNavigationStack<RootView: View>: View {
     @State private var bottomInset: CGFloat
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, bottomSafeAreaInset: CGFloat = 0,
+         keepsMarginFromScreenEdge: Bool = false,
          navigationMode: OctopusNavigationMode = .automatic,
          @ViewBuilder _ rootView: () -> RootView) {
         self.octopus = octopus
         _mainFlowPath = Compat.StateObject(wrappedValue: mainFlowPath)
         self.bottomSafeAreaInset = bottomSafeAreaInset
+        self.keepsMarginFromScreenEdge = keepsMarginFromScreenEdge
         self.navigationMode = navigationMode
         self.rootView = rootView()
         self._bottomInset = .init(initialValue: bottomSafeAreaInset)
@@ -108,7 +111,8 @@ struct MainFlowNavigationStack<RootView: View>: View {
                             ReportExplanationView(octopus: octopus)
                         }
                     }
-                    .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
+                    .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset,
+                                                 keepsMarginFromScreenEdge: keepsMarginFromScreenEdge)
                     .hideBackButtonTitle()
                 }
 

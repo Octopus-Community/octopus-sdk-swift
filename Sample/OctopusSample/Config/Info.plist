@@ -41,6 +41,10 @@
 	<string>$(OCTOPUS_SSO_NO_MANAGED_FIELDS_NO_FORCED_LOGIN_API_KEY)</string>
 	<key>OCTOPUS_SSO_SOME_MANAGED_FIELDS_FORCED_LOGIN_API_KEY</key>
 	<string>$(OCTOPUS_SSO_SOME_MANAGED_FIELDS_FORCED_LOGIN_API_KEY)</string>
+#ifdef OCTOPUS_DESIGN_REQUIRES_COMPATIBILITY_YES
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
+#endif
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -162,6 +162,7 @@ struct CurrentUserProfileSummaryView: View {
         if let commentsViewModel = viewModel.commentsViewModel {
             ProfileCommentsListView(
                 viewModel: commentsViewModel,
+                zoomableImageInfo: $zoomableImageInfo,
                 displayPostDetail: {
                     if !$1 && !$2 && $3 == nil {
                         trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
@@ -271,7 +272,7 @@ private struct ContentView<PostsView: View, NotificationsView: View, CommentsVie
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
-                // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
+                // When the glass effect is available, the navigation bar uses its default translucent (glass) behavior.
                 CurrentUserProfileContentView(profile: profile,
                                    gamificationConfig: gamificationConfig,
                                    displayAccountAge: displayAccountAge,

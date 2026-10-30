@@ -277,7 +277,8 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, C
                 .constrainedContentColumn()
             }
             // Match the feed/group scroll views so the scroll owns the full region, including the
-            // space behind the nav bar — the content then bleeds under the iOS 26 translucent bar.
+            // space behind the nav bar — the content then bleeds under the translucent bar when the glass
+            // effect is available.
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .coordinateSpace(name: scrollViewCoordinateSpace)
             .postsVisibilityScrollView()
@@ -290,8 +291,8 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, C
     @ViewBuilder
     private var stickyTabHeader: some View {
         if displayStickyHeader {
-            // Instagram-style glass "pills" that float over the blurred content scrolling under the
-            // translucent nav bar.
+            // Instagram-style "pills": with the glass effect they float over the blurred content scrolling
+            // under the translucent nav bar; without it they sit on an opaque bar.
             ProfileStickyTabsHeader(tabs: tabs, selectedTab: $selectedTab, scrollOffset: $tabsScrollOffset)
                 .transition(.opacity)
         }

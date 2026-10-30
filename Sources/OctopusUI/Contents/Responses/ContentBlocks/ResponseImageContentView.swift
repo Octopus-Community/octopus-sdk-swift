@@ -11,9 +11,13 @@ struct ResponseImageContentView: View {
     let image: ImageMedia
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
+    /// Tells this occurrence of the image apart from another one of the same image on the screen
+    @State private var imageOccurrence = UUID()
+
     private let minAspectRatio: CGFloat = 4 / 5
 
     var body: some View {
+        let source = ZoomableImageSourceID(url: image.url, occurrence: imageOccurrence)
         AsyncCachedImage(
             url: image.url, cache: .content,
             croppingRatio: minAspectRatio,
@@ -29,13 +33,7 @@ struct ResponseImageContentView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity)
-                    .modify {
-                        if zoomableImageInfo?.url != image.url {
-                            $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
-                        } else {
-                            $0
-                        }
-                    }
+                    .zoomableImageSource(source, zoomed: zoomableImageInfo)
                     .modify {
                         if #available(iOS 15.0, *) {
                             $0.overlay {
@@ -43,7 +41,7 @@ struct ResponseImageContentView: View {
                                     .onTapGesture {
                                         withAnimation {
                                             zoomableImageInfo = .init(
-                                                url: image.url,
+                                                source: source,
                                                 image: Image(uiImage: cachedImage.fullSizeImage),
                                                 transitionImage: Image(uiImage: cachedImage.ratioImage))
                                         }
@@ -53,7 +51,7 @@ struct ResponseImageContentView: View {
                             $0.onTapGesture {
                                 withAnimation {
                                     zoomableImageInfo = .init(
-                                        url: image.url,
+                                        source: source,
                                         image: Image(uiImage: cachedImage.fullSizeImage))
                                 }
                             }

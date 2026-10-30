@@ -189,7 +189,7 @@ private struct ContentView<PostsView: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
+            // When the glass effect is available, the navigation bar uses its default translucent (glass) behavior.
             Compat.ScrollView(
                 showIndicators: false,
                 scrollToTop: $scrollToTop,

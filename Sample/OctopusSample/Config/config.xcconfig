@@ -1,10 +1,22 @@
+// YES launches the sample without the glass effect (UIDesignRequiresCompatibility in the Info.plist), to check
+// how the SDK draws its screens in an app that opted out of it on iOS 26 and later. Declared before the
+// include so secrets.xcconfig can override it; xcodebuild can also pass it.
+OCTOPUS_DESIGN_REQUIRES_COMPATIBILITY = NO
+
 #include "secrets.xcconfig"
 
 // Version of the app
-APP_VERSION = 1.15.0
+APP_VERSION = 1.15.1
 // Default build number. Overridden by build system
 BUILD_NUMBER = 0
 
 
 CURRENT_PROJECT_VERSION = $BUILD_NUMBER
 MARKETING_VERSION = $APP_VERSION
+
+// The Info.plist is preprocessed so it can write UIDesignRequiresCompatibility as a real boolean, which a
+// build setting substitution cannot do. -traditional keeps the preprocessor from reading the `//` of the
+// DTD URL as a comment.
+INFOPLIST_PREPROCESS = YES
+INFOPLIST_OTHER_PREPROCESSOR_FLAGS = -traditional
+INFOPLIST_PREPROCESSOR_DEFINITIONS = OCTOPUS_DESIGN_REQUIRES_COMPATIBILITY_$(OCTOPUS_DESIGN_REQUIRES_COMPATIBILITY)=1

@@ -39,6 +39,7 @@ struct EditProfileView: View {
         .largeScreenMarginBackground()
         .navigationBarBackButtonHidden(viewModel.hasChanges)
         .navigationBarTitle(Text("Common.Edit", bundle: .module), displayMode: .inline)
+        .communityNavigationBarBackground()
         .toolbar(leading: leadingBarItem, trailing: trailingBarItem,
                  trailingSharedBackgroundVisibility: .hidden)
         .errorAlert(viewModel.$alertError)

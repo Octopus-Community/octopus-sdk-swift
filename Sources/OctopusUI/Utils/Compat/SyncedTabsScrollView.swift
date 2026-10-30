@@ -7,8 +7,8 @@ import SwiftUI
 
 /// A horizontally scrolling tab row whose scroll offset is shared with its peer row.
 ///
-/// The profile screens show the same tabs twice: inline in the scrolled content, and pinned as glass
-/// pills once the header sticks. A row that does not fit keeps its labels at their natural width and
+/// The profile screens show the same tabs twice: inline in the scrolled content, and pinned as pills
+/// once the header sticks. A row that does not fit keeps its labels at their natural width and
 /// scrolls rather than squeezing them, so the two rows must scroll together — otherwise the pills and
 /// the tabs they cover drift apart.
 ///

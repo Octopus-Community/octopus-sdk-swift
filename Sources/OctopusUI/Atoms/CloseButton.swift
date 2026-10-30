@@ -13,7 +13,7 @@ struct CloseButton: View {
 
     var body: some View {
 #if compiler(>=6.2)
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, *), GlassEffect.isAvailable {
             Button(action: action) {
                 IconImage(theme.assets.icons.common.close)
                     .font(theme.fonts.navBarItem)

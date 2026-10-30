@@ -18,6 +18,9 @@ struct PostMediaContentView: View {
     /// (e.g. standalone previews).
     let visiblePost: VisiblePost?
 
+    /// Tells this occurrence of the image apart from another one of the same image on the screen
+    @State private var imageOccurrence = UUID()
+
     private let minAspectRatio: CGFloat = 4 / 5
 
     var body: some View {
@@ -31,6 +34,7 @@ struct PostMediaContentView: View {
 
     @ViewBuilder
     private func imageView(_ image: ImageMedia) -> some View {
+        let source = ZoomableImageSourceID(url: image.url, occurrence: imageOccurrence)
         AsyncCachedImage(
             url: image.url, cache: .content,
             croppingRatio: minAspectRatio,
@@ -46,13 +50,7 @@ struct PostMediaContentView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity)
-                    .modify {
-                        if zoomableImageInfo?.url != image.url {
-                            $0.namespacedMatchedGeometryEffect(id: image.url, isSource: true)
-                        } else {
-                            $0
-                        }
-                    }
+                    .zoomableImageSource(source, zoomed: zoomableImageInfo)
                     .modify {
                         if #available(iOS 15.0, *) {
                             // put the tap in an overlay because it seems that the image touch area is not
@@ -63,7 +61,7 @@ struct PostMediaContentView: View {
                                     .onTapGesture {
                                         withAnimation {
                                             zoomableImageInfo = .init(
-                                                url: image.url,
+                                                source: source,
                                                 image: Image(uiImage: cachedImage.fullSizeImage),
                                                 transitionImage: Image(uiImage: cachedImage.ratioImage))
                                         }
@@ -73,7 +71,7 @@ struct PostMediaContentView: View {
                             $0.onTapGesture {
                                 withAnimation {
                                     zoomableImageInfo = .init(
-                                        url: image.url,
+                                        source: source,
                                         image: Image(uiImage: cachedImage.fullSizeImage))
                                 }
                             }

@@ -18,7 +18,6 @@ struct CreateChildInteractionView: View {
     let text: LocalizedStringKey
     let kind: Kind
 
-    @State private var animate = false
     @Compat.ScaledMetric(relativeTo: .caption1) private var imageSize: CGFloat = 24
 
     private var normalFont: Font { theme.fonts.caption1 }
@@ -35,9 +34,9 @@ struct CreateChildInteractionView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: imageSize, height: imageSize)
-                .scaleEffect(animate ? 1.4 : 1.0)
-                .opacity(animate ? 0.9 : 1.0)
-                .animation(.spring(response: 0.2, dampingFraction: 0.3), value: animate)
+                // No bounce here, unlike the like button: the icon is the theme's and never changes on a tap, so no
+                // member action can trigger one. A bounce tied to the image only ever fired without one, as when
+                // the app came back to the foreground.
                 .accessibilityHidden(true)
 
             Text(text, bundle: .module)
@@ -45,11 +44,5 @@ struct CreateChildInteractionView: View {
         }
         .foregroundColor(theme.colors.gray700)
         .font(normalFont)
-        .onValueChanged(of: image) { _ in
-            animate = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                animate = false
-            }
-        }
     }
 }

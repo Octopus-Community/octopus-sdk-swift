@@ -65,6 +65,7 @@ struct GroupListView: View {
             retryFirstLoad: viewModel.retryFirstLoad
         )
         .navigationBarTitle(Text(navBarTitleKey, bundle: .module), displayMode: .inline)
+        .communityNavigationBarBackground()
         .toastContainer(octopus: viewModel.octopus,
                         retryFailedFetch: { Task { await viewModel.refresh() } })
         .modify {
@@ -106,9 +107,9 @@ private struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // On iOS 26 the navigation bar uses its default translucent (glass) behavior, matching
-            // the other screens of the SDK (product confirmed the group list should not
-            // opt out of the iOS 26 nav bar style).
+            // When the glass effect is available, the navigation bar uses its default translucent (glass)
+            // behavior, matching the other screens of the SDK (product confirmed the group list should
+            // not opt out of the iOS 26 nav bar style).
             GeometryReader { geometry in
                 Compat.ScrollView(refreshAction: refresh) {
                     VStack(alignment: .leading, spacing: 0) {

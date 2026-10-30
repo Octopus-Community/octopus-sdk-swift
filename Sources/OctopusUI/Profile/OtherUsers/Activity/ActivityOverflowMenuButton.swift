@@ -93,10 +93,10 @@ struct ActivityOverflowMenuButton: View {
                 menuLabel
             })
             .modify {
-                // Below iOS 26, `.plain` keeps the bare icon look; on iOS 26 the default style lets
-                // the toolbar give the button the same circular glass background as the profile
-                // screens' nav-bar buttons (PO feedback, 2026-07-17).
-                if #unavailable(iOS 26.0) {
+                // Without the glass effect, `.plain` keeps the bare icon look; with it, the default
+                // style lets the toolbar give the button the same circular glass background as the
+                // profile screens' nav-bar buttons (PO feedback, 2026-07-17).
+                if !GlassEffect.isAvailable {
                     $0.buttonStyle(.plain)
                 } else { $0 }
             }
@@ -137,12 +137,12 @@ struct ActivityOverflowMenuButton: View {
         return ActionSheet(title: Text("Activity.Screen.Title", bundle: .module), buttons: buttons)
     }
 
-    /// The nav-bar label. On iOS 26 the `Label` inside a toolbar gets the system circular glass
-    /// background (same treatment as the profile screens' nav-bar buttons — PO feedback,
-    /// 2026-07-17); below, the plain sized icon keeps the legacy look.
+    /// The nav-bar label. With the glass effect, the `Label` inside a toolbar gets the system circular
+    /// glass background (same treatment as the profile screens' nav-bar buttons — PO feedback,
+    /// 2026-07-17); without it, the plain sized icon keeps the legacy look.
     @ViewBuilder
     private var menuLabel: some View {
-        if #available(iOS 26.0, *) {
+        if #available(iOS 26.0, *), GlassEffect.isAvailable {
             Label(title: { Text("Accessibility.Common.More", bundle: .module) },
                   icon: { Image(uiImage: theme.assets.icons.common.moreActions) })
                 .accessibilityLabelInBundle("Accessibility.Common.More")

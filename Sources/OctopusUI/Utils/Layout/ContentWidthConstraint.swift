@@ -58,7 +58,7 @@ extension View {
     ///
     /// - Parameter opaqueBackground: give the capped column an opaque background so it reads as a card
     ///   over the margin background. Pass `false` when a translucent background must show through
-    ///   (e.g. the profile sticky header's glass on iOS 26).
+    ///   (e.g. the profile sticky header's glass, when the glass effect is available).
     func constrainedContentColumn(opaqueBackground: Bool = true) -> some View {
         modifier(ConstrainedContentColumnModifier(opaqueBackground: opaqueBackground))
     }

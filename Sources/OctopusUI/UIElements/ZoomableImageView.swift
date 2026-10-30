@@ -4,19 +4,52 @@
 
 import SwiftUI
 
+/// Identifies one occurrence of a zoomable image on screen, used as its matched geometry id.
+///
+/// The URL alone is not enough: a screen can draw the same image several times (a post shown once per
+/// comment in a profile's comments), and two matched geometry sources sharing an id give undefined results —
+/// SwiftUI may draw one copy at the other's place and leave an empty frame. Each occurrence passes its own
+/// `occurrence` (a `UUID` kept in its `@State`).
+struct ZoomableImageSourceID: Hashable {
+    let url: URL
+    let occurrence: UUID
+
+    /// Whether this occurrence is the one the user zoomed into. That occurrence stops being the matched
+    /// geometry source while the zoomed image is displayed, the others stay sources of their own id.
+    func isZoomed(in zoomableImageInfo: ZoomableImageInfo?) -> Bool {
+        zoomableImageInfo?.source == self
+    }
+}
+
 /// Information needed for a zoomable image
 /// These info are used to display it and for the animation
 struct ZoomableImageInfo: Equatable {
-    let url: URL
+    /// The occurrence the user tapped, the zoomed image animates from and back to it
+    let source: ZoomableImageSourceID
     let image: Image
     /// Image that will be used during transition between Image and Zoomable image.
     /// Used when the image and the zoomed image do not have the same ratio
     let transitionImage: Image?
 
-    init(url: URL, image: Image, transitionImage: Image? = nil) {
-        self.url = url
+    init(source: ZoomableImageSourceID, image: Image, transitionImage: Image? = nil) {
+        self.source = source
         self.image = image
         self.transitionImage = transitionImage
+    }
+}
+
+extension View {
+    /// Makes this view the matched geometry source of the image occurrence `source`, except while that
+    /// occurrence is the one displayed zoomed.
+    func zoomableImageSource(_ source: ZoomableImageSourceID, zoomed zoomableImageInfo: ZoomableImageInfo?)
+    -> some View {
+        modify {
+            if !source.isZoomed(in: zoomableImageInfo) {
+                $0.namespacedMatchedGeometryEffect(id: source, isSource: true)
+            } else {
+                $0
+            }
+        }
     }
 }
 
@@ -25,7 +58,7 @@ struct ZoomableImageInfo: Equatable {
 /// An identifier can be passed to be used in a matched geometry effet
 struct ZoomableImageView: View {
     let image: Image
-    let identifier: URL
+    let identifier: ZoomableImageSourceID
     let isDisplayed: Bool
 
     @State private var scale: CGFloat = 1
