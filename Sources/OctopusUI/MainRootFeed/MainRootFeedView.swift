@@ -99,21 +99,26 @@ struct MainRootFeedView: View {
             .font(theme.fonts.body2)
             .foregroundColor(theme.colors.gray900)
         }
-        // iOS 26: native glass button (correct bounds, no halo). Below: the existing outline pill.
+        // With the glass effect: native glass button (correct bounds, no halo). Without it: the outline pill.
         .modify {
 #if compiler(>=6.2)
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, *), GlassEffect.isAvailable {
                 $0.buttonStyle(.glass)
             } else {
-                $0.buttonStyle(OctopusButtonStyle(.mid, style: .outline,
-                                                  hasLeadingIcon: true, externalVerticalPadding: 5))
+                $0.buttonStyle(exploreGroupsOutlineStyle)
             }
 #else
-            $0.buttonStyle(OctopusButtonStyle(.mid, style: .outline,
-                                              hasLeadingIcon: true, externalVerticalPadding: 5))
+            $0.buttonStyle(exploreGroupsOutlineStyle)
 #endif
         }
         .padding(.horizontal, 16)
+    }
+
+    /// The button floats over the feed, so a transparent pill vanished over a dark post: it gets the
+    /// community background.
+    private var exploreGroupsOutlineStyle: OctopusButtonStyle {
+        OctopusButtonStyle(.mid, style: .outline, backgroundColor: theme.colors.background,
+                           hasLeadingIcon: true, externalVerticalPadding: 5)
     }
 
     @ViewBuilder
@@ -211,7 +216,7 @@ struct MainRootFeedView: View {
             }
             .modify {
 #if compiler(>=6.2)
-                if #available(iOS 26.0, *), coloredNavBar {
+                if #available(iOS 26.0, *), GlassEffect.isAvailable, coloredNavBar {
                     $0.glassEffect(.regular.tint(theme.colors.primary))
                 } else {
                     $0

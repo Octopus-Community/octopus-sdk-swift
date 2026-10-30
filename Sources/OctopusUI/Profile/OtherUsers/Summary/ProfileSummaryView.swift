@@ -133,6 +133,7 @@ struct ProfileSummaryView: View {
         if let commentsViewModel = viewModel.commentsViewModel {
             ProfileCommentsListView(
                 viewModel: commentsViewModel,
+                zoomableImageInfo: $zoomableImageInfo,
                 displayPostDetail: {
                     if !$1 && !$2 && $3 == nil {
                         trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
@@ -198,7 +199,7 @@ struct ProfileSummaryView: View {
                     }
                 }
             }, label: {
-                if #available(iOS 26.0, *) {
+                if GlassEffect.isAvailable {
                     Label(title: { Text("Settings.Community.Title", bundle: .module) },
                           icon: { Image(uiImage: theme.assets.icons.common.moreActions) })
                 } else {
@@ -242,7 +243,7 @@ private struct ContentView<CommentsView: View, PostsView: View>: View {
     var body: some View {
         if let profile {
             VStack(spacing: 0) {
-                // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
+                // When the glass effect is available, the navigation bar uses its default translucent (glass) behavior.
                 ProfileContentView(
                     profile: profile,
                     displayAccountAge: displayAccountAge,
@@ -377,7 +378,8 @@ private struct ProfileContentView<CommentsView: View, PostsView: View>: View {
             .constrainedContentColumn()
         }
         // Match the feed/group scroll views so the scroll owns the full region, including the space
-        // behind the nav bar — the content then bleeds under the iOS 26 translucent (glass) bar.
+        // behind the nav bar — the content then bleeds under the translucent (glass) bar when the glass
+        // effect is available.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .coordinateSpace(name: scrollViewCoordinateSpace)
         .postsVisibilityScrollView()
@@ -399,8 +401,8 @@ private struct ProfileContentView<CommentsView: View, PostsView: View>: View {
         showsCommentsTab ? ["Profile.Tabs.Posts", "Profile.Tabs.Comments"] : ["Profile.Tabs.Posts"]
     }
 
-    // Pinned tab header (mirrors CurrentUserProfileContentView): Instagram-style glass "pills" that
-    // float over the blurred content scrolling under the translucent nav bar.
+    // Pinned tab header (mirrors CurrentUserProfileContentView): Instagram-style "pills" that, with the
+    // glass effect, float over the blurred content scrolling under the translucent nav bar.
     @ViewBuilder
     private var stickyTabHeader: some View {
         if displayStickyHeader {

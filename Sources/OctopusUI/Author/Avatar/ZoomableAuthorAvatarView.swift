@@ -11,6 +11,8 @@ struct ZoomableAuthorAvatarView: View {
     let avatar: Author.Avatar?
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     @State private var width: CGFloat = 0
+    /// Matched geometry occurrence of this avatar, same id scheme as post and comment images
+    @State private var imageOccurrence = UUID()
 
     var body: some View {
         switch avatar {
@@ -25,22 +27,17 @@ struct ZoomableAuthorAvatarView: View {
     }
 
     private func zoomableImage(url: URL, placeholder: Author.Avatar) -> some View {
-        AsyncCachedImage(url: url, cache: .profile, placeholder: {
+        let source = ZoomableImageSourceID(url: url, occurrence: imageOccurrence)
+        return AsyncCachedImage(url: url, cache: .profile, placeholder: {
             AuthorAvatarView(avatar: placeholder)
         }, content: { cachedImage in
             Image(uiImage: cachedImage.fullSizeImage)
                 .resizable()
                 .scaledToFill()
-                .modify {
-                    if zoomableImageInfo?.url != url {
-                        $0.namespacedMatchedGeometryEffect(id: url, isSource: true)
-                    } else {
-                        $0
-                    }
-                }
+                .zoomableImageSource(source, zoomed: zoomableImageInfo)
                 .onTapGesture {
                     withAnimation {
-                        zoomableImageInfo = .init(url: url, image: Image(uiImage: cachedImage.fullSizeImage))
+                        zoomableImageInfo = .init(source: source, image: Image(uiImage: cachedImage.fullSizeImage))
                     }
                 }
         })

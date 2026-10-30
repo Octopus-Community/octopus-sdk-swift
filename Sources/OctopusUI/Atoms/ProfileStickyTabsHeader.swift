@@ -5,10 +5,11 @@
 import SwiftUI
 
 /// The pinned (scrolled) profile tab selector, rendered as Instagram-style floating "pills":
-/// each category is a capsule that, on iOS 26, uses liquid glass — tinted for the selected one —
-/// so the pills float over the blurred content scrolling under the translucent nav bar. Pre-iOS 26
-/// falls back to solid capsules on an opaque bar. The non-scrolled state keeps the inline
-/// `CustomSegmentedControl` (underline style); these pills appear only once the header sticks.
+/// each category is a capsule that, when the glass effect is available (``GlassEffect``), uses liquid glass —
+/// tinted for the selected one — so the pills float over the blurred content scrolling under the translucent
+/// nav bar. Without it (before iOS 26, or in an app that opted out) the pills are solid capsules on an
+/// opaque bar. The non-scrolled state keeps the inline `CustomSegmentedControl` (underline style); these
+/// pills appear only once the header sticks.
 ///
 /// The pills are built on the same ``ProfileTabsLayout`` box as the inline selector — same paddings,
 /// same spacing, same font — and share its scroll offset, so each pill lands exactly on the tab it
@@ -33,7 +34,7 @@ struct ProfileStickyTabsHeader: View {
         }
         .modify {
 #if compiler(>=6.2)
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, *), GlassEffect.isAvailable {
                 // No opaque bar: the pills' own glass plus the translucent nav bar above give the
                 // Instagram floating-glass look directly over the blurred content.
                 $0.constrainedContentColumn(opaqueBackground: false)
@@ -66,7 +67,7 @@ struct ProfileStickyTabsHeader: View {
             .contentShape(Capsule())
             .modify {
 #if compiler(>=6.2)
-                if #available(iOS 26.0, *) {
+                if #available(iOS 26.0, *), GlassEffect.isAvailable {
                     if isSelected {
                         $0.glassEffect(.regular.tint(theme.colors.primary), in: Capsule())
                     } else {

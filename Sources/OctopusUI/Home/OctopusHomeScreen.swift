@@ -50,7 +50,10 @@ public struct OctopusHomeScreen: View {
     /// Constructor of the `OctopusHomeScreen`.
     /// - Parameters:
     ///    - octopus: The Octopus SDK
-    ///    - bottomSafeAreaInset: the bottom safe area inset. Default is 0. Only used on iOS 15+.
+    ///    - bottomSafeAreaInset: the bottom safe area inset. Default is 0. Only used on iOS 15+. When the screen goes
+    ///                           down to the bottom edge of its window with no safe area there (a device with a
+    ///                           home button and no tab bar below), 16pt are added to it, so that its buttons do
+    ///                           not touch the edge.
     ///    - mainFeedNavBarTitle: the title displayed in the navigation on the main feed screen (the feed that is
     ///                           displayed when you open the Octopus UI without specifying a postId).
     ///                           The content is either `.logo` to display the logo you passed in the Theme,
@@ -125,7 +128,8 @@ public struct OctopusHomeScreen: View {
 
     public var body: some View {
         MainFlowNavigationStack(octopus: octopus, mainFlowPath: viewModel.mainFlowPath,
-                                bottomSafeAreaInset: bottomSafeAreaInset, navigationMode: navigationMode) {
+                                bottomSafeAreaInset: bottomSafeAreaInset, keepsMarginFromScreenEdge: true,
+                                navigationMode: navigationMode) {
             if #available(iOS 14.0, *) {
                 Group {
                     if viewModel.displayCommunityAccessDenied {
@@ -186,7 +190,8 @@ public struct OctopusHomeScreen: View {
                         }
                     }
                 }
-                .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset)
+                .insetableMainNavigationView(bottomSafeAreaInset: bottomSafeAreaInset,
+                                             keepsMarginFromScreenEdge: true)
                 .onAppear {
                     if presentationMode.wrappedValue.isPresented && !isPresentedModally {
                         Logger.general.warning(
@@ -311,7 +316,9 @@ extension OctopusHomeScreen {
     /// Constructor of the `OctopusHomeScreen`.
     /// - Parameters:
     ///    - octopus: The Octopus SDK
-    ///    - bottomSafeAreaInset: the bottom safe area inset. Default is 0. Only used on iOS 15+.
+    ///    - bottomSafeAreaInset: the bottom safe area inset. Default is 0. Only used on iOS 15+. When the screen goes
+    ///      down to the bottom edge of its window with no safe area there (a device with a home button and no tab bar
+    ///      below), 16pt are added to it, so that its buttons do not touch the edge.
     ///    - mainFeedNavBarTitle: the title displayed in the navigation on the main feed screen.
     ///    - mainFeedColoredNavBar: whether the primary color should be used on the nav bar.
     ///    - postId: the id of the post to be directly displayed. If nil, post feed will be displayed.

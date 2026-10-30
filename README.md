@@ -37,7 +37,7 @@ comments, reactions, profiles and notifications — as native SwiftUI screens th
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Octopus-Community/octopus-sdk-swift.git", from: "1.15.0"),
+    .package(url: "https://github.com/Octopus-Community/octopus-sdk-swift.git", from: "1.15.1"),
 ],
 targets: [
     .target(name: "MyApp", dependencies: [

@@ -8,7 +8,7 @@ import SwiftUI
 /// The box the profile / activity tab rows are built on.
 ///
 /// The inline selector (``CustomSegmentedControl``, underline style) and the pinned header
-/// (``ProfileStickyTabsHeader``, glass pills) are two different renderings of the *same* row: same
+/// (``ProfileStickyTabsHeader``, pills) are two different renderings of the *same* row: same
 /// row padding, same inter-tab spacing, same per-tab padding, same font metrics. Sharing the box is
 /// what makes the two rows land on the exact same positions, so the pinned pills sit right on top of
 /// the tabs they replace when the header sticks.

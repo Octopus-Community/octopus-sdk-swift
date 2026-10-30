@@ -297,7 +297,7 @@ struct PostDetailView: View {
                     }
                 }
             }, label: {
-                if #available(iOS 26.0, *) {
+                if GlassEffect.isAvailable {
                     Label(title: { Text("Accessibility.Common.More", bundle: .module) },
                           icon: { Image(uiImage: theme.assets.icons.common.moreActions) })
                 } else {
@@ -360,7 +360,7 @@ private struct ContentView: View {
     var body: some View {
         VStack(spacing: 0) {
 #if compiler(>=6.2)
-            // On iOS 26 the navigation bar uses its default translucent (glass) behavior.
+            // When the glass effect is available, the navigation bar uses its default translucent (glass) behavior.
             // The near-invisible top spacer is kept only for pre-iOS-16 scroll behavior.
             if #unavailable(iOS 16.0) {
                 Color.white.opacity(0.0001)

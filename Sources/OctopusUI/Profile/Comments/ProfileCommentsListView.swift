@@ -31,13 +31,17 @@ struct ProfileCommentsListView: View {
     /// scrolling to a specific reply (`replyToScrollTo`).
     let displayCommentDetail: (_ commentId: String, _ reply: Bool, _ replyToScrollTo: String?) -> Void
 
-    @State private var zoomableImageInfo: ZoomableImageInfo?
+    /// The hosting screen's zoom state: only the screen's `zoomableImageContainer` displays the tapped
+    /// image, so the tab writes to it rather than to a state of its own that nothing would read.
+    @Binding private var zoomableImageInfo: ZoomableImageInfo?
 
     init(viewModel: ProfileCommentsListViewModel,
+         zoomableImageInfo: Binding<ZoomableImageInfo?>,
          displayPostDetail: @escaping (_ postId: String, _ comment: Bool, _ scrollToMostRecentComment: Bool,
                                        _ commentToScrollTo: String?, _ hasFeaturedComment: Bool) -> Void,
          displayCommentDetail: @escaping (_ commentId: String, _ reply: Bool, _ replyToScrollTo: String?) -> Void) {
         _viewModel = .init(wrappedValue: viewModel)
+        _zoomableImageInfo = zoomableImageInfo
         self.displayPostDetail = displayPostDetail
         self.displayCommentDetail = displayCommentDetail
     }

@@ -214,6 +214,7 @@ struct ActivityView: View {
         if let commentsViewModel = viewModel.commentsViewModel {
             ProfileCommentsListView(
                 viewModel: commentsViewModel,
+                zoomableImageInfo: $zoomableImageInfo,
                 displayPostDetail: {
                     if !$1 && !$2 && $3 == nil {
                         trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
@@ -401,8 +402,8 @@ private struct OtherUserPostsContainerView<CommentsView: View, PostsView: View>:
             )
     }
 
-    /// Pinned tab header once the selector scrolls off: the same Instagram-style glass "pills" as the
-    /// other profile screens.
+    /// Pinned tab header once the selector scrolls off: the same Instagram-style "pills" as the other
+    /// profile screens (see ``ProfileStickyTabsHeader`` for their rendering with and without glass).
     @ViewBuilder
     private var stickyTabHeader: some View {
         if showsCommentsTab, displayStickyHeader {
@@ -446,7 +447,7 @@ private struct ConnectedUserActivityContentView: View {
     var body: some View {
         VStack(spacing: 0) {
             // The tabs live inside the scroll so they scroll up with the content; once they reach the top
-            // they are replaced by the floating glass "pills" overlay — the same animation as the profile
+            // they are replaced by the floating "pills" overlay — the same animation as the profile
             // summary (`CurrentUserProfileContentView`).
             Compat.ScrollView(refreshAction: refresh) {
                 VStack(spacing: 0) {
@@ -482,8 +483,8 @@ private struct ConnectedUserActivityContentView: View {
     @ViewBuilder
     private var stickyTabHeader: some View {
         if displayStickyHeader {
-            // Instagram-style glass "pills" floating over the blurred content — matches the profile
-            // summary's scrolled-tabs animation.
+            // Instagram-style "pills" (glass over the blurred content when the glass effect is
+            // available) — matches the profile summary's scrolled-tabs animation.
             ProfileStickyTabsHeader(tabs: tabs, selectedTab: $selectedTab, scrollOffset: $tabsScrollOffset)
                 .transition(.opacity)
         }
@@ -499,6 +500,7 @@ private struct ConnectedUserActivityContentView: View {
             if let commentsViewModel {
                 ProfileCommentsListView(
                     viewModel: commentsViewModel,
+                    zoomableImageInfo: $zoomableImageInfo,
                     displayPostDetail: {
                         if !$1 && !$2 && $3 == nil {
                             trackingApi.emit(event: .postClicked(.init(postId: $0, coreSource: .profile)))
