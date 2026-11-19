@@ -12,8 +12,12 @@ public extension Validators {
             case tooLong
         }
 
-        public static let minTextLength = 10
+        /// A post text has no minimum beyond one visible character: a blank text (empty or whitespace only) is
+        /// `.empty`, any other text is long enough.
+        public static let minTextLength = 1
         public static let maxTextLength = 5000
+        /// The maximum number of images a post can carry.
+        public static let maxImageCount = 10
 
         public static var minSize: CGFloat { Picture.minSize }
         public static var maxRatio: CGFloat { Picture.maxRatio }
@@ -30,7 +34,7 @@ public extension Validators {
 
         /// - Parameters:
         ///   - hasPoll: whether the post carries a poll, with or without an image. Such a post is exempt from
-        ///     the minimum text length.
+        ///     the minimum text length, which is one character for every post.
         ///   - hasImage: whether the post carries an image.
         ///   - textRequired: the community setting. When `false`, a post with an image may have no text: a blank
         ///     text (empty or whitespace only) is then valid. Any other text follows the usual length rules.
@@ -39,7 +43,7 @@ public extension Validators {
             if canOmitText(text, hasImage: hasImage, textRequired: textRequired) {
                 return .success(Void())
             }
-            guard !text.isEmpty else { return .failure(.empty) }
+            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return .failure(.empty) }
             if !ignoreTooShort && !hasPoll {
                 guard text.count >= minTextLength else { return .failure(.tooShort) }
             }
@@ -57,7 +61,7 @@ public extension Validators {
         /// - Parameter textRequired: the community setting, see
         ///   `validate(text:hasPoll:hasImage:textRequired:ignoreTooShort:)`.
         public static func validate(post: WritablePost, textRequired: Bool = true) -> Bool {
-            return validate(text: post.text, hasPoll: post.poll != nil, hasImage: post.image != nil,
+            return validate(text: post.text, hasPoll: post.poll != nil, hasImage: !post.images.isEmpty,
                             textRequired: textRequired).isSuccess &&
                 validate(poll: post.poll) &&
                 !post.parentId.isEmpty

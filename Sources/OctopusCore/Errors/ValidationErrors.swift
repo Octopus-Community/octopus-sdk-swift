@@ -29,6 +29,15 @@ public struct ValidationErrors<Field: Sendable & Hashable, ErrorDetail: Sendable
         public let localizedMessage: String
         /// Detail of the error. This should be used only if a particular behavior is produced by this kind of error
         public let detail: ErrorDetail
+        /// 0-based index of the image this error is about, when the server reports one (an error on one photo of a
+        /// post). `nil` when the error is not about a particular image.
+        public let imageIndex: Int?
+
+        init(localizedMessage: String, detail: ErrorDetail, imageIndex: Int? = nil) {
+            self.localizedMessage = localizedMessage
+            self.detail = detail
+            self.imageIndex = imageIndex
+        }
 
         public var debugDescription: String {
             "\"\(detail)\": \(localizedMessage)"

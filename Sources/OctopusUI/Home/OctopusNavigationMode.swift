@@ -10,6 +10,9 @@ import Foundation
 /// navigation path. The container backing that path can either be the legacy `NavigationView` or a
 /// `NavigationStack`. They don't behave identically when the screen is hosted inside a **modal
 /// presentation**: see ``automatic`` and ``navigationStack`` for details.
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusNavigationMode {
     /// The SDK picks the navigation container. It currently uses a legacy `NavigationView` (chosen to
     /// work around an internal `CreatePostView` lifecycle issue); this default may change in a future

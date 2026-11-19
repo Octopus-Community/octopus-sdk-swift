@@ -29,4 +29,42 @@ struct DeadlineTests {
         }
         #expect(value == nil)
     }
+
+    /// A member closing the nickname choice while it is sent: the caller does not wait for a call that never answers.
+    @Test func cancellingTheCallerThrowsWithoutWaitingForTheOperation() async throws {
+        let caller = Task { @MainActor in
+            try await withDeadline(nanoseconds: 60_000_000_000) { () async throws -> Int in
+                await withCheckedContinuation { (_: CheckedContinuation<Void, Never>) in }
+                return 42
+            }
+        }
+        caller.cancel()
+        await #expect(throws: CancellationError.self) { _ = try await caller.value }
+    }
+
+    @Test func cancellingTheCallerCancelsTheOperation() async throws {
+        let operation = OperationRecorder()
+        let caller = Task { @MainActor in
+            try await withDeadline(nanoseconds: 60_000_000_000) { () async throws -> Int in
+                operation.started = true
+                do {
+                    try await Task.sleep(nanoseconds: 60_000_000_000)
+                } catch {
+                    operation.wasCancelled = Task.isCancelled
+                    throw error
+                }
+                return 42
+            }
+        }
+        try await waitUntil { operation.started }
+        caller.cancel()
+        _ = try? await caller.value
+        try await waitUntil { operation.wasCancelled }
+    }
+
+    @MainActor
+    private final class OperationRecorder {
+        var started = false
+        var wasCancelled = false
+    }
 }

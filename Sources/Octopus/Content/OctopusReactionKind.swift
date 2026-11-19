@@ -6,6 +6,9 @@ import Foundation
 import OctopusCore
 
 /// A reaction on a content
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusReactionKind: Equatable, Sendable {
     /// ❤️ reaction
     case heart

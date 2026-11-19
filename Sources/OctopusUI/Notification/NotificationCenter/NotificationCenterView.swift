@@ -76,7 +76,9 @@ private struct ContentView: View {
             case .empty:
                 ScreenState(
                     image: theme.assets.icons.screenStates.emptyNotifications,
-                    title: .localizationKey("Profile.Notifications.EmptyState.Title.Self"),
+                    title: .tonedKey(
+                        formal: "Profile.Notifications.EmptyState.Title.Self.Formal",
+                        informal: "Profile.Notifications.EmptyState.Title.Self.Informal"),
                     verticalPadding: ScreenState.profilePadding)
             }
         }

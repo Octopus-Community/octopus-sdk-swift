@@ -224,6 +224,12 @@ public class NotificationsRepository: InjectableObject, @unchecked Sendable {
             }
     }
 
+    /// Registers the last device token again, once a closed community reopens: its registration was not sent.
+    func registerLatestTokenAgain() {
+        guard let latestNotificationDeviceToken else { return }
+        set(notificationDeviceToken: latestNotificationDeviceToken)
+    }
+
     public func getPushNotificationTappedAction(userInfo: [AnyHashable: Any])
     -> NotifAction? {
         guard let pnInfos = Self.getAdditionnalData(userInfo: userInfo) else { return nil }

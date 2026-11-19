@@ -207,12 +207,22 @@ public nonisolated struct Com_Octopuscommunity_InitializeFeedRequest: Sendable {
   /// Clears the value of `showAll`. Subsequent reads from it will return its default value.
   public mutating func clearShowAll() {self._showAll = nil}
 
+  public var anchorItemID: String {
+    get {_anchorItemID ?? String()}
+    set {_anchorItemID = newValue}
+  }
+  /// Returns true if `anchorItemID` has been explicitly set.
+  public var hasAnchorItemID: Bool {self._anchorItemID != nil}
+  /// Clears the value of `anchorItemID`. Subsequent reads from it will return its default value.
+  public mutating func clearAnchorItemID() {self._anchorItemID = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _pageSize: Int32? = nil
   fileprivate var _showAll: Bool? = nil
+  fileprivate var _anchorItemID: String? = nil
 }
 
 public nonisolated struct Com_Octopuscommunity_GetFeedPageRequest: Sendable {
@@ -256,11 +266,21 @@ public nonisolated struct Com_Octopuscommunity_GetFeedPageResponse: Sendable {
   /// Clears the value of `nextPageCursor`. Subsequent reads from it will return its default value.
   public mutating func clearNextPageCursor() {self._nextPageCursor = nil}
 
+  public var previousPageCursor: String {
+    get {_previousPageCursor ?? String()}
+    set {_previousPageCursor = newValue}
+  }
+  /// Returns true if `previousPageCursor` has been explicitly set.
+  public var hasPreviousPageCursor: Bool {self._previousPageCursor != nil}
+  /// Clears the value of `previousPageCursor`. Subsequent reads from it will return its default value.
+  public mutating func clearPreviousPageCursor() {self._previousPageCursor = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _nextPageCursor: String? = nil
+  fileprivate var _previousPageCursor: String? = nil
 }
 
 public nonisolated struct Com_Octopuscommunity_FeedItemInfo: Sendable {
@@ -564,7 +584,7 @@ nonisolated extension Com_Octopuscommunity_FeedAggregate: SwiftProtobuf.Message,
 
 nonisolated extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InitializeFeedRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedId\0\u{1}pageSize\0\u{1}showAll\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}feedId\0\u{1}pageSize\0\u{1}showAll\0\u{1}anchorItemId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -575,6 +595,7 @@ nonisolated extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.
       case 1: try { try decoder.decodeSingularStringField(value: &self.feedID) }()
       case 2: try { try decoder.decodeSingularInt32Field(value: &self._pageSize) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self._showAll) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self._anchorItemID) }()
       default: break
       }
     }
@@ -594,6 +615,9 @@ nonisolated extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.
     try { if let v = self._showAll {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._anchorItemID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -601,6 +625,7 @@ nonisolated extension Com_Octopuscommunity_InitializeFeedRequest: SwiftProtobuf.
     if lhs.feedID != rhs.feedID {return false}
     if lhs._pageSize != rhs._pageSize {return false}
     if lhs._showAll != rhs._showAll {return false}
+    if lhs._anchorItemID != rhs._anchorItemID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -647,7 +672,7 @@ nonisolated extension Com_Octopuscommunity_GetFeedPageRequest: SwiftProtobuf.Mes
 
 nonisolated extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetFeedPageResponse"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}items\0\u{1}nextPageCursor\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}items\0\u{1}nextPageCursor\0\u{1}previousPageCursor\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -657,6 +682,7 @@ nonisolated extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Me
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedMessageField(value: &self.items) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._nextPageCursor) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._previousPageCursor) }()
       default: break
       }
     }
@@ -673,12 +699,16 @@ nonisolated extension Com_Octopuscommunity_GetFeedPageResponse: SwiftProtobuf.Me
     try { if let v = self._nextPageCursor {
       try visitor.visitSingularStringField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._previousPageCursor {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_GetFeedPageResponse, rhs: Com_Octopuscommunity_GetFeedPageResponse) -> Bool {
     if lhs.items != rhs.items {return false}
     if lhs._nextPageCursor != rhs._nextPageCursor {return false}
+    if lhs._previousPageCursor != rhs._previousPageCursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -35,7 +35,9 @@ final class ProfileCommentsListViewModel: ObservableObject {
     /// `true` for the connected user's own profile — errors surface as an empty state rather than hiding.
     let isOwnProfile: Bool
     let feedId: String
-    private let dateFormatter: RelativeDateTimeFormatter
+    // Kept alive so that a later locale override still reaches the dates of this list.
+    private let relativeDateFormatterProvider: RelativeDateTimeFormatterProvider
+    private var dateFormatter: ContentDateFormatter { relativeDateFormatterProvider.contentDateFormatter }
     private var nextPageCursor: String?
     private var isLoading = false
 
@@ -48,6 +50,7 @@ final class ProfileCommentsListViewModel: ObservableObject {
     /// carries the real reaction id rather than a stale snapshot.
     private var coreContent: [String: CoreContent] = [:]
     private var observations: [String: AnyCancellable] = [:]
+    private var storage = [AnyCancellable]()
 
     private enum CoreContent {
         case post(Post)
@@ -59,12 +62,40 @@ final class ProfileCommentsListViewModel: ObservableObject {
         self.octopus = octopus
         self.feedId = feedId
         self.isOwnProfile = isOwnProfile
-        self.dateFormatter = RelativeDateTimeFormatterProvider(octopus: octopus).formatter
+        relativeDateFormatterProvider = RelativeDateTimeFormatterProvider(octopus: octopus)
+
+        // The comments listed so far carry the previous session's reactions and permissions, and the purge removed
+        // their content from the cache: load the first page again, keeping the list on screen meanwhile. A first load
+        // still running was sent for the previous session too. The task holds `self` weakly: the event comes when
+        // screens are rebuilt, and an unowned `self` released before the task runs would crash.
+        octopus.core.sdkEventsEmitter.internalEvents
+            .filter(\.clearedDisplayedContent)
+            .sink { [unowned self] _ in
+                guard comments != nil || isLoading else { return }
+                Task { [weak self] in await self?.loadFirstPageWhenIdle() }
+            }.store(in: &storage)
+    }
+
+    /// Loads the first page once the load in progress, if any, has ended, instead of ignoring the call like
+    /// `loadFirstPage` does: that load was sent for the previous session, or with none, and the list would keep it.
+    private func loadFirstPageWhenIdle() async {
+        while isLoading {
+            do {
+                try await Task.sleep(nanoseconds: 50_000_000)
+            } catch {
+                return
+            }
+        }
+        await loadFirstPage()
     }
 
     func refresh() async {
         // `.onAppear`-driven initial load (iOS 13 has no `.task`): only load the first time.
         guard comments == nil else { return }
+        await loadFirstPage()
+    }
+
+    private func loadFirstPage() async {
         guard !feedId.isEmpty else {
             comments = []
             hasMoreData = false

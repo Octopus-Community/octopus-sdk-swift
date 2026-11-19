@@ -68,6 +68,25 @@ struct ConsentWordingTests {
             "By replying, I acknowledge that I have read the [Privacy Policy](https://example.com/privacy)."))
     }
 
+    // MARK: Button label
+
+    @Test func buttonNamesThePublicationWhenTheTapPublishes() {
+        #expect(ConsentContribution.post.buttonKey(nicknameChoiceFollows: false) == "Consent.Button.Post")
+        #expect(ConsentContribution.comment.buttonKey(nicknameChoiceFollows: false) == "Consent.Button.Comment")
+        #expect(ConsentContribution.reply.buttonKey(nicknameChoiceFollows: false) == "Consent.Button.Reply")
+    }
+
+    @Test func buttonOnlyAcceptsWhenTheNicknameChoiceFollows() {
+        for contribution in Self.contributions {
+            #expect(contribution.buttonKey(nicknameChoiceFollows: true) == "Consent.Button.Accept")
+        }
+    }
+
+    @Test func buttonLabelsAreTranslated() {
+        #expect(L10n("Consent.Button.Accept", locale: Self.locale) == "Accept")
+        #expect(L10n("Consent.Button.Post", locale: Self.locale) == "Accept and post")
+    }
+
     // MARK: Rule 1 — texts only apply when their case is the current mode
 
     @Test(arguments: fullTexts, allModes)

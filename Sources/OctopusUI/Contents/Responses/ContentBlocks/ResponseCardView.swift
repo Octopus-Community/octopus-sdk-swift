@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-/// Gray rounded container used by `ResponseView` to group the header, text, translation toggle,
+/// Gray rounded container used by `ResponseView` to group the header, translation toggle, text,
 /// and image blocks. Children own their internal paddings (including any bottom spacer — the card
 /// does not add one).
 ///

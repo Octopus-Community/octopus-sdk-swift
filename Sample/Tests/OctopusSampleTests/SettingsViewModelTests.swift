@@ -83,8 +83,8 @@ final class SettingsViewModelTests: XCTestCase {
 
     func testSettingsLanguagesFollowTheAndroidListAndAreAllShipped() {
         XCTAssertEqual(SDKLanguages.settingsList.map(\.name),
-                       ["English", "French", "German", "Italian", "Polish", "Portuguese", "Spanish", "Swedish",
-                        "Turkish"])
+                       ["English", "French", "German", "Italian", "Polish", "Portuguese", "Slovak", "Spanish",
+                        "Swedish", "Turkish"])
         XCTAssertEqual(SDKLanguages.settingsList.count, SDKLanguages.settingsCodes.count)
         let viewModel = LanguageSettingsViewModel(current: Just(nil).eraseToAnyPublisher(), apply: { _ in })
         XCTAssertEqual(viewModel.options.map(\.id), ["system"] + SDKLanguages.settingsCodes)

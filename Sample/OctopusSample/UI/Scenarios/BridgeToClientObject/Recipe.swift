@@ -16,10 +16,13 @@ struct Recipe: Equatable {
     let title: String
     let text: String
     let topicName: String?
-    let img: Image?
+    /// Shown in this order, and posted in this order with the Octopus post
+    let images: [Image]
     let cta: String
     let octopusCatchPhrase: String
-    let octopusViewClientObjectButtonText: String?
+    /// The label of the button that opens the recipe from its Octopus post: translated automatically by Octopus,
+    /// or given by the app in each of its languages.
+    let octopusViewClientObjectButton: OctopusLocalizedText?
 }
 
 let stableRecipe = Recipe(
@@ -63,10 +66,11 @@ let stableRecipe = Recipe(
     Turn out while hot and let cool
     """,
     topicName: nil,
-    img: .local(.Scenarios.BridgeToClientObject.caneles),
+    images: [.local(.Scenarios.BridgeToClientObject.caneles)],
     cta: "Give your feedbacks",
     octopusCatchPhrase: "Tried the canelés? Tell us how good they were!",
-    octopusViewClientObjectButtonText: "Read the recipe")
+    // One label, that Octopus translates automatically for every reader
+    octopusViewClientObjectButton: .autoTranslated("Read the recipe"))
 
 let newRecipe = Recipe(
     id: UUID().uuidString,
@@ -117,7 +121,32 @@ let newRecipe = Recipe(
     Pipe your filling onto the back of half the shells. Form a sandwich and repeat. Macarons should be aged in the fridge for 1-3 days for best results. This allows the filling to soften the shells inside.
     """,
     topicName: "Gourmands",
-    img: .remote(URL(string: "https://media-content-demo.octocdn.net/misc/macarons.jpeg")!),
+    // A distant and a local image, to show that a client post can mix both kinds of medias
+    images: [
+        .remote(URL(string: "https://media-content-demo.octocdn.net/misc/macarons.jpeg")!),
+        .local(.Scenarios.BridgeToClientObject.caneles)
+    ],
     cta: "Give your feedbacks",
     octopusCatchPhrase: "Once baked and eaten, tell us what you think.",
-    octopusViewClientObjectButtonText: nil)
+    // One label per language of the app: a reader in French or in Spanish sees the app's own wording, the others
+    // an automatic translation. The labels are taken when the post is created, which happens at each launch for
+    // this recipe since its id changes.
+    octopusViewClientObjectButton: readRecipeButton())
+
+/// The label of the button in each language of the app, English being the one to translate from.
+private func readRecipeButton() -> OctopusLocalizedText {
+    do {
+        return try .perLanguage(
+            [
+                Locale(identifier: "en"): "Read the recipe",
+                Locale(identifier: "fr"): "Voir la recette",
+                Locale(identifier: "es"): "Ver la receta"
+            ],
+            defaultLanguage: Locale(identifier: "en"))
+    } catch {
+        // `perLanguage` throws when the labels cannot be used (an empty one, a default language that is not in
+        // the list...). Do not drop the button silently: report it, and fall back to an automatic translation.
+        print("Invalid per-language labels: \(error)")
+        return .autoTranslated("Read the recipe")
+    }
+}

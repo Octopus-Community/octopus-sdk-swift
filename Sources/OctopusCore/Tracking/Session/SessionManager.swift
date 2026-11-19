@@ -34,6 +34,8 @@ class SessionManager: @unchecked Sendable {
     private let lock = NSRecursiveLock()
 
     private var timer: DispatchSourceTimer?
+    /// See `isPaused`. Only accessed with `lock` held.
+    private var paused = false
 
     private let firstSessionHasBeenRecordedKey: String
     private let userDefaults: UserDefaults
@@ -108,6 +110,48 @@ class SessionManager: @unchecked Sendable {
         endCurrentSession(useLastHeartbeatAsEndDate: false)
     }
 
+    /// Whether the current session is paused: the app went to the background less than a grace period ago,
+    /// so the session can still go on if the app comes back in time.
+    var isPaused: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return paused
+    }
+
+    /// Pauses the current session when the app goes to the background.
+    ///
+    /// The session is recorded as last alive at `date` and stops beating: if it is ended during the pause, or if
+    /// the app is killed before it comes back, the session ends at `date`, so the time spent in the background is
+    /// not counted as session time.
+    /// - Parameter date: the date the app went to the background
+    /// - Returns: whether the session is paused, false when there is no current session
+    @discardableResult
+    func sessionPaused(at date: Date) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard var session = currentSession else { return false }
+        guard !paused else { return true }
+        stopHeartbeat()
+        session.lastHeartbeatDate = date
+        currentSessionStore.store(session: session.storableValue)
+        paused = true
+        return true
+    }
+
+    /// Resumes the paused session when the app comes back within the grace period: the session goes on with
+    /// the same id.
+    /// - Returns: whether a paused session has been resumed
+    @discardableResult
+    func sessionResumed() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard paused else { return false }
+        paused = false
+        beat()
+        startHeartbeat()
+        return true
+    }
+
     func clearPreviousSession() {
         lock.lock()
         defer { lock.unlock() }
@@ -116,12 +160,14 @@ class SessionManager: @unchecked Sendable {
 
     /// Set the current session as completed
     /// - Parameter useLastHeartbeatAsEndDate: whether to use the last hearbeat of the current session as end date.
-    ///      If false, the current date will be used.
+    ///      If false, the current date will be used, unless the session is paused: a paused session always ends
+    ///      at the date it was paused.
     /// - Important: `lock` must be held by the caller.
     private func endCurrentSession(useLastHeartbeatAsEndDate: Bool) {
         guard let currentSession else { return }
         stopHeartbeat()
-        let previousSession = currentSession.complete(useLastHeartbeatAsEndDate: useLastHeartbeatAsEndDate)
+        let previousSession = currentSession.complete(useLastHeartbeatAsEndDate: useLastHeartbeatAsEndDate || paused)
+        paused = false
         previousSessionStore.store(session: previousSession.storableValue)
         currentSessionStore.store(session: nil)
     }
@@ -154,8 +200,8 @@ class SessionManager: @unchecked Sendable {
     private func beat() {
         lock.lock()
         defer { lock.unlock() }
-        // the session can have ended between the moment this beat has been queued and now
-        guard var session = currentSession else { return }
+        // the session can have ended, or been paused, between the moment this beat has been queued and now
+        guard var session = currentSession, !paused else { return }
         session.lastHeartbeatDate = Date()
         currentSessionStore.store(session: session.storableValue)
     }

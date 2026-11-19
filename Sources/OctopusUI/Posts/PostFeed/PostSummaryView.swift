@@ -16,6 +16,7 @@ func accessibilityTextToRead(text: TranslatableText, ellipsize: Bool) -> String 
 }
 
 struct PostSummaryView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Environment(\.trackingApi) private var trackingApi
     @EnvironmentObject private var languageManager: LanguageManager
@@ -56,19 +57,11 @@ struct PostSummaryView: View {
                 post: PostViewData(from: post, ellipsize: ellipsizeText),
                 context: .summary(
                     onCardTap: {
-                        if post.canCreateChildren || post.hasChildren {
+                        if post.cardTapOpensDetail {
                             displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment)
                         } else {
                             isTextExpanded.toggle()
                         }
-                    },
-                    onChildrenTap: {
-                        // Tapping the "XX Comments" count opens the detail scrolled to the
-                        // latest comment WITHOUT opening the composer (`comment: false`).
-                        // The action-bar "Comment" button is a separate closure that opens
-                        // the composer (`comment: true`) — see `openCreateComment` below.
-                        trackingApi.emit(event: .commentButtonClicked(.init(postId: post.uuid)))
-                        displayPostDetail(post.uuid, false, true, nil, post.hasFeaturedComment)
                     },
                     displayGroupName: displayGroup),
                 width: width,
@@ -144,7 +137,7 @@ struct PostSummaryView: View {
             } else { $0 }
         }
         .modify {
-            if post.canCreateChildren || post.hasChildren {
+            if post.cardTapOpensDetail {
                 $0.accessibilityAction(named: Text("Accessibility.Content.Action.OpenDetail", bundle: .module)) {
                     displayPostDetail(post.uuid, false, false, nil, post.hasFeaturedComment)
                 }
@@ -152,13 +145,14 @@ struct PostSummaryView: View {
         }
         .modify {
             if #available(iOS 14.0, *) {
-                $0.accessibilityHintInBundle("Accessibility.Post.List.OpenDetail.Hint")
+                $0.accessibilityHintInBundle(textTone.key(formal: "Accessibility.Post.List.OpenDetail.Hint.Formal",
+                                                          informal: "Accessibility.Post.List.OpenDetail.Hint.Informal"))
             } else { $0 }
         }
     }
 
     var accessibilityDescription: LocalizedStringKey {
-        let authorName = post.author.name.localizedString(locale: languageManager.overridenLocale)
+        let authorName = post.author.name.localizedString(locale: languageManager.overridenLocale, tone: textTone)
         let topic = post.topic ?? ""
         switch post.content {
         case let .published(postContent):
@@ -180,13 +174,17 @@ struct PostSummaryView: View {
             let textToRead = PostSummaryAccessibility.textToRead(
                 accessibilityTextToRead(text: postContent.text, ellipsize: ellipsizeText),
                 pollOptionsToRead: pollOptionsToRead)
-            let date = post.relativeDate
+            let date = post.relativeDate.accessibilityText
             let hasText = !postContent.text.originalText.isEmpty
             switch PostSummaryAccessibility.template(for: attachments, hasText: hasText) {
             case .imageOnly:
                 return "Accessibility.Post.Summary.ImageOnly_author:\(authorName)_date:\(date)_topic:\(topic)"
+            case let .imagesOnly(count):
+                return "Accessibility.Post.Summary.ImagesOnly_author:\(authorName)_date:\(date)_topic:\(topic)_count:\(count)"
             case .textAndImage:
                 return "Accessibility.Post.Summary.TextAndImage_author:\(authorName)_date:\(date)_topic:\(topic)_text:\(textToRead)"
+            case let .textAndImages(count):
+                return "Accessibility.Post.Summary.TextAndImages_author:\(authorName)_date:\(date)_topic:\(topic)_text:\(textToRead)_count:\(count)"
             case .textAndVideo:
                 return "Accessibility.Post.Summary.TextAndVideo_author:\(authorName)_date:\(date)_topic:\(topic)_text:\(textToRead)"
             case .textOnly:
@@ -195,9 +193,9 @@ struct PostSummaryView: View {
 
         case let .moderated(reasons):
             let localizedReasons = reasons
-                .map { $0.localizedString(locale: languageManager.overridenLocale) }
+                .map { $0.localizedString(locale: languageManager.overridenLocale, tone: textTone) }
                 .joined(separator: ", ")
-            return "Accessibility.Post.Summary.Moderated_author:\(authorName)_date:\(post.relativeDate)_reasons:\(localizedReasons)"
+            return "Accessibility.Post.Summary.Moderated_author:\(authorName)_date:\(post.relativeDate.accessibilityText)_reasons:\(localizedReasons)"
         }
     }
 }
@@ -216,7 +214,7 @@ struct PostSummaryView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "3d ago",
+            relativeDate: "3d",
             topic: "Help",
             groupId: "groupUuid",
             canBeDeleted: false,
@@ -274,7 +272,7 @@ struct PostSummaryView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "3d ago",
+            relativeDate: "3d",
             topic: "Help",
             groupId: "groupUuid",
             canBeDeleted: false,
@@ -287,9 +285,9 @@ struct PostSummaryView: View {
                     originalText: "Un texte",
                     originalLanguage: "fr",
                     translatedText: "A text"),
-                attachments: .image(.init(
+                attachments: .images([.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
-                    size: CGSize(width: 700, height: 750))),
+                    size: CGSize(width: 700, height: 750))]),
                 bridgeInfo: nil,
                 customAction: nil,
                 featuredComment: nil,
@@ -334,7 +332,7 @@ struct PostSummaryView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "3d ago",
+            relativeDate: "3d",
             topic: "Help",
             groupId: "groupUuid",
             canBeDeleted: false,
@@ -403,7 +401,7 @@ struct PostSummaryView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "3d ago",
+            relativeDate: "3d",
             topic: "Help",
             groupId: "groupUuid",
             canBeDeleted: false,
@@ -415,9 +413,9 @@ struct PostSummaryView: View {
                 text: .init(
                     originalText: "Un texte\navec retour à la ligne",
                     originalLanguage: nil),
-                attachments: .image(.init(
+                attachments: .images([.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
-                    size: CGSize(width: 700, height: 750))),
+                    size: CGSize(width: 700, height: 750))]),
                 bridgeInfo: nil,
                 customAction: nil,
                 featuredComment: nil,
@@ -466,7 +464,7 @@ struct PostSummaryView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "3d ago",
+            relativeDate: "3d",
             topic: "Help",
             groupId: "groupUuid",
             canBeDeleted: false,
@@ -479,9 +477,9 @@ struct PostSummaryView: View {
                     originalText: "Un texte",
                     originalLanguage: "fr",
                     translatedText: "A text"),
-                attachments: .image(.init(
+                attachments: .images([.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
-                    size: CGSize(width: 700, height: 750))),
+                    size: CGSize(width: 700, height: 750))]),
                 bridgeInfo: .init(
                     objectId: "clientObjectId",
                     catchPhrase: .init(
@@ -537,7 +535,7 @@ struct PostSummaryView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "3d ago",
+            relativeDate: "3d",
             topic: "Help",
             groupId: "groupUuid",
             canBeDeleted: false,
@@ -550,9 +548,9 @@ struct PostSummaryView: View {
                     originalText: "Un texte",
                     originalLanguage: "fr",
                     translatedText: "A text"),
-                attachments: .image(.init(
+                attachments: .images([.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
-                    size: CGSize(width: 700, height: 750))),
+                    size: CGSize(width: 700, height: 750))]),
                 bridgeInfo: nil,
                 customAction: .init(ctaText: ctaText, targetUrl: URL(string: "https://www.example.com")!),
                 featuredComment: nil,

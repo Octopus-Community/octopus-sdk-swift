@@ -20,6 +20,10 @@ public struct Profile: Equatable, Sendable {
     public let totalMessages: Int?
     public let accountCreationDate: Date?
     public let gamificationLevel: GamificationLevel?
+    /// The member's total points, or `nil` when the server does not send it (or for a profile cached before the SDK
+    /// stored it, until it is fetched again). Only for the host app's community data: the Octopus screens never show
+    /// another member's points.
+    public let gamificationScore: Int?
     /// The member's id in the host app's own system (Unified Profile). Non-nil only when the community
     /// exposes client user ids (`CommunityConfig.exposeClientUserId`) and the member has one — absent
     /// for Octopus-auth users, guests and BO/admin-created profiles. Defaults to `nil`.
@@ -44,6 +48,7 @@ extension Profile {
         totalMessages = storableProfile.totalMessages
         accountCreationDate = storableProfile.accountCreationDate
         gamificationLevel = gamificationLevels.first { $0.level == storableProfile.gamificationLevel }
+        gamificationScore = storableProfile.gamificationScore
         clientUserId = storableProfile.clientUserId
         newestFirstPostsFeed = postFeedsStore.getOrCreate(feedId: storableProfile.descPostFeedId)
         descCommentFeedId = storableProfile.descCommentFeedId

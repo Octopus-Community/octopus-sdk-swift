@@ -42,8 +42,9 @@ class MockConfigRepository: ConfigRepository, InjectableObject, @unchecked Senda
        userConfig = UserConfig(canAccessCommunity: access, accessDeniedMessage: nil)
     }
 
-    public func refreshCommunityAccess() async throws(ServerCallError) {
-
+    @discardableResult
+    public func refreshCommunityAccess() async throws(ServerCallError) -> UserConfig? {
+        userConfig
     }
 
     public func debugOverrideProfileFieldsLock(_ lock: ProfileFieldsLock?) {
@@ -74,5 +75,10 @@ class MockConfigRepository: ConfigRepository, InjectableObject, @unchecked Senda
     public func debugOverrideConsentTexts(_ texts: ConsentTexts?) {
         guard let communityConfig, let texts else { return }
         self.communityConfig = communityConfig.withConsentTexts(texts)
+    }
+
+    public func debugOverrideInformalLanguages(_ languages: [String]?) {
+        guard let communityConfig, let languages else { return }
+        self.communityConfig = communityConfig.withInformalLanguages(languages)
     }
 }

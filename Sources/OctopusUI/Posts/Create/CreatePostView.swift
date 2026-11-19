@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct CreatePostView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.trackingApi) private var trackingApi
@@ -24,10 +25,10 @@ struct CreatePostView: View {
          withPoll: Bool,
          defaultTopicId: String?,
          defaultText: String? = nil,
-         defaultImage: Data? = nil,
+         defaultImages: [Data] = [],
          cta: WritableCTA? = nil,
          creationSource: PostsRepository.CreationSource = .user,
-         bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)? = nil,
+         bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String?)? = nil,
          canClose: Bool = false,
          navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: CreatePostViewModel(
@@ -35,7 +36,7 @@ struct CreatePostView: View {
             withPoll: withPoll,
             defaultTopicId: defaultTopicId,
             defaultText: defaultText,
-            defaultImage: defaultImage,
+            defaultImages: defaultImages,
             cta: cta,
             creationSource: creationSource,
             bridgeShareSignature: bridgeShareSignature))
@@ -59,10 +60,11 @@ struct CreatePostView: View {
                     displayCguText: !viewModel.userHasAcceptedCgu && viewModel.sendButtonAvailable
                         && !viewModel.termsAcceptanceMode.isExplicit,
                     text: $viewModel.text,
-                    image: $viewModel.image,
+                    images: $viewModel.images,
                     poll: $viewModel.poll,
                     textError: viewModel.textError,
                     pictureError: viewModel.pictureError,
+                    pictureToReveal: $viewModel.pictureToReveal,
                     pollError: viewModel.pollError,
                     termsOfUseUrl: viewModel.termsOfUseUrl, privacyPolicyUrl: viewModel.privacyPolicyUrl,
                     communityGuidelinesUrl: viewModel.communityGuidelinesUrl,
@@ -95,7 +97,7 @@ struct CreatePostView: View {
 
         .errorAlert(viewModel.$alertError, onDismiss: { viewModel.alertError = nil })
         .destructiveConfirmationAlert(
-            "Common.CancelModifications",
+            textTone.key(formal: "Common.CancelModifications.Formal", informal: "Common.CancelModifications.Informal"),
             isPresented: $showChangesWillBeLostAlert,
             cancelLabel: "Common.No",
             destructiveLabel: "Common.Yes",
@@ -106,6 +108,7 @@ struct CreatePostView: View {
             mode: viewModel.termsAcceptanceMode,
             consentTexts: viewModel.consentTexts,
             contribution: .post,
+            nicknameChoiceFollows: viewModel.consentSheetLeadsToNicknameChoice,
             termsUrl: viewModel.termsOfUseUrl,
             privacyUrl: viewModel.privacyPolicyUrl,
             rulesUrl: viewModel.communityGuidelinesUrl,
@@ -172,11 +175,12 @@ private struct ContentView: View {
     let isLoading: Bool
     let displayCguText: Bool
     @Binding var text: String
-    @Binding var image: ImageAndData?
+    @Binding var images: [ImageAndData]
     @Binding var poll: EditablePoll?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
+    @Binding var pictureToReveal: String?
     let pollError: DisplayableString?
 
     let termsOfUseUrl: URL
@@ -193,8 +197,9 @@ private struct ContentView: View {
     let createPoll: () -> Void
 
     var body: some View {
-        WritingPostForm(displayCguText: displayCguText, text: $text, image: $image, poll: $poll,
-                        textError: textError, pictureError: pictureError, pollError: pollError,
+        WritingPostForm(displayCguText: displayCguText, text: $text, images: $images, poll: $poll,
+                        textError: textError, pictureError: pictureError, pictureToReveal: $pictureToReveal,
+                        pollError: pollError,
                         termsOfUseUrl: termsOfUseUrl, privacyPolicyUrl: privacyPolicyUrl,
                         communityGuidelinesUrl: communityGuidelinesUrl,
                         consentTexts: consentTexts,
@@ -208,16 +213,18 @@ private struct ContentView: View {
 }
 
 private struct WritingPostForm: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var languageManager: LanguageManager
     let displayCguText: Bool
 
     @Binding var text: String
-    @Binding var image: ImageAndData?
+    @Binding var images: [ImageAndData]
     @Binding var poll: EditablePoll?
 
     let textError: DisplayableString?
     let pictureError: DisplayableString?
+    @Binding var pictureToReveal: String?
     let pollError: DisplayableString?
 
     let termsOfUseUrl: URL
@@ -236,16 +243,30 @@ private struct WritingPostForm: View {
     @State private var imagePickingError: Error?
     @State private var textFocused = true
     @State private var openPhotosPicker = false
+    @State private var showMaxPicturesAlert = false
     @State private var scrollToBottomOfId: String?
     @State private var attachmentScrollRequest: Compat.ScrollRequest?
     /// The block the user is adding: set by the user action, consumed by the next change of that block.
     @State private var pendingReveal: AttachmentBlock?
-    @State private var scrollViewportHeight: CGFloat = 0
+    /// The height of the form and of the action bar laid over (or under) its bottom: the part of the form the
+    /// user sees is the difference.
+    @State private var formHeight: CGFloat = 0
+    @State private var actionBarHeight: CGFloat = 0
     @State private var imagePreviewHeight: CGFloat = 0
     @State private var pollEditorHeight: CGFloat = 0
 
     @State private var keyboardHeight: CGFloat = 0
     @State private var previousText = ""
+
+    // Measured on the composer design (one point per pixel of its 393pt-wide screens).
+    private static let horizontalMargin: CGFloat = 16
+    private static let avatarSide: CGFloat = 40
+    /// The gap between the text and the block of images or the poll editor under it.
+    private static let attachmentTopGap: CGFloat = 16
+    /// The gap the action bar keeps from the end of the form when it is scrolled to the bottom.
+    private static let actionBarTopGap: CGFloat = 16
+    /// The gap between the action bar and what is under it: the terms notice, or the keyboard.
+    private static let actionBarBottomGap: CGFloat = 8
 
     private enum AttachmentBlock: String {
         case imagePreview
@@ -254,7 +275,7 @@ private struct WritingPostForm: View {
 
     private var attachmentRules: CreatePostAttachmentRules {
         CreatePostAttachmentRules(picturesEnabled: picturesEnabled, pollsEnabled: pollsEnabled,
-                                  hasImage: image != nil, hasPoll: poll != nil)
+                                  imageCount: images.count, hasPoll: poll != nil)
     }
 
     /// The notice under the composer: the community's own when it set one for the implicit mode, the SDK wording
@@ -277,27 +298,19 @@ private struct WritingPostForm: View {
                     VStack(alignment: .leading) {
                         HStack(spacing: 8) {
                             AuthorAvatarView(avatar: userAvatar)
-                                .frame(width: 32, height: 32)
+                                .frame(width: Self.avatarSide, height: Self.avatarSide)
 
-                            Button(action: {
+                            TopicSelectionButton(selectedTopicName: selectedTopic?.name, action: {
                                 showTopicPicker = true
                                 textFocused = false
-                            }) {
-                                HStack(spacing: 8) {
-                                    if let topic = selectedTopic?.name {
-                                        Text(topic)
-                                    } else {
-                                        Text("Post.Create.Topic.Selection.Button", bundle: .module)
-                                    }
-                                    IconImage(theme.assets.icons.content.post.creation.topicSelection)
-                                }
-                            }
-                            .buttonStyle(OctopusButtonStyle(.mid, style: .secondary, hasTrailingIcon: true,
-                                                            externalVerticalPadding: 5))
+                            })
                         }
 
                         VStack(alignment: .leading, spacing: 0) {
-                            OctopusTextField(text: $text, placeholder: "Post.Create.Text.Placeholder")
+                            OctopusTextField(
+                                text: $text,
+                                placeholder: textTone.key(formal: "Post.Create.Text.Placeholder.Formal",
+                                                          informal: "Post.Create.Text.Placeholder.Informal"))
                                 .focused($textFocused)
                                 .id("textInputView")
                                 .onValueChanged(of: text) { newValue in
@@ -311,7 +324,7 @@ private struct WritingPostForm: View {
                                     }
                                     previousText = newValue
                                 }
-                                .padding(.top, 24)
+                                .padding(.top, 14)
                                 .padding(.bottom, 2)
                                 .onTapGesture { textFocused = true }
                                 .modify {
@@ -320,34 +333,20 @@ private struct WritingPostForm: View {
                                     } else { $0 }
                                 }
 
-                            if let imageAndData = image {
-                                ZStack(alignment: .topTrailing) {
-                                    Image(uiImage: imageAndData.image)
-                                        .resizable()
-                                        .scaledToFit()
-                                    Button(action: {
-                                        image = nil
-                                        selectedItems = []
-                                    }) {
-                                        IconImage(theme.assets.icons.content.post.creation.deletePicture)
-                                            .font(theme.fonts.body1)
-                                            .padding(10)
-                                            .foregroundColor(theme.colors.gray500)
-                                            .background(
-                                                Circle()
-                                                    .foregroundColor(theme.colors.gray200)
-
-                                            )
-                                            .frame(minWidth: 32, minHeight: 32)
-                                            .padding([.leading, .bottom], 14)
-                                            .padding([.trailing, .top], 4)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .accessibilityLabelInBundle("Accessibility.Image.Delete")
-                                }
+                            if !images.isEmpty {
+                                CreatePostImagesStrip(
+                                    images: images,
+                                    showsAddMorePill: attachmentRules.showsAddMorePill,
+                                    horizontalMargin: Self.horizontalMargin,
+                                    pictureToReveal: $pictureToReveal,
+                                    deleteImage: { index in
+                                        guard images.indices.contains(index) else { return }
+                                        images.remove(at: index)
+                                    },
+                                    addMoreImages: openPictureEntry)
                                 // The gap above the block is part of the revealed area, so a tall block aligned
                                 // on its top keeps it.
-                                .padding(.top, 10)
+                                .padding(.top, Self.attachmentTopGap)
                                 .readHeight($imagePreviewHeight)
                                 .id(AttachmentBlock.imagePreview.rawValue)
                             }
@@ -357,7 +356,7 @@ private struct WritingPostForm: View {
                                     deletePoll: {
                                         poll = nil
                                     })
-                                .padding(.top, 10)
+                                .padding(.top, Self.attachmentTopGap)
                                 .readHeight($pollEditorHeight)
                                 .id(AttachmentBlock.pollEditor.rawValue)
                             }
@@ -373,18 +372,21 @@ private struct WritingPostForm: View {
                         }
                         Spacer()
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, Self.horizontalMargin)
                     .padding(.top, 8)
                 }
             }
-            .readHeight($scrollViewportHeight)
+            // Laid over the bottom of the form, which scrolls under it up to its last block. Below iOS 15, where
+            // there is no safe area inset, it is laid under the form instead.
+            .safeAreaInsetCompat(edge: .bottom, spacing: 0, fallback: .stackContent) { actionBar }
+            .readHeight($formHeight)
             VStack(spacing: 0) {
                 if pictureError != nil || textError != nil || pollError != nil {
                     theme.colors.error.frame(height: 1)
                     Spacer().frame(height: 4)
 
                     if let textError {
-                        textError.textView
+                        textError.textView(tone: textTone)
                             .font(theme.fonts.caption2)
                             .bold()
                             .foregroundColor(theme.colors.error)
@@ -395,7 +397,7 @@ private struct WritingPostForm: View {
                     }
 
                     if let pictureError {
-                        pictureError.textView
+                        pictureError.textView(tone: textTone)
                             .font(theme.fonts.caption2)
                             .bold()
                             .foregroundColor(theme.colors.error)
@@ -406,7 +408,7 @@ private struct WritingPostForm: View {
                     }
 
                     if let pollError {
-                        pollError.textView
+                        pollError.textView(tone: textTone)
                             .font(theme.fonts.caption2)
                             .bold()
                             .foregroundColor(theme.colors.error)
@@ -418,51 +420,6 @@ private struct WritingPostForm: View {
                 }
 
                 VStack(spacing: 0) {
-                    if attachmentRules.showsActionBar {
-                        HStack(spacing: 8) {
-                            // Hide the picture-add entry when the community disables post pictures.
-                            if attachmentRules.canAddPicture {
-                                Button(action: { openPhotosPicker = true }) {
-                                    HStack(spacing: 4) {
-                                        IconImage(theme.assets.icons.content.post.creation.addPicture)
-                                        Text("Content.Create.AddPicture", bundle: .module)
-                                    }
-                                }
-                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
-                                                                externalVerticalPadding: 16))
-                            }
-                            // Hide the poll-creation entry when the community disables polls or a poll exists.
-                            if attachmentRules.canAddPoll {
-                                Button(action: {
-                                    markForReveal(.pollEditor)
-                                    // Not animated: an animated insertion animates the scroll content size
-                                    // from "fits", which clamps the reveal to 0.
-                                    createPoll()
-                                }) {
-                                    HStack(spacing: 4) {
-                                        IconImage(theme.assets.icons.content.post.creation.addPoll)
-                                        Text("Content.Create.AddPoll", bundle: .module)
-                                    }
-                                }
-                                .buttonStyle(OctopusButtonStyle(.mid, style: .outline, hasLeadingIcon: true,
-                                                                externalVerticalPadding: 16))
-                            }
-                            Spacer()
-                        }
-                        .padding(.horizontal, 16)
-                        .background(RoundedRectangle(cornerRadius: 24)
-                            .stroke(theme.colors.gray300, lineWidth: 1)
-                            .padding(.horizontal, -1)
-                            .foregroundColor(theme.colors.background)
-                            .overlay(
-                                Rectangle()
-                                    .padding(.top, 24)
-                                    .padding(.bottom, -1)
-                                    .foregroundColor(theme.colors.background)
-                            )
-                        )
-                    }
-
                     if displayCguText {
                         theme.colors.gray300.frame(height: 1)
                         ImplicitConsentNotice(markdown: implicitNotice)
@@ -471,22 +428,63 @@ private struct WritingPostForm: View {
                 .animation(.easeInOut(duration: 0.2), value: displayCguText)
             }
         }
+        // At least 1: a `maxSelectionCount` of 0 means no limit for the system picker. The picker is not opened
+        // once the post holds the maximum anyway (see `openPictureEntry`).
         .imagesPicker(isPresented: $openPhotosPicker, selection: $selectedItems, error: $imagePickingError,
-                      maxSelectionCount: 1)
+                      maxSelectionCount: max(attachmentRules.remainingPictureSlots, 1))
         .onValueChanged(of: selectedItems) { newItems in
-            if newItems.first != nil {
-                markForReveal(.imagePreview)
-            }
-            image = newItems.first
+            guard !newItems.isEmpty else { return }
+            markForReveal(.imagePreview)
+            images = CreatePostViewModel.appending(newItems, to: images)
+            // Emptied so the next pick starts from an empty selection and only brings new pictures.
+            selectedItems = []
         }
-        .onValueChanged(of: image) { newImage in
-            if newImage == nil {
-                selectedItems = []
-            }
-            revealIfPending(.imagePreview, blockExists: newImage != nil)
+        .onValueChanged(of: images.count) { imageCount in
+            revealIfPending(.imagePreview, blockExists: imageCount > 0)
         }
+        .compatAlert(textTone.key(formal: "Content.Create.Picture.MaxReached.Formal",
+                                  informal: "Content.Create.Picture.MaxReached.Informal"), isPresented: $showMaxPicturesAlert)
         .onValueChanged(of: poll != nil) {
             revealIfPending(.pollEditor, blockExists: $0)
+        }
+    }
+
+    /// The entries that add a picture or a poll, as two labelled capsules at the leading side of the composer,
+    /// floating over the bottom of the form, above the terms notice (or the keyboard).
+    private var actionBar: some View {
+        VStack(spacing: 0) {
+            if attachmentRules.showsActionBar {
+                HStack(spacing: 0) {
+                    ComposerActionBar(
+                        // Hide the picture-add entry when the community disables post pictures.
+                        canAddPicture: attachmentRules.canAddPicture,
+                        // Hide the poll-creation entry when the community disables polls or a poll exists.
+                        canAddPoll: attachmentRules.canAddPoll,
+                        addPicture: openPictureEntry,
+                        addPoll: {
+                            markForReveal(.pollEditor)
+                            // Not animated: an animated insertion animates the scroll content size
+                            // from "fits", which clamps the reveal to 0.
+                            createPoll()
+                        })
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, Self.horizontalMargin)
+                .padding(.top, Self.actionBarTopGap)
+                .padding(.bottom, Self.actionBarBottomGap)
+            }
+        }
+        .readHeight($actionBarHeight)
+    }
+
+    /// Opens the picker for the pictures the post can still take, or explains the limit once it holds the
+    /// maximum. Does nothing when the community disables pictures, whichever entry calls it.
+    private func openPictureEntry() {
+        guard attachmentRules.canAddPicture else { return }
+        if attachmentRules.pictureEntryShowsMaxAlert {
+            showMaxPicturesAlert = true
+        } else {
+            openPhotosPicker = true
         }
     }
 
@@ -513,7 +511,7 @@ private struct WritingPostForm: View {
             case .pollEditor: blockHeight = pollEditorHeight
             }
             let alignsTop = CreatePostAttachmentRules.revealAlignsTop(blockHeight: blockHeight,
-                                                                      viewportHeight: scrollViewportHeight)
+                                                                      viewportHeight: formHeight - actionBarHeight)
             attachmentScrollRequest = Compat.ScrollRequest(id: block.rawValue, anchor: alignsTop ? .top : nil)
         }
     }
@@ -521,9 +519,9 @@ private struct WritingPostForm: View {
 
 #Preview {
     ContentView(isLoading: false, displayCguText: true, text: .constant(""),
-                image: .constant(ImageAndData(imageData: Data(), image: .actions)),
+                images: .constant([ImageAndData(imageData: Data(), image: .actions)]),
                 poll: .constant(EditablePoll()),
-                textError: nil, pictureError: nil, pollError: nil,
+                textError: nil, pictureError: nil, pictureToReveal: .constant(nil), pollError: nil,
                 termsOfUseUrl: URL(string: "www.google.com")!,
                 privacyPolicyUrl: URL(string: "www.google.com")!,
                 communityGuidelinesUrl: URL(string: "www.google.com")!,

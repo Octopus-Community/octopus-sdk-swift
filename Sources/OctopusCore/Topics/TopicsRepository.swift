@@ -66,15 +66,32 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
     public func fetchTopics() async throws(ServerCallError) -> [Topic] {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let response = try await remoteClient.octoService
-                .getTopics(authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
-            let topics = [StorableTopic](
-                from: response.topics,
-                requesterCtxs: response.topicsRequesterCtxs,
-                octoSections: response.sections
-            )
-            try await topicsDatabase.replaceAll(topics: topics)
-            return decoratedWithDebugSections(topics.map { Topic(from: $0, postFeedsStore: postFeedsStore) })
+            var refetches = 0
+            while true {
+                var responseSessionUserId: String?
+                let response = try await authCallProvider.withAuthenticatedIfPossibleMethod { method in
+                    responseSessionUserId = authCallProvider.sessionUserId
+                    return try await remoteClient.octoService.getTopics(authenticationMethod: method)
+                }
+                let topics = [StorableTopic](
+                    from: response.topics,
+                    requesterCtxs: response.topicsRequesterCtxs,
+                    octoSections: response.sections
+                )
+                try await topicsDatabase.replaceAll(topics: topics)
+                // A response accepted just before the session changed can be stored after the one fetched for the new
+                // session, which is then overwritten with the previous session's permissions: a guest is left unable
+                // to post in any group, until the next fetch. Fetching again stores the current session's over them.
+                // Like a replay, it is not sent for a cancelled fetch: nobody waits for its response anymore.
+                guard authCallProvider.sessionUserId != responseSessionUserId,
+                      refetches < maxSessionChangeReplays, !Task.isCancelled else {
+                    return decoratedWithDebugSections(topics.map { Topic(from: $0, postFeedsStore: postFeedsStore) })
+                }
+                refetches += 1
+                if #available(iOS 14, *) {
+                    Logger.groups.debug("Session changed before the groups were stored, fetching them again")
+                }
+            }
         } catch {
             if #available(iOS 14, *) { Logger.groups.debug("Error when fetching groups: \(error)") }
             if let error = error as? RemoteClientError {
@@ -83,6 +100,44 @@ public class TopicsRepository: InjectableObject, @unchecked Sendable {
                 throw .other(error)
             }
         }
+    }
+
+    /// Fetches one topic alone, including a topic that `fetchTopics()` leaves out because the user may not see it
+    /// in the list. A topic's visibility only decides whether it is listed; whether its content can be read is
+    /// `permissions.canAccess`.
+    ///
+    /// The topic is not stored: it stays out of `topics`, and so out of the post composer's picker and of
+    /// `canCreateAnyPost`. Its sections are not resolved.
+    /// - Parameter uuid: the id of the topic.
+    /// - Returns: the topic, or `nil` when no topic has this id or the server refuses to give it to the user.
+    public func fetchTopic(uuid: String) async throws(ServerCallError) -> Topic? {
+        guard networkMonitor.connectionAvailable else { throw .noNetwork }
+        let response: Com_Octopuscommunity_GetResponse
+        do throws(RemoteClientError) {
+            response = try await authCallProvider.withAuthenticatedIfPossibleMethod {
+                try await remoteClient.octoService.get(
+                    octoObjectInfo: OctoObjectInfo(id: uuid, hasVideo: false),
+                    options: [.object, .interactions],
+                    incrementViewCount: false,
+                    authenticationMethod: $0)
+            }
+        } catch {
+            if #available(iOS 14, *) { Logger.groups.debug("Error when fetching group \(uuid): \(error)") }
+            switch error {
+            // A refusal answers the question as well as a missing topic: the user may not read it. Thrown, it
+            // would read as a failed call, which keeps on screen a group the previous session could read.
+            case .notFound, .permissionDenied: return nil
+            default: break
+            }
+            throw .serverError(ServerError(remoteClientError: error))
+        }
+        guard response.hasOctoObject,
+              let topic = StorableTopic(from: response.octoObject,
+                                        requesterCtx: response.hasRequesterCtx ? response.requesterCtx : nil,
+                                        sections: []) else {
+            return nil
+        }
+        return Topic(from: topic, postFeedsStore: postFeedsStore)
     }
 
     /// Internal test affordance (exposed via an `@_spi` SDK entry point): locally redistributes the

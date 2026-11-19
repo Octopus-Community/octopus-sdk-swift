@@ -29,7 +29,7 @@ struct ResponseMoreMenuButton: View {
         if #available(iOS 14.0, *) {
             Menu(content: {
                 if canBeDeleted {
-                    Button(action: onDelete) {
+                    DestructiveMenuButton(action: onDelete) {
                         Label(
                             title: { Text(kind.deleteButtonKey, bundle: .module) },
                             icon: { Image(uiImage: theme.assets.icons.content.delete) })

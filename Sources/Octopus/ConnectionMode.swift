@@ -6,6 +6,9 @@ import Foundation
 import OctopusCore
 
 /// The kind of connection
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum ConnectionMode {
     /// You provide to OctopusSDK the user and their lifecycle are tight to their lifecycle in your app
     case sso(SSOConfiguration)
@@ -13,6 +16,9 @@ public enum ConnectionMode {
     /// Configuration of the SSO connection mode
     public struct SSOConfiguration {
         /// The field of a Profile
+        #if hasAttribute(nonexhaustive)
+        @nonexhaustive(warn)
+        #endif
         public enum ProfileField: CaseIterable {
             /// Username
             case nickname

@@ -86,6 +86,17 @@ class PostFeedViewModel: ObservableObject {
             loadRemoteTopics()
         }.store(in: &storage)
 
+        // Every feed on screen, whoever owns it: the purge also emptied the profile feeds of other members.
+        // A fetch still running then was sent for the previous session, or with none: the reload waits for it to
+        // end rather than being ignored, or the feed would keep what that fetch lists. The task holds `self` weakly:
+        // the event comes when screens are rebuilt, and an unowned `self` released before the task runs would crash.
+        octopus.core.sdkEventsEmitter.internalEvents
+            .filter(\.clearedDisplayedContent)
+            .sink { [unowned self] _ in
+                Task { [weak self] in await self?.refreshFeed(waitingForIdle: true) }
+                loadRemoteTopics()
+            }.store(in: &storage)
+
         Publishers.CombineLatest4(
             feed.$items.removeDuplicates(),
             octopus.core.topicsRepository.$topics,
@@ -170,7 +181,7 @@ class PostFeedViewModel: ObservableObject {
                                        liveMeasuresPublisher: liveMeasuresPublisher,
                                        childLiveMeasuresPublisher: childLiveMeasuresPublisher,
                                        thisUserProfileId: profile?.id, topic: topic,
-                                       dateFormatter: relativeDateFormatterProvider.formatter,
+                                       dateFormatter: relativeDateFormatterProvider.contentDateFormatter,
                                        onAppear: onAppear, onDisappear: onDisappear)
             }
             if self.posts != newPosts {
@@ -248,7 +259,7 @@ class PostFeedViewModel: ObservableObject {
     func setReaction(_ reaction: ReactionKind?, postId: String) {
         guard ensureConnected(.reaction) else { return }
         guard let post = feed.items?.first(where: { $0.id == postId }) else {
-            error = .localizationKey("Error.Unknown")
+            error = .unknownError
             return
         }
         Task {
@@ -260,7 +271,7 @@ class PostFeedViewModel: ObservableObject {
         guard ensureConnected(.reaction) else { return }
         let comment = feed.items?.first(where: { $0.featuredComment?.uuid == commentId })?.featuredComment
         guard let comment else {
-            error = .localizationKey("Error.Unknown")
+            error = .unknownError
             return
         }
         Task {
@@ -272,7 +283,7 @@ class PostFeedViewModel: ObservableObject {
     func vote(pollAnswerId: String, postId: String) async -> Bool {
         guard ensureConnected(.vote) else { return false }
         guard let post = feed.items?.first(where: { $0.id == postId }) else {
-            error = .localizationKey("Error.Unknown")
+            error = .unknownError
             return false
         }
         return await vote(pollAnswerId: pollAnswerId, post: post)
@@ -280,7 +291,7 @@ class PostFeedViewModel: ObservableObject {
 
     func displayClientObject(clientObjectId: String) {
         guard let callback = octopus.displayClientObjectCallback else {
-            error = .localizationKey("Error.Unknown")
+            error = .unknownError
             return
         }
 
@@ -288,7 +299,7 @@ class PostFeedViewModel: ObservableObject {
             try callback(clientObjectId)
             octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
         } catch {
-            self.error = .localizationKey("Error.Unknown")
+            self.error = .unknownError
         }
     }
 
@@ -320,7 +331,7 @@ class PostFeedViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
         }
     }
@@ -355,7 +366,7 @@ class PostFeedViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
         }
     }
@@ -391,7 +402,7 @@ class PostFeedViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
             return false
         }
@@ -448,10 +459,16 @@ class PostFeedViewModel: ObservableObject {
         additionalDataToFetch.send(currentValue)
     }
 
-    private func refreshFeed() async {
+    /// - Parameter waitingForIdle: whether a refresh asked while the feed is fetching runs once that fetch ended,
+    ///   instead of being ignored.
+    private func refreshFeed(waitingForIdle: Bool = false) async {
         defer { hasLoadedOnce = true }
         do {
-            try await feed.refresh(pageSize: 10)
+            if waitingForIdle {
+                try await feed.refreshWhenIdle(pageSize: 10)
+            } else {
+                try await feed.refresh(pageSize: 10)
+            }
             loadFailure = nil
         } catch {
             if #available(iOS 14, *) { Logger.posts.debug("Error while refreshing posts feed: \(error)") }

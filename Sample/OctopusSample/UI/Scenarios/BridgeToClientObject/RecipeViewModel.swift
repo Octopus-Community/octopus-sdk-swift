@@ -20,6 +20,8 @@ class RecipeViewModel: ObservableObject {
     private let octopus: OctopusSDK = OctopusSDKProvider.instance.octopus
     private var groupsCancellable: AnyCancellable?
     private var groups: [OctopusGroup] = []
+    /// The get or create call in flight, if any.
+    private var bridgePostLoading: Task<Void, Never>?
 
     init(recipe: Recipe) {
         // Listen to SDK groups changes
@@ -40,10 +42,8 @@ class RecipeViewModel: ObservableObject {
     }
 
     func getBridgePost(recipe: Recipe) {
-        isLoading = true
         Task {
             await getBridgePost(recipe: recipe)
-            isLoading = false
         }
     }
 
@@ -58,14 +58,31 @@ class RecipeViewModel: ObservableObject {
         }
     }
 
+    /// Gets or creates the post, one call at a time. The post is asked for as soon as the recipe opens: a tap on the
+    /// button before it arrives waits for that call, instead of creating the post a second time, which would upload
+    /// its images again.
     private func getBridgePost(recipe: Recipe) async {
-        // convert the image into an SDK Attachement
-        let attachment: ClientPost.Attachment? = switch recipe.img {
-        case let .local(imgResource):
+        if let bridgePostLoading {
+            await bridgePostLoading.value
+            return
+        }
+        let loading = Task { await fetchOrCreateBridgePost(recipe: recipe) }
+        bridgePostLoading = loading
+        isLoading = true
+        await loading.value
+        isLoading = false
+        bridgePostLoading = nil
+    }
+
+    private func fetchOrCreateBridgePost(recipe: Recipe) async {
+        // convert the images into SDK Attachments
+        let medias: [ClientPost.Attachment] = recipe.images.map {
+            switch $0 {
+            case let .local(imgResource):
                 .localImage(UIImage(resource: imgResource).jpegData(compressionQuality: 1.0)!)
-        case let .remote(url):
+            case let .remote(url):
                 .distantImage(url)
-        case .none: nil
+            }
         }
 
         // Example of how to use the groups API: match the group name to get the group id
@@ -80,8 +97,8 @@ class RecipeViewModel: ObservableObject {
                     groupId: groupId,
                     text: recipe.title,
                     catchPhrase: recipe.octopusCatchPhrase,
-                    attachment: attachment,
-                    viewClientObjectButtonText: recipe.octopusViewClientObjectButtonText
+                    medias: medias,
+                    viewClientObjectButton: recipe.octopusViewClientObjectButton
                 ),
                 tokenProvider: { bridgeFingerprint in
                     // you should use a signature if your community configuration requires it. We recommand configuring

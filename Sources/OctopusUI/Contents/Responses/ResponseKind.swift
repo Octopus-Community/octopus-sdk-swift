@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 /// Kind of response
 enum ResponseKind {
@@ -22,6 +23,16 @@ extension ResponseKind {
         }
     }
 
+    /// The id of the laid out part of a most recent end's window (see `MostRecentWindow.laidOutStart`): a scroll
+    /// request reaches its first comment or reply through it. A lazy stack scrolls to its own children only, and the
+    /// rows of the part are children of the part.
+    var laidOutPartScrollAnchorId: String {
+        switch self {
+        case .comment: "Comment-laidOutPart"
+        case .reply: "Reply-laidOutPart"
+        }
+    }
+
     var canReply: Bool {
         switch self {
         case .comment: true
@@ -37,11 +48,13 @@ extension ResponseKind {
         }
     }
 
-    /// Localized string key for the delete-confirmation alert title.
-    var deleteConfirmationKey: LocalizedStringKey {
+    /// Localized string key for the delete-confirmation alert title, in the member's tone.
+    func deleteConfirmationKey(tone: TextTone) -> LocalizedStringKey {
         switch self {
-        case .comment: "Comment.Delete.Confirmation.Title"
-        case .reply:   "Reply.Delete.Confirmation.Title"
+        case .comment: tone.key(formal: "Comment.Delete.Confirmation.Title.Formal",
+                                informal: "Comment.Delete.Confirmation.Title.Informal")
+        case .reply:   tone.key(formal: "Reply.Delete.Confirmation.Title.Formal",
+                                informal: "Reply.Delete.Confirmation.Title.Informal")
         }
     }
 }

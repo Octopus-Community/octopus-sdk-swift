@@ -7,16 +7,6 @@
     "· %@" : {
 
     },
-    "%@ — expires in %lld d" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ — expires in %2$lld d"
-          }
-        }
-      }
-    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -44,6 +34,9 @@
 
     },
     "%lld events" : {
+
+    },
+    "%lld image(s) selected" : {
 
     },
     "%lld of %lld" : {
@@ -98,6 +91,9 @@
 
     },
     "actionDate offset" : {
+
+    },
+    "Add translation" : {
 
     },
     "API Key" : {
@@ -164,6 +160,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App version: %@"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Version: %@"
           }
         },
         "sv" : {
@@ -243,7 +245,7 @@
     "Changing the preset re-themes the community tab immediately — no restart." : {
 
     },
-    "Clear image" : {
+    "Clear images" : {
 
     },
     "Clear override (backend default)" : {
@@ -300,6 +302,9 @@
     "Debug info" : {
 
     },
+    "Default label" : {
+
+    },
     "Developer tools" : {
 
     },
@@ -318,6 +323,9 @@
     "Entitlements" : {
 
     },
+    "Environments" : {
+
+    },
     "Error" : {
 
     },
@@ -331,9 +339,6 @@
 
     },
     "Expanded" : {
-
-    },
-    "expires in %lld d" : {
 
     },
     "Feature env: %@ · %@" : {
@@ -367,6 +372,9 @@
     "Gamification: disabled for this community" : {
 
     },
+    "Give the label per language" : {
+
+    },
     "Granted" : {
 
     },
@@ -397,10 +405,10 @@
     "Identifier: %@" : {
 
     },
-    "Image" : {
+    "Image picking requires iOS 16+ in the sample app." : {
 
     },
-    "Image picking requires iOS 16+ in the sample app." : {
+    "Images" : {
 
     },
     "Initial Screen" : {
@@ -413,9 +421,6 @@
 
     },
     "Live community config" : {
-
-    },
-    "Live environments" : {
 
     },
     "Live state" : {
@@ -451,10 +456,10 @@
     "No existing community to match this configuration" : {
 
     },
-    "No group matches '%@'" : {
+    "No feature env right now." : {
 
     },
-    "No live feature env right now." : {
+    "No group matches '%@'" : {
 
     },
     "No scenario matches \"%@\"." : {
@@ -479,6 +484,9 @@
 
     },
     "Note" : {
+
+    },
+    "Notifications denied. Open Settings" : {
 
     },
     "now" : {
@@ -535,7 +543,7 @@
     "Pending — the current session still carries the previous set. Reconnect to apply." : {
 
     },
-    "Pick an image" : {
+    "Pick images" : {
 
     },
     "Picture" : {
@@ -556,7 +564,7 @@
     "Random identifier" : {
 
     },
-    "Replace image" : {
+    "Replace images" : {
 
     },
     "Reset" : {
@@ -666,6 +674,12 @@
 
     },
     "URL (https:// or custom scheme)" : {
+
+    },
+    "Use 3 bundled images" : {
+
+    },
+    "Use 11 bundled images (too many)" : {
 
     },
     "Use custom community background color" : {

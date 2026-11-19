@@ -19,7 +19,7 @@ class CommentDetailViewModel: ObservableObject {
         let text: TranslatableText?
         let image: ImageMedia?
         let author: Author
-        let relativeDate: String
+        let relativeDate: DisplayableDate
         let aggregatedInfo: AggregatedInfo
         let userInteractions: UserInteractions
         let canBeDeleted: Bool
@@ -53,6 +53,17 @@ class CommentDetailViewModel: ObservableObject {
     @Published var scrollToId: String?
     @Published private(set) var hasMoreData = false
     @Published private(set) var hideLoadMoreRepliesLoader = false
+    /// Whether the list shows the most recent end of the thread (see ``MostRecentWindow``): set when the screen opens
+    /// on its newest replies or once a reply is sent, so a long thread is never loaded whole.
+    @Published private(set) var listsMostRecentEnd = false
+    /// Whether the list is hidden while it lands on the most recent end: its first layout is at its top, and showing it
+    /// there would draw the oldest replies of the window for a frame before the jump to the newest one. Not when nothing
+    /// is stored to land on: the comment then shows at once instead of waiting for the server.
+    @Published private(set) var hidesListUntilLanded = false
+    /// Whether the scrolls that land the list on its most recent end are not animated, until the one landing it on the
+    /// server's window ended: animating them would scroll through the window, or from a stale stored window.
+    @Published private(set) var landsWithoutAnimation = false
+    @Published var scrollRequest: Compat.ScrollRequest?
     @Published private var modelReplies: [Reply]?
     private var autoFetchLatestRepliesTask: Task<Void, Swift.Error>?
     private var autoFetchLatestRepliesCancellable: AnyCancellable?
@@ -62,7 +73,11 @@ class CommentDetailViewModel: ObservableObject {
     @Published var isDeletingReply = false
     @Published var replyDeleted = false
 
+    /// Presents the "not available" alert, which closes the screen.
     @Published var commentNotAvailable = false
+    /// Whether the server answered that the comment is gone or out of reach. Unlike the alert, it stays set: the
+    /// screen shows "not available" only then, never while the comment is missing for another reason.
+    @Published private(set) var commentConfirmedNotAvailable = false
     @Published var lockedState: LockedContentState = .unlocked
 
     private var shouldFetchLatestReplies = CurrentValueSubject<Bool, Never>(false)
@@ -97,7 +112,23 @@ class CommentDetailViewModel: ObservableObject {
 
     private var internalComment: Comment?
 
-    private var visibleReplyIds: Set<String> = []
+    /// Whether the screen is still loading the most recent end it opened on: every list published meanwhile is
+    /// scrolled to its bottom.
+    private var isLandingOnMostRecentEnd = false
+    /// Whether the screen has reached the most recent end. Older replies load only after: the top of the list is on
+    /// screen while it opens, and must not page in replies the member did not scroll to.
+    private var hasLandedOnMostRecentEnd = false
+    /// The pages of older replies loaded from the top of the most recent end, one at a time.
+    private var olderPages = OlderPagesPacing()
+    private var newestListedReplyId: String?
+
+    /// Whether the newest reply of the most recent end is on screen. Its row is laid out at once with the rest of
+    /// the window: its `onAppear` fires as soon as the window is, even far below the screen.
+    private var newestReplyOnScreen = false
+    /// Whether the screen is displayed, between `onAppear()` and `onDisappear()`. The newest replies are polled only
+    /// then: on the most recent end the poll follows where the newest reply is in the scroll view, which does not
+    /// change when a pushed screen or another tab hides this one.
+    private var isDisplayed = false
     private var additionalDataToFetch: CurrentValueSubject<Set<String>, Never> = .init([])
 
     private var storage = [AnyCancellable]()
@@ -111,7 +142,9 @@ class CommentDetailViewModel: ObservableObject {
         self.languageRepository = octopus.core.languageRepository
         self.translationStore = translationStore
         self.commentUuid = commentUuid
-        self.reply = reply
+        // A reply to open on takes precedence over the most recent end, for good: a later emission of the comment
+        // must not switch the screen to the most recent end once the reply is shown.
+        self.reply = reply && replyToScrollTo == nil
         self.scrollTarget = PendingScrollTarget(id: replyToScrollTo)
         self.opensOnReply = replyToScrollTo != nil
         connectedActionChecker = ConnectedActionChecker(octopus: octopus)
@@ -128,14 +161,14 @@ class CommentDetailViewModel: ObservableObject {
             self.internalComment = comment
             guard commentDeletion == nil else { return }
             guard let comment else {
-                // if comment was not nil and is now nil, it means that it has been deleted
-                let commentWontBeAvailable = self.comment != nil
+                // if comment was not nil and is now nil, it has been deleted, or the logout emptied the cache
+                let commentDisappeared = self.comment != nil
                 self.comment = nil
                 self.replies = nil
                 self.lockedState = .unlocked
 
-                if commentWontBeAvailable {
-                    commentNotAvailable = true
+                if commentDisappeared {
+                    confirmCommentDisappearance()
                 }
                 return
             }
@@ -144,7 +177,7 @@ class CommentDetailViewModel: ObservableObject {
                 self.comment = nil
                 self.replies = nil
                 self.lockedState = .unlocked
-                commentNotAvailable = true
+                markCommentNotAvailable()
                 return
             }
 
@@ -161,16 +194,20 @@ class CommentDetailViewModel: ObservableObject {
             if resolvedLockedState == .lockedOther {
                 self.comment = nil
                 self.replies = nil
-                commentNotAvailable = true
+                markCommentNotAvailable()
                 return
             }
 
             self.comment = CommentDetail(from: comment,
                                          gamificationLevels: gamificationLevels ?? [],
                                          thisUserProfileId: profile?.id,
-                                         dateFormatter: relativeDateFormatterProvider.formatter)
+                                         dateFormatter: relativeDateFormatterProvider.contentDateFormatter)
             newestFirstRepliesFeed = comment.newestFirstRepliesFeed
-            if let oldestFirstRepliesFeed = comment.oldestFirstRepliesFeed {
+            // `self`: the initializer's parameter of the same name would be read instead.
+            if self.reply, scrollTarget.id == nil, let newestFirstRepliesFeed {
+                self.reply = false
+                openOnMostRecentEnd(feed: newestFirstRepliesFeed)
+            } else if !listsMostRecentEnd, let oldestFirstRepliesFeed = comment.oldestFirstRepliesFeed {
                 set(feed: oldestFirstRepliesFeed)
             }
 
@@ -193,27 +230,34 @@ class CommentDetailViewModel: ObservableObject {
                 guard reply.canBeDisplayed else { return nil }
                 let onAppearAction: () -> Void
                 let onDisappearAction: () -> Void
-                if !hasMoreData && idx == repliesCount - 1 {
+                // The window of the most recent end always ends on the newest reply, older ones still to load or not
+                if (listsMostRecentEnd || !hasMoreData) && idx == repliesCount - 1 {
                     if #available(iOS 14, *) {
                         Logger.replies.trace("Setting autorefresh actions on \(String(describing: reply.text))")
                     }
+                    // The most recent end lays its newest reply out at once: its `onAppear` fires even far below the
+                    // screen and its `onDisappear` never does. The poll then follows `newestReplyOnScreenChanged`.
                     onAppearAction = { [weak self] in
-                        if #available(iOS 14, *) {
-                            Logger.replies.trace("Will start autorefresh replies list due to latest reply being displayed")
+                        guard let self else { return }
+                        if !listsMostRecentEnd {
+                            if #available(iOS 14, *) {
+                                Logger.replies.trace("Will start autorefresh replies list: latest reply displayed")
+                            }
+                            shouldFetchLatestReplies.send(true)
                         }
-                        self?.shouldFetchLatestReplies.send(true)
-                        self?.queueFetchAdditionalData(id: reply.uuid)
-                        self?.visibleReplyIds.insert(reply.uuid)
+                        queueFetchAdditionalData(id: reply.uuid)
                     }
                     onDisappearAction = { [weak self] in
-                        if #available(iOS 14, *) {
-                            Logger.replies.trace("Will stop autorefresh replies list due to latest reply being displayed")
+                        guard let self else { return }
+                        if !listsMostRecentEnd {
+                            if #available(iOS 14, *) {
+                                Logger.replies.trace("Will stop autorefresh replies list: latest reply hidden")
+                            }
+                            shouldFetchLatestReplies.send(false)
                         }
-                        self?.shouldFetchLatestReplies.send(false)
-                        self?.dequeueFetchAdditionalData(id: reply.uuid)
-                        self?.visibleReplyIds.remove(reply.uuid)
+                        dequeueFetchAdditionalData(id: reply.uuid)
                     }
-                } else if idx == max(repliesCount - 10, 0), hasMoreData {
+                } else if !listsMostRecentEnd, idx == max(repliesCount - 10, 0), hasMoreData {
                     if #available(iOS 14, *) {
                         Logger.replies.trace("Setting autorefresh actions on \(String(describing: reply.text))")
                     }
@@ -226,20 +270,16 @@ class CommentDetailViewModel: ObservableObject {
                             loadPreviousReplies()
                         }
                         queueFetchAdditionalData(id: reply.uuid)
-                        visibleReplyIds.insert(reply.uuid)
                     }
                     onDisappearAction = { [weak self] in
                         self?.dequeueFetchAdditionalData(id: reply.uuid)
-                        self?.visibleReplyIds.remove(reply.uuid)
                     }
                 } else {
                     onAppearAction = { [weak self] in
                         self?.queueFetchAdditionalData(id: reply.uuid)
-                        self?.visibleReplyIds.insert(reply.uuid)
                     }
                     onDisappearAction = { [weak self] in
                         self?.dequeueFetchAdditionalData(id: reply.uuid)
-                        self?.visibleReplyIds.remove(reply.uuid)
                     }
                 }
 
@@ -257,7 +297,7 @@ class CommentDetailViewModel: ObservableObject {
                     from: reply,
                     gamificationLevels: gamificationLevels ?? [],
                     liveMeasurePublisher: liveMeasurePublisher,
-                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatterProvider.formatter,
+                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatterProvider.contentDateFormatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
             }
             if newReplies.isEmpty {
@@ -268,6 +308,7 @@ class CommentDetailViewModel: ObservableObject {
             if self.replies != newReplies {
                 self.replies = newReplies
                 scrollToTargetIfListed()
+                if listsMostRecentEnd { followMostRecentEnd(replies: newReplies) }
                 if #available(iOS 14, *) { Logger.comments.trace("Replies list updated done") }
             }
         }.store(in: &storage)
@@ -278,9 +319,28 @@ class CommentDetailViewModel: ObservableObject {
             .sink { [unowned self] reply in
                 guard reply.parentId == commentUuid else { return }
                 // refresh automatically when the reply is created
-                hideLoadMoreRepliesLoader = true
-                loadAllReplies(scrollToBottom: true)
-                scrollToBottom = true
+                if let newestFirstRepliesFeed {
+                    showMostRecentEnd(afterSending: reply.uuid, feed: newestFirstRepliesFeed)
+                } else {
+                    hideLoadMoreRepliesLoader = true
+                    loadAllReplies(scrollToBottom: true)
+                    scrollToBottom = true
+                }
+            }.store(in: &storage)
+
+        // The end of the landing scroll (true → false) shows the list it hid. The next scrolls are animated once it
+        // landed on the server's window.
+        $scrollToBottom
+            .dropFirst()
+            .removeDuplicates()
+            .filter { !$0 }
+            .sink { [unowned self] _ in
+                guard hidesListUntilLanded || landsWithoutAnimation else { return }
+                let landed = !isLandingOnMostRecentEnd
+                DispatchQueue.main.async {
+                    if self.hidesListUntilLanded { self.hidesListUntilLanded = false }
+                    if landed { self.endLanding() }
+                }
             }.store(in: &storage)
 
         octopus.core.profileRepository.onCurrentUserProfileUpdated.sink { [unowned self] _ in
@@ -288,12 +348,22 @@ class CommentDetailViewModel: ObservableObject {
             refreshFeed()
         }.store(in: &storage)
 
+        // A comment kept through a closure of the community: the closure blocked the check of its vanishing, which
+        // left the screen on its failure state. The reopening clears the displayed content: the screen asks again.
+        octopus.core.sdkEventsEmitter.internalEvents
+            .filter(\.clearedDisplayedContent)
+            .sink { [unowned self] _ in
+                guard VanishedContentCheck.asksAgainOnClearedContent(contentShown: comment != nil,
+                                                                    loadFailure: contentLoadFailure) else { return }
+                retryFirstLoad()
+            }.store(in: &storage)
+
         /// Reload comment when app moves to foreground
         NotificationCenter.default
             .publisher(for: UIApplication.willEnterForegroundNotification)
             .sink { [unowned self] _ in
                 fetchComment(incrementViewCount: true)
-                if shouldFetchLatestReplies.value {
+                if isDisplayed && shouldFetchLatestReplies.value {
                     startAutoFetchLatestReplies()
                 }
             }
@@ -310,7 +380,7 @@ class CommentDetailViewModel: ObservableObject {
             .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
             .removeDuplicates()
             .sink { [unowned self] shouldFetchLatestReplies in
-                if shouldFetchLatestReplies && UIApplication.shared.applicationState != .background {
+                if shouldFetchLatestReplies && isDisplayed && UIApplication.shared.applicationState != .background {
                     startAutoFetchLatestReplies()
                 } else if !shouldFetchLatestReplies {
                     stopAutoFetchLatestReplies()
@@ -338,10 +408,12 @@ class CommentDetailViewModel: ObservableObject {
     }
 
     func onDisappear() {
+        isDisplayed = false
         stopAutoFetchLatestReplies()
     }
 
     func onAppear() {
+        isDisplayed = true
         if shouldFetchLatestReplies.value {
             startAutoFetchLatestReplies()
         }
@@ -362,10 +434,12 @@ class CommentDetailViewModel: ObservableObject {
         self.feed = feed
         feedStorage = []
 
+        // Every value, duplicates included: the stored items and the server's first page can be the same, the end of the
+        // thread being known only with the second one (see `OldestFirstThread.listed`).
         feed.$items
-            .removeDuplicates()
-            .sink { [unowned self] in
-                modelReplies = merge(oldestFirstRepliesFeedItems: $0 ?? [],
+            .sink { [unowned self, weak feed] in
+                guard let feed else { return }
+                modelReplies = merge(oldestFirstRepliesFeedItems: $0, of: feed,
                                      newestFirstRepliesFeedItems: newestFirstRepliesFeed?.items ?? [])
             }.store(in: &feedStorage)
 
@@ -396,6 +470,204 @@ class CommentDetailViewModel: ObservableObject {
             guard self.feed?.id == feed.id else { return }
             scrollTarget.loadSettled()
             scrollToTargetIfListed()
+        }
+    }
+
+    /// Opens the screen on the most recent end of the thread: the local window first, then the server's, each landed
+    /// on its newest reply. The whole thread is never loaded.
+    private func openOnMostRecentEnd(feed: Feed<Reply, Never>) {
+        replies = nil
+        isLandingOnMostRecentEnd = true
+        // iOS 13 has no scroll to the bottom whose end would show the list again
+        if #available(iOS 14, *) {
+            hidesListUntilLanded = true
+            landsWithoutAnimation = true
+        }
+        listMostRecentEnd(of: feed)
+        Task {
+            await feed.populateWithLocalData(pageSize: MostRecentWindow.initialSize)
+            if feed.items?.isEmpty ?? true { hidesListUntilLanded = false }
+            await refreshFeed()
+            // Let the refreshed items publish before the landing ends.
+            DispatchQueue.main.async {
+                self.isLandingOnMostRecentEnd = false
+                if !(self.replies?.isEmpty ?? true) {
+                    self.scrollToBottom = true
+                    // the end of that scroll shows the list; never leave it hidden if the scroll does not happen
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self.endLanding() }
+                } else {
+                    self.endLanding()
+                }
+                self.mostRecentEndReached()
+            }
+        }
+    }
+
+    private func endLanding() {
+        if hidesListUntilLanded { hidesListUntilLanded = false }
+        if landsWithoutAnimation { landsWithoutAnimation = false }
+    }
+
+    /// Shows the most recent end of the thread once the member sent a reply, so the reply is listed without loading
+    /// the whole thread.
+    private func showMostRecentEnd(afterSending replyId: String, feed: Feed<Reply, Never>) {
+        olderPages.forgetKeptResponse()
+        // The window shrinks back and its top may cross the screen before it is scrolled to its bottom again: older
+        // ones load only once it is there.
+        hasLandedOnMostRecentEnd = false
+        if self.feed?.id != feed.id {
+            // The replies listed so far stay until the window is loaded, instead of flashing a loader. The screen
+            // scrolls once it is: the bottom of the replies listed so far may be lazy rows, and a lazy stack of rows
+            // of different heights, scrolled to its bottom while the keyboard goes down, can loop in its layout.
+            listMostRecentEnd(of: feed)
+        } else {
+            // The window is laid out down to its bottom: the screen goes there at once.
+            scrollToBottom = true
+        }
+        Task {
+            do {
+                // The window shrinks back to its first size: the member is at its bottom, writing.
+                try await feed.refreshWhenIdle(pageSize: MostRecentWindow.initialSize)
+                // More responses than the window holds may have been posted meanwhile: load down to the sent one, which
+                // its composer waits for. It is among the newest, so this loads nothing more in the usual case.
+                try await feed.fetchAll(until: replyId)
+            } catch {
+                if #available(iOS 14, *) { Logger.replies.debug("Error while refreshing after sending: \(error)") }
+            }
+            DispatchQueue.main.async {
+                self.scrollToBottom = true
+                self.mostRecentEndReached()
+            }
+        }
+    }
+
+    /// Lists the window of the newest replies, oldest at the top, in place of the replies listed so far.
+    private func listMostRecentEnd(of feed: Feed<Reply, Never>) {
+        stopAutoFetchLatestReplies()
+        listsMostRecentEnd = true
+        hideLoadMoreRepliesLoader = false
+        hasLandedOnMostRecentEnd = false
+        newestListedReplyId = nil
+        self.feed = feed
+        feedStorage = []
+
+        feed.$items
+            .removeDuplicates()
+            .sink { [unowned self] in
+                // Nil until the feed has loaded: whatever is listed stays until then.
+                guard let items = $0 else { return }
+                modelReplies = MostRecentWindow.displayOrder(newestFirst: items)
+            }.store(in: &feedStorage)
+
+        feed.$hasMoreData
+            .removeDuplicates()
+            .sink { [unowned self] in
+                if #available(iOS 14, *) { Logger.replies.trace("Feed has more data: \($0)") }
+                hasMoreData = $0
+            }.store(in: &feedStorage)
+
+        if isDisplayed && shouldFetchLatestReplies.value {
+            startAutoFetchLatestReplies()
+        }
+    }
+
+    /// Keeps the screen on the most recent end as the window changes: on its bottom while it lands and whenever a newer
+    /// reply appears under the member's eyes, and on the same reply when older ones are inserted above.
+    private func followMostRecentEnd(replies: [DisplayableFeedResponse]) {
+        let previousNewestId = newestListedReplyId
+        newestListedReplyId = replies.last?.uuid
+        let step = MostRecentWindow.follow(
+            ids: replies.map(\.uuid), previousNewestId: previousNewestId,
+            previousNewestVisible: previousNewestId != nil && newestReplyOnScreen,
+            previousFirstId: olderPages.keptIdAwaitingListing, landing: isLandingOnMostRecentEnd)
+        if let keptId = step.rowKeptInPlace {
+            perform(olderPages.pageListed(keepingInPlace: keptId))
+        }
+        if step.scrollsToBottom {
+            DispatchQueue.main.async {
+                self.scrollToBottom = true
+            }
+        }
+    }
+
+    /// Called once the screen scrolled to the most recent end: older replies may load from now on, at once if the top
+    /// of a short window is already on screen.
+    private func mostRecentEndReached() {
+        // Past the scroll animation, during which the rows it crosses appear.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.hasLandedOnMostRecentEnd = true
+            self.loadOlderRepliesIfLoaderVisible()
+        }
+    }
+
+    private func loadOlderRepliesIfLoaderVisible() {
+        perform(olderPages.nextPage(canLoad: canLoadOlderReplies))
+    }
+
+    /// Called when the loader of older replies, at the top of the most recent end, leaves the screen.
+    func previousRepliesLoaderDisappeared() {
+        olderPages.loaderLeftScreen()
+    }
+
+    /// Whether a page of older replies may load: only once the screen reached the most recent end (see
+    /// `hasLandedOnMostRecentEnd`).
+    private var canLoadOlderReplies: Bool {
+        listsMostRecentEnd && hasLandedOnMostRecentEnd && hasMoreData
+    }
+
+    private func perform(_ action: OlderPagesPacing.Action) {
+        switch action {
+        case .none:
+            break
+        case .loadPage:
+            loadOlderReplies()
+        case let .keepInPlace(keptId):
+            DispatchQueue.main.async {
+                self.scrollRequest = Compat.ScrollRequest(
+                    id: ResponseKind.reply.scrollAnchorId(for: keptId), anchor: .top, animated: false,
+                    // Before older pages are inserted, the response at the top of the window is the first one of the
+                    // laid out part, out of the scroll view's reach (see `ScrollRequest.fallbackId`).
+                    fallbackId: ResponseKind.reply.laidOutPartScrollAnchorId)
+            }
+            let generation = olderPages.generation
+            DispatchQueue.main.asyncAfter(deadline: .now() + OlderPagesPacing.keepInPlaceTimeout) { [weak self] in
+                guard let self else { return }
+                perform(olderPages.timedOut(generation: generation, canLoad: canLoadOlderReplies))
+            }
+        }
+    }
+
+    /// Loads the page of replies older than the most recent end's window, kept in place above the reply at its top.
+    private func loadOlderReplies() {
+        guard let feed else { return }
+        olderPages.pageRequested(keptId: replies?.first?.uuid)
+        let generation = olderPages.generation
+        Task { [self] in
+            do {
+                try await feed.loadPreviousItems(pageSize: MostRecentWindow.olderPageSize)
+            } catch {
+                if #available(iOS 14, *) { Logger.replies.debug("Error while loading older replies: \(error)") }
+                if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
+                    self.error = error.displayableMessage
+                }
+                olderPages.pageFailed()
+                return
+            }
+            // The page lists nothing above the window when the feed ignored the call, or when its replies were all
+            // listed already: the next one may load then.
+            DispatchQueue.main.asyncAfter(deadline: .now() + OlderPagesPacing.listingTimeout) { [weak self] in
+                guard let self else { return }
+                perform(olderPages.timedOut(generation: generation, canLoad: canLoadOlderReplies))
+            }
+        }
+    }
+
+    /// Called as the newest reply of the most recent end enters or leaves the screen: a newer one is followed only
+    /// when it was on screen, and the newest replies are polled only while it is.
+    func newestReplyOnScreenChanged(_ onScreen: Bool) {
+        newestReplyOnScreen = onScreen
+        if listsMostRecentEnd {
+            shouldFetchLatestReplies.send(onScreen)
         }
     }
 
@@ -432,10 +704,31 @@ class CommentDetailViewModel: ObservableObject {
             if #available(iOS 14, *) { Logger.replies.trace("startAutoFetchLatestReplies called multiple times") }
             return
         }
+        if listsMostRecentEnd, let feed {
+            // The window is itself the newest replies: refreshing its newest page and keeping the older ones lists
+            // the new ones in one server call, without dropping those the member paged in.
+            autoFetchLatestRepliesTask = Task {
+                repeat {
+                    do {
+                        try await feed.refreshNewestItems(
+                            pageSize: MostRecentWindow.refreshSize(listedCount: feed.items?.count ?? 0))
+                    } catch {
+                        if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
+                            self.error = error.displayableMessage
+                        }
+                    }
+                    // A page of older replies asked for during the refresh was ignored.
+                    loadOlderRepliesIfLoaderVisible()
+                    try await Task.sleep(nanoseconds: 5 * 1_000_000_000)
+                } while (!Task.isCancelled)
+            }
+            return
+        }
         guard let newestFirstRepliesFeed else { return }
 
         listenToNewestRepliesFeed()
 
+        let oldestFirstFeed = feed
         autoFetchLatestRepliesTask = Task {
             repeat {
                 // only fetch new replies if we are not fetching all replies until the reply to scroll to otherwise
@@ -443,6 +736,14 @@ class CommentDetailViewModel: ObservableObject {
                 // that is never listed (deleted, moderated) does not stop the polling for the screen's life.
                 if !scrollTarget.isLoading {
                     do {
+                        // The stored replies are listed alone while no page of the server lists the end of the
+                        // thread, its first refresh having failed or been ignored: the newest replies polled are not
+                        // added to them until then (see `OldestFirstThread.listed`). The thread is refreshed again
+                        // first.
+                        if let oldestFirstFeed, oldestFirstFeed.endsOnStoredItems {
+                            try await oldestFirstFeed.refresh(pageSize: 10)
+                            repliesLoadFailure = nil
+                        }
                         try await newestFirstRepliesFeed.refresh(pageSize: 10)
                     } catch {
                         if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
@@ -491,10 +792,10 @@ class CommentDetailViewModel: ObservableObject {
         guard let newestFirstRepliesFeed else { return }
         autoFetchLatestRepliesCancellable = newestFirstRepliesFeed.$items
             .sink { [unowned self] in
-                guard let newestReplies = $0 else { return }
-                let newReplyList = merge(oldestFirstRepliesFeedItems: feed?.items ?? [],
+                guard let newestReplies = $0, let feed else { return }
+                let newReplyList = merge(oldestFirstRepliesFeedItems: feed.items, of: feed,
                                          newestFirstRepliesFeedItems: newestReplies)
-                if newReplyList != modelReplies ?? [] {
+                if newReplyList != modelReplies {
                     modelReplies = newReplyList
                     DispatchQueue.main.async {
                         self.scrollToBottom = true
@@ -503,17 +804,14 @@ class CommentDetailViewModel: ObservableObject {
             }
     }
 
+    /// The replies listed from the start of the thread, then the newest ones once `feed` reached its end (see
+    /// `OldestFirstThread.listed`).
     private func merge(
-        oldestFirstRepliesFeedItems: [Reply],
+        oldestFirstRepliesFeedItems: [Reply]?, of feed: Feed<Reply, Never>,
         newestFirstRepliesFeedItems: [Reply])
-    -> [Reply] {
-        var mergedReplies = oldestFirstRepliesFeedItems
-        for newReply in newestFirstRepliesFeedItems.reversed() {
-            if !mergedReplies.contains(where: { $0.uuid == newReply.uuid }) {
-                mergedReplies.append(newReply)
-            }
-        }
-        return mergedReplies
+    -> [Reply]? {
+        OldestFirstThread.listed(oldestFirst: oldestFirstRepliesFeedItems, reachedEnd: feed.hasReachedServerEnd,
+                                 newestFirst: newestFirstRepliesFeedItems, id: \.uuid)
     }
 
     private func stopAutoFetchLatestReplies() {
@@ -584,10 +882,42 @@ class CommentDetailViewModel: ObservableObject {
                                                                    incrementViewCount: incrementViewCount)
         } catch {
             if case let .serverError(error) = error, case .notFound = error {
-                commentNotAvailable = true
+                markCommentNotAvailable()
             } else {
                 throw error
             }
+        }
+    }
+
+    private func markCommentNotAvailable() {
+        commentConfirmedNotAvailable = true
+        commentNotAvailable = true
+    }
+
+    /// Asks the server whether a comment that vanished from the cache still exists: the logout purge also removes
+    /// the comments of the previous session, which the next one may still see.
+    private func confirmCommentDisappearance() {
+        Task {
+            await confirmCommentDisappearance()
+        }
+    }
+
+    private func confirmCommentDisappearance() async {
+        let fetchError: ServerCallError?
+        do {
+            try await octopus.core.commentsRepository.fetchComment(uuid: commentUuid)
+            fetchError = nil
+        } catch {
+            fetchError = error
+        }
+        switch VanishedContentCheck(fetchError: fetchError) {
+        case .stillAvailable:
+            // The replies went with the comment.
+            await refreshFeed()
+        case .gone:
+            markCommentNotAvailable()
+        case let .unanswered(failure):
+            contentLoadFailure = failure
         }
     }
 
@@ -630,7 +960,10 @@ class CommentDetailViewModel: ObservableObject {
         guard let feed else { return }
         defer { hasLoadedReplies = true }
         do {
-            try await feed.refresh(pageSize: 10)
+            let pageSize = listsMostRecentEnd
+                ? MostRecentWindow.refreshSize(listedCount: feed.items?.count ?? 0)
+                : 10
+            try await feed.refresh(pageSize: pageSize)
             repliesLoadFailure = nil
         } catch {
             if #available(iOS 14, *) { Logger.replies.debug("Error while refreshing replies feed: \(error)") }
@@ -675,8 +1008,14 @@ class CommentDetailViewModel: ObservableObject {
         }
     }
 
+    /// Called when the loader at the end of the list is on screen. On the most recent end, the loader of older
+    /// replies at its top came to rest on screen.
     func loadPreviousReplies() {
         guard let feed else { return }
+        if listsMostRecentEnd {
+            perform(olderPages.loaderRestedOnScreen(canLoad: canLoadOlderReplies))
+            return
+        }
         Task {
             do {
                 try await feed.loadPreviousItems(pageSize: 50)
@@ -699,8 +1038,9 @@ class CommentDetailViewModel: ObservableObject {
 
     func setReplyReaction(_ reaction: ReactionKind?, replyId: String) {
         guard ensureConnected(action: .reaction) else { return }
-        guard let reply = feed?.items?.first(where: { $0.id == replyId }) else {
-            error = .localizationKey("Error.Unknown")
+        // The listed replies, not the feed's: newer replies merged from the newest-first feed are listed too.
+        guard let reply = modelReplies?.first(where: { $0.id == replyId }) else {
+            error = .unknownError
             return
         }
         Task {
@@ -738,7 +1078,7 @@ class CommentDetailViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
         }
     }
@@ -765,7 +1105,7 @@ class CommentDetailViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
         }
     }

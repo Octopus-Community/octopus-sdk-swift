@@ -133,7 +133,7 @@ final class ConfigViewModel: ObservableObject {
 
     private func performLoad() async {
         do {
-            featureEnvs = try await FeatureEnvsDirectory.fetch().filter { $0.isUsable() }
+            featureEnvs = try await FeatureEnvsDirectory.fetch()
             featureEnvsLoaded = true
         } catch {
             featureEnvsError = error.userMessage

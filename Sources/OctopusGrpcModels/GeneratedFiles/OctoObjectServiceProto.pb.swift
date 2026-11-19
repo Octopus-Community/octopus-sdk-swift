@@ -161,6 +161,15 @@ public nonisolated struct Com_Octopuscommunity_UpdatePostRequest: Sendable {
     /// Clears the value of `boostRules`. Subsequent reads from it will return its default value.
     public mutating func clearBoostRules() {self._boostRules = nil}
 
+    public var threadPushEnabled: Bool {
+      get {_threadPushEnabled ?? false}
+      set {_threadPushEnabled = newValue}
+    }
+    /// Returns true if `threadPushEnabled` has been explicitly set.
+    public var hasThreadPushEnabled: Bool {self._threadPushEnabled != nil}
+    /// Clears the value of `threadPushEnabled`. Subsequent reads from it will return its default value.
+    public mutating func clearThreadPushEnabled() {self._threadPushEnabled = nil}
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
@@ -175,6 +184,7 @@ public nonisolated struct Com_Octopuscommunity_UpdatePostRequest: Sendable {
     fileprivate var _createCommentsRepliesOverride: Com_Octopuscommunity_EntitlementList? = nil
     fileprivate var _clearCreateCommentsRepliesOverride_p: Bool? = nil
     fileprivate var _boostRules: Com_Octopuscommunity_BoostRules? = nil
+    fileprivate var _threadPushEnabled: Bool? = nil
   }
 
   public init() {}
@@ -1345,6 +1355,15 @@ public nonisolated struct Com_Octopuscommunity_PutPostResponse: Sendable {
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
+    public var fileIndex: Int32 {
+      get {_fileIndex ?? 0}
+      set {_fileIndex = newValue}
+    }
+    /// Returns true if `fileIndex` has been explicitly set.
+    public var hasFileIndex: Bool {self._fileIndex != nil}
+    /// Clears the value of `fileIndex`. Subsequent reads from it will return its default value.
+    public mutating func clearFileIndex() {self._fileIndex = nil}
+
     public var details: Com_Octopuscommunity_PutPostResponse.Error.OneOf_Details? = nil
 
     public var missingParent: Com_Octopuscommunity_ErrorDetails.MissingParent {
@@ -1563,6 +1582,215 @@ public nonisolated struct Com_Octopuscommunity_PutPostResponse: Sendable {
     public init() {}
 
     fileprivate var _field: Com_Octopuscommunity_PutPostResponse.Error.Field? = nil
+    fileprivate var _fileIndex: Int32? = nil
+  }
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_CreateImageUploadsRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var images: [Com_Octopuscommunity_CreateImageUploadsRequest.ImageUploadRequest] = []
+
+  public var bridge: Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload {
+    get {_bridge ?? Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload()}
+    set {_bridge = newValue}
+  }
+  /// Returns true if `bridge` has been explicitly set.
+  public var hasBridge: Bool {self._bridge != nil}
+  /// Clears the value of `bridge`. Subsequent reads from it will return its default value.
+  public mutating func clearBridge() {self._bridge = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated struct ImageUploadRequest: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var sizeBytes: UInt64 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public nonisolated struct BridgeUpload: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var clientObjectID: String = String()
+
+    public var clientToken: String {
+      get {_clientToken ?? String()}
+      set {_clientToken = newValue}
+    }
+    /// Returns true if `clientToken` has been explicitly set.
+    public var hasClientToken: Bool {self._clientToken != nil}
+    /// Clears the value of `clientToken`. Subsequent reads from it will return its default value.
+    public mutating func clearClientToken() {self._clientToken = nil}
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _clientToken: String? = nil
+  }
+
+  public init() {}
+
+  fileprivate var _bridge: Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload? = nil
+}
+
+public nonisolated struct Com_Octopuscommunity_CreateImageUploadsResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var result: Com_Octopuscommunity_CreateImageUploadsResponse.OneOf_Result? = nil
+
+  public var success: Com_Octopuscommunity_CreateImageUploadsResponse.Success {
+    get {
+      if case .success(let v)? = result {return v}
+      return Com_Octopuscommunity_CreateImageUploadsResponse.Success()
+    }
+    set {result = .success(newValue)}
+  }
+
+  public var fail: Com_Octopuscommunity_CreateImageUploadsResponse.Fail {
+    get {
+      if case .fail(let v)? = result {return v}
+      return Com_Octopuscommunity_CreateImageUploadsResponse.Fail()
+    }
+    set {result = .fail(newValue)}
+  }
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_Result: Equatable, Sendable {
+    case success(Com_Octopuscommunity_CreateImageUploadsResponse.Success)
+    case fail(Com_Octopuscommunity_CreateImageUploadsResponse.Fail)
+
+  }
+
+  public nonisolated struct Success: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var uploads: [Com_Octopuscommunity_CreateImageUploadsResponse.ImageUpload] = []
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public nonisolated struct ImageUpload: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var uploadID: String = String()
+
+    public var uploadURL: String = String()
+
+    public var expiresAt: UInt64 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public nonisolated struct Fail: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var errors: [Com_Octopuscommunity_CreateImageUploadsResponse.Error] = []
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public nonisolated struct Error: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var message: String = String()
+
+    public var fileIndex: Int32 {
+      get {_fileIndex ?? 0}
+      set {_fileIndex = newValue}
+    }
+    /// Returns true if `fileIndex` has been explicitly set.
+    public var hasFileIndex: Bool {self._fileIndex != nil}
+    /// Clears the value of `fileIndex`. Subsequent reads from it will return its default value.
+    public mutating func clearFileIndex() {self._fileIndex = nil}
+
+    public var details: Com_Octopuscommunity_CreateImageUploadsResponse.Error.OneOf_Details? = nil
+
+    public var emptyFile: Com_Octopuscommunity_ErrorDetails.EmptyFile {
+      get {
+        if case .emptyFile(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.EmptyFile()
+      }
+      set {details = .emptyFile(newValue)}
+    }
+
+    public var fileSizeTooBig: Com_Octopuscommunity_ErrorDetails.FileSizeTooBig {
+      get {
+        if case .fileSizeTooBig(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.FileSizeTooBig()
+      }
+      set {details = .fileSizeTooBig(newValue)}
+    }
+
+    /// Only for an upload with a bridge, with the same meaning as in the bridge post creation.
+    public var invalidClientToken: Com_Octopuscommunity_ErrorDetails.InvalidClientToken {
+      get {
+        if case .invalidClientToken(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.InvalidClientToken()
+      }
+      set {details = .invalidClientToken(newValue)}
+    }
+
+    public var expiredClientToken: Com_Octopuscommunity_ErrorDetails.ExpiredClientToken {
+      get {
+        if case .expiredClientToken(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.ExpiredClientToken()
+      }
+      set {details = .expiredClientToken(newValue)}
+    }
+
+    public var bridgePostUnavailable: Com_Octopuscommunity_ErrorDetails.BridgePostUnavailable {
+      get {
+        if case .bridgePostUnavailable(let v)? = details {return v}
+        return Com_Octopuscommunity_ErrorDetails.BridgePostUnavailable()
+      }
+      set {details = .bridgePostUnavailable(newValue)}
+    }
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public nonisolated enum OneOf_Details: Equatable, Sendable {
+      case emptyFile(Com_Octopuscommunity_ErrorDetails.EmptyFile)
+      case fileSizeTooBig(Com_Octopuscommunity_ErrorDetails.FileSizeTooBig)
+      /// Only for an upload with a bridge, with the same meaning as in the bridge post creation.
+      case invalidClientToken(Com_Octopuscommunity_ErrorDetails.InvalidClientToken)
+      case expiredClientToken(Com_Octopuscommunity_ErrorDetails.ExpiredClientToken)
+      case bridgePostUnavailable(Com_Octopuscommunity_ErrorDetails.BridgePostUnavailable)
+
+    }
+
+    public init() {}
+
+    fileprivate var _fileIndex: Int32? = nil
   }
 
   public init() {}
@@ -2183,6 +2411,15 @@ public nonisolated struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Se
     /// Clears the value of `field`. Subsequent reads from it will return its default value.
     public mutating func clearField() {self._field = nil}
 
+    public var fileIndex: Int32 {
+      get {_fileIndex ?? 0}
+      set {_fileIndex = newValue}
+    }
+    /// Returns true if `fileIndex` has been explicitly set.
+    public var hasFileIndex: Bool {self._fileIndex != nil}
+    /// Clears the value of `fileIndex`. Subsequent reads from it will return its default value.
+    public mutating func clearFileIndex() {self._fileIndex = nil}
+
     public var details: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error.OneOf_Details? = nil
 
     public var missingText: Com_Octopuscommunity_ErrorDetails.MissingText {
@@ -2392,6 +2629,7 @@ public nonisolated struct Com_Octopuscommunity_GetOrCreateBridgePostResponse: Se
     public init() {}
 
     fileprivate var _field: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error.Field? = nil
+    fileprivate var _fileIndex: Int32? = nil
   }
 
   public init() {}
@@ -2595,7 +2833,7 @@ nonisolated extension Com_Octopuscommunity_UpdatePostRequest: SwiftProtobuf.Mess
 
 nonisolated extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_UpdatePostRequest.protoMessageName + ".Update"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0\u{1}postContent\0\u{1}maxActivityScore\0\u{1}minActivityScore\0\u{1}shadowBanned\0\u{1}createCommentsRepliesOverride\0\u{1}boostRules\0\u{2}\u{18}deleteMaxActivityScore\0\u{2}\u{a}deleteMinActivityScore\0\u{2}\u{14}clearCreateCommentsRepliesOverride\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topicId\0\u{1}postContent\0\u{1}maxActivityScore\0\u{1}minActivityScore\0\u{1}shadowBanned\0\u{1}createCommentsRepliesOverride\0\u{1}boostRules\0\u{1}threadPushEnabled\0\u{2}\u{17}deleteMaxActivityScore\0\u{2}\u{a}deleteMinActivityScore\0\u{2}\u{14}clearCreateCommentsRepliesOverride\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2610,6 +2848,7 @@ nonisolated extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtob
       case 5: try { try decoder.decodeSingularBoolField(value: &self._shadowBanned) }()
       case 6: try { try decoder.decodeSingularMessageField(value: &self._createCommentsRepliesOverride) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._boostRules) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self._threadPushEnabled) }()
       case 31: try { try decoder.decodeSingularBoolField(value: &self._deleteMaxActivityScore) }()
       case 41: try { try decoder.decodeSingularBoolField(value: &self._deleteMinActivityScore) }()
       case 61: try { try decoder.decodeSingularBoolField(value: &self._clearCreateCommentsRepliesOverride_p) }()
@@ -2644,6 +2883,9 @@ nonisolated extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtob
     try { if let v = self._boostRules {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     } }()
+    try { if let v = self._threadPushEnabled {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 8)
+    } }()
     try { if let v = self._deleteMaxActivityScore {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 31)
     } }()
@@ -2667,6 +2909,7 @@ nonisolated extension Com_Octopuscommunity_UpdatePostRequest.Update: SwiftProtob
     if lhs._createCommentsRepliesOverride != rhs._createCommentsRepliesOverride {return false}
     if lhs._clearCreateCommentsRepliesOverride_p != rhs._clearCreateCommentsRepliesOverride_p {return false}
     if lhs._boostRules != rhs._boostRules {return false}
+    if lhs._threadPushEnabled != rhs._threadPushEnabled {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -4251,7 +4494,7 @@ nonisolated extension Com_Octopuscommunity_PutPostResponse.Fail: SwiftProtobuf.M
 
 nonisolated extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_PutPostResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingParent\0\u{1}missingText\0\u{1}bannedWordUsed\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}badPollAnswerNumber\0\u{1}missingClientObjectId\0\u{1}invalidAuthor\0\u{1}missingCtaText\0\u{1}missingCtaTarget\0\u{1}invalidCtaTarget\0\u{1}publicationRateLimitExceeded\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{1}fileIndex\0\u{2}b\u{1}missingParent\0\u{1}missingText\0\u{1}bannedWordUsed\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}badPollAnswerNumber\0\u{1}missingClientObjectId\0\u{1}invalidAuthor\0\u{1}missingCtaText\0\u{1}missingCtaTarget\0\u{1}invalidCtaTarget\0\u{1}publicationRateLimitExceeded\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4261,6 +4504,7 @@ nonisolated extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self._field) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self._fileIndex) }()
       case 101: try {
         var v: Com_Octopuscommunity_ErrorDetails.MissingParent?
         var hadOneofValue = false
@@ -4472,6 +4716,9 @@ nonisolated extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.
     try { if let v = self._field {
       try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._fileIndex {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 3)
+    } }()
     switch self.details {
     case .missingParent?: try {
       guard case .missingParent(let v)? = self.details else { preconditionFailure() }
@@ -4541,6 +4788,7 @@ nonisolated extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.
   public static func ==(lhs: Com_Octopuscommunity_PutPostResponse.Error, rhs: Com_Octopuscommunity_PutPostResponse.Error) -> Bool {
     if lhs.message != rhs.message {return false}
     if lhs._field != rhs._field {return false}
+    if lhs._fileIndex != rhs._fileIndex {return false}
     if lhs.details != rhs.details {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -4549,6 +4797,409 @@ nonisolated extension Com_Octopuscommunity_PutPostResponse.Error: SwiftProtobuf.
 
 nonisolated extension Com_Octopuscommunity_PutPostResponse.Error.Field: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}CONTENT_PARENT\0\u{1}CONTENT_TEXT\0\u{2}\u{2}CONTENT_FILE\0\u{1}CONTENT_POLL\0\u{1}CONTENT_CATCHPHRASE\0\u{1}CONTENT_CTA\0\u{1}CONTENT_CLIENT_OBJECT\0")
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CreateImageUploadsRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}images\0\u{1}bridge\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.images) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._bridge) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.images.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.images, fieldNumber: 1)
+    }
+    try { if let v = self._bridge {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsRequest, rhs: Com_Octopuscommunity_CreateImageUploadsRequest) -> Bool {
+    if lhs.images != rhs.images {return false}
+    if lhs._bridge != rhs._bridge {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsRequest.ImageUploadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateImageUploadsRequest.protoMessageName + ".ImageUploadRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}sizeBytes\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.sizeBytes) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.sizeBytes != 0 {
+      try visitor.visitSingularUInt64Field(value: self.sizeBytes, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsRequest.ImageUploadRequest, rhs: Com_Octopuscommunity_CreateImageUploadsRequest.ImageUploadRequest) -> Bool {
+    if lhs.sizeBytes != rhs.sizeBytes {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateImageUploadsRequest.protoMessageName + ".BridgeUpload"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientObjectId\0\u{1}clientToken\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.clientObjectID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._clientToken) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.clientObjectID.isEmpty {
+      try visitor.visitSingularStringField(value: self.clientObjectID, fieldNumber: 1)
+    }
+    try { if let v = self._clientToken {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload, rhs: Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload) -> Bool {
+    if lhs.clientObjectID != rhs.clientObjectID {return false}
+    if lhs._clientToken != rhs._clientToken {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CreateImageUploadsResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}success\0\u{1}fail\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: Com_Octopuscommunity_CreateImageUploadsResponse.Success?
+        var hadOneofValue = false
+        if let current = self.result {
+          hadOneofValue = true
+          if case .success(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.result = .success(v)
+        }
+      }()
+      case 2: try {
+        var v: Com_Octopuscommunity_CreateImageUploadsResponse.Fail?
+        var hadOneofValue = false
+        if let current = self.result {
+          hadOneofValue = true
+          if case .fail(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.result = .fail(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.result {
+    case .success?: try {
+      guard case .success(let v)? = self.result else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .fail?: try {
+      guard case .fail(let v)? = self.result else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsResponse, rhs: Com_Octopuscommunity_CreateImageUploadsResponse) -> Bool {
+    if lhs.result != rhs.result {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsResponse.Success: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateImageUploadsResponse.protoMessageName + ".Success"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}uploads\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.uploads) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.uploads.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.uploads, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsResponse.Success, rhs: Com_Octopuscommunity_CreateImageUploadsResponse.Success) -> Bool {
+    if lhs.uploads != rhs.uploads {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsResponse.ImageUpload: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateImageUploadsResponse.protoMessageName + ".ImageUpload"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}uploadId\0\u{1}uploadUrl\0\u{1}expiresAt\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.uploadID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.uploadURL) }()
+      case 3: try { try decoder.decodeSingularUInt64Field(value: &self.expiresAt) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.uploadID.isEmpty {
+      try visitor.visitSingularStringField(value: self.uploadID, fieldNumber: 1)
+    }
+    if !self.uploadURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.uploadURL, fieldNumber: 2)
+    }
+    if self.expiresAt != 0 {
+      try visitor.visitSingularUInt64Field(value: self.expiresAt, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsResponse.ImageUpload, rhs: Com_Octopuscommunity_CreateImageUploadsResponse.ImageUpload) -> Bool {
+    if lhs.uploadID != rhs.uploadID {return false}
+    if lhs.uploadURL != rhs.uploadURL {return false}
+    if lhs.expiresAt != rhs.expiresAt {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsResponse.Fail: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateImageUploadsResponse.protoMessageName + ".Fail"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}errors\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.errors) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.errors.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.errors, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsResponse.Fail, rhs: Com_Octopuscommunity_CreateImageUploadsResponse.Fail) -> Bool {
+    if lhs.errors != rhs.errors {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CreateImageUploadsResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CreateImageUploadsResponse.protoMessageName + ".Error"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}fileIndex\0\u{2}c\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}invalidClientToken\0\u{1}expiredClientToken\0\u{1}bridgePostUnavailable\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self._fileIndex) }()
+      case 101: try {
+        var v: Com_Octopuscommunity_ErrorDetails.EmptyFile?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .emptyFile(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .emptyFile(v)
+        }
+      }()
+      case 102: try {
+        var v: Com_Octopuscommunity_ErrorDetails.FileSizeTooBig?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .fileSizeTooBig(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .fileSizeTooBig(v)
+        }
+      }()
+      case 103: try {
+        var v: Com_Octopuscommunity_ErrorDetails.InvalidClientToken?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .invalidClientToken(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .invalidClientToken(v)
+        }
+      }()
+      case 104: try {
+        var v: Com_Octopuscommunity_ErrorDetails.ExpiredClientToken?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .expiredClientToken(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .expiredClientToken(v)
+        }
+      }()
+      case 105: try {
+        var v: Com_Octopuscommunity_ErrorDetails.BridgePostUnavailable?
+        var hadOneofValue = false
+        if let current = self.details {
+          hadOneofValue = true
+          if case .bridgePostUnavailable(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.details = .bridgePostUnavailable(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 1)
+    }
+    try { if let v = self._fileIndex {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 2)
+    } }()
+    switch self.details {
+    case .emptyFile?: try {
+      guard case .emptyFile(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 101)
+    }()
+    case .fileSizeTooBig?: try {
+      guard case .fileSizeTooBig(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 102)
+    }()
+    case .invalidClientToken?: try {
+      guard case .invalidClientToken(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 103)
+    }()
+    case .expiredClientToken?: try {
+      guard case .expiredClientToken(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 104)
+    }()
+    case .bridgePostUnavailable?: try {
+      guard case .bridgePostUnavailable(let v)? = self.details else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 105)
+    }()
+    case nil: break
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CreateImageUploadsResponse.Error, rhs: Com_Octopuscommunity_CreateImageUploadsResponse.Error) -> Bool {
+    if lhs.message != rhs.message {return false}
+    if lhs._fileIndex != rhs._fileIndex {return false}
+    if lhs.details != rhs.details {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 nonisolated extension Com_Octopuscommunity_GetTopicsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -5679,7 +6330,7 @@ nonisolated extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Fail: S
 
 nonisolated extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_GetOrCreateBridgePostResponse.protoMessageName + ".Error"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{2}c\u{1}missingText\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}downloadIssue\0\u{1}missingCtaText\0\u{1}missingClientObjectId\0\u{1}invalidClientToken\0\u{1}bridgePostUnavailable\0\u{1}expiredClientToken\0\u{1}invalidTopicId\0\u{1}invalidAuthor\0\u{1}postAlreadyExists\0\u{1}postNotFound\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}field\0\u{1}fileIndex\0\u{2}b\u{1}missingText\0\u{1}maxCharLimitReached\0\u{1}emptyFile\0\u{1}fileSizeTooBig\0\u{1}badFileFormat\0\u{1}uploadIssue\0\u{1}downloadIssue\0\u{1}missingCtaText\0\u{1}missingClientObjectId\0\u{1}invalidClientToken\0\u{1}bridgePostUnavailable\0\u{1}expiredClientToken\0\u{1}invalidTopicId\0\u{1}invalidAuthor\0\u{1}postAlreadyExists\0\u{1}postNotFound\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5689,6 +6340,7 @@ nonisolated extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error: 
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self._field) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self._fileIndex) }()
       case 101: try {
         var v: Com_Octopuscommunity_ErrorDetails.MissingText?
         var hadOneofValue = false
@@ -5913,6 +6565,9 @@ nonisolated extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error: 
     try { if let v = self._field {
       try visitor.visitSingularEnumField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._fileIndex {
+      try visitor.visitSingularInt32Field(value: v, fieldNumber: 3)
+    } }()
     switch self.details {
     case .missingText?: try {
       guard case .missingText(let v)? = self.details else { preconditionFailure() }
@@ -5986,6 +6641,7 @@ nonisolated extension Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error: 
   public static func ==(lhs: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error, rhs: Com_Octopuscommunity_GetOrCreateBridgePostResponse.Error) -> Bool {
     if lhs.message != rhs.message {return false}
     if lhs._field != rhs._field {return false}
+    if lhs._fileIndex != rhs._fileIndex {return false}
     if lhs.details != rhs.details {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

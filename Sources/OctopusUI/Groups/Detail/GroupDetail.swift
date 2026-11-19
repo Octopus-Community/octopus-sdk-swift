@@ -22,12 +22,14 @@ struct GroupDetail {
 }
 
 extension GroupDetail {
-    init(from topic: Topic) {
+    /// - Parameter isListed: whether the groups list holds the group. A group outside it cannot be followed from
+    ///   here: the follow would only be undone from that list, where the group does not appear.
+    init(from topic: Topic, isListed: Bool = true) {
         id = topic.uuid
         name = topic.name
         description = EllipsizableText(text: topic.description, maxLength: 140, maxLines: 2)
         feedId = topic.feedId
-        canChangeFollowStatus = topic.canChangeFollowStatus
+        canChangeFollowStatus = topic.canChangeFollowStatus && isListed
         isFollowed = topic.isFollowed
         customAction = topic.customAction.map {
             GroupCTAViewData(ctaText: $0.ctaText, targetUrl: $0.targetUrl)

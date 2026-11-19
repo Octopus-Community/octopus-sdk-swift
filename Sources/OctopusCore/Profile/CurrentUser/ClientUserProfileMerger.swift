@@ -27,6 +27,32 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
 
     private var latestClientUserSent: ClientUser?
     private var sameClientUserSendingCount = 0
+    /// Guards `latestClientUserSent`, `sameClientUserSendingCount` and `latestClientUserPicture`: updates for
+    /// different host's profiles can be sent at the same time, each in its own task.
+    private let sendingStateLock = NSLock()
+
+    /// Counts the updates started, so that a failed one restores the state only when no other one started since.
+    private var sendingGeneration = 0
+
+    /// What the merger remembers of the updates it sent, restored when one fails.
+    private struct SendingState {
+        let clientUser: ClientUser?
+        let count: Int
+        let generation: Int
+    }
+
+    /// The update being sent: the host's profile it brings, the user it is sent for, and its answer.
+    private var updateInFlight: (clientUser: ClientUser, userId: String, id: UUID,
+                                 task: Task<StorableCurrentUserProfile?, Error>)?
+    /// Number of merges that got the answer of the update in flight rather than sending their own. Read by the tests,
+    /// which keep an update in flight until another merge joins it: such a merge touches nothing else they can see.
+    var joinedUpdatesCount: Int {
+        updateInFlightLock.lock()
+        defer { updateInFlightLock.unlock() }
+        return _joinedUpdatesCount
+    }
+    private var _joinedUpdatesCount = 0
+    private let updateInFlightLock = NSLock()
 
     init(appManagedFields: Set<ConnectionMode.SSOConfiguration.ProfileField>, injector: Injector) {
         self.appManagedFields = appManagedFields
@@ -39,32 +65,130 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
 
     func updateProfileWithClientUser(_ clientUser: ClientUser, profile: CurrentUserProfile, userId: String)
     async throws(UpdateProfile.Error) -> StorableCurrentUserProfile? {
-        try await updateProfileWithClientUser(
-            clientUser,
-            profileIsGuest: profile.isGuest,
-            profileHasConfirmedNickname: profile.hasConfirmedNickname,
-            profileOriginalNickname: profile.originalNickname, profileNickname: profile.nickname,
-            profileHasConfirmedBio: profile.hasConfirmedBio, profileBio: profile.bio,
-            profileHasConfirmedPicture: profile.hasConfirmedPicture, profilePictureUrl: profile.pictureUrl,
-            userId: userId)
+        try await sendingOnce(clientUser, userId: userId) { [self] in
+            try await updateProfileWithClientUser(
+                clientUser,
+                profileIsGuest: profile.isGuest,
+                profileHasConfirmedNickname: profile.hasConfirmedNickname,
+                profileOriginalNickname: profile.originalNickname, profileNickname: profile.nickname,
+                profileHasConfirmedBio: profile.hasConfirmedBio, profileBio: profile.bio,
+                profileHasConfirmedPicture: profile.hasConfirmedPicture, profilePictureUrl: profile.pictureUrl,
+                userId: userId)
+        }
     }
 
     func updateProfileWithClientUser(_ clientUser: ClientUser, profile: StorableCurrentUserProfile, userId: String)
     async throws(UpdateProfile.Error) -> StorableCurrentUserProfile? {
-        try await updateProfileWithClientUser(
-            clientUser,
-            profileIsGuest: profile.isGuest,
-            profileHasConfirmedNickname: profile.hasConfirmedNickname ?? true,
-            profileOriginalNickname: profile.originalNickname, profileNickname: profile.nickname,
-            profileHasConfirmedBio: profile.hasConfirmedBio ?? true, profileBio: profile.bio,
-            profileHasConfirmedPicture: profile.hasConfirmedPicture ?? true, profilePictureUrl: profile.pictureUrl,
-            userId: userId)
+        try await sendingOnce(clientUser, userId: userId) { [self] in
+            try await updateProfileWithClientUser(
+                clientUser,
+                profileIsGuest: profile.isGuest,
+                profileHasConfirmedNickname: profile.hasConfirmedNickname ?? true,
+                profileOriginalNickname: profile.originalNickname, profileNickname: profile.nickname,
+                profileHasConfirmedBio: profile.hasConfirmedBio ?? true, profileBio: profile.bio,
+                profileHasConfirmedPicture: profile.hasConfirmedPicture ?? true, profilePictureUrl: profile.pictureUrl,
+                userId: userId)
+        }
+    }
+
+    /// Runs `update`, unless the same host's profile is already being sent for the same user: its answer is then
+    /// the one returned. The connection and the profile repository can fill the profile at the same time, as when the
+    /// fetch of the profile stores its migration while the connection fills it, and the update would be sent twice.
+    private func sendingOnce(_ clientUser: ClientUser, userId: String,
+                             update: @escaping @Sendable () async throws -> StorableCurrentUserProfile?)
+    async throws(UpdateProfile.Error) -> StorableCurrentUserProfile? {
+        let task = sendingUpdate(of: clientUser, userId: userId, startingWith: update)
+        do {
+            return try await task.value
+        } catch let error as UpdateProfile.Error {
+            throw error
+        } catch {
+            throw .serverCall(.other(error))
+        }
+    }
+
+    /// The update being sent with `clientUser` for `userId`, started with `update` when there is none.
+    private func sendingUpdate(of clientUser: ClientUser, userId: String,
+                               startingWith update: @escaping @Sendable () async throws -> StorableCurrentUserProfile?)
+    -> Task<StorableCurrentUserProfile?, Error> {
+        updateInFlightLock.lock()
+        defer { updateInFlightLock.unlock() }
+        if let updateInFlight, updateInFlight.clientUser == clientUser, updateInFlight.userId == userId {
+            _joinedUpdatesCount += 1
+            return updateInFlight.task
+        }
+        let id = UUID()
+        let task = Task { [self] in
+            // The lock is held until the update is registered, so it cannot be removed before.
+            defer { removeUpdateInFlight(id: id) }
+            return try await update()
+        }
+        updateInFlight = (clientUser, userId, id, task)
+        return task
+    }
+
+    private func removeUpdateInFlight(id: UUID) {
+        updateInFlightLock.lock()
+        defer { updateInFlightLock.unlock() }
+        if updateInFlight?.id == id { updateInFlight = nil }
     }
 
     func clearLatestClientUser() {
+        sendingStateLock.lock()
+        defer { sendingStateLock.unlock() }
         latestClientUserPicture = nil
         latestClientUserSent = nil
         sameClientUserSendingCount = 0
+        // an update that fails after this must not bring back what was cleared
+        sendingGeneration += 1
+    }
+
+    private func latestPictureSent() -> Data? {
+        sendingStateLock.lock()
+        defer { sendingStateLock.unlock() }
+        return latestClientUserPicture
+    }
+
+    /// Records that `clientUser` is being sent, and returns what to restore if the update fails, or nil when the same
+    /// host's profile was sent too many times in a row: the server answered each of them with a profile that differs
+    /// from it, and sending it again would only loop.
+    private func startSending(_ clientUser: ClientUser) -> SendingState? {
+        sendingStateLock.lock()
+        defer { sendingStateLock.unlock() }
+        sendingGeneration += 1
+        let previousState = SendingState(clientUser: latestClientUserSent, count: sameClientUserSendingCount,
+                                         generation: sendingGeneration)
+        if latestClientUserSent == clientUser {
+            sameClientUserSendingCount += 1
+            guard sameClientUserSendingCount < 3 else {
+                if #available(iOS 14, *) { Logger.profile.trace("Too many attempts at using client user for the profile update") }
+                return nil
+            }
+        } else {
+            sameClientUserSendingCount = 0
+        }
+        latestClientUserSent = clientUser
+        return previousState
+    }
+
+    /// Records the picture of `clientUser` as sent, once an update carrying it succeeded. Recorded earlier, an update
+    /// started meanwhile with the same picture would leave it out, and it would never be sent if the first one fails.
+    private func recordPictureSent(of clientUser: ClientUser) {
+        sendingStateLock.lock()
+        defer { sendingStateLock.unlock() }
+        latestClientUserPicture = clientUser.profile.picture
+    }
+
+    /// Forgets the update that failed, unless another one was started since. A failed update does not
+    /// count against the tries of the same host's profile: a failure changes no profile, so it cannot start a loop,
+    /// and a host calling `connectUser` on each launch while the server refuses it would otherwise use them all up,
+    /// leaving none for when the community opens to the user.
+    private func endSendingAfterFailure(restoring previousState: SendingState) {
+        sendingStateLock.lock()
+        defer { sendingStateLock.unlock() }
+        guard sendingGeneration == previousState.generation else { return }
+        latestClientUserSent = previousState.clientUser
+        sameClientUserSendingCount = previousState.count
     }
 
     private func updateProfileWithClientUser(
@@ -128,7 +252,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
         let picture: EditableProfile.FieldUpdate<Data?>
         let hasConfirmedPicture: EditableProfile.FieldUpdate<Bool>
         if appManagedFields.contains(.picture) || !profileHasConfirmedPicture,
-           latestClientUserPicture != clientUser.profile.picture,
+           latestPictureSent() != clientUser.profile.picture,
            clientUser.profile.picture != nil || profilePictureUrl != nil {
             if #available(iOS 14, *) { Logger.profile.trace("Picture changed") }
             picture = .updated(clientUser.profile.picture)
@@ -143,20 +267,9 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
 
         // avoid sending in loop the same client user updates
-        if latestClientUserSent == clientUser {
-            sameClientUserSendingCount += 1
-            guard sameClientUserSendingCount < 3 else {
-                if #available(iOS 14, *) { Logger.profile.trace("Too many attempts at using client user for the profile update") }
-                return nil
-            }
-        } else {
-            sameClientUserSendingCount = 0
-        }
+        guard let previousSendingState = startSending(clientUser) else { return nil }
 
-        let previousClientUserPicture = latestClientUserPicture
         do {
-            latestClientUserSent = clientUser
-            latestClientUserPicture = clientUser.profile.picture
             var pictureUpdate: EditableProfile.FieldUpdate<(imgData: Data, isCompressed: Bool)?> = .unchanged
             if case let .updated(imageData) = picture {
                 if let imageData {
@@ -185,6 +298,9 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
                     gamificationRepository.register(action: .profileCompleted)
                 }
 
+                if case .updated = picture {
+                    recordPictureSent(of: clientUser)
+                }
                 sdkEventsEmitter.emit(.profileUpdated)
 
                 return StorableCurrentUserProfile(from: content.profile, userId: userId)
@@ -195,8 +311,7 @@ class ClientUserProfileMerger: InjectableObject, @unchecked Sendable {
                 throw UpdateProfile.Error.serverCall(.other(nil))
             }
         } catch {
-            // rollback client picture hash
-            latestClientUserPicture = previousClientUserPicture
+            endSendingAfterFailure(restoring: previousSendingState)
             if #available(iOS 14, *) { Logger.profile.debug("Error syncing profile: \(error)") }
             if let error = error as? UpdateProfile.Error {
                 throw error

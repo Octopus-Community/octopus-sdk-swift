@@ -20,26 +20,26 @@ final class NotificationServiceInterceptor: Com_Octopuscommunity_NotificationSer
     }
 
     func makeGetUserNotificationsInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetUserNotificationsRequest, OctopusGrpcModels.Com_Octopuscommunity_GetUserNotificationsResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeMarkNotificationsAsReadInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_MarkNotificationsAsReadRequest, OctopusGrpcModels.Com_Octopuscommunity_MarkNotificationsAsReadResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeRegisterPushTokenInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_RegisterPushTokenRequest, OctopusGrpcModels.Com_Octopuscommunity_RegisterPushTokenResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeSetNotificationSettingsInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SetNotificationSettingsRequest, OctopusGrpcModels.Com_Octopuscommunity_NotificationSettingsResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeGetNotificationSettingsInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetNotificationSettingsRequest, OctopusGrpcModels.Com_Octopuscommunity_NotificationSettingsResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeSendCommunityNotificationInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SendCommunityNotificationRequest, OctopusGrpcModels.Com_Octopuscommunity_SendCommunityNotificationResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 }

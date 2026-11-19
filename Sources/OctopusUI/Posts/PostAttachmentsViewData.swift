@@ -8,11 +8,12 @@ import OctopusCore
 /// What a post displays besides its text, shared by the feed and the post detail.
 ///
 /// A post can carry a media and a poll together, so both are kept: the view decides where the media
-/// goes depending on whether a poll is present. An image next to a poll is a normal combination; a
+/// goes depending on whether a poll is present. Images next to a poll are a normal combination; a
 /// video next to a poll is not expected from the backend but is still kept rather than dropped.
 struct PostAttachmentsViewData: Equatable {
     enum Media: Equatable {
-        case image(ImageMedia)
+        /// Never empty; keeps the order given by the backend.
+        case images([ImageMedia])
         case video(VideoMedia)
     }
 
@@ -21,8 +22,8 @@ struct PostAttachmentsViewData: Equatable {
 
     static let empty = PostAttachmentsViewData(media: nil, poll: nil)
 
-    static func image(_ image: ImageMedia) -> PostAttachmentsViewData {
-        PostAttachmentsViewData(media: .image(image), poll: nil)
+    static func images(_ images: [ImageMedia]) -> PostAttachmentsViewData {
+        PostAttachmentsViewData(media: .images(images), poll: nil)
     }
 
     static func poll(_ poll: DisplayablePoll) -> PostAttachmentsViewData {
@@ -46,16 +47,13 @@ extension PostAttachmentsViewData {
         self.init(media: Self.displayedMedia(in: medias), poll: poll.map { DisplayablePoll(from: $0) })
     }
 
-    /// Only one media is displayed. A post never carries a video and an image together; the video is
-    /// looked up first. Only the first video or the first image is considered, and a video without an
-    /// id is skipped.
+    /// A post never carries a video and images together; the video is looked up first, and only the first
+    /// one is considered. A video without an id is skipped. Without a video, every image is kept, in order.
     private static func displayedMedia(in medias: [OctopusCore.Media]) -> Media? {
         if let video = VideoMedia(from: medias.first(where: { $0.kind == .video })) {
             return .video(video)
         }
-        if let image = ImageMedia(from: medias.first(where: { $0.kind == .image })) {
-            return .image(image)
-        }
-        return nil
+        let images = medias.compactMap { ImageMedia(from: $0) }
+        return images.isEmpty ? nil : .images(images)
     }
 }

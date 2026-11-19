@@ -14,7 +14,9 @@ extension Injected {
 public class LanguageRepository: InjectableObject, @unchecked Sendable {
     public static let injectedIdentifier = Injected.languageRepository
 
-    @Published private(set) var localeIdentifier: String = ""
+    /// The language the SDK texts are displayed in: the overriding locale when one is set, the app's language
+    /// otherwise.
+    @Published public private(set) var localeIdentifier: String = ""
     @Published public private(set) var overridenLocale: Locale?
     @UserDefault(key: "OctopusSDK.Language.overridenLocale") private var overridenLocaleIdentifier: String?
 

@@ -64,6 +64,7 @@ struct CreateReplyView: View {
             mode: viewModel.termsAcceptanceMode,
             consentTexts: viewModel.consentTexts,
             contribution: .reply,
+            nicknameChoiceFollows: viewModel.consentSheetLeadsToNicknameChoice,
             termsUrl: viewModel.termsOfUseUrl,
             privacyUrl: viewModel.privacyPolicyUrl,
             rulesUrl: viewModel.communityGuidelinesUrl,

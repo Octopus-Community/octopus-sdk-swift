@@ -72,6 +72,7 @@ enum ScenarioID: String, CaseIterable, Identifiable {
     case pushNotifications
     // Theme & language
     case locale
+    case informalLanguages
     case theme
     // Host callbacks & events
     case customEvents
@@ -94,7 +95,7 @@ enum ScenarioID: String, CaseIterable, Identifiable {
             .community
         case .notSeenNotifications, .pushNotifications:
             .notifications
-        case .locale, .theme:
+        case .locale, .informalLanguages, .theme:
             .theme
         case .customEvents, .lifecycle, .events, .trackABTests, .forceOctopusABTests:
             .host
@@ -220,6 +221,15 @@ enum ScenarioCatalog {
                     + "reply.",
                 api: "debugOverrideForceNicknameChoice",
                 youWillSee: "the nickname choice screen with an empty field, before the contribution is sent.",
+                verifiable: true)
+        case .informalLanguages:
+            ScenarioSpec(
+                id: id, title: "Address members informally in some languages",
+                subtitle: "The SDK texts say \"tu\" instead of \"vous\" in the languages you pick, and keep the "
+                    + "polite form in the others.",
+                api: "debugOverrideInformalLanguages",
+                youWillSee: "the informal texts (\"Inizia la conversazione!\" on an empty feed, "
+                    + "\"Vérifie ta connexion\") when the device or the forced language is one you picked.",
                 verifiable: true)
         case .refreshEntitlements:
             ScenarioSpec(

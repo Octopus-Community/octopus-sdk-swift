@@ -20,6 +20,9 @@ class PublicProfileEntity: NSManagedObject, Identifiable {
     @NSManaged public var totalMessagesOptional: NSNumber?
     @NSManaged public var accountCreationDate: Date?
     @NSManaged public var gamificationLevelOptional: NSNumber?
+    /// The member's total points, for the host app's community data only: the Octopus screens never show another
+    /// member's points. Nil in a profile cached before the SDK stored it, until the profile is fetched again.
+    @NSManaged public var gamificationScoreOptional: NSNumber?
 
     @NSManaged public var descPostFeedId: String
     @NSManaged public var ascPostFeedId: String
@@ -36,6 +39,9 @@ class PublicProfileEntity: NSManagedObject, Identifiable {
     }
     var gamificationLevel: Int? {
         gamificationLevelOptional.map { $0.intValue }
+    }
+    var gamificationScore: Int? {
+        gamificationScoreOptional.map { $0.intValue }
     }
 
     @nonobjc public class func fetchAll() -> NSFetchRequest<PublicProfileEntity> {

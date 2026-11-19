@@ -64,6 +64,16 @@ class NotificationManager: ObservableObject {
         }
     }
 
+    /// Asks for the notification permission once the SDK is started, like the Android sample. iOS only shows the
+    /// prompt while the status is not determined, so a later launch or a denial stays silent; after a denial only
+    /// the system Settings bring the permission back (the Push Token scenario links to them).
+    func requestForPushNotificationPermissionIfNotDetermined() {
+        Task {
+            guard await notifCenter.notificationSettings().authorizationStatus == .notDetermined else { return }
+            requestForPushNotificationPermission()
+        }
+    }
+
     func handle(notificationResponse: UNNotificationResponse) {
         let userInfo = notificationResponse.notification.request.content.userInfo
         if OctopusSDK.isAnOctopusNotification(userInfo: userInfo) {

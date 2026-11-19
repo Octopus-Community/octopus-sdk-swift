@@ -15,7 +15,12 @@ public protocol FeedService {
     func getRootFeedsInfo(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetRootFeedsInfoResponse
 
-    func initializeFeed(feedId: String, pageSize: Int32, authenticationMethod: AuthenticationMethod)
+    /// Initializes a feed and returns its first page.
+    /// - Parameter anchorItemId: when set, the server returns the window of the feed around this item instead of
+    ///   its first page, with a `previousPageCursor` towards the start of the feed. It silently returns the first
+    ///   page when it cannot anchor on the item.
+    func initializeFeed(feedId: String, pageSize: Int32, anchorItemId: String?,
+                        authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetFeedPageResponse
 
@@ -41,13 +46,14 @@ class FeedServiceClient: ServiceClient, FeedService {
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          sdkIdentity: @escaping @Sendable () -> SdkIdentity,
+         callsGate: CallsGate,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_FeedServiceAsyncClient(
             channel: unaryChannel, interceptors: FeedServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
         super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier,
-                   sdkIdentity: sdkIdentity)
+                   sdkIdentity: sdkIdentity, callsGate: callsGate)
     }
 
     func getRootFeedsInfo(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
@@ -60,11 +66,15 @@ class FeedServiceClient: ServiceClient, FeedService {
         }
     }
 
-    func initializeFeed(feedId: String, pageSize: Int32, authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+    func initializeFeed(feedId: String, pageSize: Int32, anchorItemId: String?,
+                        authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedPageResponse {
         let request = Com_Octopuscommunity_InitializeFeedRequest.with {
             $0.feedID = feedId
             $0.pageSize = pageSize
+            if let anchorItemId {
+                $0.anchorItemID = anchorItemId
+            }
         }
 
         return try await callRemote(authenticationMethod) {

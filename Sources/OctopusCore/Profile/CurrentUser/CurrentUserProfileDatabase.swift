@@ -92,6 +92,12 @@ class CurrentUserProfileDatabase: InjectableObject {
         }
     }
 
+    /// Sets the notification badge count of every stored current user profile to 0.
+    /// - Warning: To be called on the context's queue, from a block that saves afterwards.
+    func resetNotificationBadgeCountsOnQueue() throws {
+        try context.fetch(PrivateProfileEntity.fetchAll()).forEach { $0.notificationBadgeCount = 0 }
+    }
+
     func update(blockedProfileIds: [String], on profileId: String) async throws {
         try await context.performAsync { [context] in
             guard let existingProfile = try context.fetch(PrivateProfileEntity.fetchById(id: profileId)).first else {
@@ -112,6 +118,15 @@ class CurrentUserProfileDatabase: InjectableObject {
         try await context.performAsync { [context] in
             guard let existingProfile = try context.fetch(PrivateProfileEntity.fetchById(id: profileId)).first else { return }
             context.delete(existingProfile)
+            try context.save()
+        }
+    }
+
+    func delete(userId: String) async throws {
+        try await context.performAsync { [context] in
+            let existingProfiles = try context.fetch(PrivateProfileEntity.fetchByUserId(userId: userId))
+            guard !existingProfiles.isEmpty else { return }
+            existingProfiles.forEach { context.delete($0) }
             try context.save()
         }
     }

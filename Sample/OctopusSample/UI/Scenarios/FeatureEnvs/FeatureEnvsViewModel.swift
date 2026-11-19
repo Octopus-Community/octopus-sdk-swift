@@ -13,7 +13,7 @@ final class FeatureEnvsViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var isApplying = false
     @Published private(set) var currentFeatureEnv: FeatureEnvSelection?
-    /// Selection dropped at launch (expired or unusable host), so the screen can explain the fallback.
+    /// Selection dropped at launch (unusable host), so the screen can explain the fallback.
     @Published private(set) var droppedAtLaunch: FeatureEnvSelection?
 
     private var storage = [AnyCancellable]()

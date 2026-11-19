@@ -76,6 +76,12 @@ public protocol ConnectionRepository: Sendable {
     /// Refresh the connected user's entitlements via the backend.
     /// Throws `.noClientTokenProvider` while no `tokenProvider` has been registered through `connectUser`.
     func refreshEntitlements() async throws(RefreshEntitlementsCoreError)
+    /// Gets the member whose account has been deleted a new session, so that they can access the community again:
+    /// a new account when the client user and their token provider are known, a guest otherwise.
+    ///
+    /// The session of the deleted account is only replaced once the new one is obtained: when this throws, nothing
+    /// changed and it can be called again.
+    func reconnectAfterAccountDeletion() async throws(ConnectionError)
 }
 
 /// Internal error type for `refreshEntitlements`. Translated to `OctopusRefreshEntitlementsError`
@@ -110,6 +116,11 @@ public enum ExchangeTokenError: Error {
         }
         public let reason: Reason
         public let message: String
+
+        init(reason: Reason, message: String) {
+            self.reason = reason
+            self.message = message
+        }
 
         init(from error: Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse.Error) {
             message = error.message

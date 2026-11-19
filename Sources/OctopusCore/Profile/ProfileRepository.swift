@@ -40,15 +40,17 @@ public protocol ProfileRepository: Sendable {
     /// Fetches a member's public profile directly by their Octopus profile id (Unified Profile).
     /// Mirrors ``fetchProfile(byClientUserId:)`` but resolves the member by their Octopus id rather
     /// than the host's own client user id, so it needs no client-user-id lookup. Upserts the fetched
-    /// profile into the public-profile database when one is returned, and returns it (or `nil` when the
-    /// server has no such profile). Unlike ``fetchProfile(profileId:)`` — which only refreshes the
-    /// cache and returns `Void` — this returns the fetched profile for a one-shot read.
+    /// profile into the public-profile database when one is returned, and returns the profile as cached
+    /// (or `nil` when the server has no such profile): its level and total points may come from a newer
+    /// request than this one (see `ProfileGamificationOrder`). Unlike ``fetchProfile(profileId:)`` — which
+    /// only refreshes the cache and returns `Void` — this returns the profile for a one-shot read.
     func fetchProfile(byProfileId profileId: String) async throws(ServerCallError) -> Profile?
 
     /// Fetches a member's public profile by the host's own client user id (Unified Profile), resolved
     /// through the `GetPublicProfile` client-user-id lookup. Upserts the fetched profile into the
-    /// public-profile database when one is returned, and returns it (or `nil` when the community has
-    /// no member for that client user id). An empty response leaves the cache untouched — there is
+    /// public-profile database when one is returned, and returns the profile as cached, as
+    /// ``fetchProfile(byProfileId:)`` does (or `nil` when the community has no member for that client
+    /// user id). An empty response leaves the cache untouched — there is
     /// nothing cached under a client user id to evict. The lookup may fail with a server error (e.g.
     /// FAILED_PRECONDITION) when the community does not expose client user ids.
     func fetchProfile(byClientUserId clientUserId: String) async throws(ServerCallError) -> Profile?
@@ -160,41 +162,59 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
                 hasLoadedProfile = true
             }.store(in: &storage)
 
-        Publishers.CombineLatest(
-            userProfileFetchMonitor.userProfileResponsePublisher,
-            configRepository.userConfigPublisher.map { $0?.canAccessCommunity ?? false }.removeDuplicates().filter { $0 }
-        )
-        .map { ($0.0, $0.1, $1) }
-        .receive(on: DispatchQueue.main)
-        .sink { [weak self] response, userId, _ in
-            guard let self else { return }
-            Task { [weak self] in
-                guard let self else { return }
-                do {
-                    try await processCurrentUserProfileResponse(response, userId: userId)
-                } catch {
-                    if #available(iOS 14, *) { Logger.profile.debug("Error while processing user profile response: \(error)") }
+        userProfileFetchMonitor.orderedUserProfileResponsePublisher
+            // Each response once, as soon as the community is open to the user. Taken again on a later opening, it
+            // would be the profile as it was then, maybe of a session that is gone: migrated again, a profile without
+            // a nickname would lose what its member confirmed since.
+            .map { [configRepository] response, userId, gamificationTicket in
+                configRepository.userConfigPublisher
+                    .first { $0?.canAccessCommunity ?? false }
+                    .map { _ in (response, userId, gamificationTicket) }
+            }
+            .switchToLatest()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] response, userId, gamificationTicket in
+                guard let self,
+                      // the session it was fetched for is gone
+                      userDataStorage.userData?.id == userId else { return }
+                Task { [weak self] in
+                    guard let self else { return }
+                    do {
+                        try await processCurrentUserProfileResponse(response, userId: userId,
+                                                                    gamificationTicket: gamificationTicket)
+                    } catch {
+                        if #available(iOS 14, *) {
+                            Logger.profile.debug("Error while processing user profile response: \(error)")
+                        }
+                    }
                 }
             }
-        }
-        .store(in: &storage)
+            .store(in: &storage)
 
         Publishers.CombineLatest4(
             $profile.removeDuplicates(),
             clientUserProvider.$clientUser,
             networkMonitor.connectionAvailablePublisher,
-            configRepository.userConfigPublisher.map { $0?.canAccessCommunity ?? false }.removeDuplicates().filter { $0 }
+            // Not filtered on an open community: the last opening would let profiles through once it closes. The
+            // server refuses them then, and each refusal uses up one of the tries the merger allows the same update.
+            configRepository.userConfigPublisher.map { $0?.canAccessCommunity ?? false }.removeDuplicates()
         )
-        .sink { [weak self] profile, clientUser, connectionAvailable, _ in
+        .sink { [weak self] profile, clientUser, connectionAvailable, canAccessCommunity in
             guard let self,
                   connectionAvailable,
+                  canAccessCommunity,
                   let profile,
                   let clientUser,
                   // ensure the client user is matching the current profile
                   // if profileClientUserId is nil, consider that it is the same profile,
                   // just in case there is a version where the client id was not stored
                   clientUser.userId == (profileClientUserId ?? clientUser.userId),
-                  !profile.isGuest else { return }
+                  !profile.isGuest,
+                  // Filled before its migration to a frictionless profile, a profile would be migrated wrongly or
+                  // never: a nickname makes the migration take it for a complete one and confirm the terms, and a
+                  // confirmed nickname, which an app-managed one is, makes it look already migrated. The migration
+                  // stores the profile again, and it is filled then.
+                  !profile.isFrictionlessMigrationPending else { return }
             Task { [weak self] in
                 guard let self else { return }
                 do {
@@ -217,9 +237,12 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
             throw .userNotAuthenticated
         }
         do {
-            let profileResponse = try await remoteClient.userService.getPrivateProfile(
-                userId: userData.id, authenticationMethod: try authCallProvider.authenticatedMethod())
-            try await processCurrentUserProfileResponse(profileResponse, userId: userData.id)
+            let (profileResponse, gamificationTicket) = try await ProfileGamificationOrder.send {
+                try await remoteClient.userService.getPrivateProfile(
+                    userId: userData.id, authenticationMethod: try authCallProvider.authenticatedMethod())
+            }
+            try await processCurrentUserProfileResponse(profileResponse, userId: userData.id,
+                                                        gamificationTicket: gamificationTicket)
         } catch {
             if let error = error as? AuthenticatedActionError {
                 throw error
@@ -268,10 +291,17 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
     public func fetchProfile(profileId: String) async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let profileResponse = try await remoteClient.userService.getPublicProfile(
-                profileId: profileId,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
-            try await publicProfileDatabase.upsert(profile: StorableProfile(from: profileResponse.profile))
+            // The ticket is taken inside the closure, which is called again for a replay.
+            let (profileResponse, gamificationTicket) = try await authCallProvider
+                .withAuthenticatedIfPossibleMethod { authenticationMethod in
+                try await ProfileGamificationOrder.send {
+                    try await remoteClient.userService.getPublicProfile(
+                        profileId: profileId,
+                        authenticationMethod: authenticationMethod)
+                }
+            }
+            try await publicProfileDatabase.upsert(profile: StorableProfile(from: profileResponse.profile),
+                                                   gamificationTicket: gamificationTicket)
         } catch {
             if let error = error as? RemoteClientError {
                 throw .serverError(ServerError(remoteClientError: error))
@@ -292,16 +322,24 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
             try? await configRepository.refreshCommunityConfig()
         }
         do {
-            let profileResponse = try await remoteClient.userService.getPublicProfile(
-                profileId: profileId,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            // The ticket is taken inside the closure, which is called again for a replay.
+            let (profileResponse, gamificationTicket) = try await authCallProvider
+                .withAuthenticatedIfPossibleMethod { authenticationMethod in
+                try await ProfileGamificationOrder.send {
+                    try await remoteClient.userService.getPublicProfile(
+                        profileId: profileId,
+                        authenticationMethod: authenticationMethod)
+                }
+            }
             // Mirror fetchProfile(byClientUserId:): return nil on an empty response rather than
             // upserting a malformed profile.
             guard profileResponse.hasProfile else { return nil }
-            let storableProfile = StorableProfile(from: profileResponse.profile)
-            try await publicProfileDatabase.upsert(profile: storableProfile)
+            // The cached profile, not the response: its total may come from a newer request, and the community data
+            // returned here must match the one the publishers show.
+            let cachedProfile = try await publicProfileDatabase.upsert(
+                profile: StorableProfile(from: profileResponse.profile), gamificationTicket: gamificationTicket)
             return Profile(
-                storableProfile: storableProfile,
+                storableProfile: cachedProfile,
                 gamificationLevels: configRepository.communityConfig?.gamificationConfig?.gamificationLevels ?? [],
                 postFeedsStore: postFeedsStore)
         } catch {
@@ -320,17 +358,24 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
             try? await configRepository.refreshCommunityConfig()
         }
         do {
-            let profileResponse = try await remoteClient.userService.getPublicProfile(
-                clientUserId: clientUserId,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            // The ticket is taken inside the closure, which is called again for a replay.
+            let (profileResponse, gamificationTicket) = try await authCallProvider
+                .withAuthenticatedIfPossibleMethod { authenticationMethod in
+                try await ProfileGamificationOrder.send {
+                    try await remoteClient.userService.getPublicProfile(
+                        clientUserId: clientUserId,
+                        authenticationMethod: authenticationMethod)
+                }
+            }
             // Unlike fetchProfile(profileId:), do NOT delete on an empty response: a community that does
             // not expose client user ids simply yields no profile, and there is nothing cached under a
             // client user id to evict.
             guard profileResponse.hasProfile else { return nil }
-            let storableProfile = StorableProfile(from: profileResponse.profile)
-            try await publicProfileDatabase.upsert(profile: storableProfile)
+            // The cached profile, as in fetchProfile(byProfileId:).
+            let cachedProfile = try await publicProfileDatabase.upsert(
+                profile: StorableProfile(from: profileResponse.profile), gamificationTicket: gamificationTicket)
             return Profile(
-                storableProfile: storableProfile,
+                storableProfile: cachedProfile,
                 gamificationLevels: configRepository.communityConfig?.gamificationConfig?.gamificationLevels ?? [],
                 postFeedsStore: postFeedsStore)
         } catch {
@@ -386,12 +431,29 @@ class ProfileRepositoryDefault: ProfileRepository, InjectableObject, @unchecked 
             pictureData)
     }
 
+    /// - Parameter gamificationTicket: taken when the request of `response` was sent (see `ProfileGamificationOrder`).
     private func processCurrentUserProfileResponse(_ response: Com_Octopuscommunity_GetPrivateProfileResponse,
-                                                   userId: String) async throws {
+                                                   userId: String,
+                                                   gamificationTicket: ProfileGamificationOrder.Ticket) async throws {
         guard response.hasProfile else { throw InternalError.objectMalformed }
         let profile = try await frictionlessProfileMigrator.migrateUserToFrictionlessUserIfNeeded(
             profile: response.profile, userId: userId)
         try await userProfileDatabase.upsert(profile: profile)
+        // Keeps the member's own community data (level and total points) current without a fetch of their public
+        // profile, which is what a host reads it from. A profile tagged admin carries no gamification on its public
+        // profile, so nil is written for it, and a level cached for it is cleared.
+        let isAdmin = profile.tags.contains(.admin)
+        do {
+            try await publicProfileDatabase.updateGamificationOfGamifiedProfile(
+                profileId: profile.id,
+                level: isAdmin ? nil : profile.gamificationLevel,
+                score: isAdmin ? nil : profile.gamificationScore,
+                gamificationTicket: gamificationTicket)
+        } catch {
+            if #available(iOS 14, *) {
+                Logger.profile.debug("Error while updating the gamification of the public profile: \(error)")
+            }
+        }
     }
 
     func internalUpdateUserProfile(with profile: EditableProfile, findAvailableNickname: Bool = false)

@@ -74,8 +74,9 @@ public class RootFeedsRepository: InjectableObject, @unchecked Sendable {
     public func fetchRootFeeds() async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let response = try await remoteClient.feedService.getRootFeedsInfo(
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            let response = try await authCallProvider.withAuthenticatedIfPossibleMethod {
+                try await remoteClient.feedService.getRootFeedsInfo(authenticationMethod: $0)
+            }
             let rootFeeds = response.feedsInfo.map { StorableRootFeed(from: $0) }
             try await rootFeedsDatabase.replaceAll(rootFeeds: rootFeeds)
         } catch {

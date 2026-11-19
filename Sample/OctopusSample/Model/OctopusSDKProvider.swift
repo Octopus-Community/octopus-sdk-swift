@@ -33,7 +33,7 @@ class OctopusSDKProvider: ObservableObject {
     @Published var clientModifyUserAsked = false
     /// Feature env currently applied, `nil` when the Sample runs on its default community.
     @Published private(set) var currentFeatureEnv: FeatureEnvSelection?
-    /// Set at launch when a persisted selection was dropped (expired, or unusable host).
+    /// Set at launch when a persisted selection was dropped (unusable host).
     @Published private(set) var featureEnvDroppedAtLaunch: FeatureEnvSelection?
     /// The API key the SDK runs on right now, for the Scenarios live config card (shown masked only).
     @Published private(set) var currentApiKey: String = ""
@@ -95,13 +95,6 @@ class OctopusSDKProvider: ObservableObject {
     /// it could not reach.
     @MainActor
     func apply(featureEnv selection: FeatureEnvSelection?) async throws {
-        // Refused before anything is persisted. Otherwise the selection is stored, `resolveFeatureEnv`
-        // drops it as expired at build time, the switch to the *default* community succeeds, and the
-        // success path clears the only notice explaining the fallback — so the developer sees no error
-        // and believes they are on the env.
-        if let selection, selection.isExpired() {
-            throw FeatureEnvApplyError.expired(selection)
-        }
         // Taken here and not around `performSwitchFromConfig()` alone: `previous` is read from the
         // persisted config and written back on failure, so a second `apply` slipping between that read and
         // the switch would roll back to *its* selection and leave the persisted config describing a
@@ -155,7 +148,7 @@ class OctopusSDKProvider: ObservableObject {
                     ticket: ticket,
                     communityHint: DefaultValuesProvider.featureEnvCommunityArgument,
                     in: envs) else {
-                    print("-featureEnvTicket \(ticket): no live env matches, staying on the current community")
+                    print("-featureEnvTicket \(ticket): no env matches, staying on the current community")
                     return
                 }
                 try await apply(featureEnv: selection)
@@ -317,9 +310,10 @@ class OctopusSDKProvider: ObservableObject {
 
     /// Decides whether a persisted feature env can still be used, and publishes the outcome.
     ///
-    /// Two reasons to drop it, both checked without any network call: it expired (thanks to the stored
-    /// `expiresAt`), or its host cannot produce a valid endpoint. In both cases the stored selection is
-    /// cleared so the next launch starts clean, and `featureEnvDroppedAtLaunch` lets the UI explain why.
+    /// Dropped only when its host cannot produce a valid endpoint, checked without any network call: the
+    /// stored selection is then cleared so the next launch starts clean, and `featureEnvDroppedAtLaunch`
+    /// lets the UI explain why. An expired one is kept — the env often keeps running past its expiry, and
+    /// the screens flag it in red.
     private func resolveFeatureEnv(_ persisted: FeatureEnvSelection?)
     -> (selection: FeatureEnvSelection?, apiServer: OctopusSDK.Configuration.ApiServer?) {
         guard let persisted else {
@@ -327,9 +321,7 @@ class OctopusSDKProvider: ObservableObject {
             return (nil, nil)
         }
         if persisted.isExpired() {
-            print("Feature env \(persisted.displayName) expired, falling back to the default community")
-            dropFeatureEnv(persisted)
-            return (nil, nil)
+            print("Feature env \(persisted.displayName) is expired (\(persisted.expiryLabel())), using it anyway")
         }
         guard let apiServer = persisted.apiServer() else {
             dropFeatureEnv(persisted)
@@ -355,6 +347,8 @@ class OctopusSDKProvider: ObservableObject {
             } else {
                 print("Create SDK with connection mode: SSO with some managed fields")
             }
+        @unknown default:
+            print("Create SDK with connection mode: \(connectionMode)")
         }
     }
 }

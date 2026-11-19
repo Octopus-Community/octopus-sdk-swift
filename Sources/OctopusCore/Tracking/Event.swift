@@ -34,7 +34,7 @@ struct Event {
         case postOpened(origin: PostOpenedOrigin, success: Bool)
         /// Triggered when a user opens the client object from a bridge post
         case openClientObjectFromBridge
-        /// Triggered when the "View original" or "View translation" button is tapped
+        /// Triggered when the "See original" or "See translation" button is tapped
         case translationButtonHit(translationDisplayed: Bool)
         /// Triggered when a video has been played. Watch Time can be more than duration if the video has been played
         /// more than once fully.

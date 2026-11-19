@@ -16,6 +16,7 @@ final class ScenarioLiveState: ObservableObject {
     @Published private(set) var groups: [OctopusGroup] = []
     @Published private(set) var notSeenNotificationsCount = 0
     @Published private(set) var hasAccessToCommunity = false
+    @Published private(set) var communityAccessDeniedReason: OctopusCommunityAccessDeniedReason?
     /// What the Events scenario shows of the tracking log: its size and newest entry, not a copy of the log.
     @Published private(set) var eventCount = 0
     @Published private(set) var lastEvent: OctopusEvent?
@@ -60,6 +61,8 @@ final class ScenarioLiveState: ObservableObject {
             .sink { [weak self] in self?.notSeenNotificationsCount = $0 }.store(in: &sdkStorage)
         octopus.$hasAccessToCommunity.receive(on: DispatchQueue.main)
             .sink { [weak self] in self?.hasAccessToCommunity = $0 }.store(in: &sdkStorage)
+        octopus.$communityAccessDeniedReason.receive(on: DispatchQueue.main)
+            .sink { [weak self] in self?.communityAccessDeniedReason = $0 }.store(in: &sdkStorage)
     }
 }
 

@@ -56,7 +56,6 @@ struct ConfigView: View {
 
     // MARK: - Sections
 
-    @ViewBuilder
     private func section<Content: View>(_ id: Section, title: String, summary: String? = nil,
                                         contentSpacing: CGFloat = 0,
                                         @ViewBuilder content: () -> Content) -> some View {
@@ -166,10 +165,13 @@ struct ConfigView: View {
                 Text("Selected: \(selected.displayName) · \(selected.communityName)")
                     .font(SampleTokens.Typography.bodyStrong)
                     .foregroundColor(SampleTokens.Colors.text)
+                if selected.isExpired() {
+                    FeatureEnvExpiryText(expiring: selected)
+                }
                 hint(selected.apiHost)
             }
             if viewModel.featureEnvsLoading {
-                hint("Loading live envs…")
+                hint("Loading feature envs…")
             } else if let error = viewModel.featureEnvsError {
                 Text(error)
                     .font(SampleTokens.Typography.caption)
@@ -179,17 +181,25 @@ struct ConfigView: View {
                     .foregroundColor(SampleTokens.Colors.accentText)
                     .frame(minHeight: SampleTokens.Size.touchMin)
             } else if viewModel.featureEnvs.isEmpty {
-                hint(viewModel.featureEnvsLoaded ? "No live feature env right now." : "Loading live envs…")
+                hint(viewModel.featureEnvsLoaded ? "No feature env right now." : "Loading feature envs…")
             } else {
                 ForEach(viewModel.featureEnvs) { env in
-                    Text("\(env.displayName) — expires in \(env.expiresInDays()) d")
-                        .font(SampleTokens.Typography.label)
+                    (Text(verbatim: "\(env.displayName) — ")
                         .foregroundColor(SampleTokens.Colors.text)
+                     + Text(verbatim: env.expiryLabel())
+                        .foregroundColor(env.isExpired() ? SampleTokens.Colors.danger : SampleTokens.Colors.text))
+                        .font(SampleTokens.Typography.label)
                         .padding(.top, SampleTokens.Spacing.space1)
                     ForEach(env.usableCommunities) { community in
                         RadioRow(label: "\(env.name) · \(communityLabel(community))",
                                  isSelected: isSelected(env, community)) {
-                            viewModel.selectFeatureEnv(env, community: community)
+                            // Without animation: the "Selected" lines above change height with the
+                            // picked name, and the animated shift slid the tapped row over its neighbour.
+                            var transaction = Transaction(animation: nil)
+                            transaction.disablesAnimations = true
+                            withTransaction(transaction) {
+                                viewModel.selectFeatureEnv(env, community: community)
+                            }
                         }
                     }
                 }

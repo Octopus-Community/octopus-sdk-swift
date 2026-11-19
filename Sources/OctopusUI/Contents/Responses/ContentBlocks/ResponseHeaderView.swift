@@ -9,7 +9,7 @@ struct ResponseHeaderView: View {
 
     let kind: ResponseKind
     let author: Author
-    let relativeDate: String
+    let relativeDate: DisplayableDate
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool

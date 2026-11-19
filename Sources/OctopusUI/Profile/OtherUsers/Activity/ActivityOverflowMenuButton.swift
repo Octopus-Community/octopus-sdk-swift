@@ -21,8 +21,9 @@ import UIKit
 /// is a `Button` — the proven primitive for a system `Menu`/`ActionSheet` row (a `Link`
 /// wrapped in a custom view is not a verified `Menu` primitive). Row icons are the exact menu-design
 /// vectors, shipped as template PDF assets in the module bundle (`activityMenu*`)
-/// so they render identically to the Android drawables and follow the system menu tint — the
-/// earlier SF-symbol approximations diverged from the design (pencil especially).
+/// so they render identically to the Android drawables, in the color of their title through
+/// `NeutralMenuButton` — the earlier SF-symbol approximations diverged from the design (pencil
+/// especially).
 /// Legal links open through the environment `urlOpener`, so the host's `onNavigateToURL` callback is
 /// honored (same routing as `RichText`).
 struct ActivityOverflowMenuButton: View {
@@ -51,13 +52,13 @@ struct ActivityOverflowMenuButton: View {
             Menu(content: {
                 // Block 1 — profile actions (each shown only when its target is reachable)
                 if showViewProfile {
-                    Button(action: onViewProfile) {
+                    NeutralMenuButton(action: onViewProfile) {
                         Label(title: { Text("Menu.ViewProfile", bundle: .module) },
                               icon: { Self.menuIcon("activityMenuViewProfile") })
                     }
                 }
                 if showEditProfile {
-                    Button(action: onEditProfile) {
+                    NeutralMenuButton(action: onEditProfile) {
                         Label(title: { Text("Menu.EditProfile", bundle: .module) },
                               icon: { Self.menuIcon("activityMenuEditProfile") })
                     }
@@ -69,15 +70,15 @@ struct ActivityOverflowMenuButton: View {
                 // Block 2 — community legal links, in the design's order (terms, privacy,
                 // guidelines). Button rows (a Link wrapped in a custom view is not a verified Menu
                 // row) routed through urlOpener so onNavigateToURL is honored.
-                Button(action: { urlOpener.open(url: termsOfUseUrl) }) {
+                NeutralMenuButton(action: { urlOpener.open(url: termsOfUseUrl) }) {
                     Label(title: { Text("Settings.TermsOfUse", bundle: .module) },
                           icon: { Self.menuIcon("activityMenuTermsOfUse") })
                 }
-                Button(action: { urlOpener.open(url: privacyPolicyUrl) }) {
+                NeutralMenuButton(action: { urlOpener.open(url: privacyPolicyUrl) }) {
                     Label(title: { Text("Settings.PrivacyPolicy", bundle: .module) },
                           icon: { Self.menuIcon("activityMenuPrivacyPolicy") })
                 }
-                Button(action: { urlOpener.open(url: communityGuidelinesUrl) }) {
+                NeutralMenuButton(action: { urlOpener.open(url: communityGuidelinesUrl) }) {
                     Label(title: { Text("Settings.CommunityGuidelines", bundle: .module) },
                           icon: { Self.menuIcon("activityMenuCommunityGuidelines") })
                 }
@@ -85,7 +86,7 @@ struct ActivityOverflowMenuButton: View {
                 Divider()
 
                 // Block 3 — report
-                Button(action: onReportContent) {
+                NeutralMenuButton(action: onReportContent) {
                     Label(title: { Text("Settings.ReportContent", bundle: .module) },
                           icon: { Self.menuIcon("activityMenuReportContent") })
                 }
@@ -112,8 +113,8 @@ struct ActivityOverflowMenuButton: View {
     }
 
     /// A menu-row icon exported from the menu design and bundled as a template
-    /// PDF (`activityMenu*` in the module asset catalog). Template rendering makes it follow the
-    /// system menu tint, exactly like the SF Symbols it replaced.
+    /// PDF (`activityMenu*` in the module asset catalog). Template rendering lets `NeutralMenuButton`
+    /// draw it in the color of its title.
     private static func menuIcon(_ name: String) -> Image {
         Image(name, bundle: .module).renderingMode(.template)
     }

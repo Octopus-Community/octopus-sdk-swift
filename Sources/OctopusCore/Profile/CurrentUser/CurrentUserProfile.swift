@@ -33,6 +33,9 @@ public struct CurrentUserProfile: Equatable, Sendable {
     public let hasConfirmedBio: Bool
     public let hasConfirmedPicture: Bool
     public let isGuest: Bool
+    /// Whether the server still has to migrate this member's profile to a frictionless one: the nickname
+    /// confirmation is missing, as when their migration failed (see `FrictionlessProfileMigrator`).
+    var isFrictionlessMigrationPending = false
 
     public let notificationBadgeCount: Int
 
@@ -77,10 +80,12 @@ extension CurrentUserProfile {
         // non-frictionless user
         hasSeenOnboarding = storableProfile.hasSeenOnboarding ?? true
         hasAcceptedCgu = storableProfile.hasAcceptedCgu ?? true
-        hasConfirmedNickname = storableProfile.hasConfirmedNickname ?? true
+        // Except a missing nickname, which cannot have been confirmed: the migration asks the server for one.
+        hasConfirmedNickname = storableProfile.hasConfirmedNickname ?? !storableProfile.nickname.isEmpty
         hasConfirmedBio = storableProfile.hasConfirmedBio ?? true
         hasConfirmedPicture = storableProfile.hasConfirmedPicture ?? true
         isGuest = storableProfile.isGuest
+        isFrictionlessMigrationPending = !storableProfile.isGuest && storableProfile.hasConfirmedNickname == nil
         notificationBadgeCount = storableProfile.notificationBadgeCount ?? 0
         blockedProfileIds = storableProfile.blockedProfileIds
         entitlements = storableProfile.entitlements

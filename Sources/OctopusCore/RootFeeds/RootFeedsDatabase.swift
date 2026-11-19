@@ -21,6 +21,12 @@ class RootFeedsDatabase: InjectableObject {
         context = coreDataStack.saveContext
     }
 
+    /// Deletes every root feed.
+    /// - Warning: To be called on the context's queue, from a block that saves afterwards.
+    func deleteAllOnQueue() throws {
+        try context.fetch(RootFeedEntity.fetchAll()).forEach { context.delete($0) }
+    }
+
     func rootFeedsPublisher() -> AnyPublisher<[StorableRootFeed], Never> {
         return context
             .publisher(request: RootFeedEntity.fetchAllSorted()) {

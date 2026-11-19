@@ -41,12 +41,23 @@ public class ReactionsRepository: InjectableObject, @unchecked Sendable {
     async throws(ServerCallError) -> ReactionsPage {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let response = try await remoteClient.octoService.getReactionsPage(
-                parentId: contentId,
-                unicode: kind?.unicode,
-                pageCursor: cursor,
-                pageSize: UInt32(max(0, pageSize)),
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            func getPage(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
+            -> Com_Octopuscommunity_GetReactionsPageResponse {
+                try await remoteClient.octoService.getReactionsPage(
+                    parentId: contentId,
+                    unicode: kind?.unicode,
+                    pageCursor: cursor,
+                    pageSize: UInt32(max(0, pageSize)),
+                    authenticationMethod: authenticationMethod)
+            }
+            let response: Com_Octopuscommunity_GetReactionsPageResponse
+            if cursor == nil {
+                response = try await authCallProvider.withAuthenticatedIfPossibleMethod(getPage)
+            } else {
+                // The cursor was handed to the session that read the previous page: the next one is never sent
+                // again for another session.
+                response = try await getPage(authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            }
             return ReactionsPage(
                 reactions: response.reactions.map(ProfileReaction.init(from:)),
                 // An empty cursor means "no more pages" just as much as an absent one does.

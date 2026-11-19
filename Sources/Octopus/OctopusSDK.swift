@@ -36,7 +36,17 @@ public final class OctopusSDK: ObservableObject {
     ///
     /// This respects both the SDK's internal A/B test configuration and any status set via `overrideCommunityAccess`.
     /// It is `true` when the user can access community features, `false` otherwise.
+    /// See ``communityAccessDeniedReason`` for why it is `false`.
     @Published public private(set) var hasAccessToCommunity: Bool = false
+
+    /// Published value that tells why the current user cannot access the community.
+    ///
+    /// It is `nil` when the user can access the community, and as long as the access is not known yet. Otherwise it
+    /// is the reason of the refusal, the one the SDK's own screen is displayed for: it is not `nil` if and only if
+    /// ``hasAccessToCommunity`` is `false` and the access is known.
+    ///
+    /// The reason is kept between launches, so it is available right after the SDK is initialized.
+    @Published public private(set) var communityAccessDeniedReason: OctopusCommunityAccessDeniedReason?
 
     /// Event publisher.
     /// This publisher emits an event each time the user do something particular.
@@ -167,9 +177,16 @@ public final class OctopusSDK: ObservableObject {
 
         core.configRepository.userConfigPublisher
             .sink { [unowned self] in
+                // The reason is set first: `@Published` publishes before the value is stored, so a host reading the
+                // reason as `hasAccessToCommunity` publishes then reads the new one, not the previous one.
+                let newReason = OctopusCommunityAccessDeniedReason(userConfig: $0)
+                if newReason != communityAccessDeniedReason {
+                    communityAccessDeniedReason = newReason
+                }
                 let newValue = $0?.canAccessCommunity ?? false
-                guard newValue != hasAccessToCommunity else { return }
-                hasAccessToCommunity = newValue
+                if newValue != hasAccessToCommunity {
+                    hasAccessToCommunity = newValue
+                }
             }
             .store(in: &storage)
     }
@@ -458,6 +475,22 @@ extension OctopusSDK {
         core.configRepository.debugOverrideConsentTexts(texts)
     }
 
+    /// Internal test affordance: locally override the languages in which the SDK texts address members informally
+    /// (`CommunityConfig.informalLanguages`, BCP-47 codes such as `it`), without a backend-driven config. Pass
+    /// `nil` to clear the override and fall back to the backend value; an empty list makes every language formal.
+    /// Used by the sample app to exercise the informal tone. Like the other overrides, it applies once a community
+    /// config has been loaded.
+    ///
+    /// Hidden behind SPI: it is **not** part of the supported public API. Only callers that opt in
+    /// with `@_spi(OctopusInternalTesting) import Octopus` (the sample app) can see it.
+    ///
+    /// - Parameter languages: the languages to make informal, or `nil` to restore the backend-provided config.
+    @_spi(OctopusInternalTesting)
+    @MainActor
+    public func debugOverrideInformalLanguages(_ languages: [String]?) {
+        core.configRepository.debugOverrideInformalLanguages(languages)
+    }
+
     /// Internal test affordance: locally redistribute the published groups into the given mock client
     /// sections, so the sectioned group-list rendering (title padding + inter-section separator) can be
     /// exercised in the sample without a backend that serves client sections. Pass an empty array to
@@ -526,6 +559,7 @@ extension OctopusSDK {
         content: ClientPost,
         tokenProvider: @Sendable @escaping (_ bridgeFingerprint: String) async throws -> String?)
     async throws(ClientPostError) -> any OctopusPost {
+        try ClientPost.validateMediaCount(content)
         do {
             return try await core.postsRepository.getOrCreateClientObjectRelatedPost(
                 content: content.coreValue, tokenProvider: tokenProvider)
@@ -590,8 +624,11 @@ extension OctopusSDK {
     /// - Parameter content: the content of the post
     /// - Returns: the Octopus post id
     /// - Note: You can use the returned id to display the post using `OctopusHomeScreen(octopus:postId:)`
+    /// - Throws: `ClientPostError.validation` on the `file` field when `content` carries more than one media: only
+    ///   `fetchOrCreateClientObjectRelatedPost(content:tokenProvider:)` creates a post with several.
     @available(*, deprecated, message: "Use instead fetchOrCreateClientObjectRelatedPost(content: ClientPost). The new function returns more than just an id.")
     public func getOrCreateClientObjectRelatedPostId(content: ClientPost) async throws(ClientPostError) -> String {
+        try ClientPost.validateMediaCountWithoutTokenProvider(content)
         do {
             return try await core.postsRepository.getOrCreateClientObjectRelatedPostId(content: content.coreValue)
         } catch {
@@ -609,9 +646,12 @@ extension OctopusSDK {
     /// - Parameter content: the content of the post
     /// - Returns: the Octopus post
     /// - Note: You can use the returned post id to display the post using `OctopusHomeScreen(octopus:postId:)`
+    /// - Throws: `ClientPostError.validation` on the `file` field when `content` carries more than one media: only
+    ///   `fetchOrCreateClientObjectRelatedPost(content:tokenProvider:)` creates a post with several.
     @available(*, deprecated, message: "Use instead fetchOrCreateClientObjectRelatedPost(content: ClientPost, tokenProvider: (String) async -> String?). The new function has en enhanced security.")
     public func fetchOrCreateClientObjectRelatedPost(content: ClientPost) async throws(ClientPostError)
     -> any OctopusPost {
+        try ClientPost.validateMediaCountWithoutTokenProvider(content)
         do {
             return try await core.postsRepository.getOrCreateClientObjectRelatedPost(content: content.coreValue)
         } catch {
@@ -849,10 +889,13 @@ extension OctopusSDK {
     /// profile screen — which only knows your app's user ids — to observe a member's Octopus community
     /// stats without handling Octopus ids. The member is resolved once through the `GetPublicProfile`
     /// client-user-id lookup, then the publisher tracks that member's cached data and updates on every
-    /// refresh (e.g. via ``fetchCommunityData(clientUserId:)``). Requires the community to expose
-    /// client user ids (`CommunityConfig.exposeClientUserId`); emits `nil` when the member is unknown
-    /// or the lookup fails. Errors are never surfaced on this `Never`-failure publisher — a failed
-    /// resolution emits `nil`.
+    /// refresh (e.g. via ``fetchCommunityData(clientUserId:)``, which you can call after your app awards
+    /// points). Once the connected member's community data has been fetched with gamification enabled,
+    /// it also updates when the SDK refreshes that member's own profile. On a server that does not send
+    /// totals, a fetch of the public profile resets the connected member's cached score to `nil` until the
+    /// SDK refreshes their own profile again. Requires the community to expose client user ids
+    /// (`CommunityConfig.exposeClientUserId`); emits `nil` when the member is unknown or the lookup fails.
+    /// Errors are never surfaced on this `Never`-failure publisher — a failed resolution emits `nil`.
     ///
     /// - Parameter clientUserId: the host's own id for the member whose community data to observe.
     /// - Returns: a publisher that emits the member's ``OctopusCommunityData`` or `nil` when unknown.
@@ -893,8 +936,11 @@ extension OctopusSDK {
     /// The reactive counterpart of ``fetchCommunityData(profileId:)``, and the by-profile-id sibling
     /// of ``communityDataPublisher(clientUserId:)``. Because the Octopus id is already known there is
     /// no async resolution step: the publisher tracks that member's cached data directly and updates
-    /// on every refresh (e.g. via ``fetchCommunityData(profileId:)``). Emits `nil` when the member is
-    /// unknown.
+    /// on every refresh (e.g. via ``fetchCommunityData(profileId:)``, which you can call after your app
+    /// awards points). Once the connected member's community data has been fetched with gamification
+    /// enabled, it also updates when the SDK refreshes that member's own profile. On a server that does
+    /// not send totals, a fetch of the public profile resets the connected member's cached score to `nil`
+    /// until the SDK refreshes their own profile again. Emits `nil` when the member is unknown.
     ///
     /// - Parameter profileId: the Octopus profile id of the member whose community data to observe.
     /// - Returns: a publisher that emits the member's ``OctopusCommunityData`` or `nil` when unknown.

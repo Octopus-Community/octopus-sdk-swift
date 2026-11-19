@@ -236,7 +236,7 @@ class EditProfileViewModel: ObservableObject {
                 case let .failure(error):
                     switch error {
                     case .tooLong:
-                        bioError = .localizationKey("Error.Text.TooLong_currentLength:\(bio.count)_maxLength:\(bioMaxLength)")
+                        bioError = .textTooLongError(currentLength: bio.count, maxLength: bioMaxLength)
                     }
                 case .success:
                     bioError = nil
@@ -252,8 +252,8 @@ class EditProfileViewModel: ObservableObject {
                 case let .changed(_, image):
                     switch Validators.Picture.validate(image) {
                     case .sideTooSmall, .ratioTooBig:
-                        alertError = .localizationKey(
-                            "Picture.Selection.Error_maxRatio:\(Validators.Picture.maxRatioStr)_minSize:\(Int(Validators.Picture.minSize))")
+                        alertError = .pictureSelectionError(maxRatio: Validators.Picture.maxRatioStr,
+                                                            minSize: Int(Validators.Picture.minSize))
                         self.picture = .unchanged(savedProfile?.pictureUrl)
                     case .valid:
                         break
@@ -303,13 +303,13 @@ class EditProfileViewModel: ObservableObject {
                 case let .serverCall(serverError):
                     alertError = serverError.displayableMessage
                 case .other:
-                    alertError = .localizationKey("Error.Unknown")
+                    alertError = .unknownError
                 }
             } catch {
                 if #available(iOS 14, *) {
                     Logger.profile.debug("Error while updating the profile: \(error)")
                 }
-                alertError = .localizationKey("Error.Unknown")
+                alertError = .unknownError
             }
             isLoading = false
         }

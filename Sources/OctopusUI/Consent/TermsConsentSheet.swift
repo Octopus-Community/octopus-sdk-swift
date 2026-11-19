@@ -12,7 +12,11 @@ enum ConsentContribution {
     case comment
     case reply
 
-    var buttonKey: String {
+    /// The action button's label. When the nickname choice screen follows the sheet, tapping it publishes nothing
+    /// yet, so the label only says "Accept" whatever the contribution; otherwise it names the publication it triggers.
+    /// Always an SDK wording: the community's consent texts never change it.
+    func buttonKey(nicknameChoiceFollows: Bool) -> String {
+        if nicknameChoiceFollows { return "Consent.Button.Accept" }
         switch self {
         case .post: return "Consent.Button.Post"
         case .comment: return "Consent.Button.Comment"
@@ -34,7 +38,8 @@ enum ConsentContribution {
 /// runs an explicit consent mode. Its content differs by ``TermsAcceptanceMode`` (one checkbox per
 /// document vs a single combined checkbox + passive privacy acknowledgement); the behaviour (trigger,
 /// dismissal, memorization) is identical. The action button is disabled until the required box(es)
-/// are checked; tapping it calls ``onAccept`` (which records acceptance and publishes).
+/// are checked; tapping it calls ``onAccept`` (which records acceptance and publishes, or moves on to the nickname
+/// choice screen when ``nicknameChoiceFollows``).
 ///
 /// The wordings come from ``ConsentWording``: the community's texts when it set some for this mode, the SDK ones
 /// otherwise. The title, the checkboxes and the text under the checkbox scroll together; only the button stays
@@ -43,6 +48,7 @@ struct TermsConsentSheet: View {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.textTone) private var textTone
     @EnvironmentObject private var languageManager: LanguageManager
 
     /// One of the explicit modes (`.implicit` renders nothing — the caller only presents this for
@@ -51,6 +57,9 @@ struct TermsConsentSheet: View {
     /// The community's custom wordings, `nil` for the SDK ones.
     let consentTexts: ConsentTexts?
     let contribution: ConsentContribution
+    /// Whether the nickname choice screen comes right after the sheet, the contribution being published only once
+    /// the nickname is confirmed.
+    let nicknameChoiceFollows: Bool
     let termsUrl: URL
     let privacyUrl: URL
     let rulesUrl: URL
@@ -108,7 +117,8 @@ struct TermsConsentSheet: View {
 
     private var scrollableContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(verbatim: L10n("Consent.Title", locale: locale))
+            Text(verbatim: L10n(textTone.stringKey(formal: "Consent.Title.Formal", informal: "Consent.Title.Informal"),
+                                locale: locale))
                 .font(theme.fonts.body1.weight(.semibold))
                 .foregroundColor(theme.colors.gray900)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -142,7 +152,7 @@ struct TermsConsentSheet: View {
 
     private var actionButton: some View {
         Button(action: { if isValid { onAccept() } }) {
-            Text(verbatim: L10n(contribution.buttonKey, locale: locale))
+            Text(verbatim: L10n(contribution.buttonKey(nicknameChoiceFollows: nicknameChoiceFollows), locale: locale))
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(OctopusButtonStyle(.main, enabled: isValid))

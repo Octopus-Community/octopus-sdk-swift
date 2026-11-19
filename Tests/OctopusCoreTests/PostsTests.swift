@@ -6,7 +6,7 @@ import Foundation
 import XCTest
 import Combine
 import OctopusDependencyInjection
-import OctopusRemoteClient
+@testable import OctopusRemoteClient
 import OctopusGrpcModels
 import SwiftProtobuf
 @testable import OctopusCore
@@ -34,6 +34,8 @@ class PostsTests: XCTestCase {
         injector.register { GamificationRepository(injector: $0) }
         injector.register { SdkEventsEmitter(injector: $0) }
         injector.register { _ in Validators(appManagedFields: []) }
+        injector.register { _ in FakeImageUploadHTTPClient() }
+        injector.register { ImageUploadsService(injector: $0) }
         injector.registerMocks(.remoteClient, .authProvider, .networkMonitor, .blockedUserIdsProvider,
                                .configRepository, .appStateMonitor)
 
@@ -106,14 +108,26 @@ class PostsTests: XCTestCase {
     }
 
     func testSendMixedPostForwardsImageAndPoll() async throws {
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 1))
         injectPutPost(Self.sentPostResponse)
-        let post = WritablePost(topicId: "topicId", text: "?", image: Data([0x01, 0x02]),
+        let post = WritablePost(topicId: "topicId", text: "?", images: [Data([0x01, 0x02])],
                                 poll: WritablePoll(options: [.init(text: "Red"), .init(text: "Blue")]))
         try await postsRepository.send(post)
 
         let sent = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post
-        XCTAssertEqual(sent.media.images.count, 1)
+        XCTAssertEqual(sent.media.images.map(\.uploadID), ["id0"])
         XCTAssertEqual(sent.poll.answers.map(\.text), ["Red", "Blue"])
+    }
+
+    func testSendForwardsSeveralImagesInOrder() async throws {
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 2))
+        injectPutPost(Self.sentPostResponse)
+        let post = WritablePost(topicId: "topicId", text: "Two pictures", images: [Data([0x01]), Data([0x02])])
+        let (_, sentImages) = try await postsRepository.send(post)
+
+        let sent = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post
+        XCTAssertEqual(sent.media.images.map(\.uploadID), ["id0", "id1"])
+        XCTAssertEqual(sentImages, [Data([0x01]), Data([0x02])])
     }
 
     func testBridgeShareFingerprintDoesNotDependOnThePoll() async throws {
@@ -124,14 +138,16 @@ class PostsTests: XCTestCase {
         }
         let image = Data([0x01, 0x02])
 
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 1))
         injectPutPost(Self.sentPostResponse)
         try await postsRepository.send(
-            WritablePost(topicId: "topicId", text: "Shared text", image: image),
+            WritablePost(topicId: "topicId", text: "Shared text", images: [image]),
             creationSource: .prefilledFromClient, bridgeShareSignature: sign)
 
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 1))
         injectPutPost(Self.sentPostResponse)
         try await postsRepository.send(
-            WritablePost(topicId: "topicId", text: "Shared text", image: image,
+            WritablePost(topicId: "topicId", text: "Shared text", images: [image],
                          poll: WritablePoll(options: [.init(text: "Red"), .init(text: "Blue")])),
             creationSource: .prefilledFromClient, bridgeShareSignature: sign)
 
@@ -141,6 +157,35 @@ class PostsTests: XCTestCase {
         XCTAssertEqual(fingerprints.first, BridgeShareFingerprint.compute(
             text: "Shared text", ctaText: nil, ctaTargetLink: nil, images: [.bytes(image)]))
         XCTAssertEqual(mockOctoService.lastPutPostClientToken, "client-token")
+    }
+
+    func testBridgeShareSignsAndSendsThePerLanguageLabelsOfTheCta() async throws {
+        let recorder = FingerprintRecorder()
+        let sign: @Sendable (String) async throws -> String = { fingerprint in
+            await recorder.record(fingerprint)
+            return "client-token"
+        }
+        let image = Data([0x01, 0x02])
+        let labels = PerLanguageLabels(defaultLanguageCode: "en", translations: ["fr": "Démarrer"])
+        let url = URL(string: "https://shop.example.com/item/42")!
+
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 1))
+        injectPutPost(Self.sentPostResponse)
+        try await postsRepository.send(
+            WritablePost(topicId: "topicId", text: "Shared text", images: [image],
+                         cta: WritableCTA(url: url, label: "Start", perLanguageLabels: labels)),
+            creationSource: .prefilledFromClient, bridgeShareSignature: sign)
+
+        let fingerprints = await recorder.values
+        XCTAssertEqual(fingerprints, [BridgeShareFingerprint.compute(
+            text: "Shared text", ctaText: "Start", ctaTargetLink: url.absoluteString, ctaLabels: labels,
+            images: [.bytes(image)])])
+        XCTAssertNotEqual(fingerprints.first, BridgeShareFingerprint.compute(
+            text: "Shared text", ctaText: "Start", ctaTargetLink: url.absoluteString, images: [.bytes(image)]))
+        let sentCta = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post.cta
+        XCTAssertEqual(sentCta.text, "Start")
+        XCTAssertEqual(sentCta.textLanguage, "en")
+        XCTAssertEqual(sentCta.textTranslations, ["fr": "Démarrer"])
     }
 
     func testPollOnlyPrefilledShareIsNotSigned() async throws {
@@ -161,11 +206,50 @@ class PostsTests: XCTestCase {
         XCTAssertNil(mockOctoService.lastPutPostClientToken)
     }
 
+    func testPrefilledShareIsSentUnsignedWhenTheHostReturnsNoToken() async throws {
+        let recorder = FingerprintRecorder()
+        let sign: @Sendable (String) async throws -> String? = { fingerprint in
+            await recorder.record(fingerprint)
+            return nil
+        }
+
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 1))
+        injectPutPost(Self.sentPostResponse)
+        try await postsRepository.send(
+            WritablePost(topicId: "topicId", text: "Shared text", images: [Data([0x01, 0x02])]),
+            creationSource: .prefilledFromClient, bridgeShareSignature: sign)
+
+        let fingerprints = await recorder.values
+        XCTAssertEqual(fingerprints.count, 1)
+        XCTAssertNotNil(mockOctoService.lastPutPostRwOctoObject)
+        XCTAssertNil(mockOctoService.lastPutPostClientToken)
+    }
+
+    func testPrefilledShareIsNotSentWhenTheHostThrows() async throws {
+        struct SigningFailed: Error {}
+        let sign: @Sendable (String) async throws -> String? = { _ in throw SigningFailed() }
+
+        do {
+            try await postsRepository.send(
+                WritablePost(topicId: "topicId", text: "Shared text", images: [Data([0x01, 0x02])]),
+                creationSource: .prefilledFromClient, bridgeShareSignature: sign)
+            XCTFail("The send should fail when the host throws")
+        } catch {
+            guard case let .serverCall(.other(underlying)) = error, underlying is SigningFailed else {
+                XCTFail("Unexpected error \(error)")
+                return
+            }
+        }
+        XCTAssertTrue(mockOctoService.createImageUploadsSizes.isEmpty)
+        XCTAssertNil(mockOctoService.lastPutPostRwOctoObject)
+    }
+
     func testSendImagePostWithoutTextWhenTextIsOptional() async throws {
         try await setCommunity(textRequired: false)
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 1))
         injectPutPost(Self.sentPostResponse)
 
-        try await postsRepository.send(WritablePost(topicId: "topicId", text: "", image: Data([0x01, 0x02])))
+        try await postsRepository.send(WritablePost(topicId: "topicId", text: "", images: [Data([0x01, 0x02])]))
 
         let sent = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post
         XCTAssertEqual(sent.text, "")
@@ -174,9 +258,10 @@ class PostsTests: XCTestCase {
 
     func testSendImagePostWithBlankTextSendsAnEmptyTextWhenTextIsOptional() async throws {
         try await setCommunity(textRequired: false)
+        mockOctoService.injectNextCreateImageUploadsResponse(.success(count: 1))
         injectPutPost(Self.sentPostResponse)
 
-        try await postsRepository.send(WritablePost(topicId: "topicId", text: "  \n ", image: Data([0x01, 0x02])))
+        try await postsRepository.send(WritablePost(topicId: "topicId", text: "  \n ", images: [Data([0x01, 0x02])]))
 
         let sent = try XCTUnwrap(mockOctoService.lastPutPostRwOctoObject).content.post
         XCTAssertEqual(sent.text, "")
@@ -186,14 +271,14 @@ class PostsTests: XCTestCase {
     func testSendImagePostWithoutTextIsRejectedWhenTextIsRequired() async throws {
         try await setCommunity(textRequired: true)
 
-        await assertRejectedLocally(WritablePost(topicId: "topicId", text: "", image: Data([0x01, 0x02])))
+        await assertRejectedLocally(WritablePost(topicId: "topicId", text: "", images: [Data([0x01, 0x02])]))
     }
 
     func testSendImagePostWithoutTextIsRejectedWithoutCommunityConfig() async {
         // No config loaded yet: text stays required.
         XCTAssertNil(mockConfigRepository.communityConfig)
 
-        await assertRejectedLocally(WritablePost(topicId: "topicId", text: "", image: Data([0x01, 0x02])))
+        await assertRejectedLocally(WritablePost(topicId: "topicId", text: "", images: [Data([0x01, 0x02])]))
     }
 
     func testCreatePostThatDisallowsComments() async throws {
@@ -248,6 +333,26 @@ class PostsTests: XCTestCase {
         _ = try await postsRepository.fetchPost(uuid: "1", hasVideo: false)
 
         await fulfillment(of: [localExpectation], timeout: 5)
+    }
+
+    func testFetchPostDoesNotCountTheViewAgainWhenSentAgainAfterASessionChange() async throws {
+        // The first response comes back after the session changed: it is refused, but the server counted the view.
+        mockOctoService.injectNextGetError(.unknown(RefreshingTokenError.userIdNotMatching))
+        injectGetPost(
+            .init(uuid: "1", text: .init(originalText: "First Post", originalLanguage: nil, translatedText: nil),
+                  medias: [], poll: nil,
+                  author: .init(uuid: "me", nickname: "Me", avatarUrl: nil, gamificationLevel: nil),
+                  creationDate: Date(), updateDate: Date(),
+                  status: .published, statusReasons: [],
+                  parentId: "Sport",
+                  descCommentFeedId: "", ascCommentFeedId: "",
+                  bridgeClientObjectId: nil, bridgeCatchPhrase: nil, bridgeCtaText: nil,
+                  customActionText: nil, customActionTargetLink: nil,
+                  aggregatedInfo: .empty, userInteractions: .empty))
+
+        _ = try await postsRepository.fetchPost(uuid: "1", hasVideo: false, incrementViewCount: true)
+
+        XCTAssertEqual(mockOctoService.getIncrementViewCounts, [true, false])
     }
 
     func testGetPostIsFilteredOutIfAuthorIsBlocked() async throws {
@@ -361,7 +466,7 @@ class PostsTests: XCTestCase {
         let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
             content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
-                                catchPhrase: nil, attachment: nil,
+                                catchPhrase: nil, medias: [],
                                 viewClientObjectButtonText: nil),
         tokenProvider: { _ in return nil })
 
@@ -430,7 +535,7 @@ class PostsTests: XCTestCase {
         let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
             content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
-                                catchPhrase: nil, attachment: nil,
+                                catchPhrase: nil, medias: [],
                                 viewClientObjectButtonText: nil),
         tokenProvider: { _ in return nil })
 
@@ -461,7 +566,7 @@ class PostsTests: XCTestCase {
         let post = try await postsRepository.getOrCreateClientObjectRelatedPost(
             content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
-                                catchPhrase: nil, attachment: nil,
+                                catchPhrase: nil, medias: [],
                                 viewClientObjectButtonText: nil),
         tokenProvider: { _ in return nil })
 
@@ -525,7 +630,7 @@ class PostsTests: XCTestCase {
         _ = try await postsRepository.getOrCreateClientObjectRelatedPost(
             content: ClientPost(clientObjectId: "", groupId: "Sport",
                                 text: "new Text",
-                                catchPhrase: nil, attachment: nil,
+                                catchPhrase: nil, medias: [],
                                 viewClientObjectButtonText: nil),
         tokenProvider: { _ in return nil })
 
@@ -789,7 +894,8 @@ class PostsTests: XCTestCase {
                 comment: .init(enablePictures: true),
                 reply: .init(enablePictures: true)),
             exposeClientUserId: false, termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+            informalLanguages: []))
         try await mockConfigRepository.refreshCommunityConfig()
     }
 

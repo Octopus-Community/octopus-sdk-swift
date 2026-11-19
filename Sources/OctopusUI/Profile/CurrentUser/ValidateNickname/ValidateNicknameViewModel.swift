@@ -32,6 +32,9 @@ class ValidateNicknameViewModel: ObservableObject {
     private let octopus: OctopusSDK
     private let validator: Validators.CurrentUserProfile
     private var storage = [AnyCancellable]()
+    /// The confirmation in flight, cancelled when the member leaves without a choice.
+    private var submitTask: Task<Void, Never>?
+    private var isClosed = false
 
     init(octopus: OctopusSDK, contribution: UserAction) {
         self.octopus = octopus
@@ -73,7 +76,7 @@ class ValidateNicknameViewModel: ObservableObject {
                     // Same key, and same argument types, as the profile editor's.
                     let maxRatio: String = Validators.Picture.maxRatioStr
                     let minSize = Int(Validators.Picture.minSize)
-                    alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(maxRatio)_minSize:\(minSize)")
+                    alertError = .pictureSelectionError(maxRatio: maxRatio, minSize: minSize)
                     self.picture = .unchanged(octopus.core.profileRepository.profile?.pictureUrl)
                 case .valid:
                     break
@@ -102,8 +105,17 @@ class ValidateNicknameViewModel: ObservableObject {
         form.pick(suggestion: suggestion)
     }
 
+    /// Leaves the screen without a nickname (its close button, or the failure alert's Close): the contribution is
+    /// never sent, the draft stays in the composer. A confirmation still in flight is cancelled, best effort: one the
+    /// server already took still saves the nickname, but whatever it answers is not shown.
+    func closeWithoutChoice() {
+        isClosed = true
+        submitTask?.cancel()
+        submitTask = nil
+    }
+
     func submit() {
-        guard form.canSubmit, !isSubmitting else { return }
+        guard form.canSubmit, !isSubmitting, !isClosed else { return }
         let profile = octopus.core.profileRepository.profile
         let currentNickname = profile?.nickname ?? ""
         guard form.validateLocally(currentNickname: currentNickname, validator: validator,
@@ -111,13 +123,16 @@ class ValidateNicknameViewModel: ObservableObject {
         let editableProfile = form.editableProfile(currentNickname: currentNickname, picture: pictureUpdate)
 
         isSubmitting = true
-        Task { [octopus] in
+        submitTask = Task { [octopus] in
             do {
-                // The screen cannot be dismissed: a call stuck on a dead connection would leave the member on a
-                // spinner with no way out, so it gives up after a while and offers the failure alert's Close.
-                guard let result = try await withDeadline(nanoseconds: Self.confirmationTimeout, operation: {
+                // A call stuck on a dead connection would leave the member on a spinner, with the close button as
+                // the only way out, so it gives up after a while and offers the failure alert's Close.
+                let result = try await withDeadline(nanoseconds: Self.confirmationTimeout, operation: {
                     try await octopus.core.profileRepository.updateCurrentUserProfile(with: editableProfile)
-                }) else {
+                })
+                // The member left meanwhile: nothing is shown for this answer.
+                guard !isClosed else { return }
+                guard let result else {
                     failure = Self.timeoutFailure
                     isSubmitting = false
                     return
@@ -128,18 +143,21 @@ class ValidateNicknameViewModel: ObservableObject {
                 }
                 // The screen only closes on a confirmed nickname: without it, the member would wait forever.
                 guard updatedProfile.hasConfirmedNickname else {
-                    failure = .localizationKey("Error.Unknown")
+                    failure = .unknownError
                     isSubmitting = false
                     return
                 }
                 // The screen closes from the profile publisher, once the confirmed profile is stored. The button
                 // keeps its spinner until then, so the contribution cannot be confirmed twice.
                 return
+            } catch _ where isClosed {
+                // The member left meanwhile, which cancelled the call: nothing is shown for its error.
+                return
             } catch let error as UpdateProfile.Error {
                 failure = Self.failure(of: error, form: &form)
             } catch {
                 // Only reached if the update starts throwing another error type.
-                failure = .localizationKey("Error.Unknown")
+                failure = .unknownError
             }
             // Only reached after a failure: the member can correct and try again.
             isSubmitting = false
@@ -151,7 +169,7 @@ class ValidateNicknameViewModel: ObservableObject {
 
     /// What the failure alert says when confirming the nickname takes longer than `confirmationTimeout`. Not the
     /// no-network message: the connection may well be alive, only slow, for instance while a picture uploads.
-    nonisolated static var timeoutFailure: DisplayableString { .localizationKey("Error.Unknown") }
+    nonisolated static var timeoutFailure: DisplayableString { .unknownError }
 
     /// What the failure alert says when confirming the nickname fails, or `nil` when the refusal is only shown under
     /// the fields, where the member corrects it.
@@ -160,7 +178,7 @@ class ValidateNicknameViewModel: ObservableObject {
         switch error {
         case let .validation(validationErrors): form.apply(validationErrors)
         case let .serverCall(serverError): serverError.displayableMessage
-        case .other: .localizationKey("Error.Unknown")
+        case .other: .unknownError
         }
     }
 
@@ -185,9 +203,8 @@ class ValidateNicknameViewModel: ObservableObject {
         EditProfileViewModel.fieldEditMode(isAppManaged: isAppManaged, lock: lock) == .editInOctopus
     }
 
-    /// Whether the screen closes. It cannot be dismissed, so it closes once the nickname is confirmed (the
-    /// contribution then goes), or when the profile it was opened for is gone (the host disconnected the member),
-    /// so that nobody is left on it without a way out.
+    /// Whether the screen closes on its own: once the nickname is confirmed (the contribution then goes), or when the
+    /// profile it was opened for is gone (the host disconnected the member), which leaves nothing to choose.
     nonisolated static func shouldClose(openedForProfileId: String?, profileId: String?,
                                         hasConfirmedNickname: Bool) -> Bool {
         guard let profileId, profileId == openedForProfileId else { return true }

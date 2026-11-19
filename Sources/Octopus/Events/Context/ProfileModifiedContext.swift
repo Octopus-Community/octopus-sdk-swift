@@ -17,7 +17,8 @@ extension OctopusEvent {
     }
 
     /// Profile field update information
-    public enum ProfileFieldUpdate<T: Sendable>: Sendable {
+    public enum ProfileFieldUpdate<T: Sendable>: Sendable { // swiftlint:disable:this nonexhaustive_public_enum
+        // Closed by nature: a field is either unchanged or updated.
         /// This field has not been modified
         case unchanged
         /// This field has been modified

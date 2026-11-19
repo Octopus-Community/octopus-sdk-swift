@@ -7,6 +7,9 @@ import OctopusCore
 
 extension OctopusEvent {
     /// A reaction on a content
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum ReactionKind: Sendable {
         /// ❤️ reaction
         case heart

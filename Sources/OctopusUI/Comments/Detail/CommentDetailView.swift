@@ -9,6 +9,7 @@ import Octopus
 import OctopusCore
 
 struct CommentDetailView: View {
+    @Environment(\.textTone) private var textTone
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.trackingApi) var trackingApi
     @Environment(\.octopusTheme) private var theme
@@ -49,6 +50,9 @@ struct CommentDetailView: View {
             VStack(spacing: 0) {
                 ContentView(
                     comment: viewModel.comment,
+                    commentNotAvailable: viewModel.commentConfirmedNotAvailable,
+                    contentLoadFailure: viewModel.contentLoadFailure,
+                    retryFirstLoad: viewModel.retryFirstLoad,
                     lockedState: viewModel.lockedState,
                     replies: viewModel.replies,
                     repliesLoadFailure: viewModel.repliesLoadFailure,
@@ -56,12 +60,18 @@ struct CommentDetailView: View {
                     retryRepliesFirstLoad: viewModel.retryRepliesFirstLoad,
                     hasMoreReplies: viewModel.hasMoreData,
                     hideLoadMoreRepliesLoader: viewModel.hideLoadMoreRepliesLoader,
+                    listsMostRecentEnd: viewModel.listsMostRecentEnd,
+                    hidesUntilLanded: viewModel.hidesListUntilLanded,
+                    landsWithoutAnimation: viewModel.landsWithoutAnimation,
                     displayGoToParentButton: displayGoToParentButton,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
+                    scrollRequest: $viewModel.scrollRequest,
                     opensOnScrollTarget: viewModel.opensOnReply,
                     zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousReplies: viewModel.loadPreviousReplies,
+                    previousRepliesLoaderDisappeared: viewModel.previousRepliesLoaderDisappeared,
+                    newestReplyOnScreenChanged: viewModel.newestReplyOnScreenChanged,
                     refresh: viewModel.refresh,
                     displayProfile: { profileId, clientUserId in
                         dispatchProfileTap(octopus: viewModel.octopus, navigator: navigator,
@@ -128,7 +138,7 @@ struct CommentDetailView: View {
             viewModel.onDisappear()
         }
         .destructiveConfirmationAlert(
-            "Common.CancelModifications",
+            textTone.key(formal: "Common.CancelModifications.Formal", informal: "Common.CancelModifications.Informal"),
             isPresented: $showChangesWillBeLostAlert,
             cancelLabel: "Common.No",
             destructiveLabel: "Common.Yes",
@@ -201,6 +211,9 @@ struct CommentDetailView: View {
 private struct ContentView: View {
     @Environment(\.octopusTheme) private var theme
     let comment: CommentDetailViewModel.CommentDetail?
+    var commentNotAvailable = false
+    var contentLoadFailure: ScreenStateFailure?
+    var retryFirstLoad: () -> Void = {}
     let lockedState: LockedContentState
     let replies: [DisplayableFeedResponse]?
     var repliesLoadFailure: ScreenStateFailure?
@@ -208,13 +221,22 @@ private struct ContentView: View {
     var retryRepliesFirstLoad: () -> Void = {}
     let hasMoreReplies: Bool
     let hideLoadMoreRepliesLoader: Bool
+    /// Whether the replies are the most recent end of the thread, paging toward older ones from their top.
+    var listsMostRecentEnd = false
+    /// Whether the list is hidden, a spinner in its place, until it landed on the most recent end.
+    var hidesUntilLanded = false
+    /// Whether the scroll to the bottom is not animated, while the list lands on its most recent end.
+    var landsWithoutAnimation = false
     let displayGoToParentButton: Bool
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
+    var scrollRequest: Binding<Compat.ScrollRequest?> = .constant(nil)
     /// The list is kept whole so a scroll requested as the screen opens finds its row.
     var opensOnScrollTarget = false
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousReplies: () -> Void
+    var previousRepliesLoaderDisappeared: () -> Void = {}
+    var newestReplyOnScreenChanged: (Bool) -> Void = { _ in }
     let refresh: @Sendable () async -> Void
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
     let openCreateReply: () -> Void
@@ -229,9 +251,15 @@ private struct ContentView: View {
     var body: some View {
         Compat.ScrollView(
             scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
+            scrollRequest: scrollRequest, animatesScrollToBottom: !landsWithoutAnimation,
             refreshAction: refresh) {
-                LazyIfPossibleVStack(spacing: 0,
-                                     preventLaziness: opensOnScrollTarget || scrollToBottom || scrollToId != nil) {
+                // The most recent end stays lazy: its replies lay out the part of the window the screen scrolls to
+                // at once (see `MostRecentWindow.laidOutStart`). The whole list is laid out at once when the screen
+                // opens on one of them, or scrolls through them listed oldest first.
+                LazyIfPossibleVStack(
+                    spacing: 0,
+                    preventLaziness: opensOnScrollTarget
+                        || !listsMostRecentEnd && (scrollToBottom || scrollToId != nil)) {
                     if let comment {
                         CommentDetailContentView(comment: comment,
                                                  displayGoToParentButton: displayGoToParentButton,
@@ -261,6 +289,7 @@ private struct ContentView: View {
                                 CommentDetailRepliesView(replies: replies ?? [],
                                             hasMoreData: hasMoreReplies,
                                             hideLoader: hideLoadMoreRepliesLoader,
+                                            listsMostRecentEnd: listsMostRecentEnd,
                                             zoomableImageInfo: $zoomableImageInfo,
                                             loadPreviousReplies: loadPreviousReplies,
                                             displayProfile: displayProfile,
@@ -271,19 +300,50 @@ private struct ContentView: View {
                             }
                         }
                     } else {
-                        VStack {
-                            Spacer().frame(height: 54)
-                            IconImage(theme.assets.icons.content.comment.notAvailable)
-                                .accessibilityHidden(true)
-                            Text("Content.Detail.NotAvailable", bundle: .module)
-                                .fontWeight(.medium)
-                                .multilineTextAlignment(.center)
+                        // A missing comment is not a deleted one: the logout purge empties the cache while the
+                        // screen asks the server, and an offline answer says nothing about the comment.
+                        switch missingContentState(notAvailable: commentNotAvailable,
+                                                   loadFailure: contentLoadFailure) {
+                        case .notAvailable:
+                            VStack {
+                                Spacer().frame(height: 54)
+                                IconImage(theme.assets.icons.content.comment.notAvailable)
+                                    .accessibilityHidden(true)
+                                Text("Content.Detail.NotAvailable", bundle: .module)
+                                    .fontWeight(.medium)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .font(theme.fonts.body2)
+                            .foregroundColor(theme.colors.gray500)
+                        case let .failure(contentLoadFailure):
+                            contentLoadFailure.screenState(verticalPadding: ScreenState.commentPadding,
+                                                           icons: theme.assets.icons,
+                                                           retry: retryFirstLoad)
+                        case .loader:
+                            Compat.ProgressView()
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, ScreenState.commentPadding)
                         }
-                        .font(theme.fonts.body2)
-                        .foregroundColor(theme.colors.gray500)
                     }
                 }
             }
+            .opacity(hidesUntilLanded ? 0 : 1)
+            .overlay(Group {
+                if hidesUntilLanded {
+                    Compat.ProgressView()
+                }
+            })
+            .onTrackedViewOnScreenChanged { onScreen in
+                // The loader of older replies, at the top of the most recent end.
+                if onScreen {
+                    if #available(iOS 14, *) { Logger.comments.trace("Top loader on screen, loading older items...") }
+                    loadPreviousReplies()
+                } else {
+                    previousRepliesLoaderDisappeared()
+                }
+            }
+            // The newest reply of the most recent end, at the bottom of its window.
+            .onTrackedViewOnScreenChanged(of: .newestItem, perform: newestReplyOnScreenChanged)
             .clipped()
     }
 }

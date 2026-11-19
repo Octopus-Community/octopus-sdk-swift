@@ -7,7 +7,8 @@ import SwiftUI
 import Testing
 @testable import OctopusUI
 
-/// The connected-user Activity screen's tab order, and the box both tab rows share.
+/// The connected-user Activity screen's tab order, the box both tab rows share, and when a screen
+/// shows a tab row at all.
 @Suite
 struct ProfileTabsTests {
     // MARK: - Activity tab order (Notifications / Posts / Comments)
@@ -42,6 +43,42 @@ struct ProfileTabsTests {
         #expect(ProfileTabsLayout.interTabSpacing == 8)
         #expect(ProfileTabsLayout.tabHorizontalPadding == 16)
         #expect(ProfileTabsLayout.tabVerticalPadding == 10)
+    }
+
+    // MARK: - Single-tab rule
+
+    @Test(arguments: [0, 1])
+    func testFewerThanTwoTabsShowNoTabRow(tabCount: Int) {
+        #expect(!ProfileTabsLayout.showsTabRow(tabCount: tabCount))
+    }
+
+    @Test(arguments: [2, 3])
+    func testTwoTabsOrMoreShowTheTabRow(tabCount: Int) {
+        #expect(ProfileTabsLayout.showsTabRow(tabCount: tabCount))
+    }
+
+    @Test func testSelectionIsKeptWhileItsTabStillExists() {
+        #expect(ProfileTabsLayout.selectedTab(1, keptWithin: 2) == 1)
+        #expect(ProfileTabsLayout.selectedTab(0, keptWithin: 1) == 0)
+    }
+
+    @Test func testSelectionFallsBackToTheFirstTabWhenItsTabDisappears() {
+        // Another member's Comments (index 1) removed while selected: Posts stays displayed.
+        #expect(ProfileTabsLayout.selectedTab(1, keptWithin: 1) == 0)
+    }
+
+    // MARK: - Other member's tabs
+
+    @Test func testOtherMemberWithoutSharedCommentsHasPostsAlone() {
+        let tabs = otherUserProfileTabs(showsCommentsTab: false)
+        #expect(tabs == ["Profile.Tabs.Posts"])
+        #expect(!ProfileTabsLayout.showsTabRow(tabCount: tabs.count))
+    }
+
+    @Test func testOtherMemberWithSharedCommentsHasPostsThenComments() {
+        let tabs = otherUserProfileTabs(showsCommentsTab: true)
+        #expect(tabs == ["Profile.Tabs.Posts", "Profile.Tabs.Comments"])
+        #expect(ProfileTabsLayout.showsTabRow(tabCount: tabs.count))
     }
 
     // MARK: - Underline placement

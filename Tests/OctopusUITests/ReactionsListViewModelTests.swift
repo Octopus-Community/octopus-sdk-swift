@@ -218,7 +218,7 @@ final class ReactionsListViewModelTests: XCTestCase {
         let viewModel = makeViewModel(recorder: recorder, reactions: [])
 
         await viewModel.loadFirstPageIfNeeded(tab: .all)
-        XCTAssertEqual(viewModel.content(for: .all).error, .localizationKey("Error.NoNetwork"))
+        XCTAssertEqual(viewModel.content(for: .all).error, .noNetworkError)
         XCTAssertFalse(viewModel.content(for: .all).isLoadingFirstPage)
 
         await viewModel.retry(tab: .all)
@@ -241,7 +241,7 @@ final class ReactionsListViewModelTests: XCTestCase {
         await viewModel.loadFirstPageIfNeeded(tab: .all)
         await viewModel.loadMore(tab: .all)
 
-        XCTAssertEqual(viewModel.content(for: .all).error, .localizationKey("Error.Unknown"))
+        XCTAssertEqual(viewModel.content(for: .all).error, .unknownError)
         // The page already loaded must survive the failure.
         XCTAssertEqual(viewModel.content(for: .all).reactions.count, 1)
         // An error suspends paging, so the sentinel cannot spin on the failure.

@@ -5,6 +5,9 @@
 import Foundation
 
 /// Different kind of how to handle URL opening
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum URLOpeningStrategy {
     /// The url is handled by the app. It means that you, as a developer, take care of handling this URL and opening
     /// a screen, a website, an app or something else with it

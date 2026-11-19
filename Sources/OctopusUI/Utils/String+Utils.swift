@@ -73,6 +73,15 @@ extension String {
 
 extension String {
     static func formattedCount(_ count: Int) -> String {
+        formattedCount(count, decimalSeparator: ".")
+    }
+
+    /// Same as `formattedCount(_:)`, with the decimal separator of `locale`: "1,2K" in French, "1.2K" in English.
+    static func formattedCount(_ count: Int, locale: Locale) -> String {
+        formattedCount(count, decimalSeparator: locale.decimalSeparator ?? ".")
+    }
+
+    private static func formattedCount(_ count: Int, decimalSeparator: String) -> String {
         let num = Double(count)
 
         func format(_ value: Double, suffix: String) -> String {
@@ -82,7 +91,8 @@ extension String {
                 if roundedToOne.truncatingRemainder(dividingBy: 1) == 0 {
                     return "\(Int(roundedToOne))\(suffix)"
                 } else {
-                    return String(format: "%.1f", roundedToOne) + suffix
+                    return String(format: "%.1f", roundedToOne)
+                        .replacingOccurrences(of: ".", with: decimalSeparator) + suffix
                 }
             } else {
                 return "\(Int(floor(value)))\(suffix)"

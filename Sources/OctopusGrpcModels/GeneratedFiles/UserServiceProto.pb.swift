@@ -1625,7 +1625,6 @@ public nonisolated struct Com_Octopuscommunity_PublicGamificationScore: Sendable
 
   public var level: Int32 = 0
 
-  ///For BO users only
   public var score: Int32 {
     get {_score ?? 0}
     set {_score = newValue}
@@ -1649,11 +1648,24 @@ public nonisolated struct Com_Octopuscommunity_BanUserRequest: Sendable {
 
   public var userID: String = String()
 
+  /// Required when policyId is unset (legacy Dashboard, ban without a rule); must be empty when it is set
   public var reasons: [Com_Octopuscommunity_StatusReasonCode] = []
+
+  /// The community moderation rule the member is banned for; must be attached to the community
+  public var policyID: String {
+    get {_policyID ?? String()}
+    set {_policyID = newValue}
+  }
+  /// Returns true if `policyID` has been explicitly set.
+  public var hasPolicyID: Bool {self._policyID != nil}
+  /// Clears the value of `policyID`. Subsequent reads from it will return its default value.
+  public mutating func clearPolicyID() {self._policyID = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _policyID: String? = nil
 }
 
 public nonisolated struct Com_Octopuscommunity_BanUserResponse: Sendable {
@@ -2060,7 +2072,134 @@ public nonisolated struct Com_Octopuscommunity_CanAccessCommunityResponse: Senda
   /// Clears the value of `communityDisabledMessage`. Subsequent reads from it will return its default value.
   public mutating func clearCommunityDisabledMessage() {self._communityDisabledMessage = nil}
 
+  public var noAccessReason: Com_Octopuscommunity_CanAccessCommunityResponse.OneOf_NoAccessReason? = nil
+
+  public var noAccessCohort: Com_Octopuscommunity_CanAccessCommunityResponse.NoAccessCohort {
+    get {
+      if case .noAccessCohort(let v)? = noAccessReason {return v}
+      return Com_Octopuscommunity_CanAccessCommunityResponse.NoAccessCohort()
+    }
+    set {noAccessReason = .noAccessCohort(newValue)}
+  }
+
+  public var memberExcluded: Com_Octopuscommunity_CanAccessCommunityResponse.MemberExcluded {
+    get {
+      if case .memberExcluded(let v)? = noAccessReason {return v}
+      return Com_Octopuscommunity_CanAccessCommunityResponse.MemberExcluded()
+    }
+    set {noAccessReason = .memberExcluded(newValue)}
+  }
+
+  public var accountBanned: Com_Octopuscommunity_CanAccessCommunityResponse.AccountBanned {
+    get {
+      if case .accountBanned(let v)? = noAccessReason {return v}
+      return Com_Octopuscommunity_CanAccessCommunityResponse.AccountBanned()
+    }
+    set {noAccessReason = .accountBanned(newValue)}
+  }
+
+  public var accountDeleted: Com_Octopuscommunity_CanAccessCommunityResponse.AccountDeleted {
+    get {
+      if case .accountDeleted(let v)? = noAccessReason {return v}
+      return Com_Octopuscommunity_CanAccessCommunityResponse.AccountDeleted()
+    }
+    set {noAccessReason = .accountDeleted(newValue)}
+  }
+
+  public var sessionEnded: Com_Octopuscommunity_CanAccessCommunityResponse.SessionEnded {
+    get {
+      if case .sessionEnded(let v)? = noAccessReason {return v}
+      return Com_Octopuscommunity_CanAccessCommunityResponse.SessionEnded()
+    }
+    set {noAccessReason = .sessionEnded(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_NoAccessReason: Equatable, Sendable {
+    case noAccessCohort(Com_Octopuscommunity_CanAccessCommunityResponse.NoAccessCohort)
+    case memberExcluded(Com_Octopuscommunity_CanAccessCommunityResponse.MemberExcluded)
+    case accountBanned(Com_Octopuscommunity_CanAccessCommunityResponse.AccountBanned)
+    case accountDeleted(Com_Octopuscommunity_CanAccessCommunityResponse.AccountDeleted)
+    case sessionEnded(Com_Octopuscommunity_CanAccessCommunityResponse.SessionEnded)
+
+  }
+
+  public nonisolated struct NoAccessCohort: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public nonisolated struct MemberExcluded: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public nonisolated struct AccountBanned: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var nickname: String {
+      get {_nickname ?? String()}
+      set {_nickname = newValue}
+    }
+    /// Returns true if `nickname` has been explicitly set.
+    public var hasNickname: Bool {self._nickname != nil}
+    /// Clears the value of `nickname`. Subsequent reads from it will return its default value.
+    public mutating func clearNickname() {self._nickname = nil}
+
+    public var policyName: String = String()
+
+    /// Always empty: a moderation policy's description is Dashboard-only.
+    public var policyDescription: String = String()
+
+    public var contactEmail: String {
+      get {_contactEmail ?? String()}
+      set {_contactEmail = newValue}
+    }
+    /// Returns true if `contactEmail` has been explicitly set.
+    public var hasContactEmail: Bool {self._contactEmail != nil}
+    /// Clears the value of `contactEmail`. Subsequent reads from it will return its default value.
+    public mutating func clearContactEmail() {self._contactEmail = nil}
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+
+    fileprivate var _nickname: String? = nil
+    fileprivate var _contactEmail: String? = nil
+  }
+
+  public nonisolated struct AccountDeleted: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public nonisolated struct SessionEnded: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
 
   public init() {}
 
@@ -4715,7 +4854,7 @@ nonisolated extension Com_Octopuscommunity_PublicGamificationScore: SwiftProtobu
 
 nonisolated extension Com_Octopuscommunity_BanUserRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BanUserRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}reasons\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}userId\0\u{1}reasons\0\u{1}policyId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4725,24 +4864,33 @@ nonisolated extension Com_Octopuscommunity_BanUserRequest: SwiftProtobuf.Message
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       case 2: try { try decoder.decodeRepeatedEnumField(value: &self.reasons) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._policyID) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.userID.isEmpty {
       try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
     }
     if !self.reasons.isEmpty {
       try visitor.visitPackedEnumField(value: self.reasons, fieldNumber: 2)
     }
+    try { if let v = self._policyID {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_BanUserRequest, rhs: Com_Octopuscommunity_BanUserRequest) -> Bool {
     if lhs.userID != rhs.userID {return false}
     if lhs.reasons != rhs.reasons {return false}
+    if lhs._policyID != rhs._policyID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -5340,7 +5488,7 @@ nonisolated extension Com_Octopuscommunity_CanAccessCommunityRequest: SwiftProto
 
 nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CanAccessCommunityResponse"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}canAccessCommunity\0\u{1}communityDisabledMessage\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}canAccessCommunity\0\u{1}communityDisabledMessage\0\u{1}noAccessCohort\0\u{1}memberExcluded\0\u{1}accountBanned\0\u{1}accountDeleted\0\u{1}sessionEnded\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5350,6 +5498,71 @@ nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse: SwiftProt
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.canAccessCommunity) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._communityDisabledMessage) }()
+      case 3: try {
+        var v: Com_Octopuscommunity_CanAccessCommunityResponse.NoAccessCohort?
+        var hadOneofValue = false
+        if let current = self.noAccessReason {
+          hadOneofValue = true
+          if case .noAccessCohort(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.noAccessReason = .noAccessCohort(v)
+        }
+      }()
+      case 4: try {
+        var v: Com_Octopuscommunity_CanAccessCommunityResponse.MemberExcluded?
+        var hadOneofValue = false
+        if let current = self.noAccessReason {
+          hadOneofValue = true
+          if case .memberExcluded(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.noAccessReason = .memberExcluded(v)
+        }
+      }()
+      case 5: try {
+        var v: Com_Octopuscommunity_CanAccessCommunityResponse.AccountBanned?
+        var hadOneofValue = false
+        if let current = self.noAccessReason {
+          hadOneofValue = true
+          if case .accountBanned(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.noAccessReason = .accountBanned(v)
+        }
+      }()
+      case 6: try {
+        var v: Com_Octopuscommunity_CanAccessCommunityResponse.AccountDeleted?
+        var hadOneofValue = false
+        if let current = self.noAccessReason {
+          hadOneofValue = true
+          if case .accountDeleted(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.noAccessReason = .accountDeleted(v)
+        }
+      }()
+      case 7: try {
+        var v: Com_Octopuscommunity_CanAccessCommunityResponse.SessionEnded?
+        var hadOneofValue = false
+        if let current = self.noAccessReason {
+          hadOneofValue = true
+          if case .sessionEnded(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.noAccessReason = .sessionEnded(v)
+        }
+      }()
       default: break
       }
     }
@@ -5366,12 +5579,161 @@ nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse: SwiftProt
     try { if let v = self._communityDisabledMessage {
       try visitor.visitSingularStringField(value: v, fieldNumber: 2)
     } }()
+    switch self.noAccessReason {
+    case .noAccessCohort?: try {
+      guard case .noAccessCohort(let v)? = self.noAccessReason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    }()
+    case .memberExcluded?: try {
+      guard case .memberExcluded(let v)? = self.noAccessReason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    }()
+    case .accountBanned?: try {
+      guard case .accountBanned(let v)? = self.noAccessReason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }()
+    case .accountDeleted?: try {
+      guard case .accountDeleted(let v)? = self.noAccessReason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .sessionEnded?: try {
+      guard case .sessionEnded(let v)? = self.noAccessReason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    }()
+    case nil: break
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: Com_Octopuscommunity_CanAccessCommunityResponse, rhs: Com_Octopuscommunity_CanAccessCommunityResponse) -> Bool {
     if lhs.canAccessCommunity != rhs.canAccessCommunity {return false}
     if lhs._communityDisabledMessage != rhs._communityDisabledMessage {return false}
+    if lhs.noAccessReason != rhs.noAccessReason {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse.NoAccessCohort: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CanAccessCommunityResponse.protoMessageName + ".NoAccessCohort"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CanAccessCommunityResponse.NoAccessCohort, rhs: Com_Octopuscommunity_CanAccessCommunityResponse.NoAccessCohort) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse.MemberExcluded: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CanAccessCommunityResponse.protoMessageName + ".MemberExcluded"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CanAccessCommunityResponse.MemberExcluded, rhs: Com_Octopuscommunity_CanAccessCommunityResponse.MemberExcluded) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse.AccountBanned: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CanAccessCommunityResponse.protoMessageName + ".AccountBanned"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nickname\0\u{1}policyName\0\u{1}policyDescription\0\u{1}contactEmail\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self._nickname) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.policyName) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.policyDescription) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self._contactEmail) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._nickname {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 1)
+    } }()
+    if !self.policyName.isEmpty {
+      try visitor.visitSingularStringField(value: self.policyName, fieldNumber: 2)
+    }
+    if !self.policyDescription.isEmpty {
+      try visitor.visitSingularStringField(value: self.policyDescription, fieldNumber: 3)
+    }
+    try { if let v = self._contactEmail {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CanAccessCommunityResponse.AccountBanned, rhs: Com_Octopuscommunity_CanAccessCommunityResponse.AccountBanned) -> Bool {
+    if lhs._nickname != rhs._nickname {return false}
+    if lhs.policyName != rhs.policyName {return false}
+    if lhs.policyDescription != rhs.policyDescription {return false}
+    if lhs._contactEmail != rhs._contactEmail {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse.AccountDeleted: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CanAccessCommunityResponse.protoMessageName + ".AccountDeleted"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CanAccessCommunityResponse.AccountDeleted, rhs: Com_Octopuscommunity_CanAccessCommunityResponse.AccountDeleted) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CanAccessCommunityResponse.SessionEnded: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = Com_Octopuscommunity_CanAccessCommunityResponse.protoMessageName + ".SessionEnded"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CanAccessCommunityResponse.SessionEnded, rhs: Com_Octopuscommunity_CanAccessCommunityResponse.SessionEnded) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

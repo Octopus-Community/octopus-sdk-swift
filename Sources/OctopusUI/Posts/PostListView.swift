@@ -78,7 +78,9 @@ struct PostListView: View {
                                 ScreenState(
                                     image: theme.assets.icons.screenStates.emptyContent,
                                     // Already shipped in 24 languages as "Soyez le premier à publier !"
-                                    title: .localizationKey("Post.List.Default.Empty"),
+                                    title: .tonedKey(
+                                        formal: "Post.List.Default.Empty.Formal",
+                                        informal: "Post.List.Default.Empty.Informal"),
                                     verticalPadding: ScreenState.feedEmptyPadding)
                             }
                     } else if let rootFeedLoadFailure {

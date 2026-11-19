@@ -1072,6 +1072,14 @@ public nonisolated struct Com_Octopuscommunity_Image: Sendable {
     set {file = .bytes(newValue)}
   }
 
+  public var uploadID: String {
+    get {
+      if case .uploadID(let v)? = file {return v}
+      return String()
+    }
+    set {file = .uploadID(newValue)}
+  }
+
   public var name: String = String()
 
   public var contentType: String = String()
@@ -1109,6 +1117,7 @@ public nonisolated struct Com_Octopuscommunity_Image: Sendable {
   public nonisolated enum OneOf_File: Equatable, Sendable {
     case url(String)
     case bytes(Data)
+    case uploadID(String)
 
   }
 
@@ -1203,12 +1212,26 @@ public nonisolated struct Com_Octopuscommunity_CTA: Sendable {
   /// Clears the value of `targetLink`. Subsequent reads from it will return its default value.
   public mutating func clearTargetLink() {self._targetLink = nil}
 
+  /// Write-only, ignored on Topic.cta: language of text, `language[-Script][-REGION]`
+  public var textLanguage: String {
+    get {_textLanguage ?? String()}
+    set {_textLanguage = newValue}
+  }
+  /// Returns true if `textLanguage` has been explicitly set.
+  public var hasTextLanguage: Bool {self._textLanguage != nil}
+  /// Clears the value of `textLanguage`. Subsequent reads from it will return its default value.
+  public mutating func clearTextLanguage() {self._textLanguage = nil}
+
+  /// Write-only, ignored on Topic.cta: other labels by language code, textLanguage excluded
+  public var textTranslations: Dictionary<String,String> = [:]
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _translatedText: String? = nil
   fileprivate var _targetLink: String? = nil
+  fileprivate var _textLanguage: String? = nil
 }
 
 public nonisolated struct Com_Octopuscommunity_PollAnswer: Sendable {
@@ -1332,6 +1355,15 @@ public nonisolated struct Com_Octopuscommunity_Post: @unchecked Sendable {
   public var hasCreateCommentsRepliesOverride: Bool {_storage._createCommentsRepliesOverride != nil}
   /// Clears the value of `createCommentsRepliesOverride`. Subsequent reads from it will return its default value.
   public mutating func clearCreateCommentsRepliesOverride() {_uniqueStorage()._createCommentsRepliesOverride = nil}
+
+  public var threadPushEnabled: Bool {
+    get {_storage._threadPushEnabled ?? false}
+    set {_uniqueStorage()._threadPushEnabled = newValue}
+  }
+  /// Returns true if `threadPushEnabled` has been explicitly set.
+  public var hasThreadPushEnabled: Bool {_storage._threadPushEnabled != nil}
+  /// Clears the value of `threadPushEnabled`. Subsequent reads from it will return its default value.
+  public mutating func clearThreadPushEnabled() {_uniqueStorage()._threadPushEnabled = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -2833,7 +2865,7 @@ nonisolated extension Com_Octopuscommunity_StrictMedia: SwiftProtobuf.Message, S
 
 nonisolated extension Com_Octopuscommunity_Image: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Image"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}url\0\u{1}name\0\u{1}contentType\0\u{1}bytes\0\u{1}width\0\u{1}height\0\u{1}isOptimized\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}url\0\u{1}name\0\u{1}contentType\0\u{1}bytes\0\u{1}width\0\u{1}height\0\u{1}isOptimized\0\u{1}uploadId\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2862,6 +2894,14 @@ nonisolated extension Com_Octopuscommunity_Image: SwiftProtobuf.Message, SwiftPr
       case 5: try { try decoder.decodeSingularInt32Field(value: &self._width) }()
       case 6: try { try decoder.decodeSingularInt32Field(value: &self._height) }()
       case 7: try { try decoder.decodeSingularBoolField(value: &self._isOptimized) }()
+      case 8: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.file != nil {try decoder.handleConflictingOneOf()}
+          self.file = .uploadID(v)
+        }
+      }()
       default: break
       }
     }
@@ -2892,6 +2932,9 @@ nonisolated extension Com_Octopuscommunity_Image: SwiftProtobuf.Message, SwiftPr
     } }()
     try { if let v = self._isOptimized {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 7)
+    } }()
+    try { if case .uploadID(let v)? = self.file {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 8)
     } }()
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2989,7 +3032,7 @@ nonisolated extension Com_Octopuscommunity_BridgeToClientObject: SwiftProtobuf.M
 
 nonisolated extension Com_Octopuscommunity_CTA: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CTA"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{1}translatedText\0\u{1}targetLink\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{1}translatedText\0\u{1}targetLink\0\u{1}textLanguage\0\u{1}textTranslations\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -3000,6 +3043,8 @@ nonisolated extension Com_Octopuscommunity_CTA: SwiftProtobuf.Message, SwiftProt
       case 1: try { try decoder.decodeSingularStringField(value: &self.text) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self._translatedText) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self._targetLink) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self._textLanguage) }()
+      case 5: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.textTranslations) }()
       default: break
       }
     }
@@ -3019,6 +3064,12 @@ nonisolated extension Com_Octopuscommunity_CTA: SwiftProtobuf.Message, SwiftProt
     try { if let v = self._targetLink {
       try visitor.visitSingularStringField(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._textLanguage {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 4)
+    } }()
+    if !self.textTranslations.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.textTranslations, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -3026,6 +3077,8 @@ nonisolated extension Com_Octopuscommunity_CTA: SwiftProtobuf.Message, SwiftProt
     if lhs.text != rhs.text {return false}
     if lhs._translatedText != rhs._translatedText {return false}
     if lhs._targetLink != rhs._targetLink {return false}
+    if lhs._textLanguage != rhs._textLanguage {return false}
+    if lhs.textTranslations != rhs.textTranslations {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3077,7 +3130,7 @@ nonisolated extension Com_Octopuscommunity_PollAnswer: SwiftProtobuf.Message, Sw
 
 nonisolated extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Post"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{2}\u{2}media\0\u{1}poll\0\u{1}bridgeToClientObject\0\u{2}\u{f}translatedText\0\u{1}originalLanguage\0\u{1}translatedLanguage\0\u{2}\u{8}cta\0\u{1}createCommentsRepliesOverride\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{2}\u{2}media\0\u{1}poll\0\u{1}bridgeToClientObject\0\u{2}\u{f}translatedText\0\u{1}originalLanguage\0\u{1}translatedLanguage\0\u{2}\u{8}cta\0\u{1}createCommentsRepliesOverride\0\u{1}threadPushEnabled\0")
 
   fileprivate class _StorageClass {
     var _text: String = String()
@@ -3089,6 +3142,7 @@ nonisolated extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftPro
     var _translatedLanguage: String? = nil
     var _cta: Com_Octopuscommunity_CTA? = nil
     var _createCommentsRepliesOverride: Com_Octopuscommunity_EntitlementList? = nil
+    var _threadPushEnabled: Bool? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -3108,6 +3162,7 @@ nonisolated extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftPro
       _translatedLanguage = source._translatedLanguage
       _cta = source._cta
       _createCommentsRepliesOverride = source._createCommentsRepliesOverride
+      _threadPushEnabled = source._threadPushEnabled
     }
   }
 
@@ -3135,6 +3190,7 @@ nonisolated extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftPro
         case 22: try { try decoder.decodeSingularStringField(value: &_storage._translatedLanguage) }()
         case 30: try { try decoder.decodeSingularMessageField(value: &_storage._cta) }()
         case 31: try { try decoder.decodeSingularMessageField(value: &_storage._createCommentsRepliesOverride) }()
+        case 32: try { try decoder.decodeSingularBoolField(value: &_storage._threadPushEnabled) }()
         default: break
         }
       }
@@ -3174,6 +3230,9 @@ nonisolated extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftPro
       try { if let v = _storage._createCommentsRepliesOverride {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 31)
       } }()
+      try { if let v = _storage._threadPushEnabled {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 32)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3192,6 +3251,7 @@ nonisolated extension Com_Octopuscommunity_Post: SwiftProtobuf.Message, SwiftPro
         if _storage._translatedLanguage != rhs_storage._translatedLanguage {return false}
         if _storage._cta != rhs_storage._cta {return false}
         if _storage._createCommentsRepliesOverride != rhs_storage._createCommentsRepliesOverride {return false}
+        if _storage._threadPushEnabled != rhs_storage._threadPushEnabled {return false}
         return true
       }
       if !storagesAreEqual {return false}

@@ -7,6 +7,9 @@ import SwiftUI
 
 /// The title displayed in the navigation bar on the main feed screen
 public struct OctopusMainFeedTitle {
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum Content {
         /// A text title
         public struct TextTitle {
@@ -33,6 +36,9 @@ public struct OctopusMainFeedTitle {
     }
 
     /// The position of the title
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum Placement {
         /// The title will be displayed at the leading place (i.e. at the left on left to right languages)
         case leading

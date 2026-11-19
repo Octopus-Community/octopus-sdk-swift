@@ -178,6 +178,7 @@ private final class StubConnectionRepository: ConnectionRepository, InjectableOb
 
     func onAuthenticatedCallFailed() async throws { }
     func logout() async throws { }
+    func reconnectAfterAccountDeletion() async throws(ConnectionError) { }
     func logoutBeforeCommunitySwitch() async throws { }
     func connectUser(_ user: ClientUser, tokenProvider: @escaping () async throws -> String) async throws { }
     func disconnectUser() async throws { }

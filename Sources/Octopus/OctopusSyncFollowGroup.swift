@@ -5,7 +5,8 @@
 import Foundation
 
 /// Namespace for the batch-sync-follow-groups feature.
-public enum OctopusSyncFollowGroup {
+public enum OctopusSyncFollowGroup { // swiftlint:disable:this nonexhaustive_public_enum
+    // A namespace without cases: nothing to switch over.
 
     /// A single follow/unfollow action to sync for a group, with its own timestamp.
     public struct Action: Sendable {
@@ -41,6 +42,9 @@ public enum OctopusSyncFollowGroup {
     }
 
     /// The outcome status for a single action inside a sync batch.
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum Status: Sendable {
         /// The action was applied by the backend.
         case applied
@@ -61,6 +65,9 @@ public enum OctopusSyncFollowGroup {
     }
 
     /// Errors that can be thrown by ``OctopusSDK/syncFollowGroups(actions:)``.
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum Error: Swift.Error, CustomDebugStringConvertible {
         /// No user is connected.
         case notConnected

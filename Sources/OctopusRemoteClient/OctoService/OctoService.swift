@@ -40,6 +40,13 @@ public protocol OctoService {
              clientToken: String?,
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutPostResponse
 
+    /// Asks the backend for one presigned upload slot per image, in the order of `sizes` (each size is in bytes).
+    /// - Parameter bridge: names the client object the images are uploaded for, when they are for a bridge post.
+    ///                     Without it, the upload is a member upload and its images can only be used by that member.
+    func createImageUploads(sizes: [UInt64], bridge: Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload?,
+                            authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_CreateImageUploadsResponse
+
     func put(comment: Com_Octopuscommunity_RwOctoObject,
              parentIsTranslated: Bool,
              authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_PutCommentResponse
@@ -99,6 +106,7 @@ class OctoServiceClient: ServiceClient, OctoService {
 
     init(unaryChannel: GRPCChannel, apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
          sdkIdentity: @escaping @Sendable () -> SdkIdentity,
+         callsGate: CallsGate,
          getUserIdBlock: @escaping () -> String?,
          updateTokenBlock: @escaping (String) -> Void) {
         client = Com_Octopuscommunity_OctoObjectServiceAsyncClient(
@@ -106,7 +114,7 @@ class OctoServiceClient: ServiceClient, OctoService {
             interceptors: OctoServiceInterceptor(
                 getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock))
         super.init(apiKey: apiKey, sdkVersion: sdkVersion, installId: installId, localeIdentifier: localeIdentifier,
-                   sdkIdentity: sdkIdentity)
+                   sdkIdentity: sdkIdentity, callsGate: callsGate)
     }
 
     public func get(octoObjectInfo: OctoObjectInfo, options: GetOptions, incrementViewCount: Bool,
@@ -174,6 +182,22 @@ class OctoServiceClient: ServiceClient, OctoService {
         }
         return try await callRemote(authenticationMethod) {
             try await client.putPost(
+                request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
+        }
+    }
+
+    public func createImageUploads(sizes: [UInt64],
+                                   bridge: Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload?,
+                                   authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_CreateImageUploadsResponse {
+        let request = Com_Octopuscommunity_CreateImageUploadsRequest.with {
+            $0.images = sizes.map { size in
+                Com_Octopuscommunity_CreateImageUploadsRequest.ImageUploadRequest.with { $0.sizeBytes = size }
+            }
+            if let bridge { $0.bridge = bridge }
+        }
+        return try await callRemote(authenticationMethod) {
+            try await client.createImageUploads(
                 request, callOptions: getCallOptions(authenticationMethod: authenticationMethod))
         }
     }

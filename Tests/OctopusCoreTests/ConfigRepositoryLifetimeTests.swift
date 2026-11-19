@@ -60,7 +60,7 @@ struct ConfigRepositoryLifetimeTests {
     private func makeInjector() -> Injector {
         let injector = Injector()
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
-        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .appStateMonitor)
+        injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .appStateMonitor, .communityClosure)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { UserConfigDatabase(injector: $0) }

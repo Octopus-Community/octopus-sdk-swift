@@ -64,6 +64,7 @@ struct CreateCommentView: View {
             mode: viewModel.termsAcceptanceMode,
             consentTexts: viewModel.consentTexts,
             contribution: .comment,
+            nicknameChoiceFollows: viewModel.consentSheetLeadsToNicknameChoice,
             termsUrl: viewModel.termsOfUseUrl,
             privacyUrl: viewModel.privacyPolicyUrl,
             rulesUrl: viewModel.communityGuidelinesUrl,

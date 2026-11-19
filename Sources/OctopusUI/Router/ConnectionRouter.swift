@@ -8,6 +8,7 @@ import OctopusCore
 
 struct ConnectionRouter: ViewModifier {
     @Environment(\.octopusTheme) private var theme
+    @Environment(\.textTone) private var textTone
     @Binding var noConnectedReplacementAction: ConnectedActionReplacement?
     /// Called when the member closes the nickname choice screen without confirming their nickname, so that the
     /// composer it held a contribution for drops it.
@@ -33,12 +34,12 @@ struct ConnectionRouter: ViewModifier {
     func body(content: Content) -> some View {
         content
             .octopusFullScreenCover(isPresented: $openNicknameValidation) {
-                ValidateNicknameView(octopus: viewModel.octopus, contribution: nicknameChoiceContribution,
-                                     isPresented: $openNicknameValidation,
-                                     close: {
-                                         onNicknameChoiceClosed?()
-                                         openNicknameValidation = false
-                                     })
+                ValidateNicknameScreen(octopus: viewModel.octopus, contribution: nicknameChoiceContribution,
+                                       isPresented: $openNicknameValidation,
+                                       close: {
+                                           onNicknameChoiceClosed?()
+                                           openNicknameValidation = false
+                                       })
             }
             .compatAlert(
                 "Common.Error",
@@ -53,7 +54,7 @@ struct ConnectionRouter: ViewModifier {
                     }
                 },
                 message: { error in
-                    error.textView
+                    error.textView(tone: textTone)
                 })
             // No Retry: a ban is the server's settled answer, no exchange lifts it.
             .compatAlert(
@@ -66,12 +67,12 @@ struct ConnectionRouter: ViewModifier {
                     }
                 },
                 message: { error in
-                    error.textView
+                    error.textView(tone: textTone)
                 })
             .compatAlert(
                 "Common.Error",
                 isPresented: $displayLoadConfigError,
-                presenting: LocalizedStringKey("Error.Unknown"),
+                presenting: textTone.key(formal: "Error.Unknown.Formal", informal: "Error.Unknown.Informal"),
                 actions: { _ in
                     Button(action: viewModel.fetchConfig) {
                         Text("Common.Retry", bundle: .module)
@@ -157,7 +158,9 @@ class ConnectionRouterViewModel: ObservableObject {
                     fallthrough
                 }
             default:
-                ssoError = .localizationKey("Connection.SSO.Error.Unknown")
+                ssoError = .tonedKey(
+                    formal: "Connection.SSO.Error.Unknown.Formal",
+                    informal: "Connection.SSO.Error.Unknown.Informal")
             }
         }
     }

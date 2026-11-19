@@ -9,8 +9,8 @@ import Testing
 
 @Suite
 struct PostSummaryAccessibilityTests {
-    private let image = PostAttachmentsViewData.Media.image(
-        ImageMedia(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 10, height: 10)))
+    private let image = PostAttachmentsViewData.Media.images(
+        [ImageMedia(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 10, height: 10))])
     private let video = PostAttachmentsViewData.Media.video(
         VideoMedia(videoId: "v", url: URL(string: "https://example.com/v.mp4")!,
                    size: CGSize(width: 10, height: 10)))
@@ -42,6 +42,33 @@ struct PostSummaryAccessibilityTests {
     @Test func imageAndPollWithoutTextKeepsTheImageTemplate() {
         let attachments = PostAttachmentsViewData(media: image, poll: poll)
         #expect(PostSummaryAccessibility.template(for: attachments, hasText: false) == .textAndImage)
+    }
+
+    private func images(_ count: Int) -> PostAttachmentsViewData.Media {
+        .images((0..<count).map { index in
+            ImageMedia(url: URL(string: "https://example.com/\(index).jpg")!, size: CGSize(width: 10, height: 10))
+        })
+    }
+
+    @Test func twoImagesWithTextUseTheImagesTemplate() {
+        let attachments = PostAttachmentsViewData(media: images(2), poll: nil)
+        #expect(PostSummaryAccessibility.template(for: attachments, hasText: true) == .textAndImages(count: 2))
+    }
+
+    @Test func threeImagesWithoutTextNorPollUseImagesOnly() {
+        let attachments = PostAttachmentsViewData(media: images(3), poll: nil)
+        #expect(PostSummaryAccessibility.template(for: attachments, hasText: false) == .imagesOnly(count: 3))
+    }
+
+    @Test func oneImageKeepsTheCurrentTemplate() {
+        let attachments = PostAttachmentsViewData(media: images(1), poll: nil)
+        #expect(PostSummaryAccessibility.template(for: attachments, hasText: true) == .textAndImage)
+        #expect(PostSummaryAccessibility.template(for: attachments, hasText: false) == .imageOnly)
+    }
+
+    @Test func imagesAndPollWithoutTextKeepTheImagesTemplate() {
+        let attachments = PostAttachmentsViewData(media: images(4), poll: poll)
+        #expect(PostSummaryAccessibility.template(for: attachments, hasText: false) == .textAndImages(count: 4))
     }
 
     @Test func pollOptionsAreAppendedToTheText() {

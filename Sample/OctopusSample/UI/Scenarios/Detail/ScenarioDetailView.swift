@@ -175,6 +175,7 @@ struct ScenarioControls: View {
         case .termsAcceptance: TermsAcceptanceControls()
         case .consentTexts: ConsentTextsControls()
         case .forceNicknameChoice: ForceNicknameChoiceControls()
+        case .informalLanguages: InformalLanguagesControls()
         case .refreshEntitlements: RefreshEntitlementsControls()
         case .initialScreen: InitialScreenControls()
         case .fullscreen: FullscreenControls(route: $route)

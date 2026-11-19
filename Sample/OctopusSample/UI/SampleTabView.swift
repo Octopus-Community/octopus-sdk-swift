@@ -59,6 +59,8 @@ struct SampleTabView: View {
             }
             .onAppear {
                 communityBadge.refresh()
+                // The tabs only show once a config exists, so the SDK is started here.
+                NotificationManager.instance.requestForPushNotificationPermissionIfNotDetermined()
             }
             .onReceive(NotificationManager.instance.$handleOctopusNotificationUserInfo) {
                 guard let userInfo = $0 else { return }

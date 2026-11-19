@@ -8,6 +8,7 @@ import OctopusCore
 import Combine
 
 struct ResponseFeedItemView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.trackingApi) private var trackingApi
     @EnvironmentObject private var languageManager: LanguageManager
 
@@ -88,20 +89,20 @@ struct ResponseFeedItemView: View {
     /// (`ellipsizeText`/`ellipsize` in its `init(from:)` overloads) and this view has no inline
     /// expansion state of its own, so render and label can never disagree.
     private var accessibilityDescription: LocalizedStringKey {
-        let authorName = response.author.name.localizedString(locale: languageManager.overridenLocale)
+        let authorName = response.author.name.localizedString(locale: languageManager.overridenLocale, tone: textTone)
 
         if let responseText = response.text {
             let displayed = responseText.getTruncatedText(translated: true)
             let textToRead = "\(displayed.text)\(displayed.isTruncated ? "..." : "")"
             if response.image != nil {
-                return "Accessibility.Response.Summary.TextAndImage_author:\(authorName)_date:\(response.relativeDate)_text:\(textToRead)"
+                return "Accessibility.Response.Summary.TextAndImage_author:\(authorName)_date:\(response.relativeDate.accessibilityText)_text:\(textToRead)"
             } else {
-                return "Accessibility.Response.Summary.TextOnly_author:\(authorName)_date:\(response.relativeDate)_text:\(textToRead)"
+                return "Accessibility.Response.Summary.TextOnly_author:\(authorName)_date:\(response.relativeDate.accessibilityText)_text:\(textToRead)"
             }
         } else if response.image != nil {
-            return "Accessibility.Response.Summary.Image_author:\(authorName)_date:\(response.relativeDate)"
+            return "Accessibility.Response.Summary.Image_author:\(authorName)_date:\(response.relativeDate.accessibilityText)"
         } else {
-            return "Accessibility.Response.Summary.TextOnly_author:\(authorName)_date:\(response.relativeDate)_text:\("")"
+            return "Accessibility.Response.Summary.TextOnly_author:\(authorName)_date:\(response.relativeDate.accessibilityText)_text:\("")"
         }
     }
 }
@@ -125,7 +126,7 @@ struct ResponseFeedItemView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -170,7 +171,7 @@ struct ResponseFeedItemView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -212,7 +213,7 @@ struct ResponseFeedItemView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,
@@ -256,7 +257,7 @@ struct ResponseFeedItemView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             canBeDeleted: false,
             canBeModerated: true,
             canBeBlockedByUser: true,

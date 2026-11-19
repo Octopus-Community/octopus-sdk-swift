@@ -9,6 +9,7 @@ import Octopus
 import OctopusCore
 
 struct PostDetailView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.presentationMode) private var presentationMode
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.trackingApi) var trackingApi
@@ -82,12 +83,22 @@ struct PostDetailView: View {
                     retryCommentsFirstLoad: viewModel.retryCommentsFirstLoad,
                     hasMoreComments: viewModel.hasMoreData,
                     hideLoadMoreCommentsLoader: viewModel.hideLoadMoreCommentsLoader,
+                    listsMostRecentEnd: viewModel.listsMostRecentEnd,
+                    hasNewerComments: viewModel.hasNewerComments,
+                    listedWindowId: viewModel.listedWindowId,
+                    hidesUntilLanded: viewModel.hidesListUntilLanded,
+                    landsWithoutAnimation: viewModel.landsWithoutAnimation,
                     width: width,
                     scrollToBottom: $viewModel.scrollToBottom,
                     scrollToId: $viewModel.scrollToId,
-                    opensOnScrollTarget: viewModel.opensOnComment,
+                    scrollRequest: $viewModel.scrollRequest,
+                    listsDownToScrollTarget: viewModel.listsDownToTargetComment,
                     zoomableImageInfo: $zoomableImageInfo,
                     loadPreviousComments: viewModel.loadPreviousComments,
+                    previousCommentsLoaderDisappeared: viewModel.previousCommentsLoaderDisappeared,
+                    loadNewerComments: viewModel.loadNewerComments,
+                    newerCommentsLoaderDisappeared: viewModel.newerCommentsLoaderDisappeared,
+                    newestCommentOnScreenChanged: viewModel.newestCommentOnScreenChanged,
                     refresh: viewModel.refresh,
                     displayCommentDetail: { commentId, reply in
                         navigator.push(.commentDetail(commentId: commentId, displayGoToParentButton: false,
@@ -111,7 +122,8 @@ struct PostDetailView: View {
                         guard viewModel.ensureConnected(action: .moderation) else { return }
                         mainFlowPath.reportTarget = $0
                     },
-                    displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId: $0) } : nil)
+                    displayClientObject: (viewModel.canDisplayClientObject ? { viewModel.displayClientObject(clientObjectId: $0) } : nil),
+                    openGroup: { navigator.push(.groupDetail(groupId: $0)) }
                 )
                 .toastContainer(octopus: viewModel.octopus,
                                 retryFailedFetch: { Task { await viewModel.refresh() } })
@@ -165,7 +177,7 @@ struct PostDetailView: View {
             viewModel.onDisappear()
         }
         .destructiveConfirmationAlert(
-            "Common.CancelModifications",
+            textTone.key(formal: "Common.CancelModifications.Formal", informal: "Common.CancelModifications.Informal"),
             isPresented: $showChangesWillBeLostAlert,
             cancelLabel: "Common.No",
             destructiveLabel: "Common.Yes",
@@ -179,9 +191,11 @@ struct PostDetailView: View {
                     viewModel.blockAuthor(profileId: profileId)
                 }
             },
-            message: "Block.Profile.Alert.Message")
+            message: textTone.key(formal: "Block.Profile.Alert.Message.Formal",
+                                  informal: "Block.Profile.Alert.Message.Informal"))
         .destructiveConfirmationAlert(
-            "Post.Delete.Confirmation.Title",
+            textTone.key(formal: "Post.Delete.Confirmation.Title.Formal",
+                         informal: "Post.Delete.Confirmation.Title.Informal"),
             isPresented: $displayWillDeleteAlert,
             destructiveLabel: "Common.Delete",
             action: { viewModel.deletePost() })
@@ -266,13 +280,13 @@ struct PostDetailView: View {
            post.canBeDeleted || post.canBeModerated || post.canBeBlockedByUser || post.groupId != nil {
             Menu(content: {
                 if let groupId = post.groupId {
-                    Button(action: { navigator.push(.groupDetail(groupId: groupId)) }) {
+                    NeutralMenuButton(action: { navigator.push(.groupDetail(groupId: groupId)) }) {
                         Label(title: { Text("Post.Menu.ViewGroup.Button", bundle: .module) },
                               icon: { Image(uiImage: theme.assets.icons.groups.viewGroup) })
                     }
                 }
                 if post.canBeDeleted {
-                    Button(action: { displayWillDeleteAlert = true }) {
+                    DestructiveMenuButton(action: { displayWillDeleteAlert = true }) {
                         Label(title: { Text("Post.Delete.Button", bundle: .module) },
                               icon: { Image(uiImage: theme.assets.icons.content.delete) })
                     }
@@ -316,7 +330,7 @@ struct PostDetailView: View {
 
     private var title: Text {
         if let authorName = viewModel.postAuthorName {
-            Text("Post.Title_author:\(authorName.localizedString(locale: languageManager.overridenLocale))",
+            Text("Post.Title_author:\(authorName.localizedString(locale: languageManager.overridenLocale, tone: textTone))",
                  bundle: .module)
         } else {
             Text(verbatim: "")
@@ -337,13 +351,29 @@ private struct ContentView: View {
     var retryCommentsFirstLoad: () -> Void = {}
     let hasMoreComments: Bool
     let hideLoadMoreCommentsLoader: Bool
+    /// Whether the comments are the most recent end of the thread, paging toward older ones from their top.
+    var listsMostRecentEnd = false
+    /// Whether newer comments are still to load below the window the screen opened on.
+    var hasNewerComments = false
+    /// The window of the thread the comments come from, `nil` when they are listed oldest first.
+    var listedWindowId: String?
+    /// Whether the list is hidden, a spinner in its place, until it landed on the most recent end.
+    var hidesUntilLanded = false
+    /// Whether the scroll to the bottom is not animated, while the list lands on its most recent end.
+    var landsWithoutAnimation = false
     let width: CGFloat
     @Binding var scrollToBottom: Bool
     @Binding var scrollToId: String?
-    /// The list is kept whole so a scroll requested as the screen opens finds its row.
-    var opensOnScrollTarget = false
+    var scrollRequest: Binding<Compat.ScrollRequest?> = .constant(nil)
+    /// Whether the comments are listed from the first one down to the one the screen opened on: the list is then laid
+    /// out whole, so the scroll to that comment finds its row.
+    var listsDownToScrollTarget = false
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let loadPreviousComments: () -> Void
+    var previousCommentsLoaderDisappeared: () -> Void = {}
+    var loadNewerComments: () -> Void = {}
+    var newerCommentsLoaderDisappeared: () -> Void = {}
+    var newestCommentOnScreenChanged: (Bool) -> Void = { _ in }
     let refresh: @Sendable () async -> Void
     let displayCommentDetail: (_ id: String, _ reply: Bool) -> Void
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
@@ -356,6 +386,8 @@ private struct ContentView: View {
     let commentReactionTapped: (ReactionKind?, String) -> Void
     let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
+    /// Opens a group, from the post's group name when the community makes it open the group.
+    var openGroup: (String) -> Void = { _ in }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -369,9 +401,16 @@ private struct ContentView: View {
             }
 #endif
             Compat.ScrollView(scrollToBottom: $scrollToBottom, scrollToId: $scrollToId, idAnchor: .bottom,
+                              scrollRequest: scrollRequest, animatesScrollToBottom: !landsWithoutAnimation,
                               refreshAction: refresh) {
-                LazyIfPossibleVStack(spacing: 0,
-                                     preventLaziness: opensOnScrollTarget || scrollToBottom || scrollToId != nil) {
+                // A window of the thread stays lazy, whether the most recent end or the one around the comment the
+                // screen opened on: its comments lay out the part of the window the screen scrolls to at once (see
+                // `MostRecentWindow.laidOutStart`). The whole list is laid out at once when it lists every comment
+                // down to the one the screen opened on, or scrolls through them listed oldest first.
+                LazyIfPossibleVStack(
+                    spacing: 0,
+                    preventLaziness: listsDownToScrollTarget
+                        || !listsMostRecentEnd && (scrollToBottom || scrollToId != nil)) {
                     if let post {
                         PostDetailContentView(post: post,
                                               // Clamp to the content cap so media is sized to the
@@ -385,7 +424,8 @@ private struct ContentView: View {
                                               reactionTapped: reactionTapped,
                                               voteOnPoll: voteOnPoll,
                                               displayContentModeration: displayContentModeration,
-                                              displayClientObject: displayClientObject)
+                                              displayClientObject: displayClientObject,
+                                              openGroup: openGroup)
 
                         theme.colors.gray300.frame(height: 2)
                         Spacer().frame(height: 10)
@@ -407,6 +447,9 @@ private struct ContentView: View {
                                 PostDetailCommentsView(comments: comments ?? [],
                                              hasMoreData: hasMoreComments,
                                              hideLoader: hideLoadMoreCommentsLoader,
+                                             listsMostRecentEnd: listsMostRecentEnd,
+                                             hasNewerData: hasNewerComments,
+                                             windowId: listedWindowId,
                                              zoomableImageInfo: $zoomableImageInfo,
                                              loadPreviousComments: loadPreviousComments,
                                              displayCommentDetail: displayCommentDetail,
@@ -447,7 +490,33 @@ private struct ContentView: View {
                 }
                 .constrainedContentColumn()
             }
+            .onTrackedViewOnScreenChanged { onScreen in
+                // The loader of older comments, at the top of the most recent end.
+                if onScreen {
+                    if #available(iOS 14, *) { Logger.posts.trace("Top loader on screen, loading older items...") }
+                    loadPreviousComments()
+                } else {
+                    previousCommentsLoaderDisappeared()
+                }
+            }
+            .onTrackedViewOnScreenChanged(of: .newerItemsLoader) { onScreen in
+                // The loader of newer comments, below the window the screen opened on.
+                if onScreen {
+                    if #available(iOS 14, *) { Logger.posts.trace("Bottom loader on screen, loading newer items...") }
+                    loadNewerComments()
+                } else {
+                    newerCommentsLoaderDisappeared()
+                }
+            }
+            // The newest comment of the most recent end, at the bottom of its window.
+            .onTrackedViewOnScreenChanged(of: .newestItem, perform: newestCommentOnScreenChanged)
             .postsVisibilityScrollView()
+            .opacity(hidesUntilLanded ? 0 : 1)
+            .overlay(Group {
+                if hidesUntilLanded {
+                    Compat.ProgressView()
+                }
+            })
         }
     }
 }
@@ -471,7 +540,7 @@ private struct ContentView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             topic: "Help",
             groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
@@ -520,9 +589,9 @@ private struct ContentView: View {
                 originalText: "Un texte",
                 originalLanguage: "fr",
                 translatedText: "A text"),
-            attachments: .image(.init(
+            attachments: .images([.init(
                 url: URL(string: "https://picsum.photos/700/750")!,
-                size: CGSize(width: 700, height: 750))),
+                size: CGSize(width: 700, height: 750))]),
             author: Author(
                 profile: MinimalProfile(
                     uuid: "profileId",
@@ -533,7 +602,7 @@ private struct ContentView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             topic: "Help",
             groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
@@ -604,7 +673,7 @@ private struct ContentView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             topic: "Help",
             groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
@@ -672,7 +741,7 @@ private struct ContentView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             topic: "Help",
             groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [
@@ -721,9 +790,9 @@ private struct ContentView: View {
                 originalText: "Un texte",
                 originalLanguage: "fr",
                 translatedText: "A text"),
-            attachments: .image(.init(
+            attachments: .images([.init(
                 url: URL(string: "https://picsum.photos/700/750")!,
-                size: CGSize(width: 700, height: 750))),
+                size: CGSize(width: 700, height: 750))]),
             author: Author(
                 profile: MinimalProfile(
                     uuid: "profileId",
@@ -734,7 +803,7 @@ private struct ContentView: View {
                     level: 1, name: "", startAt: 0, nextLevelAt: 100,
                     badgeColor: DynamicColor(lightValue: "#FF0000", darkValue: "#FFFF00"),
                     badgeTextColor: DynamicColor(lightValue: "#FFFFFF", darkValue: "#000000"))),
-            relativeDate: "2h. ago",
+            relativeDate: "2h",
             topic: "Help",
             groupId: "groupUuid",
             aggregatedInfo: .init(reactions: [

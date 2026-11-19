@@ -85,7 +85,7 @@ struct PublishedPublishersTests {
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { _ in try! TrackingCoreDataStack(inRam: true) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor, .userProfileFetchMonitor,
-                               .blockedUserIdsProvider, .appStateMonitor)
+                               .blockedUserIdsProvider, .appStateMonitor, .communityClosure)
         // Offline, so that no object starts a network refresh: each one is released right after being inspected,
         // and a refresh task still running at that point would outlive it.
         (injector.getInjected(identifiedBy: Injected.networkMonitor) as! MockNetworkMonitor).connectionAvailable = false

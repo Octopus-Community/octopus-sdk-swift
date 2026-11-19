@@ -25,14 +25,14 @@ struct PostMoreMenuButton: View {
         if #available(iOS 14.0, *) {
             Menu(content: {
                 if let onViewGroup {
-                    Button(action: onViewGroup) {
+                    NeutralMenuButton(action: onViewGroup) {
                         Label(
                             title: { Text("Post.Menu.ViewGroup.Button", bundle: .module) },
                             icon: { Image(uiImage: theme.assets.icons.groups.viewGroup) })
                     }
                 }
                 if canBeDeleted {
-                    Button(action: onDelete) {
+                    DestructiveMenuButton(action: onDelete) {
                         Label(
                             title: { Text("Post.Delete.Button", bundle: .module) },
                             icon: { Image(uiImage: theme.assets.icons.content.delete) })

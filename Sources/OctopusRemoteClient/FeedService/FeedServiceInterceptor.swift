@@ -20,22 +20,22 @@ final class FeedServiceInterceptor: Com_Octopuscommunity_FeedServiceClientInterc
     }
 
     func makeGetRootFeedsInfoInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetRootFeedsInfoRequest, Com_Octopuscommunity_GetRootFeedsInfoResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeInitializeFeedWithOctoObjectInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_InitializeFeedWithOctoObjectRequest, Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeGetFeedWithOctoObjectPageInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetFeedWithOctoObjectPageRequest, Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeInitializeFeedInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_InitializeFeedRequest, Com_Octopuscommunity_GetFeedPageResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeGetFeedPageInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetFeedPageRequest, Com_Octopuscommunity_GetFeedPageResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 }

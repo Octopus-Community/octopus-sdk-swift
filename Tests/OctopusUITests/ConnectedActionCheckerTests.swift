@@ -18,7 +18,8 @@ struct ConnectedActionCheckerTests {
     private typealias Sut = ConnectedActionChecker
 
     private var ssoUnknown: Sut.Decision {
-        .block(.error(.localizationKey("Connection.SSO.Error.Unknown")))
+        .block(.error(.tonedKey(formal: "Connection.SSO.Error.Unknown.Formal",
+                                informal: "Connection.SSO.Error.Unknown.Informal")))
     }
 
     private func connected(configAvailable: Bool = true,

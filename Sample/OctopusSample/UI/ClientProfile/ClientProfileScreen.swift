@@ -140,7 +140,7 @@ struct ClientProfileScreen: View {
                 Text("Messages: \(communityData.messageCount.map(String.init) ?? "-")")
                 if let gamification = communityData.gamification {
                     Text("Gamification level: \(gamification.level)")
-                    // Score is usually nil for other members on iOS — see OctopusGamification.score.
+                    // The member's total points; nil when the server does not send it — see OctopusGamification.score.
                     Text("Gamification score: \(gamification.score.map(String.init) ?? "n/a")")
                 } else {
                     Text("Gamification: disabled for this community")

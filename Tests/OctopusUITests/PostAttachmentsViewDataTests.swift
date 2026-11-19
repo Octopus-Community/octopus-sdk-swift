@@ -21,7 +21,13 @@ struct PostAttachmentsViewDataTests {
     ])
 
     private var expectedImage: PostAttachmentsViewData.Media {
-        .image(ImageMedia(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750)))
+        .images([ImageMedia(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750))])
+    }
+
+    private func imageMedia(_ name: String) -> OctopusCore.Media {
+        OctopusCore.Media(
+            url: URL(string: "https://example.com/\(name).jpg")!, thumbnailUrl: nil,
+            kind: .image, size: CGSize(width: 700, height: 750), videoId: nil)
     }
 
     @Test func imageAndPollAreBothKept() {
@@ -64,6 +70,23 @@ struct PostAttachmentsViewDataTests {
     @Test func videoWinsOverImage() {
         let attachments = PostAttachmentsViewData(medias: [imageMedia, videoMedia], poll: nil)
         #expect(attachments.videoId == "video-1")
+    }
+
+    @Test func allImagesAreKeptInOrder() {
+        let attachments = PostAttachmentsViewData(
+            medias: [imageMedia("a"), imageMedia("b"), imageMedia("c")], poll: nil)
+        let expected = ["a", "b", "c"].map {
+            ImageMedia(url: URL(string: "https://example.com/\($0).jpg")!, size: CGSize(width: 700, height: 750))
+        }
+        #expect(attachments.media == .images(expected))
+        #expect(!attachments.hasVideo)
+    }
+
+    @Test func videoStillWinsOverSeveralImages() {
+        let attachments = PostAttachmentsViewData(
+            medias: [imageMedia("a"), imageMedia("b"), videoMedia, imageMedia("c")], poll: nil)
+        #expect(attachments.videoId == "video-1")
+        #expect(attachments.media == .video(VideoMedia(from: videoMedia)!))
     }
 
     @Test func videoWithoutIdFallsBackToImage() {

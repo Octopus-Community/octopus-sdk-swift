@@ -71,11 +71,13 @@ private struct ContentView: View {
 }
 
 private struct TitleView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     var body: some View {
         HStack(spacing: 16) {
-            Text("Gamification.Sheet.Title", bundle: .module)
+            Text(textTone.key(formal: "Gamification.Sheet.Title.Formal",
+                              informal: "Gamification.Sheet.Title.Informal"), bundle: .module)
                 .font(theme.fonts.title2)
                 .fontWeight(.semibold)
                 .multilineTextAlignment(.leading)
@@ -93,6 +95,7 @@ private struct TitleView: View {
 }
 
 private struct GamificationRulesExplanationView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let gamificationConfig: GamificationConfig
@@ -133,7 +136,8 @@ private struct GamificationRulesExplanationView: View {
 
             if let points = gamificationConfig.pointsByAction[.postCommented] {
                 RuleExplanationView(
-                    text: "Gamification.Sheet.PostCommented",
+                    text: textTone.key(formal: "Gamification.Sheet.PostCommented.Formal",
+                                       informal: "Gamification.Sheet.PostCommented.Informal"),
                     points: points,
                     abbrevPointSingular: gamificationConfig.abbrevPointSingular,
                     abbrevPointPlural: gamificationConfig.abbrevPointPlural)
@@ -149,7 +153,8 @@ private struct GamificationRulesExplanationView: View {
 
             if let points = gamificationConfig.pointsByAction[.profileCompleted] {
                 RuleExplanationView(
-                    text: "Gamification.Sheet.ProfileCompleted",
+                    text: textTone.key(formal: "Gamification.Sheet.ProfileCompleted.Formal",
+                                       informal: "Gamification.Sheet.ProfileCompleted.Informal"),
                     points: points,
                     abbrevPointSingular: gamificationConfig.abbrevPointSingular,
                     abbrevPointPlural: gamificationConfig.abbrevPointPlural)

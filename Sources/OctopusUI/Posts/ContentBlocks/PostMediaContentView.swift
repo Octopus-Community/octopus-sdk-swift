@@ -17,16 +17,27 @@ struct PostMediaContentView: View {
     /// can detect when the video is centered and auto-play it. `nil` disables the anchor
     /// (e.g. standalone previews).
     let visiblePost: VisiblePost?
+    /// Replaces the fullscreen viewer when an image is tapped (the community makes image taps open the post),
+    /// `nil` to keep it.
+    var imageTapOverride: (() -> Void)?
 
-    /// Tells this occurrence of the image apart from another one of the same image on the screen
-    @State private var imageOccurrence = UUID()
+    @State private var sourceGeometry = FullscreenViewerSourceGeometry()
 
-    private let minAspectRatio: CGFloat = 4 / 5
+    private let minAspectRatio = PostImagesCarouselLayout.minAspectRatio
 
     var body: some View {
         switch media {
-        case let .image(image):
-            imageView(image)
+        case let .images(images):
+            if images.count > 1 {
+                PostImagesCarouselView(
+                    postId: postId,
+                    images: images,
+                    width: width,
+                    zoomableImageInfo: $zoomableImageInfo,
+                    imageTapOverride: imageTapOverride)
+            } else if let image = images.first {
+                imageView(image)
+            }
         case let .video(video):
             videoView(video)
         }
@@ -34,7 +45,6 @@ struct PostMediaContentView: View {
 
     @ViewBuilder
     private func imageView(_ image: ImageMedia) -> some View {
-        let source = ZoomableImageSourceID(url: image.url, occurrence: imageOccurrence)
         AsyncCachedImage(
             url: image.url, cache: .content,
             croppingRatio: minAspectRatio,
@@ -49,34 +59,26 @@ struct PostMediaContentView: View {
                 Image(uiImage: cachedImage.ratioImage)
                     .resizable()
                     .scaledToFit()
+                    .inPlacePinchZoom(image: cachedImage.ratioImage)
                     .frame(maxWidth: .infinity)
-                    .zoomableImageSource(source, zoomed: zoomableImageInfo)
-                    .modify {
-                        if #available(iOS 15.0, *) {
-                            // put the tap in an overlay because it seems that the image touch area is not
-                            // clipped. Hence, it takes the tap over the text. When put in an overlay, it seems
-                            // to work correctly
-                            $0.overlay {
-                                Color.white.opacity(0.0001)
-                                    .onTapGesture {
-                                        withAnimation {
-                                            zoomableImageInfo = .init(
-                                                source: source,
-                                                image: Image(uiImage: cachedImage.fullSizeImage),
-                                                transitionImage: Image(uiImage: cachedImage.ratioImage))
-                                        }
-                                    }
-                            }
-                        } else {
-                            $0.onTapGesture {
-                                withAnimation {
-                                    zoomableImageInfo = .init(
-                                        source: source,
-                                        image: Image(uiImage: cachedImage.fullSizeImage))
+                    .fullscreenViewerSource(
+                        sourceGeometry,
+                        isInViewer: zoomableImageInfo?.isOpened(from: sourceGeometry, showing: [image.url]) ?? false)
+                    // put the tap in an overlay because it seems that the image touch area is not clipped. Hence,
+                    // it takes the tap over the text. When put in an overlay, it seems to work correctly
+                    .overlay(
+                        Color.white.opacity(0.0001)
+                            .onTapGesture {
+                                if let imageTapOverride {
+                                    imageTapOverride()
+                                    return
                                 }
+                                let sourceGeometry = sourceGeometry
+                                zoomableImageInfo = .single(
+                                    url: image.url, cachedImage: cachedImage, source: sourceGeometry,
+                                    sourceFrame: { sourceGeometry.frame })
                             }
-                        }
-                    }
+                    )
             }
         )
         .modify {
@@ -112,9 +114,9 @@ struct PostMediaContentView: View {
 #Preview("Image") {
     PostMediaContentView(
         postId: "p1", width: 393,
-        media: .image(ImageMedia(
+        media: .images([ImageMedia(
             url: URL(string: "https://picsum.photos/700/750")!,
-            size: CGSize(width: 700, height: 750))),
+            size: CGSize(width: 700, height: 750))]),
         zoomableImageInfo: .constant(nil),
         visiblePost: nil)
     .mockEnvironmentForPreviews()

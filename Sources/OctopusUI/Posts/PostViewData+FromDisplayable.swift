@@ -19,6 +19,7 @@ extension PostViewData {
         self.canBeModerated = post.canBeModerated
         self.canBeBlockedByUser = post.canBeBlockedByUser
         self.canCreateChildren = post.canCreateChildren
+        self.cardTapOpensDetail = post.cardTapOpensDetail
         self.visiblePost = post.toVisiblePost
 
         switch post.content {
@@ -64,6 +65,8 @@ extension PostViewData {
         self.canBeModerated = post.canBeModerated
         self.canBeBlockedByUser = post.canBeBlockedByUser
         self.canCreateChildren = post.canCreateChildren
+        // Already in the detail: there is no card to open it from.
+        self.cardTapOpensDetail = false
         self.visiblePost = post.toVisiblePost
 
         let liveMeasures = LiveMeasures(

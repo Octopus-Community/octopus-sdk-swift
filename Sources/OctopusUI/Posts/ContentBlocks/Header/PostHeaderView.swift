@@ -10,7 +10,7 @@ struct PostHeaderView: View {
 
     let context: PostViewContext
     let author: Author
-    let relativeDate: String
+    let relativeDate: DisplayableDate
     let topic: String?
     let displayGroupName: Bool
     let groupTap: (() -> Void)?
@@ -98,14 +98,14 @@ struct PostHeaderView: View {
 #Preview("Summary with menu") {
     StatefulPreview(initial: false) { binding in
         PostHeaderView(
-            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            context: .summary(onCardTap: {}, displayGroupName: true),
             author: Author(
                 profile: MinimalProfile(
                     uuid: "1", nickname: "Antoine",
                     avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
                     gamificationLevel: 1),
                 gamificationLevel: nil),
-            relativeDate: "il y a 3 min.",
+            relativeDate: "3min",
             topic: "Groupe",
             displayGroupName: true,
             groupTap: {},
@@ -134,7 +134,7 @@ struct PostHeaderView: View {
                     avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
                     gamificationLevel: 1),
                 gamificationLevel: nil),
-            relativeDate: "il y a 3 min.",
+            relativeDate: "3min",
             topic: "Groupe",
             displayGroupName: true,
             groupTap: nil,
@@ -153,14 +153,14 @@ struct PostHeaderView: View {
 #Preview("No group name") {
     StatefulPreview(initial: false) { binding in
         PostHeaderView(
-            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            context: .summary(onCardTap: {}, displayGroupName: true),
             author: Author(
                 profile: MinimalProfile(
                     uuid: "1", nickname: "Antoine",
                     avatarUrl: URL(string: "https://randomuser.me/api/portraits/men/75.jpg")!,
                     gamificationLevel: 1),
                 gamificationLevel: nil),
-            relativeDate: "il y a 3 min.",
+            relativeDate: "3min",
             topic: "Groupe",
             displayGroupName: false,
             groupTap: {},

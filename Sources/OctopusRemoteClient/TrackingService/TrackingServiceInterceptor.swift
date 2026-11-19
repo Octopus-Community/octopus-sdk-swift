@@ -20,6 +20,6 @@ final class TrackingServiceInterceptor: Com_Octopuscommunity_TrackingServiceClie
     }
 
     func makeTrackInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_TrackRequest, OctopusGrpcModels.Com_Octopuscommunity_TrackResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 }

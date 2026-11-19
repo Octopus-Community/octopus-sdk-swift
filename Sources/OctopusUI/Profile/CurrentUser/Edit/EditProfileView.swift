@@ -7,6 +7,7 @@ import Octopus
 import OctopusCore
 
 struct EditProfileView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Compat.StateObject private var viewModel: EditProfileViewModel
     @Environment(\.presentationMode) private var presentationMode
@@ -49,7 +50,7 @@ struct EditProfileView: View {
             presentationMode.wrappedValue.dismiss()
         }
         .destructiveConfirmationAlert(
-            "Common.CancelModifications",
+            textTone.key(formal: "Common.CancelModifications.Formal", informal: "Common.CancelModifications.Informal"),
             isPresented: $showChangesWillBeLostAlert,
             cancelLabel: "Common.No",
             destructiveLabel: "Common.Yes",
@@ -129,6 +130,7 @@ private struct ContentView: View {
 }
 
 private struct EditProfileFormView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let nicknameEditConfig: EditProfileViewModel.FieldEditConfig
@@ -204,7 +206,7 @@ private struct EditProfileFormView: View {
                 }
                 if let pictureError {
                     Spacer().frame(height: 4)
-                    pictureError.textView
+                    pictureError.textView(tone: textTone)
                         .font(theme.fonts.caption2)
                         .bold()
                         .foregroundColor(theme.colors.error)
@@ -216,8 +218,10 @@ private struct EditProfileFormView: View {
                 if !nicknameEditConfig.isHidden {
                 OctopusTextInput(
                     text: $nickname, label: "Profile.Edit.Nickname.Description",
-                    placeholder: "Profile.Nickname.Placeholder",
-                    hint: "Profile.Edit.Nickname.Explanation",
+                    placeholder: textTone.key(formal: "Profile.Nickname.Placeholder.Formal",
+                                              informal: "Profile.Nickname.Placeholder.Informal"),
+                    hint: textTone.key(formal: "Profile.Edit.Nickname.Explanation.Formal",
+                                       informal: "Profile.Edit.Nickname.Explanation.Informal"),
                     error: nicknameError,
                     isFocused: $nicknameFocused,
                     isDisabled: false // visually, let it as it was editable
@@ -247,7 +251,8 @@ private struct EditProfileFormView: View {
                 OctopusTextInput(
                     text: $bio,
                     label: "Profile.Edit.Bio.Description",
-                    placeholder: "Profile.Edit.Bio.Placeholder",
+                    placeholder: textTone.key(formal: "Profile.Edit.Bio.Placeholder.Formal",
+                                              informal: "Profile.Edit.Bio.Placeholder.Informal"),
                     error: bioError,
                     lineLimitRange: 8...,
                     isFocused: $bioFocused,
@@ -298,7 +303,8 @@ private struct EditProfileFormView: View {
             .padding(.top)
             .padding(.horizontal, 20)
             .compatAlert(
-                "Profile.Edit.ClientApp.Alert.Title",
+                textTone.key(formal: "Profile.Edit.ClientApp.Alert.Title.Formal",
+                             informal: "Profile.Edit.ClientApp.Alert.Title.Informal"),
                 isPresented: $displayOpenEditProfileInApp,
                 presenting: openEditProfileInApp,
                 actions: { openEditProfileInApp in

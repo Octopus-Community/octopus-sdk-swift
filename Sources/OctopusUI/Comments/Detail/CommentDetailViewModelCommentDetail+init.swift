@@ -8,7 +8,7 @@ import OctopusCore
 extension CommentDetailViewModel.CommentDetail {
     init(from comment: Comment,
          gamificationLevels: [GamificationLevel],
-         thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter) {
+         thisUserProfileId: String?, dateFormatter: ContentDateFormatter) {
         uuid = comment.uuid
         parentId = comment.parentId
         text = comment.text
@@ -17,7 +17,7 @@ extension CommentDetailViewModel.CommentDetail {
             profile: comment.author,
             gamificationLevel: gamificationLevels.first { $0.level == comment.author?.gamificationLevel }
         )
-        relativeDate = dateFormatter.localizedString(for: comment.creationDate, relativeTo: Date())
+        relativeDate = dateFormatter.displayableDate(for: comment.creationDate)
         canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
         canBeModerated = comment.author?.uuid != thisUserProfileId
         canBeBlockedByUser = author.canBeBlocked(currentUserId: thisUserProfileId)

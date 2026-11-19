@@ -15,6 +15,9 @@ extension OctopusEvent {
     }
 
     /// The source of the click on a post
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum PostClickedSource: Sendable {
         /// The post is displayed in the post feed
         case feed

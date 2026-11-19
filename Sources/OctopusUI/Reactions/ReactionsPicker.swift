@@ -10,24 +10,31 @@ struct PopoverReactionsBar: View {
     @Environment(\.octopusTheme) private var theme
 
     let reactions: [ReactionKind]
-    let screenWidth: CGFloat
+    /// Width the bar can span: the width of the window's safe area, which excludes a camera on a side edge.
+    let availableWidth: CGFloat
     let reactionTapped: (ReactionKind?) -> Void
 
-    private let barHorizontalPadding: CGFloat = 12
-    private let emojiSpacing: CGFloat = 4
+    static let barHorizontalPadding: CGFloat = 12
+    static let emojiSpacing: CGFloat = 4
 
-    /// Cap emoji size so the bar fits within the screen width with some margin.
+    /// Cap emoji size so the bar fits within the available width with some margin.
     private var maxEmojiSize: CGFloat? {
-        guard screenWidth > 0, !reactions.isEmpty else { return nil }
+        Self.maxEmojiSize(availableWidth: availableWidth, reactionCount: reactions.count)
+    }
+
+    /// Largest emoji size that keeps a bar of `reactionCount` emojis within `availableWidth`, margins included;
+    /// `nil` while the width is unknown.
+    static func maxEmojiSize(availableWidth: CGFloat, reactionCount: Int) -> CGFloat? {
+        guard availableWidth > 0, reactionCount > 0 else { return nil }
         let margin: CGFloat = 32 // safety margin on each side
-        let availableWidth = screenWidth - margin * 2
+        let emojisWidth = availableWidth - margin * 2
             - barHorizontalPadding * 2
-            - emojiSpacing * CGFloat(reactions.count - 1)
-        return max(availableWidth / CGFloat(reactions.count), 16)
+            - emojiSpacing * CGFloat(reactionCount - 1)
+        return max(emojisWidth / CGFloat(reactionCount), 16)
     }
 
     var body: some View {
-        HStack(spacing: emojiSpacing) {
+        HStack(spacing: Self.emojiSpacing) {
             ForEach(reactions, id: \.self) { reaction in
                 ReactionButton(
                     reaction: reaction,
@@ -35,7 +42,7 @@ struct PopoverReactionsBar: View {
                     reactionTapped: reactionTapped)
             }
         }
-        .padding(.horizontal, barHorizontalPadding)
+        .padding(.horizontal, Self.barHorizontalPadding)
         .background(
             Capsule()
                 .fill(theme.colors.background)

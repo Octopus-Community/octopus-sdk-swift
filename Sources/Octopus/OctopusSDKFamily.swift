@@ -10,6 +10,9 @@ import OctopusCore
 /// Hidden behind SPI: it is **not** part of the supported public API. Only the Octopus wrapper SDKs opt in
 /// with `@_spi(OctopusWrapper) import Octopus`.
 @_spi(OctopusWrapper)
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusSDKFamily: Sendable, CaseIterable {
     /// The Octopus SDK for Flutter.
     case flutter

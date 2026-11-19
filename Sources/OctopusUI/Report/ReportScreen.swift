@@ -26,6 +26,7 @@ struct ReportScreen: View {
 }
 
 private struct ReportView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.trackingApi) private var trackingApi
@@ -116,9 +117,11 @@ private struct ReportView: View {
 
     /// The "Report sent" message, followed by the block question when blocking is offered.
     private var sentMessage: Text {
-        let message = Text("Moderation.Common.Done.Message", bundle: .module)
+        let message = Text(textTone.key(formal: "Moderation.Common.Done.Message.Formal",
+                                        informal: "Moderation.Common.Done.Message.Informal"), bundle: .module)
         guard viewModel.profileIdToBlock != nil else { return message }
-        return message + Text(verbatim: "\n\n") + Text("Moderation.Common.Done.Block.Question", bundle: .module)
+        return message + Text(verbatim: "\n\n") + Text(textTone.key(formal: "Moderation.Common.Done.Block.Question.Formal",
+                                                                    informal: "Moderation.Common.Done.Block.Question.Informal"), bundle: .module)
     }
 
     /// The existing "This user is blocked" confirmation, shown once the offered block succeeded. Hosted
@@ -179,6 +182,7 @@ private struct ReportView: View {
 }
 
 private struct ContentView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let isAboutContent: Bool
@@ -198,8 +202,10 @@ private struct ContentView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         Text(isAboutContent
-                             ? "Moderation.Content.Explanation"
-                             : "Moderation.Profile.Explanation",
+                             ? textTone.key(formal: "Moderation.Content.Explanation.Formal",
+                                            informal: "Moderation.Content.Explanation.Informal")
+                             : textTone.key(formal: "Moderation.Profile.Explanation.Formal",
+                                            informal: "Moderation.Profile.Explanation.Informal"),
                              bundle: .module)
                             .font(theme.fonts.body1)
                             .fontWeight(.semibold)
@@ -207,7 +213,8 @@ private struct ContentView: View {
                             .multilineTextAlignment(.leading)
                             .padding(.top, 10)
 
-                        Text("Moderation.Common.Caption", bundle: .module)
+                        Text(textTone.key(formal: "Moderation.Common.Caption.Formal",
+                                          informal: "Moderation.Common.Caption.Informal"), bundle: .module)
                             .font(theme.fonts.caption1)
                             .foregroundColor(theme.colors.gray500)
                             .multilineTextAlignment(.leading)
@@ -243,6 +250,7 @@ private struct ContentView: View {
 }
 
 private struct ReasonCell: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let reason: ReportReason
@@ -261,7 +269,7 @@ private struct ReasonCell: View {
                           ? theme.assets.icons.common.checkbox.on
                           : theme.assets.icons.common.checkbox.off)
                 .foregroundColor(selectedReasons.contains(reason) ? theme.colors.primary : theme.colors.gray300)
-                reason.displayableString.textView
+                reason.displayableString.textView(tone: textTone)
                     .multilineTextAlignment(.leading)
                 Spacer()
             }

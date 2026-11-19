@@ -3,8 +3,8 @@
 //
 
 import Testing
-import OctopusCore
 import UIKit
+@testable import OctopusCore
 @testable import OctopusUI
 
 /// Tests for the permission-gating logic used in CreatePostViewModel.
@@ -97,27 +97,66 @@ struct CreatePostViewModelTests {
         #expect(result.isEmpty)
     }
 
-    // MARK: - default image seeding (mirrors the branch inside CreatePostViewModel.init)
+    // MARK: - default images seeding
 
-    @Test func defaultImageSeedsImage() {
-        guard let onePixel = UIImage(systemName: "circle") else {
-            Issue.record("Cannot create system image for test")
-            return
-        }
-        guard let data = onePixel.pngData() else {
-            Issue.record("Cannot encode system image to PNG")
-            return
-        }
-        #expect(seedImage(from: data)?.imageData == data)
-    }
-
-    @Test func defaultImageNilProducesNoImage() {
-        #expect(seedImage(from: nil) == nil)
-    }
-
-    @Test func defaultImageMalformedProducesNoImage() {
+    @MainActor
+    @Test func seedImagesKeepsOrderAndDropsUndecodable() {
+        let first = Self.pngData(width: 100, height: 100)
+        let second = Self.pngData(width: 120, height: 100)
         let bogus = Data([0xFF, 0xD8, 0xFF]) // truncated JPEG header
-        #expect(seedImage(from: bogus) == nil)
+        let seeded = CreatePostViewModel.seedImages(from: [first, bogus, second])
+        #expect(seeded.map(\.imageData) == [first, second])
+    }
+
+    @MainActor
+    @Test func seedImagesCapsAtMaxImageCount() {
+        let datas = (0..<12).map { Self.pngData(width: 100 + $0, height: 100) }
+        let seeded = CreatePostViewModel.seedImages(from: datas)
+        #expect(seeded.count == Validators.Post.maxImageCount)
+        #expect(seeded.map(\.imageData) == Array(datas.prefix(Validators.Post.maxImageCount)))
+    }
+
+    @MainActor
+    @Test func seedImagesFromNoDataIsEmpty() {
+        #expect(CreatePostViewModel.seedImages(from: []).isEmpty)
+    }
+
+    // MARK: - picked images
+
+    @MainActor
+    @Test func appendingCapsAtMaxImageCount() {
+        let current = (0..<9).map { Self.imageAndData(width: 100 + $0, height: 100) }
+        let new = (0..<3).map { Self.imageAndData(width: 200 + $0, height: 100) }
+        let result = CreatePostViewModel.appending(new, to: current)
+        #expect(result.count == Validators.Post.maxImageCount)
+        #expect(Array(result.prefix(9)).map(\.imageData) == current.map(\.imageData))
+        #expect(result.last?.imageData == new.first?.imageData)
+    }
+
+    @MainActor
+    @Test func appendingKeepsTheOrderOfThePick() {
+        let current = [Self.imageAndData(width: 100, height: 100)]
+        let new = [Self.imageAndData(width: 110, height: 100), Self.imageAndData(width: 120, height: 100)]
+        let result = CreatePostViewModel.appending(new, to: current)
+        #expect(result.map(\.imageData) == (current + new).map(\.imageData))
+    }
+
+    @MainActor
+    @Test func invalidPictureInSelectionIsDroppedAlone() {
+        let valid1 = Self.imageAndData(width: 100, height: 100)
+        let invalid = Self.imageAndData(width: 1, height: 1000)
+        let valid2 = Self.imageAndData(width: 120, height: 100)
+        let result = CreatePostViewModel.dropInvalidPictures([valid1, invalid, valid2])
+        #expect(result.kept.map(\.imageData) == [valid1.imageData, valid2.imageData])
+        #expect(result.hadInvalid)
+    }
+
+    @MainActor
+    @Test func validPicturesAreAllKept() {
+        let images = [Self.imageAndData(width: 100, height: 100), Self.imageAndData(width: 120, height: 100)]
+        let result = CreatePostViewModel.dropInvalidPictures(images)
+        #expect(result.kept.map(\.imageData) == images.map(\.imageData))
+        #expect(!result.hadInvalid)
     }
 
     // MARK: - poll mapping
@@ -199,10 +238,17 @@ struct CreatePostViewModelTests {
     }
 
     @MainActor
-    @Test func shortTextKeepsThePublishButtonEnabled() {
-        // The minimum length is reported on tap, not by disabling the button.
-        #expect(CreatePostViewModel.canSend(text: "abc", hasImage: true, poll: nil, textRequired: false,
+    @Test(arguments: [false, true])
+    func shortTextEnablesThePublishButton(hasImage: Bool) {
+        // A post text has no minimum beyond one visible character.
+        #expect(CreatePostViewModel.canSend(text: "a", hasImage: hasImage, poll: nil, textRequired: true,
                                             isLoading: false))
+    }
+
+    @MainActor
+    @Test func blankTextWithoutImageKeepsThePublishButtonDisabled() {
+        #expect(!CreatePostViewModel.canSend(text: "  \n ", hasImage: false, poll: nil, textRequired: true,
+                                             isLoading: false))
     }
 
     @MainActor
@@ -216,6 +262,114 @@ struct CreatePostViewModelTests {
     @Test func loadingBlocksPublishing() {
         #expect(!CreatePostViewModel.canSend(text: "", hasImage: true, poll: nil, textRequired: false,
                                              isLoading: true))
+    }
+
+    // MARK: - picture to reveal
+
+    @MainActor
+    @Test func pictureErrorWithIndexRevealsThatPicture() {
+        let images = [Self.imageAndData(width: 100, height: 100), Self.imageAndData(width: 120, height: 120)]
+        #expect(CreatePostViewModel.pictureToReveal(for: [1], in: images) == images[1].thumbnailId)
+    }
+
+    @MainActor
+    @Test func firstValidIndexIsRevealedWhenSeveralErrorsCarryOne() {
+        let images = [Self.imageAndData(width: 100, height: 100), Self.imageAndData(width: 120, height: 120),
+                      Self.imageAndData(width: 140, height: 140)]
+        #expect(CreatePostViewModel.pictureToReveal(for: [nil, 7, 2, 0], in: images) == images[2].thumbnailId)
+    }
+
+    @MainActor
+    @Test(arguments: [5, -1, 2])
+    func outOfRangeIndexRevealsNothing(_ index: Int) {
+        let images = [Self.imageAndData(width: 100, height: 100), Self.imageAndData(width: 120, height: 120)]
+        #expect(CreatePostViewModel.pictureToReveal(for: [index], in: images) == nil)
+    }
+
+    @MainActor
+    @Test func errorWithoutIndexRevealsNothing() {
+        let images = [Self.imageAndData(width: 100, height: 100)]
+        #expect(CreatePostViewModel.pictureToReveal(for: [nil, nil], in: images) == nil)
+        #expect(CreatePostViewModel.pictureToReveal(for: [], in: images) == nil)
+    }
+
+    @MainActor
+    @Test func noPictureToRevealWithoutImages() {
+        #expect(CreatePostViewModel.pictureToReveal(for: [0], in: []) == nil)
+    }
+
+    // MARK: - picture to reveal from the server's refusal
+
+    private typealias SendErrors = ValidationErrors<SendPost.Field, SendPost.ErrorDetail>
+
+    private static func sendError(_ detail: SendPost.ErrorDetail = .fileSizeTooBig, imageIndex: Int? = nil)
+    -> SendErrors.Error {
+        .init(localizedMessage: "refused", detail: detail, imageIndex: imageIndex)
+    }
+
+    @MainActor
+    @Test func refusedPhotoOfThePictureFieldIsRevealed() {
+        let images = [Self.imageAndData(width: 100, height: 100), Self.imageAndData(width: 120, height: 120)]
+        let validation = SendErrors(errors: [.linkedToField(.picture): [Self.sendError(imageIndex: 1)]])
+        #expect(CreatePostViewModel.pictureToReveal(from: validation, in: images) == images[1].thumbnailId)
+    }
+
+    @MainActor
+    @Test func errorsOnOtherFieldsRevealNothingEvenWithAnIndex() {
+        let images = [Self.imageAndData(width: 100, height: 100), Self.imageAndData(width: 120, height: 120)]
+        let validation = SendErrors(errors: [
+            .linkedToField(.text): [Self.sendError(.missingText, imageIndex: 1)],
+            .alert: [Self.sendError(.unknown, imageIndex: 0)]
+        ])
+        #expect(CreatePostViewModel.pictureToReveal(from: validation, in: images) == nil)
+    }
+
+    @MainActor
+    @Test func pictureFieldErrorsWithoutAnyValidIndexRevealNothing() {
+        let images = [Self.imageAndData(width: 100, height: 100)]
+        let validation = SendErrors(errors: [
+            .linkedToField(.picture): [Self.sendError(), Self.sendError(imageIndex: 4)]])
+        #expect(CreatePostViewModel.pictureToReveal(from: validation, in: images) == nil)
+    }
+
+    // MARK: - images to cache after publication
+
+    private static func media(_ name: String, kind: OctopusCore.Media.Kind = .image) -> OctopusCore.Media {
+        OctopusCore.Media(
+            url: URL(string: "https://example.com/\(name)")!, thumbnailUrl: nil,
+            kind: kind, size: CGSize(width: 10, height: 10), videoId: kind == .video ? name : nil)
+    }
+
+    @MainActor
+    @Test func sentImagesAreCachedUnderTheURLOfTheImageAtTheSameIndex() {
+        let medias = [Self.media("a.jpg"), Self.media("b.jpg"), Self.media("c.jpg")]
+        let datas = [Data([1]), Data([2]), Data([3])]
+        let pairs = CreatePostViewModel.imagesToCache(sent: datas, in: medias)
+        #expect(pairs.map(\.url) == medias.map(\.url))
+        #expect(pairs.map(\.imageData) == datas)
+    }
+
+    @MainActor
+    @Test func videosOfThePostAreSkippedWhenPairingImages() {
+        let medias = [Self.media("v1", kind: .video), Self.media("a.jpg"), Self.media("v2", kind: .video),
+                      Self.media("b.jpg")]
+        let pairs = CreatePostViewModel.imagesToCache(sent: [Data([1]), Data([2])], in: medias)
+        #expect(pairs.map(\.url.lastPathComponent) == ["a.jpg", "b.jpg"])
+        #expect(pairs.map(\.imageData) == [Data([1]), Data([2])])
+    }
+
+    @MainActor
+    @Test func nothingIsCachedWhenCountsDiffer() {
+        // Which photo is missing is unknown: pairing by position would cache a photo under another one's URL.
+        let medias = [Self.media("a.jpg"), Self.media("b.jpg")]
+        #expect(CreatePostViewModel.imagesToCache(sent: [Data([1])], in: medias).isEmpty)
+        #expect(CreatePostViewModel.imagesToCache(sent: [Data([1]), Data([2]), Data([3])], in: medias).isEmpty)
+    }
+
+    @MainActor
+    @Test func nothingIsCachedWithoutSentImages() {
+        #expect(CreatePostViewModel.imagesToCache(sent: [], in: [Self.media("a.jpg")]).isEmpty)
+        #expect(CreatePostViewModel.imagesToCache(sent: [Data([1])], in: []).isEmpty)
     }
 }
 
@@ -246,9 +400,19 @@ extension CreatePostViewModelTests {
             .map { DisplayableTopic(topicId: $0.id, name: $0.id) }
     }
 
-    /// Mirrors the image-seeding branch inside `CreatePostViewModel.init`.
-    private func seedImage(from data: Data?) -> ImageAndData? {
-        guard let data, let image = UIImage(data: data) else { return nil }
-        return ImageAndData(imageData: data, image: image)
+    /// A plain image of the given size in pixels, PNG-encoded. Each size gives different bytes.
+    static func pngData(width: Int, height: Int) -> Data {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: format)
+        return renderer.pngData { context in
+            UIColor.gray.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        }
+    }
+
+    static func imageAndData(width: Int, height: Int) -> ImageAndData {
+        let data = pngData(width: width, height: height)
+        return ImageAndData(imageData: data, image: UIImage(data: data)!)
     }
 }

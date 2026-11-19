@@ -88,17 +88,12 @@ class OctoObjectsDatabase: @unchecked Sendable {
         }
     }
 
-    func resetUserInteractions() async throws {
-        try await context.performAsync { [context] in
-            let context = context
-            let request = OctoObjectEntity.fetchAllGeneric()
-            let existingContents = try context.fetch(request)
-
-            for existingContent in existingContents {
-                existingContent.fill(aggregatedInfo: nil, userInteractions: .empty, context: context)
-            }
-            try context.save()
-        }
+    /// Deletes every cached content with its permissions: they belong to the session that fetched them.
+    /// - Warning: To be called on the context's queue, from a block that saves afterwards.
+    func deleteAllOnQueue() throws {
+        let existingContents = try context.fetch(OctoObjectEntity.fetchAllGeneric())
+        // Managed-object deletion, so that observers are notified and related media is removed by cascade.
+        existingContents.forEach { context.delete($0) }
     }
 
     func resetUpdateTimestamp() async throws {

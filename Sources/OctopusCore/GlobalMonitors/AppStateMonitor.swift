@@ -74,3 +74,21 @@ final class AppStateMonitorDefault: AppStateMonitor, InjectableObject, @unchecke
         storage = []
     }
 }
+
+extension AppStateMonitor {
+    /// Emits once, the next time the app is active with network after not being so: back to the foreground, or the
+    /// network back. The current state does not count: a call that just failed in it must not be made again at once.
+    func comesBackPublisher(networkMonitor: NetworkMonitor) -> AnyPublisher<Void, Never> {
+        Publishers.CombineLatest(
+            networkMonitor.connectionAvailablePublisher.removeDuplicates(),
+            appStatePublisher.removeDuplicates()
+        )
+        .map { $0 && $1 == .active }
+        .removeDuplicates()
+        // wait for the conditions to be lost, then met again
+        .drop(while: { $0 })
+        .first(where: { $0 })
+        .map { _ in () }
+        .eraseToAnyPublisher()
+    }
+}

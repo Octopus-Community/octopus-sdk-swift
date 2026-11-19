@@ -140,7 +140,9 @@ struct GroupDetailView: View {
                     if viewModel.canCreateAnyPost {
                         ScreenState(
                             image: theme.assets.icons.screenStates.emptyContent,
-                            title: .localizationKey("Post.List.Default.Empty"),
+                            title: .tonedKey(
+                                formal: "Post.List.Default.Empty.Formal",
+                                informal: "Post.List.Default.Empty.Informal"),
                             verticalPadding: ScreenState.feedEmptyPadding)
                     } else {
                         ScreenState(
@@ -237,13 +239,15 @@ private struct ContentView<PostsView: View>: View {
 }
 
 private struct GroupAccessLostView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     let onTap: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
-            Text("Group.Permissions.AccessDenied.Text", bundle: .module)
+            Text(textTone.key(formal: "Group.Permissions.AccessDenied.Text.Formal",
+                              informal: "Group.Permissions.AccessDenied.Text.Informal"), bundle: .module)
                 .font(theme.fonts.body1)
                 .foregroundColor(theme.colors.gray700)
                 .multilineTextAlignment(.center)

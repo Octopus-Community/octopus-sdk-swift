@@ -61,9 +61,11 @@ public class UserCommentsRepository: InjectableObject, @unchecked Sendable {
     public func firstPage(feedId: String, pageSize: Int = 20) async throws(ServerCallError) -> UserCommentsPage {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let response = try await remoteClient.feedService.initializeFeedWithOctoObject(
-                feedId: feedId, pageSize: Int32(pageSize),
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            let response = try await authCallProvider.withAuthenticatedIfPossibleMethod {
+                try await remoteClient.feedService.initializeFeedWithOctoObject(
+                    feedId: feedId, pageSize: Int32(pageSize),
+                    authenticationMethod: $0)
+            }
             await persist(response)
             return page(from: response)
         } catch {
@@ -75,6 +77,7 @@ public class UserCommentsRepository: InjectableObject, @unchecked Sendable {
     public func nextPage(pageCursor: String, pageSize: Int = 20) async throws(ServerCallError) -> UserCommentsPage {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
+            // Not sent again when the session changes: the cursor was handed to the session that read the previous page.
             let response = try await remoteClient.feedService.getFeedWithOctoObjectPage(
                 pageCursor: pageCursor, pageSize: Int32(pageSize), fetchAggregates: true,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())

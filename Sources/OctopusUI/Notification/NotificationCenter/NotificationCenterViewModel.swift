@@ -56,6 +56,15 @@ class NotificationCenterViewModel: ObservableObject {
             setPushNotificationEnabled($0)
         }.store(in: &storage)
 
+        // The closure of the community, or a logout, deleted the notifications: a list on screen loads them again,
+        // one off screen does when it appears.
+        octopus.core.sdkEventsEmitter.internalEvents
+            .filter(\.clearedDisplayedContent)
+            .sink { [unowned self] _ in
+                guard viewIsDisplayed else { return }
+                Task { await loadNotifications() }
+            }.store(in: &storage)
+
         Task {
             try? await fetchNotificationSettings()
         }

@@ -65,11 +65,13 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
     public func fetchComment(uuid: String, incrementViewCount: Bool = false) async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let response = try await remoteClient.octoService.get(
-                octoObjectInfo: OctoObjectInfo(id: uuid, hasVideo: false),
-                options: .all,
-                incrementViewCount: incrementViewCount,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            let response = try await authCallProvider.withAuthenticatedIfPossibleMethod { method, isReplay in
+                try await remoteClient.octoService.get(
+                    octoObjectInfo: OctoObjectInfo(id: uuid, hasVideo: false),
+                    options: .all,
+                    incrementViewCount: incrementViewCount && !isReplay,
+                    authenticationMethod: method)
+            }
             let octoComment = response.octoObject
             let aggregate = response.hasAggregate ? response.aggregate : nil
             let userInteraction = response.hasRequesterCtx ? response.requesterCtx : nil
@@ -173,11 +175,13 @@ public class CommentsRepository: InjectableObject, @unchecked Sendable {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
             if #available(iOS 14, *) { Logger.comments.trace("Fetching additional data for ids: \(ids)") }
-            let batchResponse = try await remoteClient.octoService.getBatch(
-                octoObjectInfos: ids.map { OctoObjectInfo(id: $0, hasVideo: false) },
-                options: [.aggregates, .interactions],
-                incrementViewCount: incrementViewCount,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            let batchResponse = try await authCallProvider.withAuthenticatedIfPossibleMethod { method, isReplay in
+                try await remoteClient.octoService.getBatch(
+                    octoObjectInfos: ids.map { OctoObjectInfo(id: $0, hasVideo: false) },
+                    options: [.aggregates, .interactions],
+                    incrementViewCount: incrementViewCount && !isReplay,
+                    authenticationMethod: method)
+            }
             let additionalData = batchResponse.responses
                 .compactMap { response -> (String, AggregatedInfo?, UserInteractions?, UserPermissions?)? in
                     let aggregateInfo = response.hasAggregate ? AggregatedInfo(from: response.aggregate) : nil

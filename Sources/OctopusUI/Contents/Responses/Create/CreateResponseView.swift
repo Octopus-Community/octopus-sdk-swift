@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct CreateResponseView: View {
+    @Environment(\.textTone) private var textTone
     let responseKind: ResponseKind
     let isLoading: Bool
     let sendAvailable: Bool
@@ -59,7 +60,7 @@ struct CreateResponseView: View {
             presenting: displayableError,
             actions: { _ in },
             message: { error in
-                error.textView
+                error.textView(tone: textTone)
             })
         .onValueChanged(of: alertError) { displayableError in
             guard let displayableError else { return }

@@ -4,14 +4,20 @@
 
 import Foundation
 import Testing
+import OctopusCore
 @testable import OctopusUI
 
 @Suite
 struct CreatePostAttachmentRulesTests {
     private func rules(pictures: Bool = true, polls: Bool = true,
                        hasImage: Bool = false, hasPoll: Bool = false) -> CreatePostAttachmentRules {
+        rules(pictures: pictures, polls: polls, imageCount: hasImage ? 1 : 0, hasPoll: hasPoll)
+    }
+
+    private func rules(pictures: Bool = true, polls: Bool = true,
+                       imageCount: Int, hasPoll: Bool = false) -> CreatePostAttachmentRules {
         CreatePostAttachmentRules(picturesEnabled: pictures, pollsEnabled: polls,
-                                  hasImage: hasImage, hasPoll: hasPoll)
+                                  imageCount: imageCount, hasPoll: hasPoll)
     }
 
     // Swift Testing takes at most 2 argument collections, so the third dimension (pollsEnabled) is
@@ -63,6 +69,46 @@ struct CreatePostAttachmentRulesTests {
         #expect(!rules(hasImage: true).hasNoAttachment)
         #expect(!rules(hasPoll: true).hasNoAttachment)
         #expect(!rules(hasImage: true, hasPoll: true).hasNoAttachment)
+    }
+
+    @Test func hasNoAttachmentIsFalseWithSeveralImages() {
+        #expect(!rules(imageCount: Validators.Post.maxImageCount).hasNoAttachment)
+    }
+
+    // MARK: - several pictures
+
+    @Test(arguments: [(imageCount: 0, remaining: 10), (imageCount: 7, remaining: 3), (imageCount: 10, remaining: 0)])
+    func remainingSlotsCountDown(_ expectation: (imageCount: Int, remaining: Int)) {
+        #expect(rules(imageCount: expectation.imageCount).remainingPictureSlots == expectation.remaining)
+    }
+
+    @Test func addMorePillOnlyBetweenOneAndNine() {
+        #expect(!rules(imageCount: 0).showsAddMorePill)
+        for imageCount in 1..<Validators.Post.maxImageCount {
+            #expect(rules(imageCount: imageCount).showsAddMorePill)
+        }
+        #expect(!rules(imageCount: Validators.Post.maxImageCount).showsAddMorePill)
+    }
+
+    /// Prefilled images can exist in a community that disables pictures: the pill must not let the member add
+    /// their own.
+    @Test func addMorePillHiddenWhenPicturesDisabled() {
+        for imageCount in 0...Validators.Post.maxImageCount {
+            #expect(!rules(pictures: false, imageCount: imageCount).showsAddMorePill)
+        }
+    }
+
+    @Test func maxAlertOnlyAtTen() {
+        for imageCount in 0..<Validators.Post.maxImageCount {
+            #expect(!rules(imageCount: imageCount).pictureEntryShowsMaxAlert)
+        }
+        #expect(rules(imageCount: Validators.Post.maxImageCount).pictureEntryShowsMaxAlert)
+    }
+
+    /// The bar entry stays visible once the post holds the maximum: tapping it explains the limit.
+    @Test func pictureEntryStaysAtTen() {
+        #expect(rules(imageCount: Validators.Post.maxImageCount).canAddPicture)
+        #expect(!rules(pictures: false, imageCount: Validators.Post.maxImageCount).canAddPicture)
     }
 
     // MARK: - reveal anchor

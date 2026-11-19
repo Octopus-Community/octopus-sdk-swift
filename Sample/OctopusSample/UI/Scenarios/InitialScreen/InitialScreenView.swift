@@ -161,6 +161,8 @@ extension OctopusInitialScreen: @retroactive Identifiable {
         case .group: "group"
         case .activity: "activity"
         case .createPost: "createPost"
+        case .profile: "profile"
+        @unknown default: "\(self)"
         }
     }
 }

@@ -14,6 +14,13 @@ extension Compat {
     struct ScrollRequest: Equatable {
         let id: String
         let anchor: UnitPoint?
+        /// Whether the scroll is animated. A request that keeps a row in place while content is inserted above it
+        /// is not: the member should not see the list move at all.
+        var animated = true
+        /// A view scrolled to first, with the same anchor. The scroll to `id` then moves on from it, or leaves the
+        /// scroll view there when that view is out of its reach: a lazy stack scrolls to its own children only, not to
+        /// the views nested in a child it has not laid out.
+        var fallbackId: String?
     }
 
     struct ScrollView<Content: View>: View {
@@ -26,6 +33,7 @@ extension Compat {
         @Binding var scrollRequest: ScrollRequest?
         let preventScrollIfContentFits: Bool
         let canScrollToExtremities: Bool
+        let animatesScrollToBottom: Bool
         @State private var refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
 
@@ -38,6 +46,7 @@ extension Compat {
              scrollRequest: Binding<ScrollRequest?> = .constant(nil),
              preventScrollIfContentFits: Bool = true,
              canScrollToExtremities: Bool = true,
+             animatesScrollToBottom: Bool = true,
              refreshAction: (@Sendable () async -> Void)? = nil,
              minTime: TimeInterval = 0.75,
              @ViewBuilder content: () -> Content) {
@@ -50,6 +59,7 @@ extension Compat {
             self._scrollRequest = scrollRequest
             self.preventScrollIfContentFits = preventScrollIfContentFits
             self.canScrollToExtremities = canScrollToExtremities
+            self.animatesScrollToBottom = animatesScrollToBottom
             if let refreshAction {
                 self._refreshAction = State(initialValue: { @Sendable in
                     let refreshTask = Task { await refreshAction() }
@@ -77,6 +87,7 @@ extension Compat {
                     idAnchor: idAnchor,
                     scrollRequest: $scrollRequest,
                     canScrollToExtremities: canScrollToExtremities,
+                    animatesScrollToBottom: animatesScrollToBottom,
                     refreshAction: refreshAction) {
                         content
                     }
@@ -87,7 +98,17 @@ extension Compat {
                             $0
                         }
                     }
-            } else if #available(iOS 14.0, *) {
+            } else {
+                scrollViewBeforeIOS15
+            }
+        }
+
+        // Out of `body`: chained as `else if` after the iOS 15 check, this check is reported as unnecessary when
+        // the deployment target is iOS 15 or later (the one Xcode 27 builds for), while hosts with an older Xcode
+        // still run this code on iOS 13.
+        @ViewBuilder
+        private var scrollViewBeforeIOS15: some View {
+            if #available(iOS 14.0, *) {
                 ScrollViewIOS14(axes: axes,
                                 showIndicators: showIndicators,
                                 scrollToTop: $scrollToTop,
@@ -96,6 +117,7 @@ extension Compat {
                                 idAnchor: idAnchor,
                                 scrollRequest: $scrollRequest,
                                 canScrollToExtremities: canScrollToExtremities,
+                                animatesScrollToBottom: animatesScrollToBottom,
                                 refreshAction: refreshAction) {
                     content
                 }
@@ -119,6 +141,7 @@ extension Compat {
         let idAnchor: UnitPoint?
         @Binding var scrollRequest: ScrollRequest?
         let canScrollToExtremities: Bool
+        let animatesScrollToBottom: Bool
         let refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
 
@@ -162,7 +185,7 @@ extension Compat {
                 }
                 .onChange(of: scrollToBottom) {
                     guard $0 else { return }
-                    withAnimation {
+                    withAnimation(animatesScrollToBottom ? .default : nil) {
                         reader.scrollTo(bottomId, anchor: .bottom)
                     }
                     scrollToBottom = false
@@ -176,8 +199,12 @@ extension Compat {
                 }
                 .onChange(of: scrollRequest) {
                     guard let request = $0 else { return }
-                    withAnimation {
-                        reader.scrollTo(request.id, anchor: request.anchor)
+                    if request.animated {
+                        withAnimation {
+                            reader.scroll(to: request)
+                        }
+                    } else {
+                        reader.scroll(to: request)
                     }
                     scrollRequest = nil
                 }
@@ -197,6 +224,7 @@ extension Compat {
         let idAnchor: UnitPoint?
         @Binding var scrollRequest: ScrollRequest?
         let canScrollToExtremities: Bool
+        let animatesScrollToBottom: Bool
         let refreshAction: (@Sendable () async -> Void)?
         @ViewBuilder let content: Content
 
@@ -245,7 +273,7 @@ extension Compat {
                         }
                         .onChange(of: scrollToBottom) {
                             guard $0 else { return }
-                            withAnimation {
+                            withAnimation(animatesScrollToBottom ? .default : nil) {
                                 reader.scrollTo(bottomId, anchor: .bottom)
                             }
                             scrollToBottom = false
@@ -259,8 +287,12 @@ extension Compat {
                         }
                         .onChange(of: scrollRequest) {
                             guard let request = $0 else { return }
-                            withAnimation {
-                                reader.scrollTo(request.id, anchor: request.anchor)
+                            if request.animated {
+                                withAnimation {
+                                    reader.scroll(to: request)
+                                }
+                            } else {
+                                reader.scroll(to: request)
                             }
                             scrollRequest = nil
                         }
@@ -331,5 +363,15 @@ private struct OffsetPreferenceKey: PreferenceKey {
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
+    }
+}
+
+@available(iOS 14.0, *)
+private extension ScrollViewProxy {
+    func scroll(to request: Compat.ScrollRequest) {
+        if let fallbackId = request.fallbackId {
+            scrollTo(fallbackId, anchor: request.anchor)
+        }
+        scrollTo(request.id, anchor: request.anchor)
     }
 }

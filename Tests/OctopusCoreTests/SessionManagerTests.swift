@@ -95,6 +95,85 @@ class SessionManagerTests: XCTestCase {
         manager.sessionEnded()
         XCTAssertNil(manager.currentSession)
     }
+
+    /// A session paused when the app goes to the background and ended once the grace period is over ends when
+    /// the app went to the background: the grace period is not session time.
+    func testPausedSessionEndsAtThePauseDate() throws {
+        let manager = SessionManager(kind: .app, userDefaults: userDefaults)
+        manager.sessionStarted()
+        let pauseDate = Date().addingTimeInterval(-5)
+
+        manager.sessionPaused(at: pauseDate)
+        XCTAssertTrue(manager.isPaused)
+        manager.sessionEnded()
+
+        XCTAssertNil(manager.currentSession)
+        XCTAssertFalse(manager.isPaused)
+        XCTAssertEqual(try XCTUnwrap(manager.previousSession).endDate.timeIntervalSince1970,
+                       pauseDate.timeIntervalSince1970, accuracy: 0.001)
+    }
+
+    /// The app can be killed while it is in the background, during the grace period: the next launch completes
+    /// the session when the app went to the background, not at its last beat before that.
+    func testPausedSessionIsRecoveredAtThePauseDateAfterTheAppIsKilled() throws {
+        let manager = SessionManager(kind: .app, userDefaults: userDefaults)
+        manager.sessionStarted()
+        let pauseDate = Date().addingTimeInterval(-5)
+        manager.sessionPaused(at: pauseDate)
+
+        let nextLaunchManager = SessionManager(kind: .app, userDefaults: userDefaults)
+
+        XCTAssertNil(nextLaunchManager.currentSession)
+        XCTAssertEqual(try XCTUnwrap(nextLaunchManager.previousSession).endDate.timeIntervalSince1970,
+                       pauseDate.timeIntervalSince1970, accuracy: 0.001)
+    }
+
+    /// A beat during the grace period would move the recovered end date past the moment the app went to the
+    /// background.
+    func testPausedSessionDoesNotBeat() async throws {
+        let manager = SessionManager(kind: .app, heartbeatInterval: 0.02, userDefaults: userDefaults)
+        manager.sessionStarted()
+        let pauseDate = Date()
+        manager.sessionPaused(at: pauseDate)
+
+        try await Task.sleep(nanoseconds: .secondsToNano(0.2))
+
+        XCTAssertEqual(try XCTUnwrap(manager.currentSession?.lastHeartbeatDate).timeIntervalSince1970,
+                       pauseDate.timeIntervalSince1970, accuracy: 0.001)
+    }
+
+    /// Coming back within the grace period keeps the same session, alive again from now on.
+    func testResumedSessionKeepsItsIdAndBeatsAgain() async throws {
+        let manager = SessionManager(kind: .app, heartbeatInterval: 0.02, userDefaults: userDefaults)
+        manager.sessionStarted()
+        let sessionId = try XCTUnwrap(manager.currentSession?.uuid)
+        let pauseDate = Date().addingTimeInterval(-5)
+        manager.sessionPaused(at: pauseDate)
+        XCTAssertTrue(manager.isPaused)
+
+        manager.sessionResumed()
+
+        XCTAssertFalse(manager.isPaused)
+        XCTAssertEqual(manager.currentSession?.uuid, sessionId)
+        let resumeBeat = try XCTUnwrap(manager.currentSession?.lastHeartbeatDate)
+        XCTAssertGreaterThan(resumeBeat, pauseDate)
+        // the heartbeat goes on after the beat of the resume
+        try await assertWithTimeout((manager.currentSession?.lastHeartbeatDate ?? .distantPast) > resumeBeat)
+        manager.sessionEnded()
+        XCTAssertGreaterThan(try XCTUnwrap(manager.previousSession).endDate, pauseDate)
+    }
+
+    /// Pausing or resuming without a session does nothing: no session is created.
+    func testPauseAndResumeWithoutSessionDoNothing() {
+        let manager = SessionManager(kind: .octopusUI, userDefaults: userDefaults)
+
+        manager.sessionPaused(at: Date())
+        XCTAssertFalse(manager.isPaused)
+        manager.sessionResumed()
+
+        XCTAssertNil(manager.currentSession)
+        XCTAssertNil(manager.previousSession)
+    }
 }
 
 /// Thread-safe accumulator: the values under test arrive from several threads at once.

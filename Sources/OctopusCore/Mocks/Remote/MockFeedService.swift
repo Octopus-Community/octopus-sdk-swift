@@ -9,7 +9,8 @@ import OctopusGrpcModels
 class MockFeedService: FeedService {
     /// Fifo of the responses to `getRootFeedsInfo`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
-    private var getRootFeedsInfoResponses = [Com_Octopuscommunity_GetRootFeedsInfoResponse]()
+    private var getRootFeedsInfoResponses = [Result<Com_Octopuscommunity_GetRootFeedsInfoResponse, RemoteClientError>]()
+    private(set) var getRootFeedsInfoCallCount = 0
     /// Fifo of the responses to `initializeFeed`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var initializeFeedResponses = [Com_Octopuscommunity_GetFeedPageResponse]()
@@ -20,20 +21,33 @@ class MockFeedService: FeedService {
     private var initializeFeedWithOctoObjectResponses = [Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse]()
     /// Fifo of the responses to `getFeedWithOctoObjectPage`.
     private var getFeedWithOctoObjectPageResponses = [Com_Octopuscommunity_GetFeedWithOctoObjectPageResponse]()
+    /// The feed ids passed to `initializeFeed`, in call order.
+    private(set) var initializeFeedFeedIds = [String]()
+    /// The anchor item ids passed to `initializeFeed`, in call order.
+    private(set) var initializeFeedAnchorItemIds = [String?]()
+    /// The page sizes passed to `initializeFeed`, in call order.
+    private(set) var initializeFeedPageSizes = [Int32]()
+    /// The page cursors passed to `getNextFeedPage`, in call order.
+    private(set) var getNextFeedPageCursors = [String]()
 
     init() { }
 
     func getRootFeedsInfo(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetRootFeedsInfoResponse {
+        getRootFeedsInfoCallCount += 1
         guard let response = getRootFeedsInfoResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetHomePageFeedsInfo must be called before"))
         }
-        return response
+        return try response.get()
     }
 
-    func initializeFeed(feedId: String, pageSize: Int32, authenticationMethod: AuthenticationMethod)
+    func initializeFeed(feedId: String, pageSize: Int32, anchorItemId: String?,
+                        authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedPageResponse {
+        initializeFeedFeedIds.append(feedId)
+        initializeFeedAnchorItemIds.append(anchorItemId)
+        initializeFeedPageSizes.append(pageSize)
         guard let response = initializeFeedResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextInitializeFeed must be called before"))
         }
@@ -43,6 +57,7 @@ class MockFeedService: FeedService {
     func getNextFeedPage(pageCursor: String, pageSize: Int32, authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetFeedPageResponse {
+        getNextFeedPageCursors.append(pageCursor)
         guard let response = getNextFeedPageResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetNextFeedPage must be called before"))
         }
@@ -69,7 +84,11 @@ class MockFeedService: FeedService {
 
 extension MockFeedService {
     func injectNextGetRootFeedsInfo(_ response: Com_Octopuscommunity_GetRootFeedsInfoResponse) {
-        getRootFeedsInfoResponses.insert(response, at: 0)
+        getRootFeedsInfoResponses.insert(.success(response), at: 0)
+    }
+
+    func injectNextGetRootFeedsInfoError(_ error: RemoteClientError) {
+        getRootFeedsInfoResponses.insert(.failure(error), at: 0)
     }
 
     func injectNextInitializeFeed(_ response: Com_Octopuscommunity_GetFeedPageResponse) {

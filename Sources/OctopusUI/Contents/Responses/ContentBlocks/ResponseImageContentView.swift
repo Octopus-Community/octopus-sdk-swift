@@ -11,13 +11,11 @@ struct ResponseImageContentView: View {
     let image: ImageMedia
     @Binding var zoomableImageInfo: ZoomableImageInfo?
 
-    /// Tells this occurrence of the image apart from another one of the same image on the screen
-    @State private var imageOccurrence = UUID()
+    @State private var sourceGeometry = FullscreenViewerSourceGeometry()
 
     private let minAspectRatio: CGFloat = 4 / 5
 
     var body: some View {
-        let source = ZoomableImageSourceID(url: image.url, occurrence: imageOccurrence)
         AsyncCachedImage(
             url: image.url, cache: .content,
             croppingRatio: minAspectRatio,
@@ -32,31 +30,23 @@ struct ResponseImageContentView: View {
                 Image(uiImage: cachedImage.ratioImage)
                     .resizable()
                     .scaledToFit()
+                    // The image closes the card: its bottom corners are the rounded ones of `ResponseCardView`.
+                    .inPlacePinchZoom(image: cachedImage.ratioImage, cornerRadius: 8, roundedCorners: .bottomCorners)
                     .frame(maxWidth: .infinity)
-                    .zoomableImageSource(source, zoomed: zoomableImageInfo)
-                    .modify {
-                        if #available(iOS 15.0, *) {
-                            $0.overlay {
-                                Color.white.opacity(0.0001)
-                                    .onTapGesture {
-                                        withAnimation {
-                                            zoomableImageInfo = .init(
-                                                source: source,
-                                                image: Image(uiImage: cachedImage.fullSizeImage),
-                                                transitionImage: Image(uiImage: cachedImage.ratioImage))
-                                        }
-                                    }
+                    .fullscreenViewerSource(
+                        sourceGeometry,
+                        isInViewer: zoomableImageInfo?.isOpened(from: sourceGeometry, showing: [image.url]) ?? false)
+                    // put the tap in an overlay because it seems that the image touch area is not clipped. Hence,
+                    // it takes the tap over the text. When put in an overlay, it seems to work correctly
+                    .overlay(
+                        Color.white.opacity(0.0001)
+                            .onTapGesture {
+                                let sourceGeometry = sourceGeometry
+                                zoomableImageInfo = .single(
+                                    url: image.url, cachedImage: cachedImage, source: sourceGeometry,
+                                    sourceFrame: { sourceGeometry.frame })
                             }
-                        } else {
-                            $0.onTapGesture {
-                                withAnimation {
-                                    zoomableImageInfo = .init(
-                                        source: source,
-                                        image: Image(uiImage: cachedImage.fullSizeImage))
-                                }
-                            }
-                        }
-                    }
+                    )
             }
         )
         .modify {

@@ -20,10 +20,14 @@ class CreatePostViewModel: ObservableObject {
     @Published private(set) var dismiss = false
     @Published var alertError: DisplayableString?
     @Published var text: String = ""
-    @Published var image: ImageAndData?
+    /// The images of the post, in the order they are shown and sent.
+    @Published var images: [ImageAndData] = []
     @Published var poll: EditablePoll?
     @Published private(set) var textError: DisplayableString?
     @Published private(set) var pictureError: DisplayableString?
+    /// The id of the picture the server refused, for the images strip to scroll to. The strip resets it to `nil`
+    /// as soon as it has taken it into account, so that the same refusal on a retry scrolls again.
+    @Published var pictureToReveal: String?
     @Published private(set) var pollError: DisplayableString?
     @Published var selectedTopic: DisplayableTopic?
     @Published var topics = [DisplayableTopic]()
@@ -44,6 +48,9 @@ class CreatePostViewModel: ObservableObject {
     @Published private(set) var consentTexts: ConsentTexts?
     /// Drives the explicit terms-acceptance bottom sheet (explicit modes only).
     @Published var displayConsentSheet = false
+    /// Whether the nickname choice screen follows the consent sheet currently presented, which changes its button
+    /// label: accepting then leads to that screen instead of publishing.
+    @Published private(set) var consentSheetLeadsToNicknameChoice = false
     /// Set once the user accepts in the consent sheet, so the re-entered `send()` bypasses the gate.
     private var explicitConsentGivenThisSession = false
 
@@ -52,7 +59,7 @@ class CreatePostViewModel: ObservableObject {
     let termsOfUseUrl: URL
 
     var sendButtonAvailable: Bool {
-        Self.canSend(text: text, hasImage: image != nil, poll: writablePoll, textRequired: textRequired,
+        Self.canSend(text: text, hasImage: !images.isEmpty, poll: writablePoll, textRequired: textRequired,
                      isLoading: isLoading)
     }
 
@@ -61,7 +68,6 @@ class CreatePostViewModel: ObservableObject {
     }
 
     var textMaxLength: Int { Validators.Post.maxTextLength }
-    var textMinLength: Int { Validators.Post.minTextLength }
 
     let octopus: OctopusSDK
     private var storage = [AnyCancellable]()
@@ -80,16 +86,16 @@ class CreatePostViewModel: ObservableObject {
     private let cta: WritableCTA?
     private let creationSource: PostsRepository.CreationSource
     /// Host signing closure for a prefilled-share image. `nil` for member-initiated posts.
-    private let bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)?
+    private let bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String?)?
 
     init(octopus: OctopusSDK,
          withPoll: Bool,
          defaultTopicId: String?,
          defaultText: String? = nil,
-         defaultImage: Data? = nil,
+         defaultImages: [Data] = [],
          cta: WritableCTA? = nil,
          creationSource: PostsRepository.CreationSource = .user,
-         bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)? = nil) {
+         bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String?)? = nil) {
         self.octopus = octopus
         self.defaultTopicId = defaultTopicId
         self.cta = cta
@@ -102,9 +108,7 @@ class CreatePostViewModel: ObservableObject {
         )
 
         if let defaultText { self.text = defaultText }
-        if let defaultImage, let image = UIImage(data: defaultImage) {
-            self.image = ImageAndData(imageData: defaultImage, image: image)
-        }
+        images = Self.seedImages(from: defaultImages)
 
         let externalLinksRepository = octopus.core.externalLinksRepository
         communityGuidelinesUrl = externalLinksRepository.communityGuidelines
@@ -151,7 +155,7 @@ class CreatePostViewModel: ObservableObject {
                 pollsEnabled = postOptions.enablePolls
                 textRequired = postOptions.textRequired
                 // Safety net (not bypassable): if polls are disabled, never leave a poll editor open.
-                // Pictures don't clear an existing/prefilled image — bridge images are unaffected.
+                // Pictures don't clear existing/prefilled images — bridge images are unaffected.
                 if !postOptions.enablePolls, poll != nil {
                     poll = nil
                 }
@@ -178,9 +182,9 @@ class CreatePostViewModel: ObservableObject {
             }
         }.store(in: &storage)
 
-        Publishers.CombineLatest4($text, $image, $poll, $selectedTopic)
-            .sink { [unowned self] text, image, poll, selectedTopic in
-                hasChanges = Self.hasChanges(text: text, hasImage: image != nil, hasPoll: poll != nil,
+        Publishers.CombineLatest4($text, $images, $poll, $selectedTopic)
+            .sink { [unowned self] text, images, poll, selectedTopic in
+                hasChanges = Self.hasChanges(text: text, hasImage: !images.isEmpty, hasPoll: poll != nil,
                                              selectedTopicId: selectedTopic?.topicId,
                                              defaultTopicId: defaultTopicId)
             }.store(in: &storage)
@@ -189,30 +193,24 @@ class CreatePostViewModel: ObservableObject {
             .removeDuplicates()
             .sink { [unowned self] text in
                 if text.count > textMaxLength {
-                    textError = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
+                    textError = .textTooLongError(currentLength: text.count, maxLength: textMaxLength)
                 } else {
                     textError = nil
                 }
             }.store(in: &storage)
 
-        $image
+        $images
             .removeDuplicates()
-            .receive(on: DispatchQueue.main) // needed because we can reset the picture
-            .sink { [weak self] image in
+            .receive(on: DispatchQueue.main) // needed because we can reset the pictures
+            .sink { [weak self] images in
                 guard let self else { return }
-                guard let image else {
-                    pictureError = nil
-                    return
-                }
-                switch Validators.Picture.validate(image.image) {
-                case .sideTooSmall, .ratioTooBig:
-                    alertError = .localizationKey(
-                        "Picture.Selection.Error_maxRatio:\(Validators.Picture.maxRatioStr)_minSize:\(Int(Validators.Picture.minSize))")
-                    // Only the picture is dropped: an attached poll is kept.
-                    self.image = nil
-                case .valid:
-                    pictureError = nil
-                }
+                pictureError = nil
+                let (kept, hadInvalid) = Self.dropInvalidPictures(images)
+                guard hadInvalid else { return }
+                alertError = .pictureSelectionError(maxRatio: Validators.Picture.maxRatioStr,
+                                                    minSize: Int(Validators.Picture.minSize))
+                // Only the invalid pictures are dropped: the other pictures and an attached poll are kept.
+                self.images = kept
             }.store(in: &storage)
 
         $poll
@@ -269,18 +267,10 @@ class CreatePostViewModel: ObservableObject {
             topicId: topic.topicId,
             // A blank text is sent empty by the repository when the post may omit it.
             text: text,
-            image: image?.imageData,
+            images: images.map(\.imageData),
             poll: writablePoll,
             cta: cta
         )
-        switch Validators.Post.validate(text: post.text, hasPoll: post.poll != nil, hasImage: post.image != nil,
-                                        textRequired: textRequired) {
-        case let .failure(error):
-            if error == .tooShort {
-                textError = .localizationKey("Error.Text.TooShort_minLength:\(textMinLength)")
-            }
-        default: break
-        }
         guard Validators.Post.validate(post: post, textRequired: textRequired) else { return }
 
         // The nickname choice screen must not appear before the user has
@@ -291,6 +281,7 @@ class CreatePostViewModel: ObservableObject {
         // first (see `isBlockedOnlyByFirstPostNicknameValidation`).
         if isBlockedOnlyByFirstPostNicknameValidation,
            termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            consentSheetLeadsToNicknameChoice = true
             displayConsentSheet = true
             isLoading = false
             return
@@ -308,6 +299,7 @@ class CreatePostViewModel: ObservableObject {
         // `send(post:)`, so once given it is never asked again. (Reached when the user is not blocked
         // by the nickname screen above — e.g. a confirmed or community-locked nickname.)
         if termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            consentSheetLeadsToNicknameChoice = false
             displayConsentSheet = true
             isLoading = false
             return
@@ -345,16 +337,18 @@ class CreatePostViewModel: ObservableObject {
             case let .serverCall(serverError):
                 alertError = serverError.displayableMessage
             case .other:
-                alertError = .localizationKey("Error.Unknown")
+                alertError = .unknownError
             }
             // do not send the message if we cannot update the profile
             return
         }
         do {
-            let (createdPost, imageData) = try await octopus.core.postsRepository.send(
+            let (createdPost, imageDatas) = try await octopus.core.postsRepository.send(
                 post, creationSource: creationSource, bridgeShareSignature: bridgeShareSignature)
-            if let imageData, let image = UIImage(data: imageData), let imageUrl = createdPost.medias.first?.url {
-                try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: imageUrl)
+            // The created images are shown right away from the bytes just sent, without downloading them.
+            for (url, imageData) in Self.imagesToCache(sent: imageDatas, in: createdPost.medias) {
+                guard let image = UIImage(data: imageData) else { continue }
+                try? ImageCache.content.store(ImageAndData(imageData: imageData, image: image), url: url)
             }
 
             dismiss = true
@@ -372,6 +366,7 @@ class CreatePostViewModel: ObservableObject {
                             textError = .localizedString(multiErrorLocalizedString)
                         case .picture:
                             pictureError = .localizedString(multiErrorLocalizedString)
+                            pictureToReveal = Self.pictureToReveal(from: argumentError, in: images)
                         case .poll:
                             pollError = .localizedString(multiErrorLocalizedString)
                         }
@@ -380,7 +375,7 @@ class CreatePostViewModel: ObservableObject {
             case let .serverCall(serverError):
                 alertError = serverError.displayableMessage
             case .other:
-                alertError = .localizationKey("Error.Unknown")
+                alertError = .unknownError
             }
         }
     }
@@ -389,14 +384,64 @@ class CreatePostViewModel: ObservableObject {
         poll = EditablePoll()
     }
 
+    /// The bytes sent for each image of a created post, paired with the URL the server gave that image.
+    ///
+    /// The i-th image sent is the i-th image of the created post's `medias` (videos skipped): the server keeps the
+    /// order of the photos. If the counts ever differ, nothing is returned: which photo is missing is unknown, and
+    /// pairing by position would cache bytes under the URL of another photo. The images are then downloaded.
+    static func imagesToCache(sent imageDatas: [Data], in medias: [OctopusCore.Media]) -> [(url: URL, imageData: Data)] {
+        let images = medias.filter { $0.kind == .image }
+        guard images.count == imageDatas.count else { return [] }
+        return zip(images, imageDatas).map { (url: $0.url, imageData: $1) }
+    }
+
+    /// The id of the picture to reveal when the server refused a post with `errors`: it looks only at the errors
+    /// linked to the picture field. `nil` when none of them designates one of `images`.
+    static func pictureToReveal(from validation: ValidationErrors<SendPost.Field, SendPost.ErrorDetail>,
+                                in images: [ImageAndData]) -> String? {
+        pictureToReveal(for: (validation.errors[.linkedToField(.picture)] ?? []).map(\.imageIndex), in: images)
+    }
+
+    /// The id of the picture to reveal for errors carrying `imageIndexes`: the first index that designates one of
+    /// `images`. `nil` when no error carries a valid index, in which case the strip stays where it is.
+    static func pictureToReveal(for imageIndexes: [Int?], in images: [ImageAndData]) -> String? {
+        imageIndexes
+            .lazy
+            .compactMap { $0 }
+            .first(where: images.indices.contains)
+            .map { images[$0].thumbnailId }
+    }
+
+    /// The images a composer opens with: the data that decodes to an image, in order, up to
+    /// `Validators.Post.maxImageCount`.
+    static func seedImages(from datas: [Data]) -> [ImageAndData] {
+        let images = datas.compactMap { data in
+            UIImage(data: data).map { ImageAndData(imageData: data, image: $0) }
+        }
+        return Array(images.prefix(Validators.Post.maxImageCount))
+    }
+
+    /// The images of the post once the newly picked ones are added after the current ones, up to
+    /// `Validators.Post.maxImageCount`: the picks beyond the limit are dropped.
+    static func appending(_ new: [ImageAndData], to current: [ImageAndData]) -> [ImageAndData] {
+        Array((current + new).prefix(Validators.Post.maxImageCount))
+    }
+
+    /// Splits off the pictures that `Validators.Picture` rejects (side too small or ratio too big), keeping the
+    /// order of the others.
+    static func dropInvalidPictures(_ images: [ImageAndData]) -> (kept: [ImageAndData], hadInvalid: Bool) {
+        let kept = images.filter { Validators.Picture.validate($0.image) == .valid }
+        return (kept, kept.count != images.count)
+    }
+
     /// Whether the draft has content (text, image or poll) or a topic other than the default one.
     static func hasChanges(text: String, hasImage: Bool, hasPoll: Bool,
                            selectedTopicId: String?, defaultTopicId: String?) -> Bool {
         !text.isEmpty || hasImage || hasPoll || selectedTopicId != defaultTopicId
     }
 
-    /// Whether the publish button is enabled. The minimum text length is not checked here: it is reported
-    /// when the user taps the button (see `send()`), so a too-short text keeps the button enabled.
+    /// Whether the publish button is enabled. A post text has no minimum beyond one visible character, so a
+    /// blank text that the post may not omit keeps the button disabled, and any other text enables it.
     static func canSend(text: String, hasImage: Bool, poll: WritablePoll?, textRequired: Bool,
                         isLoading: Bool) -> Bool {
         !isLoading &&

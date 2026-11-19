@@ -269,7 +269,8 @@ extension CustomThemeView.IconFamily {
                         rage: Self.sfSymbol("flame.fill", color: .systemRed)
                     ),
                     delete: IconSet.contentDelete,
-                    report: IconSet.contentReport
+                    report: IconSet.contentReport,
+                    translation: IconSet.contentTranslation
                 ),
                 profile: .init(
                     addPicture: IconSet.profileAddPicture,
@@ -360,7 +361,8 @@ extension CustomThemeView.IconFamily {
                         rage: Self.sfSymbol("hexagon.fill", color: .systemPurple)
                     ),
                     delete: IconSet.contentDelete,
-                    report: IconSet.contentReport
+                    report: IconSet.contentReport,
+                    translation: IconSet.contentTranslation
                 ),
                 profile: .init(
                     addPicture: IconSet.profileAddPicture,
@@ -455,6 +457,7 @@ extension CustomThemeView.IconFamily {
                     ),
                     delete: icon,
                     // report: icon, defaultReport will be used
+                    translation: icon,
                     defaultAddPicture: icon,
                     defaultDeletePicture: icon,
                     defaultCreateResponse: icon,

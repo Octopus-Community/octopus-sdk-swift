@@ -18,6 +18,8 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
     @NSManaged public var postEnablePictures: Bool
     @NSManaged public var postEnablePolls: Bool
     @NSManaged public var postTextRequired: Bool
+    @NSManaged public var postImageTapOpensPost: Bool
+    @NSManaged public var postGroupNameTapOpensGroup: Bool
     @NSManaged public var commentEnablePictures: Bool
     @NSManaged public var replyEnablePictures: Bool
     @NSManaged public var termsAcceptanceMode: Int16
@@ -29,6 +31,9 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
     @NSManaged public var consentRulesLabel: String?
     @NSManaged public var consentSingleLabel: String?
     @NSManaged public var consentBelowText: String?
+    /// `CommunityConfig.informalLanguages`, joined by `informalLanguagesSeparator`. `nil` or empty when the
+    /// community is formal in every language.
+    @NSManaged public var informalLanguages: String?
     @NSManaged public var gamificationConfig: GamificationConfigEntity?
     @NSManaged public var displayConfig: DisplayConfigEntity?
 
@@ -44,10 +49,14 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
         postEnablePictures = config.contentOptions.post.enablePictures
         postEnablePolls = config.contentOptions.post.enablePolls
         postTextRequired = config.contentOptions.post.textRequired
+        postImageTapOpensPost = config.contentOptions.post.imageTapOpensPost
+        postGroupNameTapOpensGroup = config.contentOptions.post.groupNameTapOpensGroup
         commentEnablePictures = config.contentOptions.comment.enablePictures
         replyEnablePictures = config.contentOptions.reply.enablePictures
         termsAcceptanceMode = config.termsAcceptanceMode.storageValue
         fillConsentTexts(config.consentTexts)
+        informalLanguages = config.informalLanguages.isEmpty
+            ? nil : config.informalLanguages.joined(separator: Self.informalLanguagesSeparator)
         gamificationConfig = config.gamificationConfig.map { gamificationConfig in
             let entity = GamificationConfigEntity(context: context)
             entity.fill(with: gamificationConfig, context: context)
@@ -83,6 +92,16 @@ class CommunityConfigEntity: NSManagedObject, Identifiable {
         case nil:
             break
         }
+    }
+}
+
+extension CommunityConfigEntity {
+    /// A language code never contains a comma, so a comma-joined string round-trips the list.
+    static let informalLanguagesSeparator = ","
+
+    static func informalLanguages(from storedValue: String?) -> [String] {
+        guard let storedValue, !storedValue.isEmpty else { return [] }
+        return storedValue.components(separatedBy: informalLanguagesSeparator)
     }
 }
 

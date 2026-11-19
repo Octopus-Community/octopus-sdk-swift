@@ -84,6 +84,9 @@ class PostListViewModel: ObservableObject {
                 case .groupFollowingChanged, .entitlementsChanged:
                     refreshFeed()
                     scrollToTop = true
+                case .userContentCleared:
+                    // The feed reloads itself, as every post feed does on this event.
+                    scrollToTop = true
                 default: break
                 }
             }.store(in: &storage)

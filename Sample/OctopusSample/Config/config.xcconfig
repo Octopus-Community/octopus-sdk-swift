@@ -6,7 +6,7 @@ OCTOPUS_DESIGN_REQUIRES_COMPATIBILITY = NO
 #include "secrets.xcconfig"
 
 // Version of the app
-APP_VERSION = 1.15.1
+APP_VERSION = 1.16.0
 // Default build number. Overridden by build system
 BUILD_NUMBER = 0
 

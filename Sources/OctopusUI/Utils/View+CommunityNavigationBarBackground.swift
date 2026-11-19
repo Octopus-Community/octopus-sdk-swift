@@ -23,7 +23,7 @@ private struct CommunityNavigationBarBackgroundModifier: ViewModifier {
 
 extension View {
     /// Draws the navigation bar of this screen in the community background, as the screens built on
-    /// `zoomableImageContainer` already do through `forceColorScheme`.
+    /// `zoomableImageContainer` already do through its `toolbarBackground`.
     ///
     /// - Parameter glassEffectAvailable: whether the app draws with the glass effect; only tests pass it.
     func communityNavigationBarBackground(glassEffectAvailable: Bool = GlassEffect.isAvailable) -> some View {

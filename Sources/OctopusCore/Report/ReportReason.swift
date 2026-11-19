@@ -17,7 +17,8 @@ public enum ReportReason: Equatable, Sendable, CaseIterable, Hashable {
     case spamAndScams
     // Suicide and self-harm
     case suicideAndSelfHarm
-    // Fake profiles and impersonation
+    // Illegal activities or products. The name is kept from when this reason covered fake profiles and
+    // impersonation, which now belong to spam and scams.
     case fakeProfilesAndImpersonation
     // Child exploitation or abuse
     case childExploitationOrAbuse
@@ -59,7 +60,8 @@ extension ReportReason {
         case .violenceAndTerrorism: .reportVlcTer
         case .spamAndScams: .reportSpm
         case .suicideAndSelfHarm: .reportSsh
-        case .fakeProfilesAndImpersonation: .reportImp
+        // Never `.reportImp`: that deprecated code is filed by the back end under spam.
+        case .fakeProfilesAndImpersonation: .reportIll
         case .childExploitationOrAbuse: .reportCex
         case .intellectualPropertyViolation: .reportIpv
         case .other: .reportOth
@@ -73,13 +75,11 @@ extension ReportReason {
         case .reportVlcTer: .violenceAndTerrorism
         case .reportSpm: .spamAndScams
         case .reportSsh: .suicideAndSelfHarm
-        case .reportImp: .fakeProfilesAndImpersonation
+        // `.reportImp` is the code older SDK versions sent for this reason: it still maps to it.
+        case .reportIll, .reportImp: .fakeProfilesAndImpersonation
         case .reportCex: .childExploitationOrAbuse
         case .reportIpv: .intellectualPropertyViolation
-        // .reportIll (illegal activities/products) is folded into .other for now — exposing it as a
-        // dedicated public ReportReason is a public API addition that also needs its own product
-        // wording and translations, so it is left for later.
-        case .reportUnspecifiedReason, .reportOth, .reportIll, .UNRECOGNIZED:   .other
+        case .reportUnspecifiedReason, .reportOth, .UNRECOGNIZED:   .other
         }
     }
 }

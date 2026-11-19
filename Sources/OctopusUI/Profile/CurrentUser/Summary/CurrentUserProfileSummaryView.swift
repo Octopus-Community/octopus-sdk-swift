@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct CurrentUserProfileSummaryView: View {
+    @Environment(\.textTone) private var textTone
     @EnvironmentObject private var gamificationRulesViewManager: GamificationRulesViewManager
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.trackingApi) var trackingApi
@@ -89,7 +90,9 @@ struct CurrentUserProfileSummaryView: View {
                             if viewModel.canCreatePost {
                                 ScreenState(
                                     image: theme.assets.icons.screenStates.emptyContent,
-                                    title: .localizationKey("Profile.Posts.EmptyState.Title.Self"),
+                                    title: .tonedKey(
+                                        formal: "Profile.Posts.EmptyState.Title.Self.Formal",
+                                        informal: "Profile.Posts.EmptyState.Title.Self.Informal"),
                                     action: .init(title: "Profile.Posts.EmptyState.CTA.Self") {
                                         navigator.push(.createPost(withPoll: false, defaultTopicId: nil))
                                     },
@@ -121,7 +124,8 @@ struct CurrentUserProfileSummaryView: View {
             gamificationRulesViewManager: gamificationRulesViewManager)
         .errorAlert(viewModel.$error, onDismiss: { viewModel.error = nil })
         .compatAlert(
-            "Profile.Edit.ClientApp.Alert.Title",
+            textTone.key(formal: "Profile.Edit.ClientApp.Alert.Title.Formal",
+                         informal: "Profile.Edit.ClientApp.Alert.Title.Informal"),
             isPresented: $displayOpenEditProfileInApp,
             presenting: openEditProfileInApp,
             actions: { openEditProfileInApp in

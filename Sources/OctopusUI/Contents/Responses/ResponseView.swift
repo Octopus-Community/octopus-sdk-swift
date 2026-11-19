@@ -12,6 +12,7 @@ import OctopusCore
 /// Owns the delete-confirmation alert and the iOS 13 action-sheet state; delegates layout to
 /// the private `ResponseContentView`.
 struct ResponseView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let response: ResponseViewData
@@ -80,7 +81,7 @@ struct ResponseView: View {
             openCreateReply: openCreateReply,
             openRepliesList: openRepliesList)
         .destructiveConfirmationAlert(
-            response.kind.deleteConfirmationKey,
+            response.kind.deleteConfirmationKey(tone: textTone),
             isPresented: $displayDeleteAlert,
             destructiveLabel: "Common.Delete",
             action: deleteResponse)
@@ -93,10 +94,12 @@ struct ResponseView: View {
                     blockAuthor(profileId)
                 }
             },
-            message: "Block.Profile.Alert.Message")
+            message: textTone.key(formal: "Block.Profile.Alert.Message.Formal",
+                                  informal: "Block.Profile.Alert.Message.Informal"))
         .actionSheet(isPresented: $iOS13ActionSheetIsPresented) {
             ActionSheet(
-                title: Text("ActionSheet.Title", bundle: .module),
+                title: Text(textTone.key(formal: "ActionSheet.Title.Formal",
+                                         informal: "ActionSheet.Title.Informal"), bundle: .module),
                 buttons: iOS13ActionSheetButtons)
         }
     }
@@ -151,7 +154,7 @@ private struct ResponseContentView: View {
     @Compat.ScaledMetric(relativeTo: .largeTitle) private var avatarSize: CGFloat = 32
 
     var body: some View {
-        let addCardBottomSpacing = response.image == nil && !(response.text?.hasTranslation ?? true)
+        let addCardBottomSpacing = response.image == nil
         let avatarSide = max(avatarSize, 32)
         // Top extension matches the design spec's `pt-[6px]` whitespace above the comment. The same
         // value is reused by `ResponseCardView`'s invisible top inset so the avatar and card
@@ -196,20 +199,24 @@ private struct ResponseContentView: View {
                         iOS13ActionSheetIsPresented: $iOS13ActionSheetIsPresented)
 
                     if let text = response.text {
-                        ResponseTextContentView(contentId: response.uuid, text: text)
-
+                        // Right under the header, before the text, so that the member knows the
+                        // text is translated before reading it.
                         if text.hasTranslation {
                             ResponseTranslationToggleView(
                                 contentId: response.uuid,
                                 originalLanguage: text.originalLanguage,
                                 contentKind: contentKindForTracking)
+                                // Its hit area spills over the header and the text: it must be
+                                // drawn above them to get those taps.
+                                .zIndex(1)
                         }
+
+                        ResponseTextContentView(contentId: response.uuid, text: text)
                     }
 
                     // Design spec's no-image spacing — 8pt spacer inside the card when nothing
                     // else supplies the bottom whitespace. An image sits flush against the
-                    // card's bottom rounded corners, and the translation toggle already carries
-                    // its own 10pt bottom padding — in either case the spacer is skipped.
+                    // card's bottom rounded corners, so the spacer is skipped above it.
                     if addCardBottomSpacing {
                         Color.clear.frame(height: 8)
                     }
@@ -293,6 +300,25 @@ private struct ResponseContentView: View {
     .mockEnvironmentForPreviews()
 }
 
+#Preview("Summary — translated comment") {
+    ResponseView(
+        response: ResponseViewData(from: ResponseView.Previews.sampleResponse(
+            kind: .comment,
+            text: "Un court commentaire d'exemple utilisé dans les aperçus SwiftUI.",
+            originalLanguage: "fr",
+            translatedText: "A short sample comment used in SwiftUI previews.")),
+        context: .summary(onCardTap: {}),
+        zoomableImageInfo: .constant(nil),
+        reactionTapped: { _ in },
+        displayProfile: { _, _ in },
+        deleteResponse: {},
+        blockAuthor: { _ in },
+        openCreateReply: {},
+        openRepliesList: {},
+        displayContentModeration: { _ in })
+    .mockEnvironmentForPreviews()
+}
+
 #Preview("Detail — comment") {
     ResponseView(
         response: ResponseViewData(from: ResponseView.Previews.sampleResponse(kind: .comment)),
@@ -314,6 +340,8 @@ extension ResponseView {
         static func sampleResponse(
             kind: ResponseKind,
             text: String? = "A short sample comment or reply used in SwiftUI previews.",
+            originalLanguage: String? = nil,
+            translatedText: String? = nil,
             canBeBlockedByUser: Bool = true
         ) -> DisplayableFeedResponse {
             let author = Author(
@@ -332,8 +360,10 @@ extension ResponseView {
                     userInteractions: .empty))
 
             let ellipsizable: EllipsizableTranslatedText? = text.flatMap {
-                EllipsizableTranslatedText(text: TranslatableText(originalText: $0, originalLanguage: nil),
-                                           ellipsize: false)
+                EllipsizableTranslatedText(
+                    text: TranslatableText(originalText: $0, originalLanguage: originalLanguage,
+                                           translatedText: translatedText),
+                    ellipsize: false)
             }
 
             return DisplayableFeedResponse(
@@ -342,7 +372,7 @@ extension ResponseView {
                 text: ellipsizable,
                 image: nil,
                 author: author,
-                relativeDate: "il y a 3 min.",
+                relativeDate: "3min",
                 canBeDeleted: true,
                 canBeModerated: true,
                 canBeBlockedByUser: canBeBlockedByUser,

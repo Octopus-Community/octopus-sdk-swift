@@ -38,6 +38,10 @@ public struct CommunityConfig: Equatable, Sendable {
     /// The consent wordings the community set in its back-office. They only apply when their case matches
     /// `termsAcceptanceMode`. Absent ⇒ `nil` ⇒ the SDK wordings.
     public let consentTexts: ConsentTexts?
+    /// The community languages whose SDK texts address members informally ("tu" rather than "vous"), as
+    /// BCP-47 codes like the community languages. Set internally per community in the back-office, at the
+    /// client's request. Absent / unseeded ⇒ empty ⇒ formal in every language, today's behaviour.
+    public let informalLanguages: [String]
 }
 
 extension CommunityConfig {
@@ -53,6 +57,7 @@ extension CommunityConfig {
         self.showCommentsOnOtherProfiles = entity.showCommentsOnOtherProfiles
         self.forceNicknameChoice = entity.forceNicknameChoice
         self.consentTexts = ConsentTexts(from: entity)
+        self.informalLanguages = CommunityConfigEntity.informalLanguages(from: entity.informalLanguages)
     }
 
     init(from config: Com_Octopuscommunity_ApiKeyConfig) {
@@ -84,6 +89,8 @@ extension CommunityConfig {
         forceNicknameChoice = config.forceNicknameChoice
         // ApiKeyConfig.consentTexts is a message: absent, or with no mode set ⇒ nil ⇒ the SDK wordings.
         consentTexts = config.hasConsentTexts ? ConsentTexts(from: config.consentTexts) : nil
+        // ApiKeyConfig.informalLanguages is a repeated string (empty when unset).
+        informalLanguages = config.informalLanguages
     }
 }
 
@@ -102,7 +109,8 @@ extension CommunityConfig {
                         termsAcceptanceMode: termsAcceptanceMode,
                         showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
                         forceNicknameChoice: forceNicknameChoice,
-                        consentTexts: consentTexts)
+                        consentTexts: consentTexts,
+                        informalLanguages: informalLanguages)
     }
 
     /// Returns a copy with only `contentOptions` replaced. Internal test affordance used (via an
@@ -119,7 +127,8 @@ extension CommunityConfig {
                         termsAcceptanceMode: termsAcceptanceMode,
                         showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
                         forceNicknameChoice: forceNicknameChoice,
-                        consentTexts: consentTexts)
+                        consentTexts: consentTexts,
+                        informalLanguages: informalLanguages)
     }
 
     /// Returns a copy with only `exposeClientUserId` replaced. Internal test affordance used (via an
@@ -136,7 +145,8 @@ extension CommunityConfig {
                         termsAcceptanceMode: termsAcceptanceMode,
                         showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
                         forceNicknameChoice: forceNicknameChoice,
-                        consentTexts: consentTexts)
+                        consentTexts: consentTexts,
+                        informalLanguages: informalLanguages)
     }
 
     /// Returns a copy with only `termsAcceptanceMode` replaced. Internal test affordance used (via an
@@ -153,7 +163,8 @@ extension CommunityConfig {
                         termsAcceptanceMode: mode,
                         showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
                         forceNicknameChoice: forceNicknameChoice,
-                        consentTexts: consentTexts)
+                        consentTexts: consentTexts,
+                        informalLanguages: informalLanguages)
     }
 
     /// Returns a copy with only `showCommentsOnOtherProfiles` replaced. Internal test affordance used
@@ -170,7 +181,8 @@ extension CommunityConfig {
                         termsAcceptanceMode: termsAcceptanceMode,
                         showCommentsOnOtherProfiles: enabled,
                         forceNicknameChoice: forceNicknameChoice,
-                        consentTexts: consentTexts)
+                        consentTexts: consentTexts,
+                        informalLanguages: informalLanguages)
     }
 
     /// Returns a copy with only `forceNicknameChoice` replaced. Internal test affordance used (via an
@@ -187,7 +199,8 @@ extension CommunityConfig {
                         termsAcceptanceMode: termsAcceptanceMode,
                         showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
                         forceNicknameChoice: enabled,
-                        consentTexts: consentTexts)
+                        consentTexts: consentTexts,
+                        informalLanguages: informalLanguages)
     }
 
     /// Returns a copy with only `consentTexts` replaced. Internal test affordance used (via an `@_spi`
@@ -203,6 +216,24 @@ extension CommunityConfig {
                         termsAcceptanceMode: termsAcceptanceMode,
                         showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
                         forceNicknameChoice: forceNicknameChoice,
-                        consentTexts: texts)
+                        consentTexts: texts,
+                        informalLanguages: informalLanguages)
+    }
+
+    /// Returns a copy with only `informalLanguages` replaced. Internal test affordance used (via an `@_spi`
+    /// SDK entry point) by the sample app to exercise the informal tone without a backend-driven config.
+    func withInformalLanguages(_ languages: [String]) -> CommunityConfig {
+        CommunityConfig(forceLoginOnStrongActions: forceLoginOnStrongActions,
+                        displayAccountAge: displayAccountAge,
+                        gamificationConfig: gamificationConfig,
+                        displayConfig: displayConfig,
+                        profileFieldsLock: profileFieldsLock,
+                        contentOptions: contentOptions,
+                        exposeClientUserId: exposeClientUserId,
+                        termsAcceptanceMode: termsAcceptanceMode,
+                        showCommentsOnOtherProfiles: showCommentsOnOtherProfiles,
+                        forceNicknameChoice: forceNicknameChoice,
+                        consentTexts: consentTexts,
+                        informalLanguages: languages)
     }
 }

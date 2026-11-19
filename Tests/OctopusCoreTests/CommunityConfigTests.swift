@@ -68,7 +68,8 @@ final class CommunityConfigTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil, profileFieldsLock: lock,
                                      contentOptions: .allEnabled, exposeClientUserId: false,
                                      termsAcceptanceMode: .implicit,
-                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                     informalLanguages: [])
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -80,7 +81,8 @@ final class CommunityConfigTests: XCTestCase {
                                    gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
                                    contentOptions: .allEnabled, exposeClientUserId: false,
                                    termsAcceptanceMode: .implicit,
-                                   showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                   showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                   informalLanguages: [])
         let clue = ProfileFieldsLock(nickname: .readOnly, avatar: .readOnly, bio: .disabled)
 
         let overridden = base.withProfileFieldsLock(clue)
@@ -122,7 +124,8 @@ final class CommunityConfigTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: .allEnabled,
                                      exposeClientUserId: true, termsAcceptanceMode: .implicit,
-                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                     informalLanguages: [])
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -134,7 +137,8 @@ final class CommunityConfigTests: XCTestCase {
                                    gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
                                    contentOptions: .allEnabled, exposeClientUserId: false,
                                    termsAcceptanceMode: .implicit,
-                                   showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                   showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                   informalLanguages: [])
 
         let overridden = base.withExposeClientUserId(true)
 
@@ -151,34 +155,36 @@ final class CommunityConfigTests: XCTestCase {
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CommunityConfigDatabase(injector: $0) }
         injector.register { UserConfigDatabase(injector: $0) }
-        injector.registerMocks(.remoteClient, .networkMonitor, .appStateMonitor, .authProvider, .securedStorage)
+        injector.registerMocks(.remoteClient, .networkMonitor, .appStateMonitor, .authProvider, .securedStorage,
+                               .communityClosure)
         injector.register { UserDataStorage(injector: $0) }
         let communityConfigDatabase = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
 
         let repo: ConfigRepository = ConfigRepositoryDefault(injector: injector)
 
-        var published: CommunityConfig?
-        repo.communityConfigPublisher.sink { published = $0 }.store(in: &storage)
+        let published = Locked<CommunityConfig?>(nil)
+        repo.communityConfigPublisher.sink { published.value = $0 }.store(in: &storage)
 
         // Seed the backend-driven config with the flag enabled.
         try await communityConfigDatabase.upsert(config: CommunityConfig(
             forceLoginOnStrongActions: false, displayAccountAge: false,
             gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
             contentOptions: .allEnabled, exposeClientUserId: true, termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
-        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+            informalLanguages: []))
+        try await assertWithTimeout(timeout: 5, published.value?.exposeClientUserId == true)
 
         // Override OFF on top of the backend value.
         repo.debugOverrideExposeClientUserId(false)
-        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == false)
+        try await assertWithTimeout(timeout: 5, published.value?.exposeClientUserId == false)
 
         // Override ON.
         repo.debugOverrideExposeClientUserId(true)
-        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
+        try await assertWithTimeout(timeout: 5, published.value?.exposeClientUserId == true)
 
         // Clear the override → falls back to the backend value (true).
         repo.debugOverrideExposeClientUserId(nil)
-        try await assertWithTimeout(timeout: 5, published?.exposeClientUserId == true)
+        try await assertWithTimeout(timeout: 5, published.value?.exposeClientUserId == true)
     }
 
     // MARK: termsAcceptanceMode (explicit terms acceptance)
@@ -215,7 +221,8 @@ final class CommunityConfigTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: .allEnabled,
                                      exposeClientUserId: false, termsAcceptanceMode: .explicitSingleCheckbox,
-                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                     informalLanguages: [])
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -251,7 +258,8 @@ final class CommunityConfigTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: .allEnabled,
                                      exposeClientUserId: false, termsAcceptanceMode: .implicit,
-                                     showCommentsOnOtherProfiles: true, forceNicknameChoice: false, consentTexts: nil)
+                                     showCommentsOnOtherProfiles: true, forceNicknameChoice: false, consentTexts: nil,
+                                     informalLanguages: [])
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -263,7 +271,8 @@ final class CommunityConfigTests: XCTestCase {
                                    gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
                                    contentOptions: .allEnabled, exposeClientUserId: true,
                                    termsAcceptanceMode: .explicitSingleCheckbox,
-                                   showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                   showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                   informalLanguages: [])
 
         let overridden = base.withShowCommentsOnOtherProfiles(true)
 
@@ -305,19 +314,19 @@ final class CommunityConfigTests: XCTestCase {
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CommunityConfigDatabase(injector: $0) }
         let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
-        var latest: CommunityConfig?
-        db.configPublisher().sink { latest = $0 }.store(in: &storage)
+        let latest = Locked<CommunityConfig?>(nil)
+        db.configPublisher().sink { latest.value = $0 }.store(in: &storage)
         let base = CommunityConfig(from: Com_Octopuscommunity_ApiKeyConfig.with { _ in })
 
         try await db.upsert(config: base.withConsentTexts(.implicit(notice: "Old notice")))
-        try await assertWithTimeout(timeout: 5, latest?.consentTexts == .implicit(notice: "Old notice"))
+        try await assertWithTimeout(timeout: 5, latest.value?.consentTexts == .implicit(notice: "Old notice"))
 
         // Same row updated: the emptied notice must not survive.
         try await db.upsert(config: base.withConsentTexts(.implicit(notice: nil)))
-        try await assertWithTimeout(timeout: 5, latest?.consentTexts == .implicit(notice: nil))
+        try await assertWithTimeout(timeout: 5, latest.value?.consentTexts == .implicit(notice: nil))
 
         try await db.upsert(config: base.withConsentTexts(nil))
-        try await assertWithTimeout(timeout: 5, latest != nil && latest?.consentTexts == nil)
+        try await assertWithTimeout(timeout: 5, latest.value != nil && latest.value?.consentTexts == nil)
     }
 
     func testDebugOverrideConsentTexts() async throws {
@@ -325,42 +334,43 @@ final class CommunityConfigTests: XCTestCase {
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CommunityConfigDatabase(injector: $0) }
         injector.register { UserConfigDatabase(injector: $0) }
-        injector.registerMocks(.remoteClient, .networkMonitor, .appStateMonitor, .authProvider, .securedStorage)
+        injector.registerMocks(.remoteClient, .networkMonitor, .appStateMonitor, .authProvider, .securedStorage,
+                               .communityClosure)
         injector.register { UserDataStorage(injector: $0) }
         let communityConfigDatabase = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
 
         let repo: ConfigRepository = ConfigRepositoryDefault(injector: injector)
 
-        var published: CommunityConfig?
-        repo.communityConfigPublisher.sink { published = $0 }.store(in: &storage)
+        let published = Locked<CommunityConfig?>(nil)
+        repo.communityConfigPublisher.sink { published.value = $0 }.store(in: &storage)
 
         // Seed the backend-driven config with implicit texts.
         let backendTexts = ConsentTexts.implicit(notice: "Backend notice")
         try await communityConfigDatabase.upsert(config: CommunityConfig(
             from: Com_Octopuscommunity_ApiKeyConfig.with { _ in }).withConsentTexts(backendTexts))
-        try await assertWithTimeout(timeout: 5, published?.consentTexts == backendTexts)
+        try await assertWithTimeout(timeout: 5, published.value?.consentTexts == backendTexts)
 
         // Override on top of the backend value.
         let overridden = ConsentTexts.singleCheckbox(label: "Label", belowText: nil)
         repo.debugOverrideConsentTexts(overridden)
-        try await assertWithTimeout(timeout: 5, published?.consentTexts == overridden)
+        try await assertWithTimeout(timeout: 5, published.value?.consentTexts == overridden)
 
         // The mode override applies on top without dropping the texts override.
         repo.debugOverrideTermsAcceptanceMode(.explicitSingleCheckbox)
         try await assertWithTimeout(timeout: 5,
-                                    published?.termsAcceptanceMode == .explicitSingleCheckbox
-                                    && published?.consentTexts == overridden)
+                                    published.value?.termsAcceptanceMode == .explicitSingleCheckbox
+                                    && published.value?.consentTexts == overridden)
 
         // A new backend config landing meanwhile does not displace the override.
         let backendTextsV2 = ConsentTexts.implicit(notice: "Backend v2")
         try await communityConfigDatabase.upsert(config: CommunityConfig(
             from: Com_Octopuscommunity_ApiKeyConfig.with { _ in }).withConsentTexts(backendTextsV2))
         try await Task.sleep(nanoseconds: 300_000_000)
-        XCTAssertEqual(published?.consentTexts, overridden)
+        XCTAssertEqual(published.value?.consentTexts, overridden)
 
         // Clear the override → falls back to the latest backend value.
         repo.debugOverrideConsentTexts(nil)
-        try await assertWithTimeout(timeout: 5, published?.consentTexts == backendTextsV2)
+        try await assertWithTimeout(timeout: 5, published.value?.consentTexts == backendTextsV2)
     }
 
     /// Awaits the first non-nil value of a config publisher (the stored config after an upsert).
@@ -418,7 +428,8 @@ final class CommunityConfigTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: .allEnabled,
                                      exposeClientUserId: false, termsAcceptanceMode: .implicit,
-                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: true, consentTexts: nil)
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: true, consentTexts: nil,
+                                     informalLanguages: [])
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -430,7 +441,8 @@ final class CommunityConfigTests: XCTestCase {
                                    gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
                                    contentOptions: .allEnabled, exposeClientUserId: true,
                                    termsAcceptanceMode: .explicitSingleCheckbox,
-                                   showCommentsOnOtherProfiles: true, forceNicknameChoice: false, consentTexts: nil)
+                                   showCommentsOnOtherProfiles: true, forceNicknameChoice: false, consentTexts: nil,
+                                   informalLanguages: [])
 
         let updated = base.withForceNicknameChoice(true)
 
@@ -441,26 +453,26 @@ final class CommunityConfigTests: XCTestCase {
     func testDebugOverrideForceNicknameChoice() async throws {
         let (repo, communityConfigDatabase) = makeConfigRepository()
 
-        var published: CommunityConfig?
-        repo.communityConfigPublisher.sink { published = $0 }.store(in: &storage)
+        let published = Locked<CommunityConfig?>(nil)
+        repo.communityConfigPublisher.sink { published.value = $0 }.store(in: &storage)
 
         // Seed the backend-driven config with the flag enabled.
         try await communityConfigDatabase.upsert(config: configWith(forceNicknameChoice: true))
-        try await assertWithTimeout(timeout: 5, published?.forceNicknameChoice == true)
+        try await assertWithTimeout(timeout: 5, published.value?.forceNicknameChoice == true)
 
         // Override OFF on top of the backend value.
         repo.debugOverrideForceNicknameChoice(false)
-        try await assertWithTimeout(timeout: 5, published?.forceNicknameChoice == false)
+        try await assertWithTimeout(timeout: 5, published.value?.forceNicknameChoice == false)
 
         // Override ON.
         repo.debugOverrideForceNicknameChoice(true)
-        try await assertWithTimeout(timeout: 5, published?.forceNicknameChoice == true)
+        try await assertWithTimeout(timeout: 5, published.value?.forceNicknameChoice == true)
 
         // Override OFF again, then clear the override: falls back to the backend value (true).
         repo.debugOverrideForceNicknameChoice(false)
-        try await assertWithTimeout(timeout: 5, published?.forceNicknameChoice == false)
+        try await assertWithTimeout(timeout: 5, published.value?.forceNicknameChoice == false)
         repo.debugOverrideForceNicknameChoice(nil)
-        try await assertWithTimeout(timeout: 5, published?.forceNicknameChoice == true)
+        try await assertWithTimeout(timeout: 5, published.value?.forceNicknameChoice == true)
     }
 
     /// The repository applies each debug override on top of the stored config with its `with…` helper, one after
@@ -481,12 +493,91 @@ final class CommunityConfigTests: XCTestCase {
         XCTAssertEqual(termsOnly.termsAcceptanceMode, .explicitSingleCheckbox)
     }
 
+    // MARK: informalLanguages (languages whose SDK texts address members informally)
+
+    func testInformalLanguagesMappedFromProto() {
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.informalLanguages = ["it", "zh-TW"]
+        }
+
+        XCTAssertEqual(CommunityConfig(from: config).informalLanguages, ["it", "zh-TW"])
+    }
+
+    func testInformalLanguagesAbsentDefaultsToEmpty() {
+        // Repeated proto3 field: empty when unset. Every language stays formal.
+        let config = Com_Octopuscommunity_ApiKeyConfig.with {
+            $0.displayAccountAge = true
+        }
+
+        XCTAssertEqual(CommunityConfig(from: config).informalLanguages, [])
+    }
+
+    func testInformalLanguagesPersistThroughDatabase() async throws {
+        let injector = Injector()
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+
+        try await db.upsert(config: configWith(informalLanguages: ["it", "fr", "zh-TW"]))
+        let stored = try await firstNonNil(db.configPublisher())
+        XCTAssertEqual(stored.informalLanguages, ["it", "fr", "zh-TW"])
+    }
+
+    func testInformalLanguagesAreClearedOnUpdate() async throws {
+        // `upsert` updates the existing row: a community switched back to formal must not keep its old languages.
+        let injector = Injector()
+        injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+        injector.register { CommunityConfigDatabase(injector: $0) }
+        let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+        let published = Locked<CommunityConfig?>(nil)
+        db.configPublisher().sink { published.value = $0 }.store(in: &storage)
+
+        try await db.upsert(config: configWith(informalLanguages: ["it"]))
+        try await assertWithTimeout(timeout: 5, published.value?.informalLanguages == ["it"])
+
+        try await db.upsert(config: configWith(informalLanguages: []))
+        try await assertWithTimeout(timeout: 5, published.value?.informalLanguages == [])
+    }
+
+    func testWithInformalLanguagesReplacesOnlyTheLanguages() {
+        let base = configWith(informalLanguages: [])
+
+        let updated = base.withInformalLanguages(["it"])
+
+        XCTAssertEqual(updated.informalLanguages, ["it"])
+        XCTAssertEqual(updated.withInformalLanguages([]), base)
+    }
+
+    func testDebugOverrideInformalLanguages() async throws {
+        let (repo, communityConfigDatabase) = makeConfigRepository()
+
+        let published = Locked<CommunityConfig?>(nil)
+        repo.communityConfigPublisher.sink { published.value = $0 }.store(in: &storage)
+
+        // Seed the backend-driven config with Italian informal.
+        try await communityConfigDatabase.upsert(config: configWith(informalLanguages: ["it"]))
+        try await assertWithTimeout(timeout: 5, published.value?.informalLanguages == ["it"])
+
+        // Override on top of the backend value.
+        repo.debugOverrideInformalLanguages(["fr", "de"])
+        try await assertWithTimeout(timeout: 5, published.value?.informalLanguages == ["fr", "de"])
+
+        // An empty override makes every language formal.
+        repo.debugOverrideInformalLanguages([])
+        try await assertWithTimeout(timeout: 5, published.value?.informalLanguages == [])
+
+        // Clear the override: falls back to the backend value.
+        repo.debugOverrideInformalLanguages(nil)
+        try await assertWithTimeout(timeout: 5, published.value?.informalLanguages == ["it"])
+    }
+
     private func makeConfigRepository() -> (ConfigRepository, CommunityConfigDatabase) {
         let injector = Injector()
         injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
         injector.register { CommunityConfigDatabase(injector: $0) }
         injector.register { UserConfigDatabase(injector: $0) }
-        injector.registerMocks(.remoteClient, .networkMonitor, .appStateMonitor, .authProvider, .securedStorage)
+        injector.registerMocks(.remoteClient, .networkMonitor, .appStateMonitor, .authProvider, .securedStorage,
+                               .communityClosure)
         injector.register { UserDataStorage(injector: $0) }
         let communityConfigDatabase = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
         return (ConfigRepositoryDefault(injector: injector), communityConfigDatabase)
@@ -497,6 +588,11 @@ final class CommunityConfigTests: XCTestCase {
             forceLoginOnStrongActions: false, displayAccountAge: false,
             gamificationConfig: nil, displayConfig: nil, profileFieldsLock: .allEditable,
             contentOptions: .allEnabled, exposeClientUserId: false, termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false, forceNicknameChoice: forceNicknameChoice, consentTexts: nil)
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: forceNicknameChoice, consentTexts: nil,
+            informalLanguages: [])
+    }
+
+    private func configWith(informalLanguages: [String]) -> CommunityConfig {
+        configWith(forceNicknameChoice: false).withInformalLanguages(informalLanguages)
     }
 }
