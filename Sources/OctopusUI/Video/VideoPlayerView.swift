@@ -108,6 +108,13 @@ struct VideoPlayerView: View {
             }
             .opacity(showControls ? 1 : 0)
         }
+        // Once the player shows frames (no thumbnail above them), a second layer of the same player draws the
+        // zoomed video: it keeps playing under the fingers, in sync, without its controls.
+        .inPlacePinchZoom(
+            isEnabled: viewModel.isReadyToPlay && viewModel.currentTime > 0 && !viewModel.hasError
+        ) { [player = viewModel.player] in
+            ZoomedPlayerView(player: player)
+        }
         .contentShape(Rectangle()) // ensures taps register everywhere
         .onTapGesture {
             if !showControls {
@@ -275,5 +282,49 @@ private struct VideoLayerView: UIViewRepresentable {
         var playerLayer: AVPlayerLayer {
             return layer as! AVPlayerLayer
         }
+    }
+}
+
+/// The copy of a playing video drawn while it is zoomed: a second layer of the same player. A new player layer takes
+/// a few frames before it shows a picture, so the video in place stays shown until then.
+private final class ZoomedPlayerView: VideoLayerView.PlayerUIView, InPlacePinchZoomDeferredContent {
+    private var readyObservation: NSKeyValueObservation?
+    private var onReady: [@MainActor () -> Void] = []
+
+    init(player: AVPlayer) {
+        super.init(frame: .zero)
+        playerLayer.player = player
+        playerLayer.videoGravity = .resizeAspect
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func whenReadyForDisplay(_ ready: @escaping @MainActor () -> Void) {
+        guard !playerLayer.isReadyForDisplay else {
+            ready()
+            return
+        }
+        onReady.append(ready)
+        guard readyObservation == nil else { return }
+        // `.initial` as well: the layer may get ready between the check above and the observation.
+        readyObservation = playerLayer.observe(\.isReadyForDisplay, options: [.initial, .new]) { [weak self] layer, _ in
+            guard layer.isReadyForDisplay else { return }
+            DispatchQueue.main.async { MainActor.assumeIsolated { self?.becomeReady() } }
+        }
+        // A layer that is still not ready must not keep the video shown twice, in place and zoomed: the video in
+        // place is hidden anyway, and the zoomed one is blank until its layer draws.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            MainActor.assumeIsolated { self?.becomeReady() }
+        }
+    }
+
+    private func becomeReady() {
+        readyObservation = nil
+        let onReady = onReady
+        self.onReady = []
+        onReady.forEach { $0() }
     }
 }

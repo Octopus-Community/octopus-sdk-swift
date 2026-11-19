@@ -24,21 +24,23 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     private let gamificationRepository: GamificationRepository
     private let videosRepository: VideosRepository
     private let sdkEventsEmitter: SdkEventsEmitter
+    private let closureRepository: CommunityClosureRepository
     private var storage = [AnyCancellable]()
 
     /// Whether the Octopus UI is currently displayed. Used to end the UI session when the app session is ended
     private var octopusUIIsDisplayed = false
 
-    init(injector: Injector, forceReset: Bool = false) {
+    init(injector: Injector, forceReset: Bool = false, userDefaults: UserDefaults = .standard) {
         remoteClient = injector.getInjected(identifiedBy: Injected.remoteClient)
         database = injector.getInjected(identifiedBy: Injected.eventsDatabase)
         authCallProvider = injector.getInjected(identifiedBy: Injected.authenticatedCallProvider)
         gamificationRepository = injector.getInjected(identifiedBy: Injected.gamificationRepository)
         videosRepository = injector.getInjected(identifiedBy: Injected.videosRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
+        closureRepository = injector.getInjected(identifiedBy: Injected.communityClosureRepository)
 
-        octopusUISessionManager = SessionManager(kind: .octopusUI, forceReset: forceReset)
-        appSessionManager = SessionManager(kind: .app, forceReset: forceReset)
+        octopusUISessionManager = SessionManager(kind: .octopusUI, forceReset: forceReset, userDefaults: userDefaults)
+        appSessionManager = SessionManager(kind: .app, forceReset: forceReset, userDefaults: userDefaults)
 
         // listen to current UI session in order to create `enteringUI` event
         octopusUISessionManager.$currentSession
@@ -88,13 +90,17 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     /// Inform the SDK that the OctopusUI is displayed
     public func octopusUISessionStarted() {
         octopusUIIsDisplayed = true
-        // only start an OctopusUI session if the app session is started
-        if appSessionManager.currentSession != nil {
+        // only start an OctopusUI session if the app session is started, and not paused by a trip to the
+        // background: the UI session will start when the app comes back (see `appSessionResumed`)
+        if appSessionManager.currentSession != nil, !appSessionManager.isPaused {
             octopusUISessionManager.sessionStarted()
         }
     }
 
     /// Inform the SDK that the OctopusUI is not displayed anymore
+    ///
+    /// If the app is in the background, within the grace period, the UI session ends at the date the app went to
+    /// the background.
     public func octopusUISessionEnded() {
         octopusUIIsDisplayed = false
         octopusUISessionManager.sessionEnded()
@@ -126,6 +132,8 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     }
 
     public func track(customEvent: CustomEvent) async throws {
+        // Not an error for the host app: the event is only not recorded while the community is closed.
+        guard !closureRepository.isClosed else { return }
         try await database.upsert(event: Event(
             date: Date(),
             appSessionId: appSessionManager.currentSession?.uuid,
@@ -154,6 +162,31 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
         }
     }
 
+    /// Pauses the app session, and the UI session if any, when the app goes to the background: they go on if the
+    /// app comes back within the grace period (see `AppSessionMonitor`), and otherwise end at `date`.
+    /// - Returns: whether the app session is paused, false when there is no app session to keep
+    func appSessionPaused(at date: Date) -> Bool {
+        guard appSessionManager.sessionPaused(at: date) else { return false }
+        octopusUISessionManager.sessionPaused(at: date)
+        return true
+    }
+
+    /// Resumes the app session, and the UI session if the Octopus UI is still displayed, when the app comes back
+    /// within the grace period.
+    /// - Returns: whether the paused app session has been resumed. If it has not (it ended meanwhile), a new
+    ///     app session must be started.
+    func appSessionResumed() -> Bool {
+        guard appSessionManager.sessionResumed() else { return false }
+        guard octopusUIIsDisplayed else { return true }
+        if octopusUISessionManager.currentSession != nil {
+            octopusUISessionManager.sessionResumed()
+        } else {
+            // the Octopus UI has been displayed while the app was in the background
+            octopusUISessionManager.sessionStarted()
+        }
+        return true
+    }
+
     func appSessionEnded() {
         // if octopusUIIsDisplayed is true, consider the octopus UI session as ended
         // (but still remember octopusUIIsDisplayed to start a new UI session when app session is started again).
@@ -173,6 +206,10 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     }
 
     private func triggerLeavingAppEvent(appSession session: CompleteSession) {
+        guard !closureRepository.isClosed else {
+            appSessionManager.clearPreviousSession()
+            return
+        }
         Task {
             do {
                 try await database.upsert(
@@ -200,6 +237,10 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     }
 
     private func triggerLeavingOctopusEvent(octoUISession session: CompleteSession) {
+        guard !closureRepository.isClosed else {
+            octopusUISessionManager.clearPreviousSession()
+            return
+        }
         Task {
             do {
                 try await database.upsert(
@@ -218,6 +259,7 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     }
 
     private func callEnteringOctopus() {
+        guard !closureRepository.isClosed else { return }
         Task {
             do {
                 let response = try await remoteClient.userService.enteringOctopus(
@@ -282,7 +324,8 @@ public class TrackingRepository: InjectableObject, @unchecked Sendable {
     }
 
     private func track(events: [Event]) {
-        guard !events.isEmpty else { return }
+        // Nothing is recorded while the community is closed: it would be sent all at once when it reopens.
+        guard !events.isEmpty, !closureRepository.isClosed else { return }
         Task {
             do {
                 try await database.upsert(events: events)

@@ -36,9 +36,19 @@ struct PostValidatorTests {
 
     // MARK: - Text, without a poll
 
-    @Test func textBelowMinLengthIsRejectedWithoutAPoll() {
-        let text = String(repeating: "a", count: Validators.Post.minTextLength - 1)
-        #expect(textError(Validators.Post.validate(text: text, hasPoll: false)) == .tooShort)
+    @Test func minimumTextLengthIsOneCharacter() {
+        #expect(Validators.Post.minTextLength == 1)
+        #expect(Validators.Post.maxTextLength == 5000)
+    }
+
+    @Test(arguments: ["a", "Bravo !", "Fini !"])
+    func shortTextIsAcceptedWithoutAPoll(text: String) {
+        #expect(textError(Validators.Post.validate(text: text, hasPoll: false)) == nil)
+    }
+
+    @Test(arguments: [false, true])
+    func whitespaceOnlyTextIsEmpty(hasPoll: Bool) {
+        #expect(textError(Validators.Post.validate(text: "  \n ", hasPoll: hasPoll)) == .empty)
     }
 
     @Test func minLengthTextIsAcceptedWithoutAPoll() {
@@ -85,10 +95,10 @@ struct PostValidatorTests {
         #expect(textError(result) == .empty)
     }
 
-    @Test func whitespaceTextKeepsTheCurrentRulesWhenTextIsRequired() {
-        // No trimming when text is required: three blank characters are a too-short text, as before.
+    @Test func whitespaceTextIsEmptyWhenTextIsRequired() {
+        // Blank text is no text: refused as empty, with no too-short message.
         let result = Validators.Post.validate(text: "   ", hasPoll: false, hasImage: true, textRequired: true)
-        #expect(textError(result) == .tooShort)
+        #expect(textError(result) == .empty)
     }
 
     @Test func textStaysRequiredByDefault() {
@@ -111,10 +121,10 @@ struct PostValidatorTests {
         }
     }
 
-    @Test func shortTextIsStillTooShortWithAnImageWhenTextIsOptional() {
+    @Test func shortTextIsAcceptedWithAnImageWhenTextIsOptional() {
         let result = Validators.Post.validate(text: Draft.short.text, hasPoll: false, hasImage: true,
                                               textRequired: false)
-        #expect(textError(result) == .tooShort)
+        #expect(textError(result) == nil)
     }
 
     // MARK: - Published text
@@ -152,34 +162,44 @@ struct PostValidatorTests {
     // MARK: - Whole post
 
     @Test func mixedPostWithOneCharacterTextIsValid() {
-        let post = WritablePost(topicId: "topic-id", text: "?", image: Data([0x01]), poll: validPoll)
+        let post = WritablePost(topicId: "topic-id", text: "?", images: [Data([0x01])], poll: validPoll)
         #expect(Validators.Post.validate(post: post))
     }
 
     @Test func mixedPostWithAnInvalidPollIsInvalid() {
-        let post = WritablePost(topicId: "topic-id", text: "Which one?", image: Data([0x01]),
+        let post = WritablePost(topicId: "topic-id", text: "Which one?", images: [Data([0x01])],
                                 poll: WritablePoll(options: [.init(text: "Red")]))
         #expect(!Validators.Post.validate(post: post))
     }
 
-    @Test func imagePostKeepsTheMinimumTextLength() {
-        let post = WritablePost(topicId: "topic-id", text: "Too short", image: Data([0x01]))
+    @Test func imagePostWithAShortTextIsValid() {
+        let post = WritablePost(topicId: "topic-id", text: "Bravo !", images: [Data([0x01])])
+        #expect(Validators.Post.validate(post: post))
+    }
+
+    @Test func textPostWithAShortTextIsValid() {
+        let post = WritablePost(topicId: "topic-id", text: "Bravo !")
+        #expect(Validators.Post.validate(post: post))
+    }
+
+    @Test func textPostWithABlankTextIsInvalid() {
+        let post = WritablePost(topicId: "topic-id", text: "   ")
         #expect(!Validators.Post.validate(post: post))
     }
 
     @Test func imageOnlyPostWithoutTextIsValidWhenTextIsOptional() {
-        let post = WritablePost(topicId: "topic-id", text: "", image: Data([0x01]))
+        let post = WritablePost(topicId: "topic-id", text: "", images: [Data([0x01])])
         #expect(Validators.Post.validate(post: post, textRequired: false))
     }
 
     @Test func imageOnlyPostWithoutTextIsInvalidWhenTextIsRequired() {
-        let post = WritablePost(topicId: "topic-id", text: "", image: Data([0x01]))
+        let post = WritablePost(topicId: "topic-id", text: "", images: [Data([0x01])])
         #expect(!Validators.Post.validate(post: post))
         #expect(!Validators.Post.validate(post: post, textRequired: true))
     }
 
     @Test func imageAndPollPostWithoutTextIsValidWhenTextIsOptional() {
-        let post = WritablePost(topicId: "topic-id", text: "", image: Data([0x01]), poll: validPoll)
+        let post = WritablePost(topicId: "topic-id", text: "", images: [Data([0x01])], poll: validPoll)
         #expect(Validators.Post.validate(post: post, textRequired: false))
     }
 
@@ -189,7 +209,7 @@ struct PostValidatorTests {
     }
 
     @Test func imagePostWithoutTextAndWithAnInvalidPollIsInvalid() {
-        let post = WritablePost(topicId: "topic-id", text: "", image: Data([0x01]),
+        let post = WritablePost(topicId: "topic-id", text: "", images: [Data([0x01])],
                                 poll: WritablePoll(options: [.init(text: "Red")]))
         #expect(!Validators.Post.validate(post: post, textRequired: false))
     }

@@ -8,6 +8,7 @@ import OctopusCore
 
 struct PostPollContentView: View {
     @Environment(\.octopusTheme) private var theme
+    @Environment(\.textTone) private var textTone
 
     let postId: String
     let poll: DisplayablePoll
@@ -111,9 +112,12 @@ struct PostPollContentView: View {
                 return "Poll.Results.VoteCount.One_total:\("1")" // if hasVoted, the total vote count is > 0
             }
         } else if let totalVoteCount = liveMeasures.aggregatedInfo.pollResult?.totalVoteCount, totalVoteCount >= 5 {
-            return "Poll.Results.Hidden.VoteCount_total:\(String.formattedCount(totalVoteCount))"
+            let total = String.formattedCount(totalVoteCount)
+            return textTone.key(formal: "Poll.Results.Hidden.VoteCount.Formal_total:\(total)",
+                                informal: "Poll.Results.Hidden.VoteCount.Informal_total:\(total)")
         } else {
-            return "Poll.Results.Hidden.SomeVotes"
+            return textTone.key(formal: "Poll.Results.Hidden.SomeVotes.Formal",
+                                informal: "Poll.Results.Hidden.SomeVotes.Informal")
         }
     }
 }

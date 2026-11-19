@@ -46,6 +46,7 @@ public struct OctopusHomeScreen: View {
     @Compat.StateObject private var videoManager: VideoManager
     @State private var urlOpener: URLOpener
     @Compat.StateObject private var languageManager: LanguageManager
+    @Compat.StateObject private var carouselPositions = CarouselPositions()
 
     /// Constructor of the `OctopusHomeScreen`.
     /// - Parameters:
@@ -67,7 +68,8 @@ public struct OctopusHomeScreen: View {
     ///                             If false, default nav bar color will be used. Default is false.
     ///    - initialScreen: the initial screen to display. Default is `.mainFeed` which shows the feed with the feed
     ///                     selector. Use `.post` or `.group` to open a specific post or group in bridge mode, or
-    ///                     `.activity` to open a member's posts by your app's own client user id (Unified Profile).
+    ///                     `.activity` to open a member's posts by your app's own client user id (Unified Profile),
+    ///                     or `.profile` to open the connected user's own profile or another member's.
     ///    - navigationMode: which navigation container the screen uses internally. Default is `.automatic`
     ///                      (legacy `NavigationView`). Pass `.navigationStack` when hosting `OctopusHomeScreen`
     ///                      inside a modal presentation (SwiftUI `.sheet` / `.fullScreenCover`, or a Flutter /
@@ -180,12 +182,27 @@ public struct OctopusHomeScreen: View {
                                     withPoll: false,
                                     defaultTopicId: info.prefilledPost?.topicId,
                                     defaultText: info.prefilledPost?.text,
-                                    defaultImage: info.prefilledPost?.image,
-                                    cta: info.prefilledPost?.cta.map { WritableCTA(url: $0.url, label: $0.label) },
+                                    defaultImages: info.prefilledPost?.images ?? [],
+                                    cta: info.prefilledPost?.cta.map { WritableCTA($0) },
                                     creationSource: info.prefilledPost == nil ? .user : .prefilledFromClient,
-                                    bridgeShareSignature: info.prefilledPost?.sign,
+                                    bridgeShareSignature: info.prefilledPost?.bridgeShareTokenProvider,
                                     canClose: presentationMode.wrappedValue.isPresented,
                                     navBarLeadingAction: navBarLeadingAction)
+                            case let .profile(info):
+                                if let source = ProfileSummarySource(info.source) {
+                                    ProfileSummaryView(
+                                        octopus: octopus, mainFlowPath: viewModel.mainFlowPath,
+                                        translationStore: translationStore, source: source,
+                                        canClose: presentationMode.wrappedValue.isPresented,
+                                        navBarLeadingAction: navBarLeadingAction)
+                                } else {
+                                    CurrentUserProfileSummaryView(
+                                        octopus: octopus, mainFlowPath: viewModel.mainFlowPath,
+                                        translationStore: translationStore,
+                                        gamificationRulesViewManager: gamificationRulesViewManager,
+                                        canClose: presentationMode.wrappedValue.isPresented,
+                                        navBarLeadingAction: navBarLeadingAction)
+                                }
                             }
                         }
                     }
@@ -203,6 +220,9 @@ public struct OctopusHomeScreen: View {
                     .navigationBarItems(trailing: closeModalButton)
             }
         }
+        // A new navigation stack when the access is taken away, see `OctopusHomeScreenViewModel`. Before the
+        // modifiers below: the screen itself stays, and its appearance is not reported again.
+        .id(viewModel.navigationStackId)
         .modify {
             // do not use presentationBackground on iOS 17 because it breaks the layout when the view is presented
             if #available(iOS 18.0, *) {
@@ -246,7 +266,8 @@ public struct OctopusHomeScreen: View {
             displayConfigManager: displayConfigManager,
             reactionsListManager: reactionsListManager,
             videoManager: videoManager,
-            languageManager: languageManager))
+            languageManager: languageManager,
+            carouselPositions: carouselPositions))
         .overrideLanguageIfNeeded(languageManager: languageManager)
     }
 
@@ -289,6 +310,9 @@ private extension View {
 // MARK: - Deprecated init
 extension OctopusHomeScreen {
     /// The kind of navigation bar leading item
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum NavBarLeadingItemKind {
         /// A text title
         public struct TextTitle {
@@ -404,5 +428,18 @@ private extension OctopusHomeScreen {
                 if newValue == nil { responseBinding.wrappedValue = nil }
             }
         )
+    }
+}
+
+extension WritableCTA {
+    /// The CTA of a prefilled post as the core sends it, with the labels the app gave per language if any.
+    init(_ cta: OctopusPrefilledPost.CTA) {
+        let localizedLabel = cta.localizedLabel
+        self.init(
+            url: cta.url,
+            label: cta.label,
+            perLanguageLabels: localizedLabel.defaultLanguageCode.map { code in
+                PerLanguageLabels(defaultLanguageCode: code, textsByLanguageCode: localizedLabel.textsByLanguageCode)
+            })
     }
 }

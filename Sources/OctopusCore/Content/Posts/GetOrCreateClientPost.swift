@@ -62,13 +62,39 @@ extension ValidationErrors where Field == GetOrCreateClientPost.Field, ErrorDeta
              case .postNotFound:            .unknown // internal error that should be catched before
              case .none:                    .unknown
              }
-             let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail)
+             let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail,
+                                                    imageIndex: error.hasFileIndex ? Int(error.fileIndex) : nil)
 
              var errors = dictionary[display] ?? []
              errors.append(formError)
              dictionary[display] = errors
          }
 
+         errors = dictionary
+     }
+
+     /// The server refused to create the upload URLs of the post's photos. A photo's error is about the file field,
+     /// and carries the index of the photo at fault when the server gives one. The token and the bridge
+     /// availability are checked by the upload too: their errors are displayed as the bridge post creation displays
+     /// them, so that the caller gets the same error whether the post has local images or not.
+     ///
+     /// That index counts among the local images only (`ClientPost.localImages`, the ones uploaded), not among the
+     /// post's medias, where distant images sit too. Nothing reads it today; convert it before exposing it.
+     init(from failure: Com_Octopuscommunity_CreateImageUploadsResponse.Fail) {
+         var dictionary = [DisplayKind: [ValidationErrors.Error]]()
+         for error in failure.errors {
+             let (display, detail): (DisplayKind, ErrorDetail) = switch error.details {
+             case .emptyFile:             (.linkedToField(.file), .emptyFile)
+             case .fileSizeTooBig:        (.linkedToField(.file), .fileSizeTooBig)
+             case .invalidClientToken:    (.alert, .invalidClientToken)
+             case .expiredClientToken:    (.alert, .expiredClientToken)
+             case .bridgePostUnavailable: (.linkedToField(.clientObject), .bridgePostUnavailable)
+             case .none:                  (.linkedToField(.file), .unknown)
+             }
+             dictionary[display, default: []].append(
+                 ValidationErrors.Error(localizedMessage: error.message, detail: detail,
+                                        imageIndex: error.hasFileIndex ? Int(error.fileIndex) : nil))
+         }
          errors = dictionary
      }
  }

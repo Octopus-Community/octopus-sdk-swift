@@ -12,4 +12,7 @@ public enum InternalSdkEvent: Sendable {
     case profileUpdated
     case groupFollowingChanged
     case entitlementsChanged
+    /// The content cached for the previous session was deleted, or by a closure of the community that has since
+    /// reopened, or it was loaded while there was no session at all: what is on screen has to be loaded again.
+    case userContentCleared
 }

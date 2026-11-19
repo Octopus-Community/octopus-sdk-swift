@@ -7,6 +7,7 @@ import SwiftUI
 struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, TrailingBarItem: View, PreTrailingView: View>: ViewModifier {
     @Environment(\.octopusTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.sharedEnvironmentObjects) private var sharedEnvironmentObjects
 
     @Binding var zoomableImageInfo: ZoomableImageInfo?
     let defaultLeadingBarItem: LeadingBarItem
@@ -29,154 +30,62 @@ struct ZoomableImageContainer<LeadingBarItem: View, CenteredBarItem: View, Trail
     /// avoid the default `.automatic` large-title block.
     let forceInlineTitle: Bool
 
-    @State private var usableZoomableImageInfo: ZoomableImageInfo?
-    private let zoomAnimationDuration = 0.2
-
     func body(content: Content) -> some View {
-        ZStack {
-            content
-
-            if let usableZoomableImageInfo = usableZoomableImageInfo {
-                PeekToViewContainer(
-                    item: $zoomableImageInfo) {
-                        ZoomableImageView(
-                            image: zoomableImageInfo != nil ? usableZoomableImageInfo.image : usableZoomableImageInfo.transitionImage ?? usableZoomableImageInfo.image,
-                            identifier: usableZoomableImageInfo.source,
-                            isDisplayed: zoomableImageInfo != nil)
-                    }
-                    .transition(.identity)
-                    .accessibilitySortPriority(10)
-                    .accessibilityAddTraits(.isModal)
+        content
+            // The viewer is presented by UIKit, over the whole screen: the navigation bar stays as it is.
+            .fullscreenImageViewer(
+                $zoomableImageInfo, theme: theme,
+                locale: sharedEnvironmentObjects?.languageManager.overridenLocale)
+            .modify {
+                // The background the navigation bar has always had on these screens.
+                if #available(iOS 16.0, *) {
+                    $0.toolbarBackground(theme.colors.background, for: .navigationBar)
+                } else { $0 }
             }
-        }
-        .namespaced()
-        .forceColorScheme(.dark, condition: zoomableImageInfo != nil)
-        .onValueChanged(of: zoomableImageInfo) { zoomableImageInfo in
-            guard let zoomableImageInfo else {
-                // dispatch to the end of the animation the fact that the view is removed from the tree
-                DispatchQueue.main.asyncAfter(deadline: .now() + zoomAnimationDuration) {
-                    withAnimation(.spring(duration: 0.01)) {
-                        usableZoomableImageInfo = nil
-                    }
-                }
-                return
-            }
-            withAnimation(.spring(duration: zoomAnimationDuration)) {
-                // display the view with the transition image
-                usableZoomableImageInfo = ZoomableImageInfo(
-                    source: zoomableImageInfo.source,
-                    image: zoomableImageInfo.transitionImage ?? zoomableImageInfo.image)
-                if zoomableImageInfo.transitionImage != nil {
-                    // dispatch the display the full size image
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                        withAnimation(.spring(duration: zoomAnimationDuration)) {
-                            usableZoomableImageInfo = zoomableImageInfo
-                        }
-                    }
-                }
-            }
-        }
-        .toolbar(
-            leading: leadingBarItem,
-            preTrailing: preTrailingBarItem,
-            trailing: trailingBarItem,
-            centered: centeredBarItem,
-            leadingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultLeadingSharedBackgroundVisibility,
-            preTrailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultPreTrailingSharedBackgroundVisibility,
-            trailingSharedBackgroundVisibility: usableZoomableImageInfo != nil ? .hidden : defaultTrailingSharedBackgroundVisibility,
-            centeredVisibility: usableZoomableImageInfo != nil ? .hidden : defaultCenteredBarItemVisibility)
-        // Opaque bars force `.inline`: otherwise the (default `.automatic`) large title at a
-        // navigation root renders as a tall opaque block. The visible title is a principal item.
-        .navigationBarTitle(navBarTitle,
-                            displayMode: (defaultNavigationBarOpaque || forceInlineTitle) ? .inline : .automatic)
-        .navigationBarBackButtonHidden(defaultNavigationBarBackButtonHidden || usableZoomableImageInfo != nil)
-        .modify {
+            .toolbar(
+                leading: defaultLeadingBarItem,
+                preTrailing: defaultPreTrailingBarItem,
+                trailing: defaultTrailingBarItem,
+                centered: defaultCenteredBarItem,
+                leadingSharedBackgroundVisibility: defaultLeadingSharedBackgroundVisibility,
+                preTrailingSharedBackgroundVisibility: defaultPreTrailingSharedBackgroundVisibility,
+                trailingSharedBackgroundVisibility: defaultTrailingSharedBackgroundVisibility,
+                centeredVisibility: defaultCenteredBarItemVisibility)
+            // Opaque bars force `.inline`: otherwise the (default `.automatic`) large title at a
+            // navigation root renders as a tall opaque block. The visible title is a principal item.
+            .navigationBarTitle(navBarTitle,
+                                displayMode: (defaultNavigationBarOpaque || forceInlineTitle) ? .inline : .automatic)
+            .navigationBarBackButtonHidden(defaultNavigationBarBackButtonHidden)
+            .modify {
 #if compiler(>=6.2)
-            if #available(iOS 16.0, *), defaultNavigationBarOpaque {
-                // Opacity is enforced by an opaque `UINavigationBarAppearance` (see
-                // `opaqueNavigationBar`); don't let SwiftUI hide the bar on iOS 26. Locking the
-                // bar's color scheme stops the iOS 26 content-adaptive vibrancy from flipping the
-                // title/buttons to white over dark (e.g. video) content scrolling underneath.
-                $0.toolbarColorScheme(colorScheme, for: .navigationBar)
-            } else if defaultNavigationBarOpaque {
-                $0
-            } else if #available(iOS 26.0, *), GlassEffect.isAvailable, !defaultNavigationBarPrimaryColor {
-                $0
-                    .toolbarBackground(.hidden, for: .navigationBar)
-            } else if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
-                $0
-                    .toolbarBackground(theme.colors.primary, for: .navigationBar)
-                    .toolbarBackground(zoomableImageInfo == nil ? .visible : .hidden, for: .navigationBar)
-            } else {
-                $0
-            }
-#else
-            if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
-                $0
-                    .toolbarBackground(theme.colors.primary, for: .navigationBar)
-                    .toolbarBackground(zoomableImageInfo == nil ? .visible : .hidden, for: .navigationBar)
-            } else {
-                $0
-            }
-#endif
-        }
-    }
-
-    @ViewBuilder
-    private var leadingBarItem: some View {
-        if usableZoomableImageInfo != nil {
-            Spacer()
-        } else {
-            defaultLeadingBarItem
-        }
-    }
-
-    @ViewBuilder
-    private var preTrailingBarItem: some View {
-        if usableZoomableImageInfo == nil {
-            defaultPreTrailingBarItem
-        } else {
-            EmptyView()
-        }
-    }
-
-    @ViewBuilder
-    private var trailingBarItem: some View {
-        if zoomableImageInfo != nil {
-            Button(action: {
-                withAnimation(.spring(duration: zoomAnimationDuration)) {
-                    zoomableImageInfo = nil
+                if #available(iOS 16.0, *), defaultNavigationBarOpaque {
+                    // Opacity is enforced by an opaque `UINavigationBarAppearance` (see
+                    // `opaqueNavigationBar`); don't let SwiftUI hide the bar on iOS 26. Locking the
+                    // bar's color scheme stops the iOS 26 content-adaptive vibrancy from flipping the
+                    // title/buttons to white over dark (e.g. video) content scrolling underneath.
+                    $0.toolbarColorScheme(colorScheme, for: .navigationBar)
+                } else if defaultNavigationBarOpaque {
+                    $0
+                } else if #available(iOS 26.0, *), GlassEffect.isAvailable, !defaultNavigationBarPrimaryColor {
+                    $0
+                        .toolbarBackground(.hidden, for: .navigationBar)
+                } else if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
+                    $0
+                        .toolbarBackground(theme.colors.primary, for: .navigationBar)
+                        .toolbarBackground(.visible, for: .navigationBar)
+                } else {
+                    $0
                 }
-            }) {
-                IconImage(theme.assets.icons.common.close)
-                    .font(theme.fonts.navBarItem)
-                    .modify {
-#if compiler(>=6.2)
-                        if #available(iOS 26.0, *), GlassEffect.isAvailable {
-                            $0
-                        } else {
-                            $0.padding(.leading)
-                        }
 #else
-                        $0.padding(.leading)
+                if #available(iOS 16.0, *), defaultNavigationBarPrimaryColor {
+                    $0
+                        .toolbarBackground(theme.colors.primary, for: .navigationBar)
+                        .toolbarBackground(.visible, for: .navigationBar)
+                } else {
+                    $0
+                }
 #endif
-                    }
-                    .foregroundColor(theme.colors.gray900)
-                    .colorScheme(.dark)
-                    .accessibilityLabelInBundle("Common.Close")
             }
-        } else {
-            defaultTrailingBarItem
-        }
-    }
-
-    @ViewBuilder
-    private var centeredBarItem: some View {
-        if usableZoomableImageInfo != nil {
-            EmptyView()
-        } else {
-            defaultCenteredBarItem
-        }
     }
 }
 

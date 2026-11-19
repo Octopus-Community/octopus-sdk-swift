@@ -6,7 +6,7 @@ import Foundation
 import XCTest
 import Combine
 import OctopusDependencyInjection
-import OctopusRemoteClient
+@testable import OctopusRemoteClient
 @testable import OctopusCore
 
 class AuthenticatedCallProviderTests: XCTestCase {
@@ -99,6 +99,105 @@ class AuthenticatedCallProviderTests: XCTestCase {
             break // expected result
         }
     }
+
+    func testReadIsSentAgainWithTheNewSessionWhenTheSessionChangedDuringTheCall() async throws {
+        connectionRepository.mock(connected: false)
+        let userDataStorage = injector.getInjected(identifiedBy: Injected.userDataStorage)
+        var sentTokens = [String?]()
+
+        let result = try await authenticatedCallProvider.withAuthenticatedIfPossibleMethod { method in
+            sentTokens.append(method.token)
+            if sentTokens.count == 1 {
+                // The member signs in while the first call is in flight.
+                userDataStorage.store(userData: .init(id: "member_id", jwtToken: "member_token"))
+                throw Self.sessionChangedError
+            }
+            return "response"
+        }
+
+        XCTAssertEqual(result, "response")
+        XCTAssertEqual(sentTokens, [nil, "member_token"])
+    }
+
+    func testReadIsNotSentAgainOnAnotherError() async throws {
+        connectionRepository.mock(connected: true)
+        var attempts = 0
+
+        do {
+            _ = try await authenticatedCallProvider.withAuthenticatedIfPossibleMethod { _ -> String in
+                attempts += 1
+                throw RemoteClientError.timeout
+            }
+            XCTFail("The error should be thrown")
+        } catch {
+            guard case RemoteClientError.timeout = error else {
+                XCTFail("Unexpected error \(error)")
+                return
+            }
+        }
+        XCTAssertEqual(attempts, 1)
+    }
+
+    func testReadGivesUpWhenTheSessionKeepsChanging() async throws {
+        connectionRepository.mock(connected: true)
+        var attempts = 0
+
+        do {
+            _ = try await authenticatedCallProvider.withAuthenticatedIfPossibleMethod { _ -> String in
+                attempts += 1
+                throw Self.sessionChangedError
+            }
+            XCTFail("The error should be thrown")
+        } catch {
+            XCTAssertTrue(error.isSessionChangedDuringCall)
+        }
+        // A member switching community goes through three changes in a row: member, none, guest, member.
+        XCTAssertEqual(attempts, 4)
+    }
+
+    func testCancelledReadIsNotSentAgain() async throws {
+        connectionRepository.mock(connected: true)
+        var attempts = 0
+
+        do {
+            _ = try await authenticatedCallProvider.withAuthenticatedIfPossibleMethod { _ -> String in
+                attempts += 1
+                // The screen that wanted the read goes away while it is in flight.
+                withUnsafeCurrentTask { $0?.cancel() }
+                throw Self.sessionChangedError
+            }
+            XCTFail("The error should be thrown")
+        } catch {
+            XCTAssertTrue(error.isSessionChangedDuringCall)
+        }
+        XCTAssertEqual(attempts, 1)
+    }
+
+    func testReplayIsToldApartFromTheFirstAttempt() async throws {
+        connectionRepository.mock(connected: true)
+        var replayFlags = [Bool]()
+
+        _ = try await authenticatedCallProvider.withAuthenticatedIfPossibleMethod { _, isReplay -> String in
+            replayFlags.append(isReplay)
+            // The first attempt's response is refused: the server still handled it, a view included.
+            if replayFlags.count == 1 { throw Self.sessionChangedError }
+            return "response"
+        }
+
+        XCTAssertEqual(replayFlags, [false, true])
+    }
+
+    /// The error a call ends with when its response comes back after the session changed.
+    private static let sessionChangedError = RemoteClientError.unknown(RefreshingTokenError.userIdNotMatching)
+}
+
+private extension AuthenticationMethod {
+    var token: String? {
+        switch self {
+        case let .authenticated(token, _): token
+        case .notAuthenticated: nil
+        }
+    }
 }
 
 private final class MockConnectionRepository: ConnectionRepository, InjectableObject, @unchecked Sendable {
@@ -166,4 +265,5 @@ private final class MockConnectionRepository: ConnectionRepository, InjectableOb
     func linkClientUserToOctopusUser() async throws(ExchangeTokenError) { }
 
     func refreshEntitlements() async throws(RefreshEntitlementsCoreError) { }
+    func reconnectAfterAccountDeletion() async throws(ConnectionError) { }
 }

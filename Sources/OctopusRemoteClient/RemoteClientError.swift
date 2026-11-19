@@ -36,4 +36,19 @@ public enum RemoteClientError: Error {
         default:                    self = .unknown(error)
         }
     }
+
+    /// Whether the response was refused because the session changed while the call was in flight: it was meant for
+    /// the previous session, and the call can be sent again with the current one.
+    public var isSessionChangedDuringCall: Bool {
+        guard case let .unknown(error) = self, case .userIdNotMatching = error as? RefreshingTokenError else {
+            return false
+        }
+        return true
+    }
+
+    /// Whether the call was not sent because calls to the server are blocked.
+    public var isCallsBlocked: Bool {
+        guard case let .unknown(error) = self else { return false }
+        return error is CallsBlockedError
+    }
 }

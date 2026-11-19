@@ -19,3 +19,4 @@ Sample/OctopusSample/Config/secrets.xcconfig
 CocoaPodsValidationApp/Pods/
 /Package.resolved
 .claude/worktrees
+__pycache__/

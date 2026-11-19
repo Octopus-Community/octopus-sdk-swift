@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 /// What a content area shows instead of a list: nothing to display, or a first load that failed.
 ///
@@ -11,6 +12,7 @@ import SwiftUI
 /// comment — so a single visual language covers them all. It carries a picture, a title and an optional
 /// call to action; the vertical padding is per-screen, which is the only thing the design varies.
 struct ScreenState: View {
+    @Environment(\.textTone) private var textTone
     /// The call to action, when the state offers one — "Retry" on an error, "Create a post" on the
     /// current user's empty feed. Absent on the states that leave nothing to do, such as another
     /// member's empty profile.
@@ -50,7 +52,7 @@ struct ScreenState: View {
                 .resizable()
                 .scaledToFit()
                 .frame(maxHeight: imageHeight)
-            title.textView
+            title.textView(tone: textTone)
                 .font(theme.fonts.body2)
                 .fontWeight(.medium)
                 .foregroundColor(theme.colors.gray500)

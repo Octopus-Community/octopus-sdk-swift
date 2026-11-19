@@ -15,9 +15,12 @@
         <attribute name="exposeClientUserId" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="forceLoginOnStrongActions" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="forceNicknameChoice" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="informalLanguages" optional="YES" attributeType="String"/>
         <attribute name="nicknameLock" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="postEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="postEnablePolls" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="postGroupNameTapOpensGroup" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="postImageTapOpensPost" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="postTextRequired" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="replyEnablePictures" optional="YES" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="showCommentsOnOtherProfiles" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -58,6 +61,11 @@
     </entity>
     <entity name="UserConfig" representedClassName="UserConfigEntity" syncable="YES">
         <attribute name="accessDeniedMessage" optional="YES" attributeType="String"/>
+        <attribute name="banContactEmail" optional="YES" attributeType="String"/>
+        <attribute name="banNickname" optional="YES" attributeType="String"/>
+        <attribute name="banPolicyDescription" optional="YES" attributeType="String"/>
+        <attribute name="banPolicyName" optional="YES" attributeType="String"/>
         <attribute name="canAccessCommunityOptional" optional="YES" attributeType="Boolean" usesScalarValueType="NO"/>
+        <attribute name="noAccessReason" optional="YES" attributeType="String"/>
     </entity>
 </model>

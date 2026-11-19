@@ -14,7 +14,7 @@ struct FeatureEnvsView: View {
             Group {
                 if let dropped = viewModel.droppedAtLaunch {
                     Section {
-                        Text("\(dropped.displayName) is gone (expired or unreachable). The sample went back "
+                        Text("\(dropped.displayName) has an unusable host. The sample went back "
                              + "to its default community.")
                             .font(.caption)
                             .foregroundColor(.orange)
@@ -25,6 +25,9 @@ struct FeatureEnvsView: View {
                     Section(header: Text("Current environment")) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("\(current.displayName) · \(current.communityName)").bold()
+                            if current.isExpired() {
+                                FeatureEnvExpiryText(expiring: current)
+                            }
                             Text(current.apiHost)
                                 .font(.caption)
                                 .foregroundColor(SampleTokens.Colors.textSecondary)
@@ -48,11 +51,11 @@ struct FeatureEnvsView: View {
                     }
                 }
 
-                Section(header: Text("Live environments")) {
+                Section(header: Text("Environments")) {
                     if viewModel.isLoading && viewModel.envs.isEmpty {
                         Text("Loading…").foregroundColor(SampleTokens.Colors.textSecondary)
                     } else if viewModel.envs.isEmpty && viewModel.errorMessage == nil {
-                        Text("No live feature env right now.").foregroundColor(SampleTokens.Colors.textSecondary)
+                        Text("No feature env right now.").foregroundColor(SampleTokens.Colors.textSecondary)
                     }
                     ForEach(viewModel.envs) { env in
                         FeatureEnvRow(env: env, isApplying: viewModel.isApplying) { community in
@@ -89,6 +92,18 @@ struct FeatureEnvsView: View {
     }
 }
 
+/// "expires in 3 d", or "expired since 2 d" in red: an expired env can still be picked, so the warning
+/// has to stand out.
+struct FeatureEnvExpiryText: View {
+    let expiring: any FeatureEnvExpiring
+
+    var body: some View {
+        Text(verbatim: expiring.expiryLabel())
+            .font(.caption)
+            .foregroundColor(expiring.isExpired() ? SampleTokens.Colors.danger : SampleTokens.Colors.textSecondary)
+    }
+}
+
 /// One environment: a header that unfolds its communities.
 private struct FeatureEnvRow: View {
     let env: FeatureEnv
@@ -104,9 +119,7 @@ private struct FeatureEnvRow: View {
                     HStack {
                         Text(env.displayName).bold()
                         Spacer()
-                        Text("expires in \(env.expiresInDays()) d")
-                            .font(.caption)
-                            .foregroundColor(SampleTokens.Colors.textSecondary)
+                        FeatureEnvExpiryText(expiring: env)
                     }
                     Text("\(env.name) · \(env.branch) · \(env.owner)")
                         .font(.caption)

@@ -8,6 +8,7 @@ import OctopusCore
 /// The profile picture with its edit badge: a tap picks a new picture, or offers to change or delete the current
 /// one. Shared by the profile editor and the nickname choice screen.
 struct EditablePictureView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Environment(\.layoutDirection) private var layoutDirection
     @Binding var picture: EditProfileViewModel.Picture
@@ -72,7 +73,8 @@ struct EditablePictureView: View {
                     ActionSheet.Button.cancel()
                 ])
             }
-            .accessibilityHintInBundle("Accessibility.Profile.Picture.Edit")
+            .accessibilityHintInBundle(textTone.key(formal: "Accessibility.Profile.Picture.Edit.Formal",
+                                                    informal: "Accessibility.Profile.Picture.Edit.Informal"))
             .imagesPicker(isPresented: $openPhotosPicker, selection: $selectedItems, error: $imagePickingError,
                           maxSelectionCount: 1)
             .onValueChanged(of: selectedItems) {

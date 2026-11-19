@@ -6,6 +6,9 @@ import Foundation
 import OctopusCore
 
 /// Errors that can be returned by `getOrCreateClientObjectRelatedPostId(content:)`.
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum ClientPostError: Error, CustomDebugStringConvertible {
     /// Content error. Associated value is a list of the detailed errors present in the content
     case validation([ValidationError])
@@ -26,6 +29,9 @@ public enum ClientPostError: Error, CustomDebugStringConvertible {
         let message: String
 
         /// Kind of error
+        #if hasAttribute(nonexhaustive)
+        @nonexhaustive(warn)
+        #endif
         public enum ErrorKind: Sendable {
             case unknown
             /// The text of the post cannot be empty
@@ -61,6 +67,9 @@ public enum ClientPostError: Error, CustomDebugStringConvertible {
         }
 
         /// The field that produced the error
+        #if hasAttribute(nonexhaustive)
+        @nonexhaustive(warn)
+        #endif
         public enum Field: Sendable {
             case text
             case file

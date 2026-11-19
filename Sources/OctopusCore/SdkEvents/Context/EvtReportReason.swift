@@ -14,7 +14,7 @@ extension SdkEvent {
         case spamAndScams
         // Suicide and self-harm
         case suicideAndSelfHarm
-        // Fake profiles and impersonation
+        // Illegal activities or products (name kept from when it covered fake profiles and impersonation)
         case fakeProfilesAndImpersonation
         // Child exploitation or abuse
         case childExploitationOrAbuse

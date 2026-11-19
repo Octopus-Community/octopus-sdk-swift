@@ -4,11 +4,13 @@
 
 import Combine
 import SwiftUI
+import OctopusCore
 
 /// A view modifier that encapsulates the common error alert pattern used throughout the app.
 /// It manages the `displayError` and `displayableError` state internally, subscribes to a
 /// publisher of `DisplayableString?`, and presents a `compatAlert` when an error is emitted.
 struct ErrorAlertModifier<P: Publisher>: ViewModifier where P.Output == DisplayableString?, P.Failure == Never {
+    @Environment(\.textTone) private var textTone
     @State private var displayError = false
     @State private var displayableError: DisplayableString?
 
@@ -22,7 +24,7 @@ struct ErrorAlertModifier<P: Publisher>: ViewModifier where P.Output == Displaya
                 isPresented: $displayError,
                 presenting: displayableError,
                 actions: { _ in },
-                message: { error in error.textView })
+                message: { error in error.textView(tone: textTone) })
             .onReceive(errorPublisher) { error in
                 guard let error else { return }
                 displayableError = error

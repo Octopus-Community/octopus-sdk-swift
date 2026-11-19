@@ -22,6 +22,7 @@ extension SdkEvent {
         case reportProfile
         case validateNickname
         case reportExplanation
+        case communityAccessDenied
     }
 }
 

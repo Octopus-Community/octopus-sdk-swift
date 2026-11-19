@@ -210,6 +210,9 @@ extension OctopusTheme.Assets {
             /// Displayed to report a content
             /// Default value is `defaultReport` set in the Icon init.
             public fileprivate(set) var report: UIImage
+            /// Displayed next to the button that switches an automatically translated post, comment or reply
+            /// between its translation and its original text
+            public let translation: UIImage
 
             fileprivate let reportIsDefault: Bool
         }
@@ -736,6 +739,8 @@ extension OctopusTheme.Assets.Icons.Content {
     ///   - delete: Displayed to delete a content
     ///   - report: Displayed to report a content
     ///             Default value is `defaultReport` set in the Icon init.
+    ///   - translation: Displayed next to the button that switches an automatically translated post, comment or
+    ///                  reply between its translation and its original text
     ///   - defaultNotAvailable: If set, it will be applied to all notAvailable icons (`Post.notAvailable` and
     ///                          `Comment.notAvailable`) that are not overridden.
     ///   - defaultLikeNotSelected: If set, it will be applied to all likeNotSelected icons (`Post.likeNotSelected`,
@@ -758,6 +763,7 @@ extension OctopusTheme.Assets.Icons.Content {
         reaction: Reaction = .init(),
         delete: UIImage? = nil,
         report: UIImage? = nil,
+        translation: UIImage? = nil,
         defaultNotAvailable: UIImage? = nil,
         defaultLikeNotSelected: UIImage? = nil,
         defaultAddPicture: UIImage? = nil,
@@ -773,6 +779,7 @@ extension OctopusTheme.Assets.Icons.Content {
         self.reaction = reaction
         self.delete = delete?.prepareForSdkUsage() ?? .Gen.trash
         self.report = report?.prepareForSdkUsage() ?? .Gen.flag
+        self.translation = translation?.prepareForSdkUsage() ?? .Gen.translation
 
         self.reportIsDefault = report == nil
 

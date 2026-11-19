@@ -150,7 +150,8 @@ struct ContentOptionsControls: View {
         VStack(alignment: .leading, spacing: SampleTokens.Spacing.space3) {
             SectionIntro(text: "Debug-only: override the community content options locally, then open the post " +
                 "composer (or a comment / reply input) to see the matching picture / poll affordance disappear, " +
-                "or publish a post with an image and no text.")
+                "or publish a post with an image and no text. The post tap presets change what tapping a feed " +
+                "image or a post's group name opens.")
             if overrides.contentOptions != nil {
                 OverrideActiveBadge(label: "Override active", testId: "contentOptions-override-badge")
             }
@@ -283,6 +284,44 @@ struct ForceNicknameChoiceControls: View {
     private var resultLine: String {
         guard let enabled = overrides.forceNicknameChoice else { return "Effective value: backend value" }
         return "Effective value: \(OverrideLabels.tick(enabled))  (local override)"
+    }
+}
+
+struct InformalLanguagesControls: View {
+    @ObservedObject private var overrides = ScenarioOverrides.instance
+
+    private static let presets: [(title: String, languages: [String])] = [
+        ("Italian informal (it)", ["it"]),
+        ("Italian and French informal (it, fr)", ["it", "fr"]),
+        ("Every language formal (empty list)", []),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SampleTokens.Spacing.space3) {
+            SectionIntro(text: "Debug-only: override the community's informalLanguages locally (applied live — " +
+                "switch to the Community tab to see it). The SDK texts that address the member use the informal " +
+                "tone when the language they are displayed in is one of these. Change the device language, or " +
+                "force one in the Locale scenario, to compare.")
+            if overrides.informalLanguages != nil {
+                OverrideActiveBadge(label: "Override active", testId: "informalLanguages-override-badge")
+            }
+            ForEach(Array(Self.presets.enumerated()), id: \.offset) { index, preset in
+                ModeButton(title: preset.title, isSelected: overrides.informalLanguages == preset.languages,
+                           testId: "qa-preset-informalLanguages-\(index + 1)") {
+                    overrides.apply(informalLanguages: preset.languages)
+                }
+            }
+            ModeButton(title: "Clear override (backend default)", isEnabled: overrides.informalLanguages != nil,
+                       testId: "qa-preset-informalLanguages-clear") {
+                overrides.apply(informalLanguages: nil)
+            }
+            ScenarioResultLine(text: resultLine, testId: "informalLanguages-result")
+        }
+    }
+
+    private var resultLine: String {
+        guard let languages = overrides.informalLanguages else { return "Effective value: backend value" }
+        return "Effective value: \(OverrideLabels.languagesLine(languages))  (local override)"
     }
 }
 

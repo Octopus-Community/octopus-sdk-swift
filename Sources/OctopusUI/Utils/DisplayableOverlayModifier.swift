@@ -11,19 +11,20 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
     @Binding var isPresented: Bool
     let horizontalPadding: CGFloat
     let verticalPadding: CGFloat
-    let overlayContent: () -> OverlayContent
+    /// Builds the overlay from the window's safe area, which the overlay is centered on, so it can size to it.
+    let overlayContent: (_ windowSafeArea: CGRect) -> OverlayContent
 
     @Environment(\.layoutDirection) private var layoutDirection
 
     @State private var buttonFrame: CGRect = .zero
-    @State private var windowWidth: CGFloat = .zero
+    @State private var windowSafeArea: CGRect = .zero
     @State private var emojiBarWidth: CGFloat = .zero
 
     private let rectSize = CGSize(width: 3000, height: 3000)
 
     func body(content: Content) -> some View {
         content
-            .readScreenWidth($windowWidth)
+            .readWindowSafeArea($windowSafeArea)
             .modify {
                 if isPresented {
                     $0.background(
@@ -60,12 +61,12 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
                             .overlay(
                                 // Position the emoji bar above the button.
                                 // `emojiBarXPosition` is computed in physical (LTR) coordinates
-                                // from `windowWidth` and `buttonFrame.midX` (both physical),
+                                // from `windowSafeArea` and `buttonFrame.midX` (both physical),
                                 // so we force LTR here — `.position` and `.topLeading` otherwise
                                 // mirror their X axis under RTL, which breaks the placement.
                                 // The inner `overlayContent` restores the caller's direction.
                                 ZStack {
-                                    overlayContent()
+                                    overlayContent(windowSafeArea)
                                         .environment(\.layoutDirection, layoutDirection)
                                         .readWidth($emojiBarWidth)
                                         .position(
@@ -85,12 +86,17 @@ struct DisplayableOverlayModifier<OverlayContent: View>: ViewModifier {
     }
 
     var emojiBarXPosition: CGFloat {
-        guard windowWidth > 0 else { return rectSize.width / 2 }
-        // Center the bar on the window
-        let windowCenterX = windowWidth / 2
-        let buttonCenterX = buttonFrame.midX
-        return rectSize.width / 2 + (windowCenterX - buttonCenterX)
+        overlayXPosition(centeredOn: windowSafeArea, anchorMidX: buttonFrame.midX, overlayRectWidth: rectSize.width)
     }
+}
+
+/// X position, in the overlay rect, of a view centered on the window's safe area: the rect is itself centered on the
+/// anchor (the button), so the offset is the distance from the anchor to the center of the safe area. The safe area,
+/// not the window, is the reference because it is not centered in the window when the camera sits on a side edge.
+/// The rect's center is used while the safe area is unknown.
+func overlayXPosition(centeredOn safeArea: CGRect, anchorMidX: CGFloat, overlayRectWidth: CGFloat) -> CGFloat {
+    guard safeArea.width > 0 else { return overlayRectWidth / 2 }
+    return overlayRectWidth / 2 + (safeArea.midX - anchorMidX)
 }
 
 private struct ContentGlobalFrameKey: PreferenceKey {
@@ -105,7 +111,7 @@ extension View {
         isPresented: Binding<Bool>,
         horizontalPadding: CGFloat,
         verticalPadding: CGFloat,
-        @ViewBuilder overlayContent: @escaping () -> Content
+        @ViewBuilder overlayContent: @escaping (_ windowSafeArea: CGRect) -> Content
     ) -> some View {
         self.modifier(DisplayableOverlayModifier(
             isPresented: isPresented,

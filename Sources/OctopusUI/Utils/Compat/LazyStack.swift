@@ -18,7 +18,7 @@ extension Compat {
                     content
                 }
             } else {
-                VStack {
+                VStack(spacing: spacing) {
                     content
                 }
             }

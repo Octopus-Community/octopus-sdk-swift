@@ -71,7 +71,7 @@ struct ResponseActionBarView: View {
                 ReactionsSummary(
                     contentId: contentId,
                     reactions: liveMeasures.aggregatedInfo.reactions,
-                    countPlacement: .leading,
+                    layout: .withCount(.leading),
                     displayProfile: displayProfile)
             }
         }

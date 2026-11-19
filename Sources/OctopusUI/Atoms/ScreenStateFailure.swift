@@ -49,7 +49,7 @@ extension ScreenStateFailure {
     -> ScreenState {
         ScreenState(
             image: self == .noNetwork ? icons.screenStates.networkError : icons.screenStates.error,
-            title: .localizationKey(self == .noNetwork ? "Error.NoNetwork" : "Error.Unknown"),
+            title: self == .noNetwork ? .noNetworkError : .unknownError,
             action: .init(title: "Common.Retry", handler: retry),
             verticalPadding: verticalPadding)
     }

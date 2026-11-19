@@ -57,16 +57,16 @@ struct ValidateNicknameViewModelRulesTests {
     @Test func networkFailureOffersTheWayOut() {
         var form = form()
         #expect(ValidateNicknameViewModel.failure(of: .serverCall(.noNetwork), form: &form)
-                == .localizationKey("Error.NoNetwork"))
+                == .noNetworkError)
     }
 
     @Test func timeoutIsNotReportedAsANetworkOutage() {
-        #expect(ValidateNicknameViewModel.timeoutFailure == .localizationKey("Error.Unknown"))
+        #expect(ValidateNicknameViewModel.timeoutFailure == .unknownError)
     }
 
     @Test func unknownFailureOffersTheWayOut() {
         var form = form()
-        #expect(ValidateNicknameViewModel.failure(of: .other(nil), form: &form) == .localizationKey("Error.Unknown"))
+        #expect(ValidateNicknameViewModel.failure(of: .other(nil), form: &form) == .unknownError)
     }
 
     @Test func refusalNotLinkedToTheFieldsOffersTheWayOut() {

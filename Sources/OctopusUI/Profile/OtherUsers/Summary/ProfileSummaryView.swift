@@ -8,6 +8,7 @@ import Octopus
 import OctopusCore
 
 struct ProfileSummaryView: View {
+    @Environment(\.textTone) private var textTone
     @EnvironmentObject var navigator: Navigator<MainFlowScreen>
     @Environment(\.trackingApi) var trackingApi
     @Environment(\.octopusTheme) private var theme
@@ -23,14 +24,23 @@ struct ProfileSummaryView: View {
 
     @State private var zoomableImageInfo: ZoomableImageInfo?
 
+    @State private var didEmitScreenDisplayed = false
+
     private let mainFlowPath: MainFlowPath
     private let canClose: Bool
     private let navBarLeadingAction: OctopusNavBarLeadingAction?
 
     init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
          profileId: String, canClose: Bool = false, navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
+        self.init(octopus: octopus, mainFlowPath: mainFlowPath, translationStore: translationStore,
+                  source: .profileId(profileId), canClose: canClose, navBarLeadingAction: navBarLeadingAction)
+    }
+
+    init(octopus: OctopusSDK, mainFlowPath: MainFlowPath, translationStore: ContentTranslationPreferenceStore,
+         source: ProfileSummarySource, canClose: Bool = false,
+         navBarLeadingAction: OctopusNavBarLeadingAction? = nil) {
         _viewModel = Compat.StateObject(wrappedValue: ProfileSummaryViewModel(
-            octopus: octopus, translationStore: translationStore, profileId: profileId))
+            octopus: octopus, translationStore: translationStore, source: source))
         self.mainFlowPath = mainFlowPath
         self.canClose = canClose
         self.navBarLeadingAction = navBarLeadingAction
@@ -86,7 +96,12 @@ struct ProfileSummaryView: View {
         .toastContainer(octopus: viewModel.octopus,
                         retryFailedFetch: { Task { await viewModel.refresh() } })
         .errorAlert(viewModel.$error)
-        .emitScreenDisplayed(.otherUserProfile(.init(profileId: viewModel.profileId)), trackingApi: trackingApi)
+        // Once the member is known: at once for an Octopus id, after the lookup for a client user id
+        .onReceive(viewModel.$profileId) { profileId in
+            guard let profileId, !didEmitScreenDisplayed else { return }
+            didEmitScreenDisplayed = true
+            trackingApi.emit(event: .screenDisplayed(.otherUserProfile(.init(profileId: profileId))))
+        }
         .onReceive(viewModel.$dismiss) { shouldDismiss in
             guard shouldDismiss else { return }
             presentationMode.wrappedValue.dismiss()
@@ -96,14 +111,17 @@ struct ProfileSummaryView: View {
             presentationMode.wrappedValue.dismiss()
         }
         .actionSheet(isPresented: $openActions) {
-            ActionSheet(title: Text("ActionSheet.Title", bundle: .module), buttons: actionSheetButtons)
+            ActionSheet(title: Text(textTone.key(formal: "ActionSheet.Title.Formal",
+                                                 informal: "ActionSheet.Title.Informal"), bundle: .module),
+                        buttons: actionSheetButtons)
         }
         .destructiveConfirmationAlert(
             "Block.Profile.Alert.Title",
             isPresented: $displayBlockUserAlert,
             destructiveLabel: "Common.Continue",
             action: viewModel.blockUser,
-            message: "Block.Profile.Alert.Message")
+            message: textTone.key(formal: "Block.Profile.Alert.Message.Formal",
+                                  informal: "Block.Profile.Alert.Message.Informal"))
         .modify {
             if #available(iOS 15.0, *) {
                 $0.alert(
@@ -152,9 +170,10 @@ struct ProfileSummaryView: View {
     private var actionSheetButtons: [ActionSheet.Button] {
         var buttons: [ActionSheet.Button] = []
         buttons.append(.destructive(Text("Moderation.Profile.Button", bundle: .module)) {
-            guard viewModel.ensureConnected(action: .moderation) else { return }
+            guard let profileId = viewModel.profileId,
+                  viewModel.ensureConnected(action: .moderation) else { return }
             mainFlowPath.reportTarget = .profile(
-                profileId: viewModel.profileId, canBeBlocked: viewModel.profile?.canBeBlocked == true)
+                profileId: profileId, canBeBlocked: viewModel.profile?.canBeBlocked == true)
         })
         if viewModel.profile?.canBeBlocked == true {
             buttons.append(.destructive(Text("Block.Profile.Button", bundle: .module)) {
@@ -179,12 +198,16 @@ struct ProfileSummaryView: View {
 
     @ViewBuilder
     private var trailingBarItem: some View {
-        if #available(iOS 14.0, *) {
+        // Nothing to report or block until the member is known
+        if viewModel.profileId == nil {
+            EmptyView()
+        } else if #available(iOS 14.0, *) {
             Menu(content: {
                 DestructiveMenuButton(action: {
-                    guard viewModel.ensureConnected(action: .moderation) else { return }
+                    guard let profileId = viewModel.profileId,
+                          viewModel.ensureConnected(action: .moderation) else { return }
                     mainFlowPath.reportTarget = .profile(
-                        profileId: viewModel.profileId, canBeBlocked: viewModel.profile?.canBeBlocked == true)
+                        profileId: profileId, canBeBlocked: viewModel.profile?.canBeBlocked == true)
                 }) {
                     Label(title: { Text("Moderation.Profile.Button", bundle: .module) },
                           icon: { Image(uiImage: theme.assets.icons.profile.report) })
@@ -349,24 +372,33 @@ private struct ProfileContentView<CommentsView: View, PostsView: View>: View {
                 }
                 .padding(.horizontal, 20)
 
-                CustomSegmentedControl(tabs: tabs, selectedTab: $selectedTab,
-                                       scrollOffset: $tabsScrollOffset)
-                    .background(
-                        GeometryReader { geometry in
-                            Color.clear
-                                .onValueChanged(of: geometry.frame(in: .named(scrollViewCoordinateSpace))) { frame in
-                                    let pinnedHeaderShows = frame.minY <= 0
-                                    guard pinnedHeaderShows != displayStickyHeader else { return }
-                                    withAnimation(ProfileTabsLayout.pinnedHeaderAnimation) {
-                                        displayStickyHeader = pinnedHeaderShows
-                                    }
-                                }
-                        }
-                    )
-                    .hiddenWhilePinnedHeaderShows(displayStickyHeader)
-                theme.colors.gray300.frame(height: 1)
-                    .hiddenWhilePinnedHeaderShows(displayStickyHeader)
-                if selectedTab == 1 {
+                // With Posts alone (the community does not share a member's comments) there is nothing
+                // to switch to: the posts sit right under the header, with no row, separator or pills.
+                if showsTabRow {
+                    CustomSegmentedControl(tabs: tabs, selectedTab: $selectedTab,
+                                           scrollOffset: $tabsScrollOffset)
+                        .background(
+                            GeometryReader { geometry in
+                                // `initial`: when Comments comes back while the user is scrolled, the row
+                                // reappears above the viewport and has to pin at once, not on the next
+                                // scroll. On a first appearance it sits below the header: a no-op.
+                                Color.clear
+                                    .onValueChanged(
+                                        of: geometry.frame(in: .named(scrollViewCoordinateSpace)),
+                                        initial: true) { frame in
+                                            let pinnedHeaderShows = frame.minY <= 0
+                                            guard pinnedHeaderShows != displayStickyHeader else { return }
+                                            withAnimation(ProfileTabsLayout.pinnedHeaderAnimation) {
+                                                displayStickyHeader = pinnedHeaderShows
+                                            }
+                                        }
+                            }
+                        )
+                        .hiddenWhilePinnedHeaderShows(displayStickyHeader)
+                    theme.colors.gray300.frame(height: 1)
+                        .hiddenWhilePinnedHeaderShows(displayStickyHeader)
+                }
+                if showsCommentsTab, selectedTab == 1 {
                     commentsView
                 } else {
                     postsView
@@ -388,24 +420,31 @@ private struct ProfileContentView<CommentsView: View, PostsView: View>: View {
         // mirroring the feed's explore-bar overlay in MainRootFeedView.
         .overlay(stickyTabHeader, alignment: .top)
         // If the Comments tab disappears (config flip / feed refused) while it's selected, fall back to
-        // Posts rather than leaving the selection pointing at a now-hidden tab.
-        .onValueChanged(of: showsCommentsTab) { showsCommentsTab in
-            if !showsCommentsTab, selectedTab == 1 {
-                selectedTab = 0
+        // Posts rather than leaving the selection pointing at a now-hidden tab. The tab row leaves
+        // with it, so the pinned-header state it drove is reset too: a stale `true` would hide the row
+        // and bring the pills straight back if Comments returned.
+        .onValueChanged(of: tabs.count) { tabCount in
+            selectedTab = ProfileTabsLayout.selectedTab(selectedTab, keptWithin: tabCount)
+            if !ProfileTabsLayout.showsTabRow(tabCount: tabCount) {
+                displayStickyHeader = false
             }
         }
     }
 
     /// Posts(0) / Comments(1, gated by `showsCommentsTab`).
     private var tabs: [LocalizedStringKey] {
-        showsCommentsTab ? ["Profile.Tabs.Posts", "Profile.Tabs.Comments"] : ["Profile.Tabs.Posts"]
+        otherUserProfileTabs(showsCommentsTab: showsCommentsTab)
+    }
+
+    private var showsTabRow: Bool {
+        ProfileTabsLayout.showsTabRow(tabCount: tabs.count)
     }
 
     // Pinned tab header (mirrors CurrentUserProfileContentView): Instagram-style "pills" that, with the
     // glass effect, float over the blurred content scrolling under the translucent nav bar.
     @ViewBuilder
     private var stickyTabHeader: some View {
-        if displayStickyHeader {
+        if showsTabRow, displayStickyHeader {
             ProfileStickyTabsHeader(tabs: tabs, selectedTab: $selectedTab, scrollOffset: $tabsScrollOffset)
                 .transition(.opacity)
         }

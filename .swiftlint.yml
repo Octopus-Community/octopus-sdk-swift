@@ -93,3 +93,23 @@ custom_rules:
     message: "Use octopusSheet / octopusFullScreenCover / octopusPopover, which hand the presented content the
       SDK's environment objects (see View+OctopusPresentation.swift)."
     severity: error
+  # A case added to a public enum breaks every integrator's exhaustive `switch` over it. `@nonexhaustive` asks
+  # them for an `@unknown default` from the start, so a later case only reaches that default. An enum that
+  # existed before takes `@nonexhaustive(warn)` instead (a warning, never an error, for the `switch`es already
+  # written); a new enum never does. The `#if` keeps the sources compiling with Swift < 6.2.3 (Xcode 26.2), which
+  # does not know the attribute. This rule only checks that a `public enum` carries one of the two forms; an enum
+  # made public by a `public extension` follows the same rule.
+  nonexhaustive_public_enum:
+    name: "Non-exhaustive public enum"
+    included: 'Sources/Octopus(UI)?/.*\.swift$'
+    regex: '(?<!#if hasAttribute\(nonexhaustive\)\n[ \t]{0,16}@nonexhaustive\n[ \t]{0,16}#endif\n[ \t]{0,16})(?<!#if hasAttribute\(nonexhaustive\)\n[ \t]{0,16}@nonexhaustive\(warn\)\n[ \t]{0,16}#endif\n[ \t]{0,16})\bpublic[ \t]+(indirect[ \t]+)?enum\b'
+    excluded_match_kinds:
+      - comment
+      - doccomment
+      - string
+    message: "Precede a public enum with `#if hasAttribute(nonexhaustive)` / `@nonexhaustive` / `#endif`
+      (`@nonexhaustive(warn)` only for an enum that already existed, never for a new one). Only an
+      enum closed by nature (no case can ever be added) opts out, with
+      `// swiftlint:disable:this nonexhaustive_public_enum` and a comment saying why it is closed. Other attributes
+      of the enum (`@available`, `@_spi`) go above the `#if`."
+    severity: error

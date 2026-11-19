@@ -71,6 +71,9 @@ public extension OctopusSDK.Configuration {
 
 public extension OctopusSDK.Configuration.ApiServer {
     /// Errors thrown by ``OctopusSDK/Configuration/ApiServer/init(host:port:)``.
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     enum ValidationError: Error, Sendable, CustomDebugStringConvertible {
         /// The host string is empty.
         case emptyHost

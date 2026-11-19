@@ -6,6 +6,9 @@ import Foundation
 import OctopusCore
 
 /// Errors that can be thrown by ``OctopusSDK/set(reaction:postId:)``.
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusSetReactionError: Error, CustomDebugStringConvertible {
     /// Caller passed an `OctopusReactionKind.unknown(...)` raw case.
     case unknownReaction

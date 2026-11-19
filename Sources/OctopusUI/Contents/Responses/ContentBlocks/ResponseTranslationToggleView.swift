@@ -5,12 +5,14 @@
 import SwiftUI
 import OctopusCore
 
-/// Translation toggle block ("Voir la traduction" / "Voir l'original") inside a response card.
-/// Padding matches the design spec's translation block: `pt-[6px] pb-[10px] pl-[12px] pr-[8px]`.
-/// Only leading/trailing are applied here — `ToggleTextTranslationButton` already has internal
-/// `.padding(.top, 6).padding(.bottom, 10)` (its own hit-area extension, matching the
-/// vertical spec). Adding the same values on the outer container would double-count and visibly
-/// inflate the block — same pattern as `ResponseActionBarView`.
+/// Translation toggle block ("See translation" / "See original") inside a response card, between
+/// the header and the text.
+///
+/// It adds no vertical padding of its own: `ToggleTextTranslationButton` is a 26pt row whose 44pt hit
+/// area spills over the header and the text, so the caller gives it a `zIndex` above them. The
+/// insets match the design spec's translation block, `pl-[9px] pr-[8px]`: the text
+/// of the card starts at 12pt, and the icon box starts 3pt before it so that the glyph, which has
+/// whitespace drawn around it, lines up with the text.
 struct ResponseTranslationToggleView: View {
     @Environment(\.octopusTheme) private var theme
 
@@ -21,15 +23,15 @@ struct ResponseTranslationToggleView: View {
     let contentKind: SdkEvent.ContentKind
 
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
             ToggleTextTranslationButton(
                 contentId: contentId,
                 originalLanguage: originalLanguage,
-                contentKind: contentKind)
+                contentKind: contentKind,
+                leadingInset: 9,
+                trailingInset: 8)
             Spacer(minLength: 0)
         }
-        .padding(.leading, 12)
-        .padding(.trailing, 8)
     }
 }
 

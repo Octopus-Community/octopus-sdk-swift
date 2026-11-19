@@ -31,6 +31,23 @@ enum ProfileTabsLayout {
     /// The cross-fade between the inline row and the pinned pills that replace it.
     static let pinnedHeaderAnimation: Animation = .easeInOut(duration: 0.2)
 
+    /// Whether a screen listing `tabCount` tabs shows a tab row at all.
+    ///
+    /// A lone tab has nothing to switch to: it would only take room and read as a button. The screen
+    /// then puts that tab's content right under its header — no inline row, no separator under it,
+    /// and no pinned pills once scrolled.
+    static func showsTabRow(tabCount: Int) -> Bool {
+        tabCount >= 2
+    }
+
+    /// The tab to keep selected once the screen lists `tabCount` tabs: the same one while it still
+    /// exists, the first one otherwise — so a tab removed while selected (another member's Comments,
+    /// when the community stops sharing them) falls back to the first tab instead of pointing at
+    /// nothing.
+    static func selectedTab(_ selectedTab: Int, keptWithin tabCount: Int) -> Int {
+        selectedTab < tabCount ? selectedTab : 0
+    }
+
     /// The `offset(x:)` that moves the selected-tab underline from the row's horizontal centre — where
     /// a `.center`-aligned child starts, in both layout directions — onto its tab.
     ///

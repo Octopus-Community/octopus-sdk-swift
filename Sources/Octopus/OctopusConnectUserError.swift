@@ -6,6 +6,9 @@ import Foundation
 import OctopusCore
 
 /// Errors that can be thrown by ``OctopusSDK/connectUser(_:tokenProvider:)``.
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusConnectUserError: Error, CustomDebugStringConvertible {
     /// The user has been banned from the community.
     case userBanned(String)
@@ -32,6 +35,9 @@ public enum OctopusConnectUserError: Error, CustomDebugStringConvertible {
         public let message: String
 
         /// Kind of profile validation error.
+        #if hasAttribute(nonexhaustive)
+        @nonexhaustive(warn)
+        #endif
         public enum ErrorKind: Sendable {
             case unknown
             /// A banned word was used in the field.
@@ -57,6 +63,9 @@ public enum OctopusConnectUserError: Error, CustomDebugStringConvertible {
         }
 
         /// The profile field that produced the error.
+        #if hasAttribute(nonexhaustive)
+        @nonexhaustive(warn)
+        #endif
         public enum Field: Sendable {
             case nickname
             case bio

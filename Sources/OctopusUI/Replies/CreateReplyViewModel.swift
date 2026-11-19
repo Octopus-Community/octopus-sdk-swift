@@ -27,6 +27,9 @@ class CreateReplyViewModel: ObservableObject {
     @Published private(set) var consentTexts: ConsentTexts?
     /// Drives the explicit terms-acceptance bottom sheet (explicit modes only).
     @Published var displayConsentSheet = false
+    /// Whether the nickname choice screen follows the consent sheet currently presented, which changes its button
+    /// label: accepting then leads to that screen instead of publishing.
+    @Published private(set) var consentSheetLeadsToNicknameChoice = false
     /// Set once the user accepts in the consent sheet, so the re-entered `send()` bypasses the gate.
     private var explicitConsentGivenThisSession = false
 
@@ -111,7 +114,7 @@ class CreateReplyViewModel: ObservableObject {
             .removeDuplicates()
             .sink { [unowned self] text in
                 if !Validators.Reply.validate(text: text) {
-                    textError = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(textMaxLength)")
+                    textError = .textTooLongError(currentLength: text.count, maxLength: textMaxLength)
                 } else {
                     textError = nil
                 }
@@ -125,7 +128,8 @@ class CreateReplyViewModel: ObservableObject {
                 if let picture {
                     switch Validators.Reply.validate(picture: picture.image) {
                     case .sideTooSmall, .ratioTooBig:
-                        alertError = .localizationKey("Picture.Selection.Error_maxRatio:\(Validators.Reply.maxRatioStr)_minSize:\(Int(Validators.Reply.minSize))")
+                        alertError = .pictureSelectionError(maxRatio: Validators.Reply.maxRatioStr,
+                                                            minSize: Int(Validators.Reply.minSize))
                         self.picture = nil
                     case .valid:
                         break
@@ -192,6 +196,7 @@ class CreateReplyViewModel: ObservableObject {
         // nickname screen then follows once consent is accepted (on the re-entered `send()`).
         if isBlockedOnlyByFirstContributionNicknameValidation,
            termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            consentSheetLeadsToNicknameChoice = true
             displayConsentSheet = true
             isLoading = false
             return
@@ -207,6 +212,7 @@ class CreateReplyViewModel: ObservableObject {
         // Explicit consent gate at the first contribution (acceptance recorded in `send(reply:)`).
         // Reached when the user is not blocked by the nickname screen above (confirmed / locked nickname).
         if termsAcceptanceMode.isExplicit, !userHasAcceptedCgu, !explicitConsentGivenThisSession {
+            consentSheetLeadsToNicknameChoice = false
             displayConsentSheet = true
             isLoading = false
             return
@@ -241,9 +247,10 @@ class CreateReplyViewModel: ObservableObject {
             case let .serverCall(serverError):
                 alertError = serverError.displayableMessage
             case .other:
-                alertError = .localizationKey("Error.Unknown")
+                alertError = .unknownError
             }
             // do not send the message if we cannot update the profile
+            isLoading = false
             return
         }
         do {
@@ -258,7 +265,12 @@ class CreateReplyViewModel: ObservableObject {
             replyReceivedCancellable = octopus.core.commentsRepository.getComment(uuid: commentId)
                 .map { comment in
                     guard let comment else { return Empty<Void, Never>().eraseToAnyPublisher() }
-                    return comment.oldestFirstRepliesFeed?.$items
+                    // The detail screen lists either feed: the newest-first one once it shows the thread's most
+                    // recent end.
+                    let feedsItems = [comment.oldestFirstRepliesFeed, comment.newestFirstRepliesFeed]
+                        .compactMap { $0?.$items }
+                    guard !feedsItems.isEmpty else { return Just(()).eraseToAnyPublisher() } // This should not happen
+                    return Publishers.MergeMany(feedsItems)
                         .filter {
                             guard let items = $0 else { return false }
                             return items.contains(where: { $0.uuid == replyId })
@@ -266,7 +278,6 @@ class CreateReplyViewModel: ObservableObject {
                         .map { _ in }
                         .first()
                         .eraseToAnyPublisher()
-                    ?? Just(()).eraseToAnyPublisher() // This should not happen
                 }
                 .switchToLatest()
                 .receive(on: DispatchQueue.main)
@@ -321,7 +332,7 @@ class CreateReplyViewModel: ObservableObject {
             case let .serverCall(serverError):
                 alertError = serverError.displayableMessage
             case .other:
-                alertError = .localizationKey("Error.Unknown")
+                alertError = .unknownError
             }
             isLoading = false
         }

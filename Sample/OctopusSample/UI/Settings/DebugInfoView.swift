@@ -50,6 +50,9 @@ struct DebugInfoView: View {
                     SettingsInfoRow(label: "Unread notifications", value: "\(live.notSeenNotificationsCount)")
                     SettingsInfoRow(label: "Community access",
                                     value: live.hasAccessToCommunity ? "Granted" : "Denied")
+                    SettingsInfoRow(label: "Access denied reason",
+                                    value: live.communityAccessDeniedReason.map { "\($0)" } ?? "—")
+                        .accessibilityId("debug-info-access-denied-reason")
                 }
 
                 DebugInfoCard(title: "Feature toggles",

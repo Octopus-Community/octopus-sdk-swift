@@ -4,12 +4,14 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 struct AuthorAndDateHeaderView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let author: Author
-    let relativeDate: String
+    let relativeDate: DisplayableDate
     var topPadding: CGFloat = 0
     var bottomPadding: CGFloat = 0
     let displayProfile: (_ profileId: String, _ clientUserId: String?) -> Void
@@ -40,7 +42,7 @@ struct AuthorAndDateHeaderView: View {
     var authorView: some View {
         OpenProfileButton(author: author, displayProfile: displayProfile) {
             HStack(spacing: 0) {
-                author.name.textView
+                author.name.textView(tone: textTone)
                     .font(theme.fonts.body2)
                     .fontWeight(.semibold)
                     .foregroundColor(theme.colors.gray900)
@@ -64,7 +66,8 @@ struct AuthorAndDateHeaderView: View {
 
     var dateView: some View {
         ButtonOrContent(embedInButton: displayContent != nil, action: { displayContent?() }) {
-            Text(relativeDate)
+            Text(relativeDate.text)
+                .accessibilityLabelCompat(relativeDate.accessibilityText)
                 .font(theme.fonts.caption1)
                 .foregroundColor(theme.colors.gray500)
                 .fixedSize()

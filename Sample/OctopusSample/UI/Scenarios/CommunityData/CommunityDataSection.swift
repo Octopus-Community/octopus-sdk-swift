@@ -34,8 +34,8 @@ struct CommunityDataSection: View {
         VStack(alignment: .leading, spacing: SampleTokens.Spacing.space2) {
             SectionIntro(text: "Reads a member's public Octopus stats with `fetchCommunityData` (one shot) " +
                          "and `communityDataPublisher` (reactive), by Octopus `profileId` or by your " +
-                         "own `clientUserId`. Note that `gamification.score` is always null through " +
-                         "this API — use `level`.")
+                         "own `clientUserId`. `gamification.score` is the member's total points, for " +
+                         "any member; null when the server does not send it.")
 
             ForEach(CommunityDataViewModel.Preset.allCases) { preset in
                 // Only the async presets are disabled while a fetch runs, matching the guard in

@@ -36,7 +36,7 @@ final class RefreshEntitlementsTests: XCTestCase {
         injector.register { CurrentUserProfileDatabase(injector: $0) }
         injector.register { ProfileRepositoryDefault(appManagedFields: [], injector: $0) }
         injector.registerMocks(.remoteClient, .securedStorage, .networkMonitor,
-                               .userProfileFetchMonitor, .blockedUserIdsProvider, .appStateMonitor)
+                               .userProfileFetchMonitor, .blockedUserIdsProvider, .appStateMonitor, .communityClosure)
         injector.register { UserDataStorage(injector: $0) }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { PublicProfileDatabase(injector: $0) }
@@ -183,6 +183,53 @@ final class RefreshEntitlementsTests: XCTestCase {
             XCTAssertEqual(message, "You are banned.")
         } catch {
             XCTFail("Expected .userBanned, got \(error)")
+        }
+    }
+
+    /// The server lets the exchange of a banned member go through: the access read after it tells the ban.
+    func testBannedAccessAfterASuccessfulExchangeIsMappedToUserBanned() async throws {
+        let connectionRepository = try await connectAsClientUser()
+        mockUserService.injectNextGetJwtFromClientResponse(refreshedJwtResponse())
+        mockUserService.injectNextCanAccessCommunityResponse(.with {
+            $0.canAccessCommunity = false
+            $0.communityDisabledMessage = "You are banned."
+            $0.accountBanned = .with { $0.policyName = "Job applications" }
+        })
+
+        do {
+            try await connectionRepository.refreshEntitlements()
+            XCTFail("Expected .userBanned")
+        } catch RefreshEntitlementsCoreError.userBanned(let message) {
+            XCTAssertEqual(message, "You are banned.")
+        } catch {
+            XCTFail("Expected .userBanned, got \(error)")
+        }
+    }
+
+    func testAFailingAccessCallAfterTheExchangeDoesNotFailTheRefresh() async throws {
+        let connectionRepository = try await connectAsClientUser()
+        mockUserService.injectNextGetJwtFromClientResponse(refreshedJwtResponse())
+        mockUserService.injectNextCanAccessCommunityError(.timeout)
+
+        try await connectionRepository.refreshEntitlements()
+
+        XCTAssertEqual(userDataStorage.userData?.jwtToken, "refreshedJwt")
+    }
+
+    private func refreshedJwtResponse() -> Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse {
+        .with {
+            $0.result = .success(.with { connectionData in
+                connectionData.userID = "userId"
+                connectionData.jwt = "refreshedJwt"
+                connectionData.profile = .with { profile in
+                    profile.id = "profileId"
+                    profile.nickname = "Nick"
+                    profile.hasSeenOnboarding_p = true
+                    profile.hasAcceptedCgu_p = true
+                    profile.hasConfirmedNickname_p = true
+                    profile.isGuest = false
+                }
+            })
         }
     }
 

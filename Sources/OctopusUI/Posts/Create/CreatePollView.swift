@@ -20,7 +20,7 @@ struct EditablePoll: Equatable {
                     error = .localizationKey("Error.Text.Empty")
                 case .tooLong:
                     let maxLength = Validators.Poll.optionTextMaxLength
-                    error = .localizationKey("Error.Text.TooLong_currentLength:\(text.count)_maxLength:\(maxLength)")
+                    error = .textTooLongError(currentLength: text.count, maxLength: maxLength)
                 case .none:
                     error = nil
                 }

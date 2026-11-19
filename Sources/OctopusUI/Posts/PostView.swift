@@ -13,6 +13,7 @@ import SwiftUI
 /// Owns the delete-confirmation alert and the iOS 13 action-sheet state, then
 /// delegates all layout to the private `PostContentView`.
 struct PostView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let post: PostViewData
@@ -51,7 +52,8 @@ struct PostView: View {
             openGroup: openGroup,
             displayClientObject: displayClientObject)
         .destructiveConfirmationAlert(
-            "Post.Delete.Confirmation.Title",
+            textTone.key(formal: "Post.Delete.Confirmation.Title.Formal",
+                         informal: "Post.Delete.Confirmation.Title.Informal"),
             isPresented: $displayDeleteAlert,
             destructiveLabel: "Common.Delete",
             action: deletePost)
@@ -64,10 +66,12 @@ struct PostView: View {
                     blockAuthor(profileId)
                 }
             },
-            message: "Block.Profile.Alert.Message")
+            message: textTone.key(formal: "Block.Profile.Alert.Message.Formal",
+                                  informal: "Block.Profile.Alert.Message.Informal"))
         .actionSheet(isPresented: $iOS13ActionSheetIsPresented) {
             ActionSheet(
-                title: Text("ActionSheet.Title", bundle: .module),
+                title: Text(textTone.key(formal: "ActionSheet.Title.Formal",
+                                         informal: "ActionSheet.Title.Informal"), bundle: .module),
                 buttons: iOS13ActionSheetButtons)
         }
     }
@@ -81,7 +85,7 @@ struct PostView: View {
         var buttons: [ActionSheet.Button] = []
         // "View group" is a non-destructive navigation action, so it comes first. Shown on every
         // surface except the group feed (where `displayGroupName` is false).
-        if case let .summary(_, _, displayGroupName) = context, displayGroupName, let groupId = post.groupId {
+        if case let .summary(_, displayGroupName) = context, displayGroupName, let groupId = post.groupId {
             buttons.append(.default(Text("Post.Menu.ViewGroup.Button", bundle: .module)) {
                 openGroup(groupId)
             })
@@ -109,8 +113,10 @@ struct PostView: View {
 // MARK: - Content View (pure renderer)
 
 private struct PostContentView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var languageManager: LanguageManager
+    @EnvironmentObject private var displayConfigManager: DisplayConfigManager
 
     let post: PostViewData
     let context: PostViewContext
@@ -155,7 +161,7 @@ private struct PostContentView: View {
             }
         }
         .modify { view in
-            if case let .summary(onCardTap, _, _) = context {
+            if case let .summary(onCardTap, _) = context {
                 view.contentShape(Rectangle())
                     .onTapGesture(perform: onCardTap)
             } else {
@@ -172,6 +178,10 @@ private struct PostContentView: View {
             context: context,
             width: width,
             zoomableImageInfo: $zoomableImageInfo,
+            imageTapOverride: PostTapActions.imageTapOverride(
+                context: context,
+                options: displayConfigManager.postOptions,
+                cardTapOpensDetail: post.cardTapOpensDetail),
             onReaction: onReaction,
             onVote: onVote,
             onOpenCreateComment: onOpenCreateComment,
@@ -182,7 +192,7 @@ private struct PostContentView: View {
     @ViewBuilder
     private func moderatedContentView(_ reasons: [DisplayableString]) -> some View {
         let joinedReasons = reasons
-            .map { $0.localizedString(locale: languageManager.overridenLocale) }
+            .map { $0.localizedString(locale: languageManager.overridenLocale, tone: textTone) }
             .joined(separator: ", ")
         PostTagsView(tags: post.tags)
         PostCatchPhraseView(localizedKey: "Post.List.ModeratedPost.MainText")
@@ -194,7 +204,7 @@ private struct PostContentView: View {
     // MARK: Context helpers
 
     private var displayGroupName: Bool {
-        if case let .summary(_, _, show) = context { return show }
+        if case let .summary(_, show) = context { return show }
         return true
     }
 
@@ -206,24 +216,33 @@ private struct PostContentView: View {
         return { openGroup(groupId) }
     }
 
+    /// The group name tap: the card action in feeds and nothing in the detail, unless the community makes the
+    /// group name open the group (see `PostTapActions.groupNameTapAction`).
     private var groupTap: (() -> Void)? {
-        if case let .summary(onCardTap, _, _) = context { return onCardTap }
-        return nil
+        let openGroupFromName: (() -> Void)? = post.groupId.map { groupId in
+            { [displayConfigManager, openGroup] in
+                displayConfigManager.openGroupFromPost(groupId: groupId, open: openGroup)
+            }
+        }
+        return PostTapActions.groupNameTapAction(
+            context: context,
+            options: displayConfigManager.postOptions,
+            openGroup: openGroupFromName)
     }
 }
 
 // MARK: - Published content sub-view
 
 /// Renders the body of a published (non-moderated) post. Owns the `liveMeasures` state
-/// and subscribes to the publisher so the aggregated info and action bar react to updates.
+/// and subscribes to the publisher so the footer reacts to updates.
 private struct PublishedContentView: View {
-    @Environment(\.octopusTheme) private var theme
-
     let post: PostViewData
     let content: PostPublishedContent
     let context: PostViewContext
     let width: CGFloat
     @Binding var zoomableImageInfo: ZoomableImageInfo?
+    /// Replaces the fullscreen viewer when an image is tapped, `nil` to keep it.
+    let imageTapOverride: (() -> Void)?
 
     let onReaction: (ReactionKind?) -> Void
     let onVote: (String) async -> Bool
@@ -238,6 +257,7 @@ private struct PublishedContentView: View {
          context: PostViewContext,
          width: CGFloat,
          zoomableImageInfo: Binding<ZoomableImageInfo?>,
+         imageTapOverride: (() -> Void)?,
          onReaction: @escaping (ReactionKind?) -> Void,
          onVote: @escaping (String) async -> Bool,
          onOpenCreateComment: @escaping () -> Void,
@@ -248,6 +268,7 @@ private struct PublishedContentView: View {
         self.context = context
         self.width = width
         self._zoomableImageInfo = zoomableImageInfo
+        self.imageTapOverride = imageTapOverride
         self.onReaction = onReaction
         self.onVote = onVote
         self.onOpenCreateComment = onOpenCreateComment
@@ -256,57 +277,60 @@ private struct PublishedContentView: View {
         self._liveMeasures = State(initialValue: content.liveMeasuresValue)
     }
 
-    /// The summary-context card-tap closure, or `nil` in `.detail`. Exposed so that children
-    /// wrapped in a `Button` (which would otherwise swallow the parent `.onTapGesture`) can
-    /// re-plug the tap — e.g. the view-count count inside `PostAggregatedInfoView`.
-    private var cardTap: (() -> Void)? {
-        if case let .summary(onCardTap, _, _) = context { return onCardTap }
-        return nil
-    }
-
-    /// The summary-context "children count" tap closure — fired when the user taps the
-    /// `XX Comments` CTA in `PostAggregatedInfoView`. Distinct from `openCreateComment`
-    /// (which opens the keyboard): tapping the count should open the detail scrolled to
-    /// the latest comment, without opening the composer.
-    private var childrenTap: (() -> Void)? {
-        if case let .summary(_, onChildrenTap, _) = context { return onChildrenTap }
-        return nil
-    }
-
     private func mediaView(_ media: PostAttachmentsViewData.Media) -> some View {
         PostMediaContentView(
             postId: post.uuid,
             width: width,
             media: media,
             zoomableImageInfo: $zoomableImageInfo,
-            visiblePost: post.visiblePost)
+            visiblePost: post.visiblePost,
+            imageTapOverride: imageTapOverride)
+    }
+
+    /// Space above the media: 4, or 8 above images when the post has no text.
+    private func mediaTopPadding(_ media: PostAttachmentsViewData.Media) -> CGFloat {
+        if case .images = media, !content.text.hasText {
+            return 8
+        }
+        return 4
     }
 
     var body: some View {
+        // Design order: translation toggle → tags → catch phrase → text → media → poll → CTA. The toggle comes
+        // first, right under the header, so that the member knows the content is translated before reading it.
+        if content.hasTranslation {
+            // The language is the post's own (it may be set without text); `nil` gives the generic
+            // "See original" label. Poll options carry no language of their own.
+            PostTranslationToggleView(
+                contentId: post.uuid,
+                originalLanguage: content.text.originalLanguage)
+                // Its hit area spills over the blocks around it: it must be drawn above them to get those taps.
+                .zIndex(1)
+        }
+
         PostTagsView(tags: post.tags)
 
         if let catchPhrase = content.catchPhrase {
             PostCatchPhraseView(contentId: post.uuid, catchPhrase: catchPhrase)
         }
 
-        // A post may carry an image without text. Skipping the empty block keeps the media 8pt below the header
-        // (header bottom 4 + media top 4), the same distance the text would start at.
+        // A post may carry an image without text: the empty block is skipped, and the images get more space
+        // above them instead (see `mediaTopPadding`).
         if content.text.hasText {
             PostTextContentView(
                 contentId: post.uuid,
                 text: content.text)
         }
 
-        // Design order. With a poll: text → media → poll → translation toggle → CTA, the media sitting in
-        // its own slot above the poll. Without a poll: text → translation toggle → media → CTA.
+        if let media = content.attachments.media {
+            mediaView(media)
+                .padding(.top, mediaTopPadding(media))
+                // With a poll below: 8 here + 4 (PostPollContentView top) + 4 (PollOptionView) = 16pt from the
+                // media to the first option. With several images, it is counted from the dots below them.
+                .padding(.bottom, content.attachments.poll == nil ? 0 : 8)
+        }
+
         if let poll = content.attachments.poll {
-            if let media = content.attachments.media {
-                mediaView(media)
-                    .padding(.top, 4)
-                    // 8 here + 4 (PostPollContentView top) + 4 (PollOptionView) = 16pt from the media
-                    // to the first option.
-                    .padding(.bottom, 8)
-            }
             PostPollContentView(
                 postId: post.uuid,
                 poll: poll,
@@ -316,19 +340,6 @@ private struct PublishedContentView: View {
                 .padding(.top, content.attachments.media == nil ? 4 : 0)
         }
 
-        if content.hasTranslation {
-            // The language is the post's own (it may be set without text); `nil` gives the generic
-            // "View original" label. Poll options carry no language of their own.
-            PostTranslationToggleView(
-                contentId: post.uuid,
-                originalLanguage: content.text.originalLanguage)
-        }
-
-        if content.attachments.poll == nil, let media = content.attachments.media {
-            mediaView(media)
-                .padding(.top, 4)
-        }
-
         if let cta = content.cta {
             PostCTAContentView(
                 postId: post.uuid,
@@ -336,34 +347,14 @@ private struct PublishedContentView: View {
                 displayClientObject: displayClientObject)
         }
 
-        PostAggregatedInfoView(
+        PostActionBarView(
             contentId: post.uuid,
             aggregatedInfo: liveMeasures.aggregatedInfo,
-            reactionTapped: onReaction,
-            // The `XX Comments` CTA is intentionally different from `onOpenCreateComment`:
-            // tapping the count opens the detail scrolled to the latest comment WITHOUT
-            // opening the composer keyboard, while the action-bar "Comment" button opens
-            // the composer. Wire it to the context's `onChildrenTap` in `.summary`; in
-            // `.detail` we're already on the detail screen — no-op.
-            childrenTapped: childrenTap ?? {},
-            // Same rationale as `childrenTapped`: the view count is wrapped in a `Button`
-            // inside `PostAggregatedInfoView` which blocks the parent's
-            // `.onTapGesture(perform: onCardTap)`, so we forward the card tap here. In
-            // `.detail` context — no-op.
-            viewCountTapped: cardTap ?? {},
-            displayProfile: displayProfile)
-            .padding(.horizontal, theme.sizes.horizontalPadding)
-
-        theme.colors.gray300
-            .frame(height: 1)
-            .padding(.horizontal, theme.sizes.horizontalPadding)
-
-        PostActionBarView(
             userReaction: liveMeasures.userInteractions.reaction,
             displayCommentButton: post.canCreateChildren,
             reactionTapped: onReaction,
-            commentTapped: onOpenCreateComment)
-            .padding(.horizontal, theme.sizes.horizontalPadding)
+            commentTapped: onOpenCreateComment,
+            displayProfile: displayProfile)
 
         EmptyView()
             .onReceive(content.liveMeasuresPublisher) { liveMeasures = $0 }
@@ -391,7 +382,7 @@ private struct PublishedContentView: View {
                 ],
                 childCount: 5, viewCount: 4,
                 canBeDeleted: true)),
-            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            context: .summary(onCardTap: {}, displayGroupName: true),
             width: 393,
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
@@ -412,12 +403,12 @@ private struct PublishedContentView: View {
         PostView(
             post: PostViewData(from: PostView.Previews.samplePost(
                 text: "Un texte",
-                attachments: .image(.init(
+                attachments: .images([.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
-                    size: CGSize(width: 700, height: 750))),
+                    size: CGSize(width: 700, height: 750))]),
                 reactions: [.init(reactionKind: .heart, count: 10)],
                 childCount: 3, viewCount: 20)),
-            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: false),
+            context: .summary(onCardTap: {}, displayGroupName: false),
             width: 393,
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
@@ -447,7 +438,7 @@ private struct PublishedContentView: View {
                                       translatedText: "Option 2"))
                 ])),
                 childCount: 2, viewCount: 10)),
-            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            context: .summary(onCardTap: {}, displayGroupName: true),
             width: 393,
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
@@ -470,7 +461,7 @@ private struct PublishedContentView: View {
                 text: "Laquelle préférez-vous ?",
                 attachments: PostView.Previews.imageAndPoll,
                 childCount: 2, viewCount: 10)),
-            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            context: .summary(onCardTap: {}, displayGroupName: true),
             width: 393,
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
@@ -518,9 +509,9 @@ private struct PublishedContentView: View {
                 post: PostViewData(from: PostView.Previews.samplePost(
                     text: "Un texte avec image",
                     topic: "Design",
-                    attachments: .image(.init(
+                    attachments: .images([.init(
                         url: URL(string: "https://picsum.photos/700/400")!,
-                        size: CGSize(width: 700, height: 400))),
+                        size: CGSize(width: 700, height: 400))]),
                     reactions: [.init(reactionKind: .heart, count: 42)],
                     childCount: 8, viewCount: 100,
                     canBeModerated: false)),
@@ -546,11 +537,11 @@ private struct PublishedContentView: View {
         PostView(
             post: PostViewData(from: PostView.Previews.samplePost(
                 text: "", originalLanguage: nil, translatedText: nil,
-                attachments: .image(.init(
+                attachments: .images([.init(
                     url: URL(string: "https://picsum.photos/700/750")!,
-                    size: CGSize(width: 700, height: 750))),
+                    size: CGSize(width: 700, height: 750))]),
                 childCount: 1, viewCount: 3)),
-            context: .summary(onCardTap: {}, onChildrenTap: {}, displayGroupName: true),
+            context: .summary(onCardTap: {}, displayGroupName: true),
             width: 393,
             zoomableImageInfo: zoomable,
             reactionTapped: { _ in },
@@ -599,9 +590,9 @@ private struct PublishedContentView: View {
 extension PostView {
     enum Previews {
         static let imageAndPoll = PostAttachmentsViewData(
-            media: .image(.init(
+            media: .images([.init(
                 url: URL(string: "https://picsum.photos/700/750")!,
-                size: CGSize(width: 700, height: 750))),
+                size: CGSize(width: 700, height: 750))]),
             poll: DisplayablePoll(options: [
                 .init(id: "1",
                       text: .init(originalText: "La rouge", originalLanguage: "fr",
@@ -645,7 +636,7 @@ extension PostView {
             return DisplayablePost(
                 uuid: "postUuid",
                 author: author,
-                relativeDate: "3d ago",
+                relativeDate: "3d",
                 topic: topic,
                 groupId: "groupUuid",
                 canBeDeleted: canBeDeleted,

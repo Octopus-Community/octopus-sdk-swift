@@ -4,8 +4,10 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 struct OctopusInput<InputView: View>: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let inputView: () -> InputView
@@ -53,7 +55,7 @@ struct OctopusInput<InputView: View>: View {
                 )
 
             if let error {
-                error.textView
+                error.textView(tone: textTone)
                     .font(theme.fonts.caption2)
                     .fontWeight(.regular)
                     .foregroundColor(theme.colors.error)

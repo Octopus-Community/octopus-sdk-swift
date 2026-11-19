@@ -27,6 +27,7 @@ struct ReactionsListSheetScreen: View {
 
 @available(iOS 16.0, *)
 struct ReactionsListView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Environment(\.presentationMode) private var presentationMode
 
@@ -104,7 +105,7 @@ struct ReactionsListView: View {
                 .padding(.vertical, 20)
         } else if let error = content.error {
             VStack(spacing: 8) {
-                error.textView
+                error.textView(tone: textTone)
                     .font(theme.fonts.body2)
                     .foregroundColor(theme.colors.gray700)
                     .multilineTextAlignment(.center)
@@ -218,6 +219,7 @@ private struct ReactionTabsBar: View {
 /// One row of the list: the member who reacted, with their reaction badged on their avatar.
 @available(iOS 16.0, *)
 private struct ReactionProfileCell: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @EnvironmentObject private var languageManager: LanguageManager
 
@@ -245,7 +247,7 @@ private struct ReactionProfileCell: View {
                             // Straddles the avatar's edge, as in the design.
                             .offset(x: 2, y: 2)
                     }
-                author.name.textView
+                author.name.textView(tone: textTone)
                     .font(theme.fonts.body2.weight(.medium))
                     .foregroundColor(theme.colors.gray900)
                     .lineLimit(1)

@@ -10,31 +10,38 @@ struct CloseButton: View {
     @Environment(\.octopusTheme) private var theme
 
     let action: () -> Void
+    /// The minimum side of the tappable area, for a button that is not in a navigation bar, which would extend it.
+    var minimumTapSide: CGFloat?
 
     var body: some View {
 #if compiler(>=6.2)
         if #available(iOS 26.0, *), GlassEffect.isAvailable {
             Button(action: action) {
-                IconImage(theme.assets.icons.common.close)
-                    .font(theme.fonts.navBarItem)
-                    .contentShape(Rectangle())
-                    .accessibilityLabelInBundle("Common.Close")
+                label
             }
         } else {
             Button(action: action) {
-                IconImage(theme.assets.icons.common.close)
-                    .font(theme.fonts.navBarItem)
-                    .contentShape(Rectangle())
-                    .accessibilityLabelInBundle("Common.Close")
+                label
             }
         }
 #else
         Button(action: action) {
-            IconImage(theme.assets.icons.common.close)
-                .font(theme.fonts.navBarItem)
-                .contentShape(Rectangle())
-                .accessibilityLabelInBundle("Common.Close")
+            label
         }
 #endif
+    }
+
+    private var label: some View {
+        IconImage(theme.assets.icons.common.close)
+            .font(theme.fonts.navBarItem)
+            .modify {
+                if let minimumTapSide {
+                    $0.frame(minWidth: minimumTapSide, minHeight: minimumTapSide)
+                } else {
+                    $0
+                }
+            }
+            .contentShape(Rectangle())
+            .accessibilityLabelInBundle("Common.Close")
     }
 }

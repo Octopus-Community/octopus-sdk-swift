@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-/// The environment objects that the SDK's entry screens (`OctopusHomeScreen`, `OctopusProfileScreen`) provide to
+/// The environment objects that the SDK's entry screen (`OctopusHomeScreen`) provides to
 /// every screen below them.
 ///
 /// What the SDK presents (sheets, full screen covers, popovers) is handed them again, explicitly, by the
@@ -19,6 +19,8 @@ struct SharedEnvironmentObjects {
     let reactionsListManager: ReactionsListManager
     let videoManager: VideoManager
     let languageManager: LanguageManager
+    /// Injected as an environment value, not an environment object: the carousels read it without observing it.
+    let carouselPositions: CarouselPositions
 }
 
 private struct SharedEnvironmentObjectsKey: EnvironmentKey {
@@ -45,6 +47,8 @@ extension View {
             .environmentObject(objects.reactionsListManager)
             .environmentObject(objects.videoManager)
             .environmentObject(objects.languageManager)
+            .environment(\.carouselPositions, objects.carouselPositions)
+            .modifier(TextToneEnvironment(languageManager: objects.languageManager))
             .environment(\.sharedEnvironmentObjects, objects)
     }
 

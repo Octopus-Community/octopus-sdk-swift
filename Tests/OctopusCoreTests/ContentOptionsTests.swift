@@ -120,7 +120,8 @@ final class ContentOptionsTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: options,
                                      exposeClientUserId: false, termsAcceptanceMode: .implicit,
-                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                     informalLanguages: [])
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
@@ -141,12 +142,107 @@ final class ContentOptionsTests: XCTestCase {
                                      gamificationConfig: nil, displayConfig: nil,
                                      profileFieldsLock: .allEditable, contentOptions: options,
                                      exposeClientUserId: false, termsAcceptanceMode: .implicit,
-                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil)
+                                     showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+                                     informalLanguages: [])
         try await db.upsert(config: config)
 
         let stored = try await firstNonNil(db.configPublisher())
         XCTAssertFalse(stored.contentOptions.post.textRequired)
         XCTAssertEqual(stored.contentOptions, options)
+    }
+
+    // MARK: - Post tap options (absent ⇒ false)
+
+    func testPostTapOptionsDefaultToFalseWhenConfigPostOrFieldsAreAbsent() {
+        let configs = [
+            Com_Octopuscommunity_ApiKeyConfig.with { $0.displayAccountAge = true },
+            Com_Octopuscommunity_ApiKeyConfig.with { $0.contentOptions = .with { _ in } },
+            Com_Octopuscommunity_ApiKeyConfig.with { $0.contentOptions = .with { $0.post = .with { _ in } } },
+        ]
+        for config in configs {
+            let post = CommunityConfig(from: config).contentOptions.post
+            XCTAssertFalse(post.imageTapOpensPost)
+            XCTAssertFalse(post.groupNameTapOpensGroup)
+            XCTAssertTrue(post.enablePictures)
+            XCTAssertTrue(post.enablePolls)
+            XCTAssertTrue(post.textRequired)
+        }
+    }
+
+    func testPostTapOptionsMapIndependentlyIncludingExplicitFalseOverTheWire() throws {
+        for image in [false, true] {
+            for group in [false, true] {
+                let config = Com_Octopuscommunity_ApiKeyConfig.with {
+                    $0.contentOptions = .with {
+                        $0.post = .with {
+                            $0.imageTapOpensPost = image
+                            $0.groupNameTapOpensGroup = group
+                            $0.enablePictures = false
+                            $0.textRequired = false
+                        }
+                    }
+                }
+                // Round trip through the wire format: an explicit `false` must stay present.
+                let bytes: [UInt8] = try config.serializedBytes()
+                let parsed = try Com_Octopuscommunity_ApiKeyConfig(serializedBytes: bytes)
+                XCTAssertTrue(parsed.contentOptions.post.hasImageTapOpensPost)
+                XCTAssertTrue(parsed.contentOptions.post.hasGroupNameTapOpensGroup)
+
+                let post = CommunityConfig(from: parsed).contentOptions.post
+                XCTAssertEqual(post.imageTapOpensPost, image)
+                XCTAssertEqual(post.groupNameTapOpensGroup, group)
+                XCTAssertFalse(post.enablePictures)
+                XCTAssertFalse(post.textRequired)
+                XCTAssertTrue(post.enablePolls)
+            }
+        }
+    }
+
+    func testExistingPostOptionsInitializersKeepTapOptionsDisabled() {
+        // The public initializer gained the tap options with defaults: existing call sites keep today's navigation.
+        for post in [ContentOptions.PostOptions(enablePictures: false, enablePolls: true),
+                     ContentOptions.PostOptions(enablePictures: false, enablePolls: true, textRequired: false),
+                     ContentOptions.allEnabled.post] {
+            XCTAssertFalse(post.imageTapOpensPost)
+            XCTAssertFalse(post.groupNameTapOpensGroup)
+        }
+    }
+
+    func testPostTapOptionsTakePartInValueSemantics() {
+        let values = [(false, false), (true, false), (false, true), (true, true)].map {
+            ContentOptions.PostOptions(enablePictures: true, enablePolls: true,
+                                       imageTapOpensPost: $0.0, groupNameTapOpensGroup: $0.1)
+        }
+        XCTAssertEqual(Set(values).count, 4)
+    }
+
+    func testPostTapOptionsPersistThroughDatabase() async throws {
+        for image in [false, true] {
+            for group in [false, true] {
+                let injector = Injector()
+                injector.register { _ in try! ConfigCoreDataStack(inRam: true) }
+                injector.register { CommunityConfigDatabase(injector: $0) }
+                let db = injector.getInjected(identifiedBy: Injected.communityConfigDatabase)
+
+                let options = ContentOptions(
+                    post: .init(enablePictures: true, enablePolls: true, textRequired: true,
+                                imageTapOpensPost: image, groupNameTapOpensGroup: group),
+                    comment: .init(enablePictures: true),
+                    reply: .init(enablePictures: true))
+                let config = CommunityConfig(forceLoginOnStrongActions: false, displayAccountAge: false,
+                                             gamificationConfig: nil, displayConfig: nil,
+                                             profileFieldsLock: .allEditable, contentOptions: options,
+                                             exposeClientUserId: false, termsAcceptanceMode: .implicit,
+                                             showCommentsOnOtherProfiles: false, forceNicknameChoice: false,
+                                             consentTexts: nil, informalLanguages: [])
+                try await db.upsert(config: config)
+
+                let stored = try await firstNonNil(db.configPublisher())
+                XCTAssertEqual(stored.contentOptions.post.imageTapOpensPost, image)
+                XCTAssertEqual(stored.contentOptions.post.groupNameTapOpensGroup, group)
+                XCTAssertEqual(stored.contentOptions, options)
+            }
+        }
     }
 
     private func firstNonNil(_ publisher: AnyPublisher<CommunityConfig?, Never>) async throws -> CommunityConfig {

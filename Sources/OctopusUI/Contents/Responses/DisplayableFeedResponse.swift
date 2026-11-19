@@ -12,7 +12,7 @@ struct DisplayableFeedResponse: Equatable {
     let text: EllipsizableTranslatedText?
     let image: ImageMedia?
     let author: Author
-    let relativeDate: String
+    let relativeDate: DisplayableDate
     let canBeDeleted: Bool
     let canBeModerated: Bool
     let canBeBlockedByUser: Bool
@@ -45,7 +45,7 @@ struct DisplayableFeedResponse: Equatable {
          text: EllipsizableTranslatedText?,
          image: ImageMedia?,
          author: Author,
-         relativeDate: String,
+         relativeDate: DisplayableDate,
          canBeDeleted: Bool,
          canBeModerated: Bool,
          canBeBlockedByUser: Bool,
@@ -72,7 +72,7 @@ extension DisplayableFeedResponse {
          gamificationLevels: [GamificationLevel],
          ellipsizeText: Bool = false,
          liveMeasurePublisher: CurrentValueSubject<LiveMeasures, Never>,
-         thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter,
+         thisUserProfileId: String?, dateFormatter: ContentDateFormatter,
          onAppearAction: @escaping () -> Void, onDisappearAction: @escaping () -> Void) {
         kind = .comment
         uuid = comment.uuid
@@ -83,7 +83,7 @@ extension DisplayableFeedResponse {
             profile: comment.author,
             gamificationLevel: gamificationLevels.first { $0.level == comment.author?.gamificationLevel }
         )
-        relativeDate = dateFormatter.customLocalizedStructure(for: comment.creationDate, relativeTo: Date())
+        relativeDate = dateFormatter.displayableDate(for: comment.creationDate)
         image = ImageMedia(from: comment.medias.first(where: { $0.kind == .image }))
         canBeDeleted = comment.author != nil && comment.author?.uuid == thisUserProfileId
         canBeModerated = comment.author?.uuid != thisUserProfileId
@@ -96,7 +96,7 @@ extension DisplayableFeedResponse {
     init(from reply: Reply,
          gamificationLevels: [GamificationLevel],
          liveMeasurePublisher: CurrentValueSubject<LiveMeasures, Never>,
-         thisUserProfileId: String?, dateFormatter: RelativeDateTimeFormatter,
+         thisUserProfileId: String?, dateFormatter: ContentDateFormatter,
          onAppearAction: @escaping () -> Void, onDisappearAction: @escaping () -> Void) {
         kind = .reply
         uuid = reply.uuid
@@ -105,7 +105,7 @@ extension DisplayableFeedResponse {
             profile: reply.author,
             gamificationLevel: gamificationLevels.first { $0.level == reply.author?.gamificationLevel }
         )
-        relativeDate = dateFormatter.customLocalizedStructure(for: reply.creationDate, relativeTo: Date())
+        relativeDate = dateFormatter.displayableDate(for: reply.creationDate)
         image = ImageMedia(from: reply.medias.first(where: { $0.kind == .image }))
         canBeDeleted = reply.author != nil && reply.author?.uuid == thisUserProfileId
         canBeModerated = reply.author?.uuid != thisUserProfileId

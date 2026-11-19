@@ -56,6 +56,7 @@ public class OctopusSDKCore: ObservableObject {
     }
 
     private let injector: Injector
+    private let communityClosureCoordinator: CommunityClosureCoordinator
 
     /// Constructor
     /// - Parameter apiKey: the API key that identifies your project
@@ -92,6 +93,7 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { _ in configCoreDataStack }
         injector.register { _ in NetworkMonitorDefault() }
         injector.register { _ in AppStateMonitorDefault() }
+        injector.register { _ in BackgroundTaskProviderDefault() }
         injector.register { AuthenticatedCallProviderDefault(injector: $0) }
         injector.register { UserProfileFetchMonitorDefault(injector: $0) }
         injector.register { EntitlementMonitor(injector: $0) }
@@ -115,6 +117,8 @@ public class OctopusSDKCore: ObservableObject {
         injector.register { ContentTranslationPreferenceRepositoryDefault(injector: $0) }
         injector.register { ToastsRepository(injector: $0) }
         injector.register { VideosRepository(injector: $0) }
+        injector.register { _ in URLSessionImageUploadHTTPClient() }
+        injector.register { ImageUploadsService(injector: $0) }
         injector.register { GamificationRepository(injector: $0) }
 
         // Feed
@@ -166,19 +170,31 @@ public class OctopusSDKCore: ObservableObject {
 
         // Config
         injector.register { CommunityAccessMonitor(injector: $0) }
+        let communityClosureStore = CommunityClosureStore(apiKey: apiKey)
+        injector.register { CommunityClosureRepository(injector: $0, store: communityClosureStore) }
+        injector.register { CommunityClosurePurgerDefault(injector: $0) }
+        // Built before anything starts: it blocks the calls at once when the community was closed on a previous launch.
+        _ = injector.getInjected(identifiedBy: Injected.communityClosureRepository)
 
-        // Start monitors
+        // Start monitors. Those that call the server only run while the community is open: the coordinator starts
+        // them now if it is, and stops and starts them when it closes and reopens.
         injector.getInjected(identifiedBy: Injected.networkMonitor).start()
         injector.getInjected(identifiedBy: Injected.appStateMonitor).start()
-        injector.getInjected(identifiedBy: Injected.appSessionMonitor).start()
-        injector.getInjected(identifiedBy: Injected.communityAccessMonitor).start()
-        injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).start()
-        injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).start()
-        injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).start()
-        injector.getInjected(identifiedBy: Injected.entitlementMonitor).start()
+        // Also while closed: it sets the language header the check of a closed community is sent with.
         injector.getInjected(identifiedBy: Injected.languageChangedMonitor).start()
         injector.getInjected(identifiedBy: Injected.postChildChangeMonitor).start()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).start()
+        let communityClosureRepository = injector.getInjected(identifiedBy: Injected.communityClosureRepository)
+        let communityClosureCoordinator = CommunityClosureCoordinator(
+            closurePublisher: communityClosureRepository.closurePublisher,
+            isClosed: { communityClosureRepository.isClosed },
+            startServerMonitors: { [injector] in Self.startServerMonitors(injector: injector) },
+            stopServerMonitors: { [injector] in Self.stopServerMonitors(injector: injector) },
+            resume: { [injector] in Self.resumeAfterCommunityReopening(injector: injector) })
+        communityClosureCoordinator.start()
+        self.communityClosureCoordinator = communityClosureCoordinator
+        // Also while closed, and last as before: a restart would read as a launch without session, and purge and reload
+        // again what the reopening loads. It reloads the content itself when a guest is connected at reopening.
         injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).start()
 
         // Set vars
@@ -218,6 +234,10 @@ public class OctopusSDKCore: ObservableObject {
             if #available(iOS 14, *) { Logger.other.debug("Sending all pending events failed: \(error)") }
         }
         injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).stop()
+
+        // The cleaning below replaces the one the logout would start, which would also reload the content of the
+        // community being left.
+        injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).stop()
 
         // disconnecting user
         do {
@@ -273,6 +293,37 @@ public class OctopusSDKCore: ObservableObject {
         stopAllMonitors()
     }
 
+    /// Starts the monitors that call the server.
+    private static func startServerMonitors(injector: Injector) {
+        injector.getInjected(identifiedBy: Injected.appSessionMonitor).start()
+        injector.getInjected(identifiedBy: Injected.communityAccessMonitor).start()
+        injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).start()
+        injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).start()
+        injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).start()
+        injector.getInjected(identifiedBy: Injected.entitlementMonitor).start()
+    }
+
+    /// Stops the monitors that call the server, while the community is closed.
+    private static func stopServerMonitors(injector: Injector) {
+        injector.getInjected(identifiedBy: Injected.appSessionMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.communityAccessMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.trackingEventsSendingMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.userProfileFetchMonitor).stop()
+        injector.getInjected(identifiedBy: Injected.entitlementMonitor).stop()
+    }
+
+    /// Loads what a launch loads besides the monitors, once the community reopened: the closure purged it.
+    private static func resumeAfterCommunityReopening(injector: Injector) {
+        // The closure deleted the cached content: the groups, the root feeds and what is on screen load again. Without a
+        // session, the data cleaner does it once the guest connected below is there.
+        injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).reloadAfterCommunityReopening()
+        injector.getInjected(identifiedBy: Injected.notificationsRepository).registerLatestTokenAgain()
+        // Not part of `ConnectionRepository`, which is public: SSO is the only connection there is.
+        (injector.getInjected(identifiedBy: Injected.connectionRepository) as? SSOConnectionRepository)?
+            .resumeAfterCommunityReopening()
+    }
+
     /// Cancels every monitor's subscriptions.
     ///
     /// Called from `deinit`, and from `cleanupBeforeCommunitySwitch()` because `deinit` is not
@@ -282,9 +333,10 @@ public class OctopusSDKCore: ObservableObject {
     /// and a core kept alive that way keeps monitors subscribed to the community it was built for.
     /// Stopping them during the switch makes the previous core silent whoever still holds it.
     ///
-    /// Every `stop()` is idempotent, so the two monitors the cleanup stops earlier, for sequencing
+    /// Every `stop()` is idempotent, so the monitors the cleanup stops earlier, for sequencing
     /// reasons of their own, are safely stopped again here.
     private func stopAllMonitors() {
+        communityClosureCoordinator.stop()
         injector.getInjected(identifiedBy: Injected.octopusDrivenLoginMonitor).stop()
         injector.getInjected(identifiedBy: Injected.userDataCleanerMonitor).stop()
         injector.getInjected(identifiedBy: Injected.blockedUserIdsProvider).stop()

@@ -15,6 +15,9 @@ extension OctopusEvent {
     }
 
     /// An action that led to gaining points
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum GamificationPointsGainedAction: Sendable {
         /// The user created a post
         case post

@@ -9,20 +9,39 @@ import OctopusGrpcModels
 class MockOctoService: OctoService {
     /// Fifo of the responses to `get(octoObjectId:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
-    private var getResponses = [Com_Octopuscommunity_GetResponse]()
+    private var getResponses = [Result<Com_Octopuscommunity_GetResponse, RemoteClientError>]()
+    /// The `incrementViewCount` of each `get` call, in call order.
+    private(set) var getIncrementViewCounts = [Bool]()
     /// Fifo of the responses to `getBatch`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
-    private var getBatchResponses = [Com_Octopuscommunity_GetBatchResponse]()
+    private var getBatchResponses = [Result<Com_Octopuscommunity_GetBatchResponse, RemoteClientError>]()
+    /// The ids each `getBatch` call asked for, in call order.
+    private(set) var getBatchRequestedIds = [[String]]()
     // Fifo of the responses to `getTopics`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
-    private var getTopicsResponses = [Com_Octopuscommunity_GetTopicsResponse]()
+    private var getTopicsResponses = [Result<Com_Octopuscommunity_GetTopicsResponse, RemoteClientError>]()
     private(set) var getTopicsCallCount = 0
+    /// Called by each `getTopics` call before it answers. Lets a test change the session while the call is in flight.
+    var onGetTopics: (() -> Void)?
     /// Fifo of the responses to `put(post:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putPostResponses = [Com_Octopuscommunity_PutPostResponse]()
     private(set) var lastPutPostCreationSource: Com_Octopuscommunity_PutRequest.CreationSource?
     private(set) var lastPutPostRwOctoObject: Com_Octopuscommunity_RwOctoObject?
     private(set) var lastPutPostClientToken: String?
+    private(set) var lastPutPostAuthenticationMethod: AuthenticationMethod?
+    /// Fifo of the responses to `createImageUploads`.
+    /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
+    private var createImageUploadsResponses = [Com_Octopuscommunity_CreateImageUploadsResponse]()
+    /// The sizes of each `createImageUploads` call, in call order.
+    private(set) var createImageUploadsSizes = [[UInt64]]()
+    /// The bridge block of each `createImageUploads` call, in call order (`nil` for a member upload).
+    private(set) var createImageUploadsBridges = [Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload?]()
+    /// The authentication method of each `createImageUploads` call, in call order.
+    private(set) var createImageUploadsAuthenticationMethods = [AuthenticationMethod]()
+    /// Called by each `createImageUploads` call once it has recorded its arguments, before it answers. Lets a test
+    /// change the world (a token that rotates) between that call and the ones that follow it.
+    var onCreateImageUploads: (() -> Void)?
     /// Fifo of the responses to `put(comment:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var putCommentResponses = [Com_Octopuscommunity_PutCommentResponse]()
@@ -59,6 +78,14 @@ class MockOctoService: OctoService {
     /// Fifo of the responses to `getOrCreateBridgePost(:)`.
     /// Element to use is the last one (i.e insertion at 0, pop at count - 1)
     private var getOrCreateBridgePostResponse = [Com_Octopuscommunity_GetOrCreateBridgePostResponse]()
+    /// The post of the last `createBridgePost` call.
+    private(set) var lastCreateBridgePost: Com_Octopuscommunity_Post?
+    /// The client token of the last `createBridgePost` call.
+    private(set) var lastCreateBridgePostClientToken: String?
+    /// The authentication method of the last `createBridgePost` call.
+    private(set) var lastCreateBridgePostAuthenticationMethod: AuthenticationMethod?
+    /// The post of the last `getOrCreateBridgePost` call.
+    private(set) var lastGetOrCreateBridgePost: Com_Octopuscommunity_Post?
 
     init() { }
 
@@ -66,28 +93,31 @@ class MockOctoService: OctoService {
              authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetResponse {
+        getIncrementViewCounts.append(incrementViewCount)
         guard let response = getResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetResponse must be called before"))
         }
-        return response
+        return try response.get()
     }
 
     func getBatch(octoObjectInfos: [OctoObjectInfo], options: GetOptions, incrementViewCount: Bool,
                   authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError)
     -> OctopusGrpcModels.Com_Octopuscommunity_GetBatchResponse {
+        getBatchRequestedIds.append(octoObjectInfos.map(\.id))
         guard let response = getBatchResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetBatchResponse must be called before"))
         }
-        return response
+        return try response.get()
     }
 
     func getTopics(authenticationMethod: AuthenticationMethod) async throws(RemoteClientError) -> Com_Octopuscommunity_GetTopicsResponse {
         getTopicsCallCount += 1
+        onGetTopics?()
         guard let response = getTopicsResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetTopicsResponse must be called before"))
         }
-        return response
+        return try response.get()
     }
 
     func put(post: Com_Octopuscommunity_RwOctoObject,
@@ -97,8 +127,22 @@ class MockOctoService: OctoService {
         lastPutPostRwOctoObject = post
         lastPutPostCreationSource = creationSource
         lastPutPostClientToken = clientToken
+        lastPutPostAuthenticationMethod = authenticationMethod
         guard let response = putPostResponses.popLast() else {
             throw .unknown(MockError("Dev error, injectNextPutPostResponse must be called before"))
+        }
+        return response
+    }
+
+    func createImageUploads(sizes: [UInt64], bridge: Com_Octopuscommunity_CreateImageUploadsRequest.BridgeUpload?,
+                            authenticationMethod: AuthenticationMethod)
+    async throws(RemoteClientError) -> Com_Octopuscommunity_CreateImageUploadsResponse {
+        createImageUploadsSizes.append(sizes)
+        createImageUploadsBridges.append(bridge)
+        createImageUploadsAuthenticationMethods.append(authenticationMethod)
+        onCreateImageUploads?()
+        guard let response = createImageUploadsResponses.popLast() else {
+            throw .unknown(MockError("Dev error, injectNextCreateImageUploadsResponse must be called before"))
         }
         return response
     }
@@ -208,6 +252,9 @@ class MockOctoService: OctoService {
     func createBridgePost(post: OctopusGrpcModels.Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
                           authenticationMethod: AuthenticationMethod)
     async throws(RemoteClientError) -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        lastCreateBridgePost = post
+        lastCreateBridgePostClientToken = clientToken
+        lastCreateBridgePostAuthenticationMethod = authenticationMethod
         guard let response = getOrCreateBridgePostResponse.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetOrCreateBridgePostResponse must be called before"))
         }
@@ -217,6 +264,7 @@ class MockOctoService: OctoService {
     func getOrCreateBridgePost(post: Com_Octopuscommunity_Post, topicId: String?, clientToken: String?,
                                authenticationMethod: AuthenticationMethod) async throws(RemoteClientError)
     -> Com_Octopuscommunity_GetOrCreateBridgePostResponse {
+        lastGetOrCreateBridgePost = post
         guard let response = getOrCreateBridgePostResponse.popLast() else {
             throw .unknown(MockError("Dev error, injectNextGetOrCreateBridgePostResponse must be called before"))
         }
@@ -226,19 +274,35 @@ class MockOctoService: OctoService {
 
 extension MockOctoService {
     func injectNextGetResponse(_ response: Com_Octopuscommunity_GetResponse) {
-        getResponses.insert(response, at: 0)
+        getResponses.insert(.success(response), at: 0)
+    }
+
+    func injectNextGetError(_ error: RemoteClientError) {
+        getResponses.insert(.failure(error), at: 0)
     }
 
     func injectNextGetBatchResponse(_ response: Com_Octopuscommunity_GetBatchResponse) {
-        getBatchResponses.insert(response, at: 0)
+        getBatchResponses.insert(.success(response), at: 0)
+    }
+
+    func injectNextGetBatchError(_ error: RemoteClientError) {
+        getBatchResponses.insert(.failure(error), at: 0)
     }
 
     func injectNextGetTopicsResponse(_ response: Com_Octopuscommunity_GetTopicsResponse) {
-        getTopicsResponses.insert(response, at: 0)
+        getTopicsResponses.insert(.success(response), at: 0)
+    }
+
+    func injectNextGetTopicsError(_ error: RemoteClientError) {
+        getTopicsResponses.insert(.failure(error), at: 0)
     }
 
     func injectNextPutPostResponse(_ response: Com_Octopuscommunity_PutPostResponse) {
         putPostResponses.insert(response, at: 0)
+    }
+
+    func injectNextCreateImageUploadsResponse(_ response: Com_Octopuscommunity_CreateImageUploadsResponse) {
+        createImageUploadsResponses.insert(response, at: 0)
     }
 
     func injectNextPutCommentResponse(_ response: Com_Octopuscommunity_PutCommentResponse) {

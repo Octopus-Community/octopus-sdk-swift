@@ -118,6 +118,16 @@ class APITests {
         try await octopus.disconnectUser()
     }
 
+    @Test func testCommunityAccessDeniedReasonApi() async throws {
+        let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
+        let reason: OctopusCommunityAccessDeniedReason? = octopus.communityAccessDeniedReason
+        switch reason {
+        case .notInCohort, .communityTemporarilyDisabled, .communityClosed, .memberExcluded,
+             .accountBanned, .accountDeleted, .unknown, .none: break
+        }
+        _ = octopus.$communityAccessDeniedReason
+    }
+
     @Test func testNotSeenNotificationCount() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = octopus.notSeenNotificationsCount
@@ -169,9 +179,55 @@ class APITests {
         _ = ClientUser.Profile(nickname: "", bio: "", picture: nil)
     }
 
+    @Test func testClientPostMedias() {
+        let clientPost = ClientPost(clientObjectId: "", groupId: "", text: "", catchPhrase: "",
+                                    medias: [.distantImage(URL(string: "")!), .localImage(Data())],
+                                    viewClientObjectButton: nil)
+        let _: [ClientPost.Attachment] = clientPost.medias
+    }
+
+    @Test func testLocalizedText() throws {
+        let autoTranslated: OctopusLocalizedText = .autoTranslated("Open")
+        let perLanguage: OctopusLocalizedText = try .perLanguage(
+            [Locale(identifier: "en"): "Open", Locale(identifier: "fr"): "Ouvrir"],
+            defaultLanguage: Locale(identifier: "en"))
+        let _: String = perLanguage.defaultText
+        let _: [Locale: String] = perLanguage.texts
+        let _: Locale? = perLanguage.defaultLanguage
+        let _: String? = perLanguage.defaultLanguageCode
+        let _: [String: String] = perLanguage.textsByLanguageCode
+        _ = autoTranslated == perLanguage
+
+        do {
+            _ = try OctopusLocalizedText.perLanguage([:], defaultLanguage: Locale(identifier: "en"))
+        } catch let error as OctopusLocalizedText.ValidationError {
+            let _: String? = error.languageCode
+            let _: String = error.debugDescription
+            switch error.kind {
+            case .emptyTexts, .blankText, .emptyLanguage, .duplicateLanguage, .defaultLanguageMissing:
+                break
+            @unknown default:
+                break
+            }
+        }
+        _ = OctopusLocalizedText.ValidationError(kind: .emptyTexts)
+        _ = OctopusLocalizedText.ValidationError(kind: .blankText, languageCode: "fr")
+    }
+
+    @Test func testClientPostLocalizedButton() throws {
+        _ = ClientPost(clientObjectId: "", text: "", viewClientObjectButton: nil)
+        _ = ClientPost(clientObjectId: "", text: "", viewClientObjectButton: .autoTranslated("See"))
+        let clientPost = ClientPost(
+            clientObjectId: "", groupId: "", text: "", catchPhrase: "", medias: [],
+            viewClientObjectButton: try .perLanguage([Locale(identifier: "en"): "See"],
+                                                     defaultLanguage: Locale(identifier: "en")))
+        let _: OctopusLocalizedText? = clientPost.viewClientObjectButton
+        let _: String? = clientPost.viewClientObjectButtonText
+    }
+
     @Test func testFetchOrCreateClientObjectRelatedPost() async throws {
         let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
-        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil)
+        let clientPost = ClientPost(clientObjectId: "", text: "", viewClientObjectButton: nil)
         let post: OctopusPost = try await octopus.fetchOrCreateClientObjectRelatedPost(
             content: clientPost,
             tokenProvider: { strToSign in
@@ -384,6 +440,7 @@ class APITests {
                 case .settingsList: break
                 case .settingsAccount: break
                 case .reportExplanation: break
+                case .communityAccessDenied: break
                 case .deleteAccount: break
                 }
             case let .notificationClicked(context):
@@ -441,10 +498,13 @@ class APITests {
         _ = OctopusInitialScreen.createPost(.init(prefilledPost: nil))
 
         // Prefilled editor
-        let cta = try OctopusPrefilledPost.CTA(url: URL(string: "https://example.com")!, label: "Open")
+        let cta = try OctopusPrefilledPost.CTA(url: URL(string: "https://example.com")!,
+                                               localizedLabel: .autoTranslated("Open"))
+        let _: String = cta.label
+        let _: OctopusLocalizedText = cta.localizedLabel
         let prefill = try OctopusPrefilledPost(
             text: "hello world long enough",
-            image: nil,
+            images: [],
             topicId: "topic-id",
             cta: cta
         )
@@ -453,18 +513,53 @@ class APITests {
         // Prefilled share with a bridge-image signing closure (image allowed in a pictures-off community)
         let signedPrefill = try OctopusPrefilledPost(
             text: "hello world long enough",
-            image: nil,
+            images: [],
             topicId: "topic-id",
             cta: cta,
             sign: { fingerprint in "jwt-for-\(fingerprint)" }
         )
         _ = OctopusInitialScreen.createPost(.init(prefilledPost: signedPrefill))
+        let _: (@Sendable (String) async throws -> String?)? = signedPrefill.bridgeShareTokenProvider
+
+        // A provider that may decline to sign: nil sends the post unsigned
+        let canDecline: Bool = .random()
+        _ = try OctopusPrefilledPost(sign: { fingerprint in canDecline ? nil : "jwt-for-\(fingerprint)" })
+
+        // A signing function typed with the non-optional result of the first versions still compiles
+        let nonOptionalSign: @Sendable (String) async throws -> String = { "jwt-for-\($0)" }
+        _ = try OctopusPrefilledPost(sign: nonOptionalSign)
+
+        // Prefilled editor with several images
+        let multiImagePrefill = try OctopusPrefilledPost(images: [])
+        let _: [Data] = multiImagePrefill.images
+        _ = OctopusInitialScreen.createPost(.init(prefilledPost: multiImagePrefill))
+
+        // Calls that pass no `image:` resolve to init(text:images:topicId:cta:sign:), not to the
+        // deprecated single-image init, so they compile without ambiguity or deprecation warning
+        _ = try OctopusPrefilledPost()
+        _ = try OctopusPrefilledPost(text: "hello world long enough")
+        _ = try OctopusPrefilledPost(text: "hello world long enough", topicId: "topic-id")
+        _ = try OctopusPrefilledPost(sign: { fingerprint in "jwt-for-\(fingerprint)" })
+
+        // Too many images throws a dedicated error, not a ValidationError
+        let tooMany = OctopusPrefilledPost.TooManyImagesError(max: 10, count: 11)
+        let _: Int = tooMany.max
+        let _: Int = tooMany.count
+        let _: String = tooMany.debugDescription
 
         // User-posts initial screen (Unified Profile) — both entry points
         _ = OctopusInitialScreen.activity(.init(clientUserId: "CLIENT_USER_ID"))
         _ = OctopusInitialScreen.activity(.init(profileId: "PROFILE_ID"))
         _ = OctopusInitialScreen.ActivityScreenInfo(clientUserId: "CLIENT_USER_ID")
         _ = OctopusInitialScreen.ActivityScreenInfo(profileId: "PROFILE_ID")
+
+        // Profile initial screen — the connected user's own, or another member's by either id
+        _ = OctopusInitialScreen.profile(.currentUser)
+        _ = OctopusInitialScreen.profile(.init(clientUserId: "CLIENT_USER_ID"))
+        _ = OctopusInitialScreen.profile(.init(profileId: "PROFILE_ID"))
+        _ = OctopusInitialScreen.ProfileScreenInfo.currentUser
+        _ = OctopusInitialScreen.ProfileScreenInfo(clientUserId: "CLIENT_USER_ID")
+        _ = OctopusInitialScreen.ProfileScreenInfo(profileId: "PROFILE_ID")
 
         // Surface every ValidationError case so removing one becomes a compile error
         func handle(_ error: OctopusPrefilledPost.ValidationError) {
@@ -558,6 +653,36 @@ extension APITests {
         let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: .sso(ssoConfiguration))
 
         octopus.disconnectUser()
+    }
+
+    /// A `switch` listing every case of a non-exhaustive public enum, then `@unknown default`, as integrators write
+    /// it, keeps compiling without a warning. This target is in the SDK's package, where `@nonexhaustive` has no
+    /// effect: what an integrator's `switch` without `@unknown default` gets is only visible from another package,
+    /// such as the Sample.
+    @Test func testSwitchOverNonexhaustiveEnums() throws {
+        func describe(_ error: OctopusSetReactionError) -> String {
+            switch error {
+            case .unknownReaction, .postNotFound, .notConnected, .noNetwork, .serverError, .other: "known"
+            @unknown default: "unknown"
+            }
+        }
+        func describe(_ strategy: URLOpeningStrategy) -> String {
+            switch strategy {
+            case .handledByApp: "app"
+            case .handledByOctopus: "octopus"
+            @unknown default: "unknown"
+            }
+        }
+        func describe(_ age: ClientUser.AgeInformation) -> String {
+            // Closed by nature: still exhaustive, no `@unknown default` needed.
+            switch age {
+            case .legalAgeReached: "adult"
+            case .underaged: "minor"
+            }
+        }
+        _ = describe(OctopusSetReactionError.noNetwork)
+        _ = describe(URLOpeningStrategy.handledByApp)
+        _ = describe(ClientUser.AgeInformation.legalAgeReached)
     }
 }
 
@@ -668,6 +793,33 @@ extension APITests {
         let octopus = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let _: [Topic] = octopus.topics
         try await octopus.fetchTopics()
+    }
+
+    @Test func testDeprecatedPrefilledPostImage() throws {
+        let withImage = try OctopusPrefilledPost(text: "hello world long enough", image: nil, topicId: "topic-id")
+        let _: Data? = withImage.image
+        _ = try OctopusPrefilledPost(image: nil)
+        _ = try OctopusPrefilledPost(image: Data(), topicId: "topic-id")
+        _ = try OctopusPrefilledPost(text: "hello world long enough", image: nil, sign: { "jwt-for-\($0)" })
+    }
+
+    @Test func testDeprecatedPrefilledPostSign() throws {
+        let signed = try OctopusPrefilledPost(sign: { "jwt-for-\($0)" })
+        let _: (@Sendable (String) async throws -> String)? = signed.sign
+    }
+
+    @Test func testDeprecatedStringButtonLabels() throws {
+        let cta = try OctopusPrefilledPost.CTA(url: URL(string: "https://example.com")!, label: "Open")
+        let _: String = cta.label
+        let clientPost = ClientPost(clientObjectId: "", groupId: "", text: "", catchPhrase: "", medias: [],
+                                    viewClientObjectButtonText: "See")
+        let _: String? = clientPost.viewClientObjectButtonText
+        _ = ClientPost(clientObjectId: "", text: "", viewClientObjectButtonText: nil)
+    }
+
+    @Test func testDeprecatedClientPostAttachment() {
+        let clientPost = ClientPost(clientObjectId: "", text: "", attachment: nil, viewClientObjectButtonText: nil)
+        let _: ClientPost.Attachment? = clientPost.attachment
     }
 
     @Test func testDeprecatedClientPostInit() async throws {

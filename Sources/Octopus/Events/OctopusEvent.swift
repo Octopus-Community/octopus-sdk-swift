@@ -5,6 +5,9 @@
 import Foundation
 import OctopusCore
 
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusEvent: Sendable {
     // MARK: Community events
 
@@ -64,8 +67,9 @@ public enum OctopusEvent: Sendable {
 
     /// Sent when an Octopus UI session is started
     case sessionStarted(SessionStartedContext)
-    /// Sent when an Octopus UI session is stopped (call either when the Octopus UI is closed or when the app is put in
-    /// background).
+    /// Sent when an Octopus UI session is stopped: either when the Octopus UI is closed, or when the app stays in
+    /// background longer than a 10 second grace period (sent once the grace period is over, or when the app comes
+    /// back if iOS suspended it meanwhile). A shorter trip to the background keeps the session.
     case sessionStopped(SessionStoppedContext)
 }
 

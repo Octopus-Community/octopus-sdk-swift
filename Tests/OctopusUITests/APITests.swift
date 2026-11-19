@@ -27,6 +27,11 @@ class APITests {
                               initialScreen: .activity(.init(clientUserId: "CLIENT_USER_ID")))
         _ = OctopusHomeScreen(octopus: octopusSdk,
                               initialScreen: .activity(.init(profileId: "PROFILE_ID")))
+        _ = OctopusHomeScreen(octopus: octopusSdk, initialScreen: .profile(.currentUser))
+        _ = OctopusHomeScreen(octopus: octopusSdk,
+                              initialScreen: .profile(.init(clientUserId: "CLIENT_USER_ID")))
+        _ = OctopusHomeScreen(octopus: octopusSdk,
+                              initialScreen: .profile(.init(profileId: "PROFILE_ID")))
         _ = OctopusHomeScreen(octopus: octopusSdk, navigationMode: .automatic)
         _ = OctopusHomeScreen(octopus: octopusSdk, navigationMode: .navigationStack)
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingAction: .close(onTap: {}))
@@ -76,6 +81,33 @@ class APITests {
         _ = OctopusTheme.Assets.Icons.Content(
             defaultLikeNotSelected: UIImage()
         )
+    }
+
+    @Test func testContentIconsApi() async throws {
+        // Default construction
+        _ = OctopusTheme.Assets.Icons.Content()
+        // Partial override: the icon of the button that shows a translated content in its original language
+        _ = OctopusTheme.Assets.Icons.Content(translation: UIImage())
+        // Every parameter at once, in declaration order
+        _ = OctopusTheme.Assets.Icons.Content(
+            post: .init(),
+            comment: .init(),
+            reply: .init(),
+            video: .init(),
+            poll: .init(),
+            reaction: .init(),
+            delete: UIImage(),
+            report: UIImage(),
+            translation: UIImage(),
+            defaultNotAvailable: UIImage(),
+            defaultLikeNotSelected: UIImage(),
+            defaultAddPicture: UIImage(),
+            defaultDeletePicture: UIImage(),
+            defaultCreateResponse: UIImage(),
+            defaultOpenResponseCreation: UIImage())
+        // Wired into Icons, and readable back
+        let icons = OctopusTheme.Assets.Icons(content: .init(translation: UIImage()))
+        let _: UIImage = icons.content.translation
     }
 
     @Test func testCommonIconsApi() async throws {
@@ -161,8 +193,9 @@ class APITests {
         let sdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         let prefill = try OctopusPrefilledPost(
             text: "hello world long enough",
+            images: [],
             cta: try OctopusPrefilledPost.CTA(
-                url: URL(string: "https://example.com")!, label: "Open"))
+                url: URL(string: "https://example.com")!, localizedLabel: .autoTranslated("Open")))
         _ = OctopusHomeScreen(
             octopus: sdk,
             initialScreen: .createPost(.init(prefilledPost: prefill))
@@ -173,6 +206,10 @@ class APITests {
         )
     }
 
+}
+
+/// Deprecated APIs (tests are still here to ensure old APIs can still be called)
+extension APITests {
     @Test func testProfileScreen() throws {
         let octopusSdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = OctopusProfileScreen(octopus: octopusSdk)
@@ -186,10 +223,16 @@ class APITests {
             navigationMode: .navigationStack, navBarLeadingAction: .close(onTap: {}))
     }
 
-}
+    @Test func testOctopusHomeScreenWithDeprecatedPrefilledPostImage() throws {
+        let sdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
+        let prefill = try OctopusPrefilledPost(text: "hello world long enough", image: nil)
+        let _: Data? = prefill.image
+        _ = OctopusHomeScreen(
+            octopus: sdk,
+            initialScreen: .createPost(.init(prefilledPost: prefill))
+        )
+    }
 
-/// Deprecated APIs (tests are still here to ensure old APIs can still be called)
-extension APITests {
     @Test func testOldHomeScreen() async throws {
         let octopusSdk = try OctopusSDK(apiKey: "API_KEY", connectionMode: connectionMode)
         _ = OctopusHomeScreen(octopus: octopusSdk, navBarLeadingItem: .logo)

@@ -5,6 +5,9 @@
 import Foundation
 
 /// The initial screen to display when opening the Octopus UI.
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusInitialScreen {
     /// The main feed screen with the feed selector
     case mainFeed
@@ -33,6 +36,19 @@ public enum OctopusInitialScreen {
     /// the host app. Use this entry point to let a user share an
     /// in-app object into the community.
     case createPost(CreatePostScreenInfo)
+
+    /// The profile of a member: the connected user's own (``ProfileScreenInfo/currentUser``), or another
+    /// member's, identified by your app's own id (``ProfileScreenInfo/init(clientUserId:)``) or by their
+    /// Octopus profile id (``ProfileScreenInfo/init(profileId:)``).
+    ///
+    /// A client user id is resolved to its Octopus profile through the client-user-id lookup (requires the
+    /// community to expose client user ids). When it cannot be resolved (unknown id, the community does not
+    /// expose client user ids, or a network failure), the screen shows an error state: it never falls back to
+    /// the connected user's own profile.
+    ///
+    /// Like every initial screen, it is replaced by the access denied screen when the user cannot access the
+    /// community.
+    case profile(ProfileScreenInfo)
 
     /// Info needed to display a post screen
     public struct PostScreenInfo {
@@ -90,6 +106,50 @@ public enum OctopusInitialScreen {
         /// - Parameter profileId: The Octopus profile id of the member whose posts to display.
         public init(profileId: String) {
             self.source = .profileId(profileId)
+        }
+    }
+
+    /// Info needed to display the profile of a member. Construct it with ``currentUser`` for the connected
+    /// user's own profile, with the host app's own client user id (``init(clientUserId:)``) or with the
+    /// member's Octopus profile id (``init(profileId:)``).
+    public struct ProfileScreenInfo {
+        /// Whose profile to display.
+        package enum Source: Equatable {
+            /// The connected user's own profile.
+            case currentUser
+            /// The host app's own id for the member, resolved to an Octopus profile through the
+            /// client-user-id lookup.
+            case clientUserId(String)
+            /// The member's Octopus profile id — already resolved, needs no lookup.
+            case profileId(String)
+        }
+
+        /// Whose profile to display.
+        package let source: Source
+
+        /// The connected user's own profile.
+        public static var currentUser: ProfileScreenInfo { .init(source: .currentUser) }
+
+        /// Constructor from the host app's own id for the member.
+        ///
+        /// The id is resolved to an Octopus profile through the client-user-id lookup (requires the
+        /// community to expose client user ids).
+        /// - Parameter clientUserId: The host app's own id for the member whose profile to display.
+        public init(clientUserId: String) {
+            self.source = .clientUserId(clientUserId)
+        }
+
+        /// Constructor from the member's Octopus profile id.
+        ///
+        /// Use this when you already hold the member's Octopus profile id: the screen opens directly, with no
+        /// client-user-id lookup.
+        /// - Parameter profileId: The Octopus profile id of the member whose profile to display.
+        public init(profileId: String) {
+            self.source = .profileId(profileId)
+        }
+
+        private init(source: Source) {
+            self.source = source
         }
     }
 

@@ -7,8 +7,8 @@ import SwiftUI
 import Octopus
 import OctopusUI
 
-/// A view that shows how to open `OctopusProfileScreen` directly, either for the connected user or for
-/// another user resolved from the host app's own clientUserId.
+/// A view that shows how to open a profile directly with `OctopusHomeScreen` and the `.profile` initial screen,
+/// either for the connected user or for another user resolved from the host app's own clientUserId.
 struct ProfileDirectOpenView: View {
     @StateObjectCompat private var viewModel = SampleSDKViewModel()
 
@@ -69,11 +69,13 @@ struct ProfileDirectOpenView: View {
         }
         .dismissedOnPushRouting($displayOwnProfile)
         .sheet(isPresented: $displayOwnProfile) {
-            OctopusProfileScreen(octopus: viewModel.octopus)
+            OctopusHomeScreen(octopus: viewModel.octopus, initialScreen: .profile(.currentUser),
+                              navigationMode: .navigationStack)
         }
         .dismissedOnPushRouting($displayProfileForClientUserId)
         .sheet(isPresented: $displayProfileForClientUserId) {
-            OctopusProfileScreen(octopus: viewModel.octopus, clientUserId: clientUserId)
+            OctopusHomeScreen(octopus: viewModel.octopus, initialScreen: .profile(.init(clientUserId: clientUserId)),
+                              navigationMode: .navigationStack)
         }
         .sampleScreenBackground()
         .hostAppFooter()

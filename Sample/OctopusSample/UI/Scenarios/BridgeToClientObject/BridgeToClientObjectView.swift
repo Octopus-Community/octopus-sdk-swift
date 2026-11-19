@@ -152,30 +152,30 @@ private struct RecipeView: View {
                     .font(.headline.bold())
                 ScrollView {
                     VStack {
-                        switch recipe.img {
-                        case let .local(img):
-                            Image(img)
-                                .resizable()
-                                .scaledToFit()
-                        case let .remote(url):
-                            if #available(iOS 15.0, *) {
-                                AsyncImage(url: url) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFit()
-                                } placeholder: {
-                                    let width = geometry.size.width
-                                    let aspectRatio = 1936.0 / 2592.0
-                                    let height = width * aspectRatio
+                        ForEach(recipe.images.indices, id: \.self) { index in
+                            switch recipe.images[index] {
+                            case let .local(img):
+                                Image(img)
+                                    .resizable()
+                                    .scaledToFit()
+                            case let .remote(url):
+                                if #available(iOS 15.0, *) {
+                                    AsyncImage(url: url) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                    } placeholder: {
+                                        let width = geometry.size.width
+                                        let aspectRatio = 1936.0 / 2592.0
+                                        let height = width * aspectRatio
 
-                                    VStack {
-                                        ProgressView()
+                                        VStack {
+                                            ProgressView()
+                                        }
+                                        .frame(width: width, height: height)
                                     }
-                                    .frame(width: width, height: height)
                                 }
                             }
-                        case .none:
-                            EmptyView()
                         }
                         ZStack {
                             Button(action: {
@@ -254,7 +254,7 @@ private struct RecipeView: View {
                         presenting: viewModel.error,
                         actions: { _ in },
                         message: { error in
-                            Text(error.localizedDescription)
+                            Text(String(reflecting: error))
                         })
                 } else {
                     $0

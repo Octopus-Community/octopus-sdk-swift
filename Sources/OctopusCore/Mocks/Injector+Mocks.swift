@@ -16,6 +16,9 @@ enum Mock {
     case appStateMonitor
     case blockedUserIdsProvider
     case configRepository
+    case backgroundTaskProvider
+    /// An open community, with a closure stored in its own user defaults suite and a purger that deletes nothing.
+    case communityClosure
 }
 
 extension Injector {
@@ -38,8 +41,19 @@ extension Injector {
                 register { _ in MockBlockedUserIdsProvider() }
             case .configRepository:
                 register { _ in MockConfigRepository() }
+            case .backgroundTaskProvider:
+                register { _ in MockBackgroundTaskProvider() }
+            case .communityClosure:
+                registerCommunityClosure(store: CommunityClosureStore(
+                    apiKey: "apiKey", userDefaults: UserDefaults(suiteName: "MockCommunityClosure-\(UUID())")!))
             }
         }
+    }
+
+    /// Registers the closure repository on `store`, which a test can fill before, and a purger that deletes nothing.
+    func registerCommunityClosure(store: CommunityClosureStore) {
+        register { _ in MockCommunityClosurePurger() }
+        register { CommunityClosureRepository(injector: $0, store: store) }
     }
 }
 #endif

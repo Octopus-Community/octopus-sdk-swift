@@ -11,7 +11,7 @@ extension AuthenticatedActionError {
     var displayableMessage: DisplayableString {
         switch self {
         case .noNetwork:
-            return .localizationKey("Error.NoNetwork")
+            return .noNetworkError
         case let .serverError(serverError):
             // The server explains why it refused; show that rather than a generic message. An absent or
             // empty reason falls back to a dedicated string, never to an empty one.
@@ -20,13 +20,13 @@ extension AuthenticatedActionError {
                 if let reason { return .localizedString(reason) }
             case let .permissionDenied(reason):
                 return reason.map { DisplayableString.localizedString($0) }
-                    ?? .localizationKey("Error.PermissionDenied")
+                    ?? .permissionDeniedError
             default:
                 break
             }
             fallthrough
         default:
-            return .localizationKey("Error.Unknown")
+            return .unknownError
         }
     }
 }

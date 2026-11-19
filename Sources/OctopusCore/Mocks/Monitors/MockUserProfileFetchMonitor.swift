@@ -10,10 +10,12 @@ import OctopusGrpcModels
 class MockUserProfileFetchMonitor: UserProfileFetchMonitor, InjectableObject {
     static let injectedIdentifier = Injected.userProfileFetchMonitor
 
-    var userProfileResponsePublisher: AnyPublisher<(Com_Octopuscommunity_GetPrivateProfileResponse, String), Never> {
+    /// Tickets are taken when the response is set, as if its request had just been sent.
+    var orderedUserProfileResponsePublisher: AnyPublisher<
+        (Com_Octopuscommunity_GetPrivateProfileResponse, String, ProfileGamificationOrder.Ticket), Never> {
         $userProfileResponse
-            .filter { $0 != nil }
-            .map { $0! }
+            .compactMap { $0 }
+            .map { response, userId in (response, userId, ProfileGamificationOrder.nextTicket()) }
             .eraseToAnyPublisher()
     }
     @Published var userProfileResponse: (Com_Octopuscommunity_GetPrivateProfileResponse, String)?

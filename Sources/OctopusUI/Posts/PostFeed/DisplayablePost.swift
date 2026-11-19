@@ -59,7 +59,7 @@ struct DisplayablePost: Equatable {
     }
     let uuid: String
     let author: Author
-    let relativeDate: String
+    let relativeDate: DisplayableDate
     let topic: String?
     /// Identifier of the post's group (its `parentId`). Backs the "View group" menu entry.
     let groupId: String?
@@ -87,6 +87,12 @@ struct DisplayablePost: Equatable {
         case .moderated: false
         }
     }
+
+    /// Whether tapping the card opens the post detail. Otherwise, the tap expands the text in place: there is
+    /// nothing to read nor to write below the post.
+    var cardTapOpensDetail: Bool {
+        canCreateChildren || hasChildren
+    }
 }
 
 extension DisplayablePost {
@@ -96,7 +102,7 @@ extension DisplayablePost {
          gamificationLevels: [GamificationLevel],
          liveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>,
          childLiveMeasuresPublisher: CurrentValueSubject<LiveMeasures, Never>?,
-         thisUserProfileId: String?, topic: Topic?, dateFormatter: RelativeDateTimeFormatter,
+         thisUserProfileId: String?, topic: Topic?, dateFormatter: ContentDateFormatter,
          onAppear: @escaping () -> Void, onDisappear: @escaping () -> Void) {
         uuid = post.uuid
         self.position = position
@@ -156,7 +162,7 @@ extension DisplayablePost {
             // here rather than leaking an admin/self check that has no UI entry point.
             canBeBlockedByUser = false
         }
-        relativeDate = dateFormatter.customLocalizedStructure(for: post.creationDate, relativeTo: Date())
+        relativeDate = dateFormatter.displayableDate(for: post.creationDate)
         self.topic = topic?.name
         self.groupId = post.parentId
 

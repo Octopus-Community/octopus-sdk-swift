@@ -150,8 +150,8 @@ class ReactionsListViewModel: ObservableObject {
 
     private static func message(for error: ServerCallError) -> DisplayableString {
         switch error {
-        case .noNetwork: .localizationKey("Error.NoNetwork")
-        default: .localizationKey("Error.Unknown")
+        case .noNetwork: .noNetworkError
+        default: .unknownError
         }
     }
 }

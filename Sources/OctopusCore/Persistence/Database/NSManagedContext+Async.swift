@@ -34,6 +34,39 @@ extension NSManagedObjectContext {
         }
     }
 
+    /// Queues `block` on the context's queue before returning, then calls `completion` with the error it threw, if any.
+    ///
+    /// `performAsync(_:)` only queues its block once a task has checked the stores, so two writes requested one
+    /// after the other can run in either order. Here the block takes its place in the queue right away: any write
+    /// requested after this call runs after it. Meant for the logout purge, which must not erase what the next
+    /// session writes. The stores are checked on the queue, as in `performAsync(_:)`.
+    ///
+    /// - Warning: When the context has no store, after a teardown or a store that failed to load, the block falls back
+    ///   to `performAsync(_:)`: it loses its place in the queue (a write requested meanwhile may run first) and fails
+    ///   if no store is back within `performAsync(_:)`'s 0.1 s wait.
+    func performQueued(_ block: @escaping () throws -> Void, completion: @escaping @Sendable (Error?) -> Void) {
+        let block = UncheckedSendableBlock(run: block)
+        perform { [self] in
+            guard persistentStoreCoordinator?.persistentStores.isEmpty == false else {
+                Task {
+                    do {
+                        try await performAsync { try block.run() }
+                        completion(nil)
+                    } catch {
+                        completion(error)
+                    }
+                }
+                return
+            }
+            do {
+                try block.run()
+                completion(nil)
+            } catch {
+                completion(error)
+            }
+        }
+    }
+
     /// Runs `block` on the context's queue, with none of the checks of `performAsync(_:)`.
     ///
     /// - Warning: Not for reads nor writes, which go through `performAsync(_:)`: a `save()` made here after a teardown

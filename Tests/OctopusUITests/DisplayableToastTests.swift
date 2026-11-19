@@ -48,9 +48,11 @@ struct DisplayableToastTests {
     func everyGamificationToastIsAnnouncedWithItsTranslatedSentence(action: GamificationAction) {
         let toast = GamificationToast(action: action, formattedPoints: "42")
 
-        let announcement = toast.localizedString(locale: Locale(identifier: "en"))
+        for tone in [TextTone.formal, .informal] {
+            let announcement = toast.localizedString(locale: Locale(identifier: "en"), tone: tone)
 
-        #expect(!announcement.hasPrefix("Gamification.Toast."))
-        #expect(announcement.contains("42"))
+            #expect(!announcement.hasPrefix("Gamification.Toast."))
+            #expect(announcement.contains("42"))
+        }
     }
 }

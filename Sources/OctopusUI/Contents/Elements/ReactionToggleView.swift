@@ -13,10 +13,13 @@ struct ReactionToggleView: View {
 
     let likeNotSelectedImage: UIImage
     let userReaction: UserReaction?
+    /// The name of the reaction on comments and replies, the total of reactions on posts.
+    var caption: ReactionInteractionView.Caption = .reactionLabel
+    /// Inside the tap area, so that a bar can keep its icons on the screen's gutter while the button reaches past it.
+    var horizontalPadding: CGFloat = 0
     let reactionTapped: (ReactionKind?) -> Void
 
     @State private var showReactionPicker = false
-    @State private var screenWidth: CGFloat = .zero
 
     var body: some View {
         // `Button` + a custom `ButtonStyle` that reads `configuration.isPressed` is Apple's
@@ -35,22 +38,22 @@ struct ReactionToggleView: View {
         }) {
             ReactionInteractionView(
                 defaultImage: likeNotSelectedImage,
-                reaction: userReaction?.kind)
+                reaction: userReaction?.kind,
+                caption: caption)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabelInBundle(
-                "Accessibility.Reaction.Button_reaction:\(reactionAccessibilityValue)"
-            )
-            .accessibilityValueInBundle(
-                userReaction != nil
-                    ? "Accessibility.Common.Selected"
-                    : "Accessibility.Common.NotSelected"
-            )
+            .modify {
+                if #available(iOS 14.0, *) {
+                    $0.accessibilityLabel(accessibilityLabel)
+                        .accessibilityValue(accessibilityValue)
+                } else { $0 }
+            }
             .modify {
                 if #available(iOS 17.0, *) {
                     $0.accessibilityAddTraits(.isToggle)
                 } else { $0 }
             }
             .padding(.vertical, 10)
+            .padding(.horizontal, horizontalPadding)
             .frame(minWidth: 44, minHeight: 44)
             .contentShape(Rectangle())
         }
@@ -62,15 +65,14 @@ struct ReactionToggleView: View {
                     showReactionPicker.toggle()
                 }
         )
-        .readScreenWidth($screenWidth)
         .displayableOverlay(
             isPresented: $showReactionPicker,
             horizontalPadding: 12,
             verticalPadding: 12
-        ) {
+        ) { windowSafeArea in
             PopoverReactionsBar(
                 reactions: ReactionKind.knownValues,
-                screenWidth: screenWidth,
+                availableWidth: windowSafeArea.width,
                 reactionTapped: {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         showReactionPicker = false
@@ -78,6 +80,25 @@ struct ReactionToggleView: View {
                     reactionTapped($0)
                 })
         }
+    }
+
+    /// "Like reaction" under a comment, where the name is on screen. Under a post only the count is: VoiceOver reads
+    /// "Like, 192 reactions", the name of the reaction followed by the total.
+    private var accessibilityLabel: Text {
+        switch caption {
+        case .reactionLabel:
+            Text("Accessibility.Reaction.Button_reaction:\(reactionAccessibilityValue)", bundle: .module)
+        case .count:
+            Text(verbatim: reactionAccessibilityValue)
+        }
+    }
+
+    private var accessibilityValue: Text {
+        let selection = Text(
+            userReaction != nil ? "Accessibility.Common.Selected" : "Accessibility.Common.NotSelected",
+            bundle: .module)
+        guard case let .count(count) = caption, count > 0 else { return selection }
+        return Text("Accessibility.Reaction.Count_count:\(count)", bundle: .module) + Text(verbatim: ", ") + selection
     }
 
     private var reactionAccessibilityValue: String {

@@ -10,7 +10,7 @@ import OctopusCore
 struct PostViewData {
     let uuid: String
     let author: Author
-    let relativeDate: String
+    let relativeDate: DisplayableDate
     let topic: String?
     /// Identifier of the post's group. Backs the "View group" menu entry (nil hides it).
     let groupId: String?
@@ -22,6 +22,9 @@ struct PostViewData {
     /// Whether the current user can create comments on this post.
     /// Used in the feed cell to intercept the card tap when `false`.
     let canCreateChildren: Bool
+    /// Whether tapping the card in a feed opens the post detail (rather than expanding its text), see
+    /// `DisplayablePost.cardTapOpensDetail`. Always `false` in the post detail.
+    let cardTapOpensDetail: Bool
     /// Visibility payload emitted via `VisibleItemsPreference` on the video view so that the
     /// enclosing scroll modifier (`postsVisibilityScrollView`) can auto-play the centered video.
     let visiblePost: VisiblePost

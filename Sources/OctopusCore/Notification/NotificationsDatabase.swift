@@ -32,6 +32,11 @@ class NotificationsDatabase: InjectableObject {
         .eraseToAnyPublisher()
     }
 
+    /// - Warning: To be called on the context's queue, from a block that saves afterwards.
+    func deleteAllOnQueue() throws {
+        try context.fetch(NotificationEntity.fetchAll()).forEach { context.delete($0) }
+    }
+
     func replaceAll(notifications: [OctoNotification]) async throws {
         try await context.performAsync { [context] in
 

@@ -29,6 +29,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     private let toastsRepository: ToastsRepository
     private let sdkEventsEmitter: SdkEventsEmitter
     private let configRepository: ConfigRepository
+    private let imageUploadsService: ImageUploadsService
 
     public var postSentPublisher: AnyPublisher<Void, Never> {
         _postSentPublisher.receive(on: DispatchQueue.main).eraseToAnyPublisher()
@@ -50,6 +51,7 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
         toastsRepository = injector.getInjected(identifiedBy: Injected.toastsRepository)
         sdkEventsEmitter = injector.getInjected(identifiedBy: Injected.sdkEventsEmitter)
         configRepository = injector.getInjected(identifiedBy: Injected.configRepository)
+        imageUploadsService = injector.getInjected(identifiedBy: Injected.imageUploadsService)
 
         commentFeedsStore = injector.getInjected(identifiedBy: Injected.commentFeedsStore)
         userInteractionsDelegate = UserInteractionsDelegate(injector: injector)
@@ -91,11 +93,13 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let response = try await remoteClient.octoService.get(
-                octoObjectInfo: OctoObjectInfo(id: uuid, hasVideo: hasVideo),
-                options: .all,
-                incrementViewCount: incrementViewCount,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            let response = try await authCallProvider.withAuthenticatedIfPossibleMethod { method, isReplay in
+                try await remoteClient.octoService.get(
+                    octoObjectInfo: OctoObjectInfo(id: uuid, hasVideo: hasVideo),
+                    options: .all,
+                    incrementViewCount: incrementViewCount && !isReplay,
+                    authenticationMethod: method)
+            }
             let octoPost = response.octoObject
             let aggregate = response.hasAggregate ? response.aggregate : nil
             let userInteraction = response.hasRequesterCtx ? response.requesterCtx : nil
@@ -125,11 +129,13 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                                     incrementViewCount: Bool = false) async throws(ServerCallError) {
         guard networkMonitor.connectionAvailable else { throw .noNetwork }
         do {
-            let batchResponse = try await remoteClient.octoService.getBatch(
-                octoObjectInfos: ids.map { OctoObjectInfo(id: $0, hasVideo: $1) },
-                options: [.aggregates, .interactions],
-                incrementViewCount: incrementViewCount,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            let batchResponse = try await authCallProvider.withAuthenticatedIfPossibleMethod { method, isReplay in
+                try await remoteClient.octoService.getBatch(
+                    octoObjectInfos: ids.map { OctoObjectInfo(id: $0, hasVideo: $1) },
+                    options: [.aggregates, .interactions],
+                    incrementViewCount: incrementViewCount && !isReplay,
+                    authenticationMethod: method)
+            }
             let additionalData = batchResponse.responses
                 .compactMap { response -> (String, AggregatedInfo?, UserInteractions?, UserPermissions?)? in
                     let aggregateInfo = response.hasAggregate ? AggregatedInfo(from: response.aggregate) : nil
@@ -151,8 +157,8 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     @discardableResult
     public func send(_ post: WritablePost,
                      creationSource: CreationSource = .user,
-                     bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String)? = nil)
-    async throws(SendPost.Error) -> (Post, Data?) {
+                     bridgeShareSignature: (@Sendable (_ fingerprint: String) async throws -> String?)? = nil)
+    async throws(SendPost.Error) -> (Post, [Data]) {
         // Local safety net only: the server stays the authority on the community setting. Reading the
         // setting here keeps a post the community accepts (an image without text) from being refused
         // before it is even sent. Without a loaded config, text stays required.
@@ -164,32 +170,46 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
 
         do {
             var post = post
-            post.text = Validators.Post.publishableText(post.text, hasImage: post.image != nil,
+            post.text = Validators.Post.publishableText(post.text, hasImage: !post.images.isEmpty,
                                                         textRequired: textRequired)
-            var imageIsCompressed = false
-            if let imageData = post.image {
-                let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
-                post.image = resizedImgData
-                imageIsCompressed = isCompressed
-            }
+            // The server enforces, through the upload URL, the byte size declared when asking for it: the bytes that
+            // are uploaded must be exactly the resized ones.
+            let resizedImages = post.images.map { ImageResizer.resizeIfNeeded(imageData: $0) }
+            post.images = resizedImages.map(\.imgData)
 
             // For a prefilled (bridge) share carrying an image, sign the content so the
             // server accepts the image even in a pictures-off community. The fingerprint is computed on
             // the RESIZED/uploaded bytes, the only ones the backend PrefilledShareVerifier sees, so the
             // two computations match (see `BridgeShareFingerprint`). The poll is deliberately left out:
-            // the backend fingerprint covers text, CTA and image only.
+            // the backend fingerprint covers text, CTA (with its per-language labels) and image only. A host
+            // that cannot sign returns nil: the post goes unsigned and the server, which reads the token only
+            // when the community forbids pictures, decides.
             var clientToken: String?
-            if let bridgeShareSignature, let resizedImgData = post.image {
+            if let bridgeShareSignature, !post.images.isEmpty {
                 let fingerprint = BridgeShareFingerprint.compute(
                     text: post.text,
                     ctaText: post.cta?.label,
                     ctaTargetLink: post.cta?.url.absoluteString,
-                    images: [.bytes(resizedImgData)])
+                    ctaLabels: post.cta?.perLanguageLabels,
+                    images: post.images.map { .bytes($0) })
                 clientToken = try await bridgeShareSignature(fingerprint)
             }
 
+            let uploadAuthenticationMethod = try authCallProvider.authenticatedMethod()
+            let uploadIds: [String]
+            do {
+                uploadIds = try await imageUploadsService.upload(
+                    post.images, authenticationMethod: uploadAuthenticationMethod)
+            } catch {
+                let sendError: SendPost.Error = error.asInputActionError { .init(from: $0) }
+                throw sendError
+            }
+
+            // The method is read again here, not reused from the upload call: the uploads can take a while and the
+            // token it carries may have expired or been rotated since. Sending the stale one would be refused as
+            // unauthenticated, which drops the session although a fresh token is already stored.
             let response = try await remoteClient.octoService.put(
-                post: post.rwOctoObject(imageIsCompressed: imageIsCompressed),
+                post: post.rwOctoObject(uploadIds: uploadIds, imagesAreOptimized: resizedImages.map(\.isCompressed)),
                 creationSource: creationSource.proto,
                 clientToken: clientToken,
                 authenticationMethod: try authCallProvider.authenticatedMethod())
@@ -207,13 +227,13 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
                 let hasVideo = finalPost.medias.contains { $0.kind == .video }
                 try? await fetchAdditionalData(ids: [(finalPost.uuid, hasVideo)], incrementViewCount: false)
                 _postSentPublisher.send()
-                let imageData = post.image
+                let imageDatas = post.images
                 let createdPost = Post(storablePost: finalPost, commentFeedsStore: commentFeedsStore, featuredComment: nil)
                 sdkEventsEmitter.emit(.contentCreated(content: createdPost))
                 sdkEventsEmitter.emit(.postCreated(.init(from: createdPost)))
                 gamificationRepository.register(action: .post)
                 toastsRepository.display(userAction: .postCreated)
-                return (createdPost, imageData)
+                return (createdPost, imageDatas)
             case let .fail(failure):
                 throw SendPost.Error.validation(.init(from: failure))
             case .none:
@@ -393,9 +413,11 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     async throws(GetOrCreateClientPost.Error) -> Post? {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
-            let response = try await remoteClient.octoService.getBridgePost(
-                clientObjectId: clientObjectId,
-                authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            let response = try await authCallProvider.withAuthenticatedIfPossibleMethod {
+                try await remoteClient.octoService.getBridgePost(
+                    clientObjectId: clientObjectId,
+                    authenticationMethod: $0)
+            }
             switch response.result {
             case let .success(content):
                 let aggregate = content.hasAggregate ? content.aggregate : nil
@@ -428,10 +450,24 @@ public class PostsRepository: InjectableObject, @unchecked Sendable {
     async throws(GetOrCreateClientPost.Error) -> Post? {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
+            // Only the local images are uploaded, the distant ones are sent as url. The local images are uploaded
+            // exactly as the client gave them (no resize: the client prepared them, as the signature, computed by
+            // the caller on those same bytes, assumes), and their raw byte count is the size declared to the storage.
+            let uploadIds: [String]
+            do {
+                // The upload names the client object and carries the token that signs the post, the same one that
+                // is given to the creation below, which checks its fingerprint on the uploaded bytes.
+                uploadIds = try await imageUploadsService.upload(
+                    clientPost.localImages,
+                    bridge: .init(clientObjectId: clientPost.clientObjectId, clientToken: clientToken),
+                    authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
+            } catch {
+                let bridgeError: GetOrCreateClientPost.Error = error.asInputActionError { .init(from: $0) }
+                throw bridgeError
+            }
+            // The method is read again after the uploads, see `send`: the token read before them may be stale.
             let response = try await remoteClient.octoService.createBridgePost(
-                // send imageIsCompressed = true because we don't know what the client did on the image so avoid
-                // re-compressing it
-                post: clientPost.rwOctoPost(imageIsCompressed: true),
+                post: try clientPost.rwOctoPost(uploadIds: uploadIds),
                 topicId: clientPost.groupId,
                 clientToken: clientToken,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())
@@ -492,14 +528,18 @@ extension PostsRepository {
         guard networkMonitor.connectionAvailable else { throw .serverCall(.noNetwork) }
         do {
             var clientPost = content
-            var imageIsCompressed = false
-            if case let .localImage(imageData) = clientPost.attachment {
+            var imagesAreCompressed: [Bool] = []
+            clientPost.medias = clientPost.medias.map { media in
+                guard case let .localImage(imageData) = media else {
+                    imagesAreCompressed.append(false)
+                    return media
+                }
                 let (resizedImgData, isCompressed) = ImageResizer.resizeIfNeeded(imageData: imageData)
-                clientPost.attachment = .localImage(resizedImgData)
-                imageIsCompressed = isCompressed
+                imagesAreCompressed.append(isCompressed)
+                return .localImage(resizedImgData)
             }
             let response = try await remoteClient.octoService.getOrCreateBridgePost(
-                post: clientPost.rwOctoPost(imageIsCompressed: imageIsCompressed),
+                post: clientPost.rwOctoPost(imagesAreCompressed: imagesAreCompressed),
                 topicId: clientPost.groupId,
                 clientToken: clientPost.signature,
                 authenticationMethod: authCallProvider.authenticatedIfPossibleMethod())

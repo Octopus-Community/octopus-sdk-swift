@@ -303,8 +303,8 @@ struct ActivityView: View {
 /// Content container of the other-user mode: a pull-to-refresh scroll of the member's posts with the
 /// powered-by footer, or a loader until the feed is ready / the clientUserId lookup fails. When the
 /// community exposes another member's comments the scroll is topped by the same
-/// Posts/Comments tabs as `ProfileSummaryView` — with no tab bar at all when it does not, which is the
-/// screen's historical posts-only look.
+/// Posts/Comments tabs as `ProfileSummaryView` — with no tab bar at all when it does not, Posts being
+/// then the only tab (``ProfileTabsLayout/showsTabRow(tabCount:)``, the rule both screens follow).
 private struct OtherUserPostsContainerView<CommentsView: View, PostsView: View>: View {
     @Environment(\.octopusTheme) private var theme
 
@@ -320,7 +320,7 @@ private struct OtherUserPostsContainerView<CommentsView: View, PostsView: View>:
     @ViewBuilder let postsView: PostsView
 
     /// Posts(0) / Comments(1) — the same order as `ProfileSummaryView`, the other screen that shows a
-    /// member's profile. Ignored while `showsCommentsTab` is false: no tab bar is rendered at all.
+    /// member's profile. Ignored while Posts is the only tab: no tab bar is rendered at all.
     @State private var selectedTab = 0
     @State private var displayStickyHeader = false
     /// Scroll offset shared by the inline tab row and the pinned pill row that replaces it.
@@ -334,7 +334,7 @@ private struct OtherUserPostsContainerView<CommentsView: View, PostsView: View>:
                 VStack(spacing: 0) {
                     Compat.ScrollView(refreshAction: refresh) {
                         VStack(spacing: 0) {
-                            if showsCommentsTab {
+                            if showsTabRow {
                                 tabSelector
                                     .hiddenWhilePinnedHeaderShows(displayStickyHeader)
                                 theme.colors.gray300.frame(height: 1)
@@ -356,9 +356,11 @@ private struct OtherUserPostsContainerView<CommentsView: View, PostsView: View>:
                 }
                 // If the Comments tab disappears (config flip / feed refused) while it's selected, fall
                 // back to Posts rather than leaving the selection pointing at a now-hidden tab.
-                .onValueChanged(of: showsCommentsTab) { showsCommentsTab in
-                    if !showsCommentsTab, selectedTab == 1 {
-                        selectedTab = 0
+                // The tab row leaves with it, so the pinned-header state it drove is reset too.
+                .onValueChanged(of: tabs.count) { tabCount in
+                    selectedTab = ProfileTabsLayout.selectedTab(selectedTab, keptWithin: tabCount)
+                    if !ProfileTabsLayout.showsTabRow(tabCount: tabCount) {
+                        displayStickyHeader = false
                     }
                 }
             } else if let loadFailure {
@@ -381,17 +383,27 @@ private struct OtherUserPostsContainerView<CommentsView: View, PostsView: View>:
         .largeScreenMarginBackground()
     }
 
-    /// Posts(0) / Comments(1) — one source of truth for both the inline selector and the pinned header,
-    /// so they can never drift apart.
-    private let tabs: [LocalizedStringKey] = ["Profile.Tabs.Posts", "Profile.Tabs.Comments"]
+    /// Posts(0) / Comments(1, gated by `showsCommentsTab`) — one source of truth for both the inline
+    /// selector and the pinned header, so they can never drift apart.
+    private var tabs: [LocalizedStringKey] {
+        otherUserProfileTabs(showsCommentsTab: showsCommentsTab)
+    }
+
+    private var showsTabRow: Bool {
+        ProfileTabsLayout.showsTabRow(tabCount: tabs.count)
+    }
 
     /// The inline selector.
     private var tabSelector: some View {
         CustomSegmentedControl(tabs: tabs, selectedTab: $selectedTab, scrollOffset: $tabsScrollOffset)
             .background(
                 GeometryReader { geometry in
+                    // `initial`: when Comments comes back while the user is scrolled, the row reappears
+                    // above the viewport and has to pin at once, not on the next scroll. On a first
+                    // appearance it rests at minY = 1, under the scroll view's 1pt top anchor: a no-op.
                     Color.clear
-                        .onValueChanged(of: geometry.frame(in: .named(scrollViewCoordinateSpace))) { frame in
+                        .onValueChanged(of: geometry.frame(in: .named(scrollViewCoordinateSpace)),
+                                        initial: true) { frame in
                             let pinnedHeaderShows = frame.minY <= 0
                             guard pinnedHeaderShows != displayStickyHeader else { return }
                             withAnimation(ProfileTabsLayout.pinnedHeaderAnimation) {
@@ -406,7 +418,7 @@ private struct OtherUserPostsContainerView<CommentsView: View, PostsView: View>:
     /// profile screens (see ``ProfileStickyTabsHeader`` for their rendering with and without glass).
     @ViewBuilder
     private var stickyTabHeader: some View {
-        if showsCommentsTab, displayStickyHeader {
+        if showsTabRow, displayStickyHeader {
             ProfileStickyTabsHeader(tabs: tabs, selectedTab: $selectedTab, scrollOffset: $tabsScrollOffset)
                 .transition(.opacity)
         }
@@ -544,7 +556,9 @@ private struct ConnectedUserActivityContentView: View {
                         if canCreatePost {
                             ScreenState(
                                 image: theme.assets.icons.screenStates.emptyContent,
-                                title: .localizationKey("Profile.Posts.EmptyState.Title.Self"),
+                                title: .tonedKey(
+                                    formal: "Profile.Posts.EmptyState.Title.Self.Formal",
+                                    informal: "Profile.Posts.EmptyState.Title.Self.Informal"),
                                 action: .init(title: "Profile.Posts.EmptyState.CTA.Self") {
                                     navigator.push(.createPost(withPoll: false, defaultTopicId: nil))
                                 },

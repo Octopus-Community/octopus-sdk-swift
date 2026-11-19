@@ -82,6 +82,43 @@ struct FeatureEnv: Decodable, Identifiable {
 
     var isActive: Bool { status == "active" }
 
+    /// Whether the Sample can actually target this env: an endpoint the SDK accepts, and at least one
+    /// community with a key to authenticate with.
+    ///
+    /// The host goes through `ApiServer`'s own validation rather than a non-emptiness test — it rejects a
+    /// port, a path, whitespace or a leftover scheme, and an env failing it later would be listed,
+    /// selectable, and then silently unusable.
+    ///
+    /// Expiry is not part of it: an expired env often keeps running for a while, and testing on it is
+    /// the developer's call. The pickers flag it instead (`expiryLabel`).
+    var isUsable: Bool {
+        FeatureEnvsDirectory.isValidApiHost(endpoints.api) && !usableCommunities.isEmpty
+    }
+
+    /// Communities with a key, deduplicated by id, sorted by name then key description.
+    ///
+    /// An empty `apiKey` reaches `OctopusSDK` unvalidated and turns every gRPC call into an
+    /// unauthenticated failure with nothing pointing at the cause; duplicate ids would make the
+    /// `ForEach` rendering them undefined. The directory lists the keys in no particular order, so they are
+    /// sorted for the pickers to read the same from one load to the next.
+    var usableCommunities: [Community] {
+        var seen = Set<String>()
+        return communities
+            .filter { !$0.apiKey.isEmpty && seen.insert($0.id).inserted }
+            .sorted {
+                let byName = $0.communityName.localizedStandardCompare($1.communityName)
+                if byName != .orderedSame { return byName == .orderedAscending }
+                return ($0.description ?? "").localizedStandardCompare($1.description ?? "") == .orderedAscending
+            }
+    }
+}
+
+/// Expiry display shared by a listed env and the persisted selection.
+protocol FeatureEnvExpiring {
+    var expiresAt: Date { get }
+}
+
+extension FeatureEnvExpiring {
     func isExpired(now: Date = Date()) -> Bool { expiresAt <= now }
 
     /// Derived from `expiresAt`, not read from the payload: the directory computes its own
@@ -90,26 +127,19 @@ struct FeatureEnv: Decodable, Identifiable {
         max(0, Calendar.current.dateComponents([.day], from: now, to: expiresAt).day ?? 0)
     }
 
-    /// Whether the Sample can actually target this env: an endpoint the SDK accepts, and at least one
-    /// community with a key to authenticate with.
-    ///
-    /// The host goes through `ApiServer`'s own validation rather than a non-emptiness test — it rejects a
-    /// port, a path, whitespace or a leftover scheme, and an env failing it later would be listed,
-    /// selectable, and then silently unusable.
-    func isUsable(now: Date = Date()) -> Bool {
-        !isExpired(now: now) && FeatureEnvsDirectory.isValidApiHost(endpoints.api) && !usableCommunities.isEmpty
+    func expiredSinceDays(now: Date = Date()) -> Int {
+        max(0, Calendar.current.dateComponents([.day], from: expiresAt, to: now).day ?? 0)
     }
 
-    /// Communities with a key, deduplicated by id.
-    ///
-    /// An empty `apiKey` reaches `OctopusSDK` unvalidated and turns every gRPC call into an
-    /// unauthenticated failure with nothing pointing at the cause; duplicate ids would make the
-    /// `ForEach` rendering them undefined.
-    var usableCommunities: [Community] {
-        var seen = Set<String>()
-        return communities.filter { !$0.apiKey.isEmpty && seen.insert($0.id).inserted }
+    /// "expires in 3 d", or "expired since 2 d" once past `expiresAt` (shown in red by the pickers).
+    func expiryLabel(now: Date = Date()) -> String {
+        isExpired(now: now)
+            ? "expired since \(expiredSinceDays(now: now)) d"
+            : "expires in \(expiresInDays(now: now)) d"
     }
 }
+
+extension FeatureEnv: FeatureEnvExpiring {}
 
 struct FeatureEnvsResponse: Decodable {
     /// Never used by the Sample, so its absence must not fail the payload.
@@ -144,12 +174,10 @@ enum FeatureEnvsDirectory {
 
     /// Decodes the directory payload, drops envs the Sample cannot use, and orders them for display.
     ///
-    /// Unusable means: expired, no endpoint `ApiServer` accepts, or no community carrying a key. Expired
-    /// envs are dropped rather than merely sorted last — the directory does serve them, and one that
-    /// reaches the picker gets persisted, then dropped at launch, leaving the developer on the default
-    /// community believing they are on the env.
+    /// Unusable means: no endpoint `ApiServer` accepts, or no community carrying a key. Expired envs are
+    /// kept, after the live ones: the most recently expired first, being the likeliest to still run.
     ///
-    /// `now` is injected so the expiry rule is testable against a fixed date instead of drifting with the
+    /// `now` is injected so the ordering is testable against a fixed date instead of drifting with the
     /// calendar.
     static func decode(_ data: Data, now: Date = Date()) throws -> [FeatureEnv] {
         let decoder = JSONDecoder()
@@ -163,10 +191,10 @@ enum FeatureEnvsDirectory {
         }
         let response = try decoder.decode(FeatureEnvsResponse.self, from: data)
         let usable = response.featureEnvs.filter { env in
-            guard env.isUsable(now: now) else {
+            guard env.isUsable else {
                 // Logged, not silent: an env missing from the picker is otherwise indistinguishable from
                 // an env the directory never sent.
-                print("Feature env \(env.name) skipped: expired, unusable host '\(env.endpoints.api)', "
+                print("Feature env \(env.name) skipped: unusable host '\(env.endpoints.api)', "
                       + "or no community with a key")
                 return false
             }
@@ -176,6 +204,9 @@ enum FeatureEnvsDirectory {
         // `ForEach` behaviour undefined, so the first occurrence wins.
         return deduplicated(usable)
             .sorted {
+                let expired = ($0.isExpired(now: now), $1.isExpired(now: now))
+                if expired.0 != expired.1 { return !expired.0 }
+                if expired.0 { return $0.expiresAt > $1.expiresAt }
                 if $0.isActive != $1.isActive { return $0.isActive }
                 return $0.expiresAt < $1.expiresAt
             }

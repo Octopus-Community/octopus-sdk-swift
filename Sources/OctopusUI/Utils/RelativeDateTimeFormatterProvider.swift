@@ -10,6 +10,8 @@ import OctopusCore
 class RelativeDateTimeFormatterProvider {
 
     private(set) var formatter: RelativeDateTimeFormatter
+    /// The formatter of the dates in the header of posts, comments and replies.
+    let contentDateFormatter = ContentDateFormatter()
 
     private var storage = [AnyCancellable]()
 
@@ -21,6 +23,7 @@ class RelativeDateTimeFormatterProvider {
         octopus.core.languageRepository.$overridenLocale.sink { [unowned self] overridenLocale in
             if let overridenLocale {
                 formatter.locale = overridenLocale
+                contentDateFormatter.locale = overridenLocale
             }
         }.store(in: &storage)
     }

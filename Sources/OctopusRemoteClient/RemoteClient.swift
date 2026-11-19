@@ -25,6 +25,15 @@ public protocol OctopusRemoteClient {
     func set(octopusUISessionId: String?)
     func set(hasAccessToCommunity: Bool?)
     func set(localeIdentifier: String)
+    /// Blocks, or allows again, every call to the server. Used while the community is closed.
+    func set(callsBlocked: Bool)
+    /// Called, from whichever task sent it, each time the server refuses a call because the community is closed or
+    /// temporarily disabled: a community closed while the app runs first shows that way.
+    func set(communityClosedHandler: (@Sendable () -> Void)?)
+    /// Called, from whichever task sent it, each time the server refuses a call because the user themself has no
+    /// access to the community (banned, deleted, excluded, out of the audience): an access taken away while the app
+    /// runs first shows that way. `endsSession` is `true` when the refusal says the session is over instead.
+    func set(accessRefusedHandler: (@Sendable (_ endsSession: Bool) -> Void)?)
 }
 
 public class GrpcClient: OctopusRemoteClient {
@@ -46,6 +55,8 @@ public class GrpcClient: OctopusRemoteClient {
     private let group = PlatformSupport.makeEventLoopGroup(loopCount: 1, networkPreference: .best)
 
     private let serviceClients: [ServiceClient]
+    /// Shared by every service client.
+    private let callsGate: CallsGate
 
     public init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
                 sdkIdentity: @escaping @Sendable () -> SdkIdentity,
@@ -53,6 +64,8 @@ public class GrpcClient: OctopusRemoteClient {
                 serverPort: Int? = nil,
                 getUserIdBlock: @escaping () -> String?,
                 updateTokenBlock: @escaping (String) -> Void) throws {
+        let callsGate = CallsGate()
+        self.callsGate = callsGate
         let resolved = GrpcClient.resolveBaseURL(
             override: serverHost.map { (host: $0, port: serverPort ?? 443) },
             infoDictionary: Bundle.main.infoDictionary
@@ -67,27 +80,27 @@ public class GrpcClient: OctopusRemoteClient {
 
         _octoService = OctoServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity, callsGate: callsGate,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _userService = UserServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity, callsGate: callsGate,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _feedService = FeedServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity, callsGate: callsGate,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _trackingService = TrackingServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity, callsGate: callsGate,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _notificationService = NotificationServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity, callsGate: callsGate,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
         _apiKeyService = ApiKeyServiceClient(
             unaryChannel: unaryChannel, apiKey: apiKey, sdkVersion: sdkVersion, installId: installId,
-            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity,
+            localeIdentifier: localeIdentifier, sdkIdentity: sdkIdentity, callsGate: callsGate,
             getUserIdBlock: getUserIdBlock, updateTokenBlock: updateTokenBlock)
 
         serviceClients = [_octoService, _userService, _feedService,
@@ -131,6 +144,18 @@ public class GrpcClient: OctopusRemoteClient {
 
     public func set(localeIdentifier: String) {
         serviceClients.forEach { $0.localeIdentifier = localeIdentifier }
+    }
+
+    public func set(callsBlocked: Bool) {
+        callsGate.isBlocked = callsBlocked
+    }
+
+    public func set(communityClosedHandler: (@Sendable () -> Void)?) {
+        serviceClients.forEach { $0.set(communityClosedHandler: communityClosedHandler) }
+    }
+
+    public func set(accessRefusedHandler: (@Sendable (_ endsSession: Bool) -> Void)?) {
+        serviceClients.forEach { $0.set(accessRefusedHandler: accessRefusedHandler) }
     }
 
     deinit {

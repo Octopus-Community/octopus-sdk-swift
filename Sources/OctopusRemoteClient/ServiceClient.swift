@@ -15,6 +15,9 @@ class ServiceClient {
     private let sdkVersion: String
     private let installId: String
     private let sdkIdentity: @Sendable () -> SdkIdentity
+    private let callsGate: CallsGate
+    private let communityClosedHandler = RefusalHandler<@Sendable () -> Void>()
+    private let accessRefusedHandler = RefusalHandler<@Sendable (_ endsSession: Bool) -> Void>()
 
     var appSessionId: String?
     var octopusUISessionId: String?
@@ -30,8 +33,10 @@ class ServiceClient {
     var osVersion: String? { sendableOSVersion.value }
 
     init(apiKey: String, sdkVersion: String, installId: String, localeIdentifier: String,
-         sdkIdentity: @escaping @Sendable () -> SdkIdentity) {
+         sdkIdentity: @escaping @Sendable () -> SdkIdentity,
+         callsGate: CallsGate = CallsGate()) {
         self.apiKey = apiKey
+        self.callsGate = callsGate
         self.sdkVersion = sdkVersion
         self.installId = installId
         self.localeIdentifier = localeIdentifier
@@ -45,7 +50,14 @@ class ServiceClient {
         }
     }
 
-    func callRemote<T>(_ authenticationMethod: AuthenticationMethod, _ block: () async throws -> T) async throws(RemoteClientError) -> T {
+    /// - Parameter bypassingCallsGate: whether the call is sent even though calls are blocked. Only the check that
+    ///   learns whether a closed community has reopened passes it.
+    func callRemote<T>(_ authenticationMethod: AuthenticationMethod, bypassingCallsGate: Bool = false,
+                       _ block: () async throws -> T) async throws(RemoteClientError) -> T {
+        // Before anything else: a call that is not sent has no answer to retry, and no session to drop.
+        guard bypassingCallsGate || !callsGate.isBlocked else {
+            throw .unknown(CallsBlockedError())
+        }
         var lastError: Error?
         for attempt in 0...Self.maxUnavailableRetries {
             do {
@@ -72,7 +84,23 @@ class ServiceClient {
            Jwt.isExpired(token) ?? true {
             authFailed()
         }
+        if let grpcStatus = error as? GRPCStatus, grpcStatus.cause is CommunityClosedRefusal {
+            communityClosedHandler.value?()
+        } else if let grpcStatus = error as? GRPCStatus, let refusal = grpcStatus.cause as? AccessRefusal {
+            accessRefusedHandler.value?(refusal.endsSession)
+        }
         throw RemoteClientError(error: error)
+    }
+
+    /// - Parameter communityClosedHandler: called each time the server refuses a call because the community is closed.
+    func set(communityClosedHandler: (@Sendable () -> Void)?) {
+        self.communityClosedHandler.value = communityClosedHandler
+    }
+
+    /// - Parameter accessRefusedHandler: called each time the server refuses a call because the user has no access
+    ///   to the community, or because their session is over (`endsSession`).
+    func set(accessRefusedHandler: (@Sendable (_ endsSession: Bool) -> Void)?) {
+        self.accessRefusedHandler.value = accessRefusedHandler
     }
 
     func getCallOptions(authenticationMethod: AuthenticationMethod) -> CallOptions {
@@ -112,6 +140,25 @@ class ServiceClient {
         case .notAuthenticated: break
         }
         return CallOptions(customMetadata: .init(metadata))
+    }
+}
+
+/// Locked: set once the core is built, read from whichever task sends a call.
+private final class RefusalHandler<Handler>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _value: Handler?
+
+    var value: Handler? {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _value
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _value = newValue
+        }
     }
 }
 

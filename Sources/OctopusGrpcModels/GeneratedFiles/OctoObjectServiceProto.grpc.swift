@@ -65,6 +65,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientProtocol: GRPCClient
     callOptions: CallOptions?
   ) -> UnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>
 
+  func createImageUploads(
+    _ request: Com_Octopuscommunity_CreateImageUploadsRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<Com_Octopuscommunity_CreateImageUploadsRequest, Com_Octopuscommunity_CreateImageUploadsResponse>
+
   func putPollVote(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
@@ -355,6 +360,24 @@ extension Com_Octopuscommunity_OctoObjectServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutPostInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to CreateImageUploads
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to CreateImageUploads.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  public func createImageUploads(
+    _ request: Com_Octopuscommunity_CreateImageUploadsRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<Com_Octopuscommunity_CreateImageUploadsRequest, Com_Octopuscommunity_CreateImageUploadsResponse> {
+    return self.makeUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createImageUploads.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateImageUploadsInterceptors() ?? []
     )
   }
 
@@ -916,6 +939,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol: GRPCC
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>
 
+  func makeCreateImageUploadsCall(
+    _ request: Com_Octopuscommunity_CreateImageUploadsRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_CreateImageUploadsRequest, Com_Octopuscommunity_CreateImageUploadsResponse>
+
   func makePutPollVoteCall(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions?
@@ -1157,6 +1185,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makePutPostInterceptors() ?? []
+    )
+  }
+
+  public func makeCreateImageUploadsCall(
+    _ request: Com_Octopuscommunity_CreateImageUploadsRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<Com_Octopuscommunity_CreateImageUploadsRequest, Com_Octopuscommunity_CreateImageUploadsResponse> {
+    return self.makeAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createImageUploads.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateImageUploadsInterceptors() ?? []
     )
   }
 
@@ -1571,6 +1611,18 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncClientProtocol {
     )
   }
 
+  public func createImageUploads(
+    _ request: Com_Octopuscommunity_CreateImageUploadsRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> Com_Octopuscommunity_CreateImageUploadsResponse {
+    return try await self.performAsyncUnaryCall(
+      path: Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createImageUploads.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeCreateImageUploadsInterceptors() ?? []
+    )
+  }
+
   public func putPollVote(
     _ request: Com_Octopuscommunity_PutRequest,
     callOptions: CallOptions? = nil
@@ -1918,6 +1970,9 @@ public protocol Com_Octopuscommunity_OctoObjectServiceClientInterceptorFactoryPr
   /// - Returns: Interceptors to use when invoking 'putPost'.
   func makePutPostInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'createImageUploads'.
+  func makeCreateImageUploadsInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_CreateImageUploadsRequest, Com_Octopuscommunity_CreateImageUploadsResponse>]
+
   /// - Returns: Interceptors to use when invoking 'putPollVote'.
   func makePutPollVoteInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>]
 
@@ -2008,6 +2063,7 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.deleteReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.moderateReply,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPost,
+      Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.createImageUploads,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.putPollVote,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.getTopics,
       Com_Octopuscommunity_OctoObjectServiceClientMetadata.Methods.updatePost,
@@ -2088,6 +2144,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceClientMetadata {
     public static let putPost = GRPCMethodDescriptor(
       name: "PutPost",
       path: "/com.octopuscommunity.OctoObjectService/PutPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let createImageUploads = GRPCMethodDescriptor(
+      name: "CreateImageUploads",
+      path: "/com.octopuscommunity.OctoObjectService/CreateImageUploads",
       type: GRPCCallType.unary
     )
 
@@ -2267,6 +2329,8 @@ public protocol Com_Octopuscommunity_OctoObjectServiceProvider: CallHandlerProvi
 
   func putPost(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutPostResponse>
 
+  func createImageUploads(request: Com_Octopuscommunity_CreateImageUploadsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_CreateImageUploadsResponse>
+
   func putPollVote(request: Com_Octopuscommunity_PutRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_PutPollVoteResponse>
 
   func getTopics(request: Com_Octopuscommunity_GetTopicsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<Com_Octopuscommunity_GetTopicsResponse>
@@ -2414,6 +2478,15 @@ extension Com_Octopuscommunity_OctoObjectServiceProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutPostResponse>(),
         interceptors: self.interceptors?.makePutPostInterceptors() ?? [],
         userFunction: self.putPost(request:context:)
+      )
+
+    case "CreateImageUploads":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_CreateImageUploadsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_CreateImageUploadsResponse>(),
+        interceptors: self.interceptors?.makeCreateImageUploadsInterceptors() ?? [],
+        userFunction: self.createImageUploads(request:context:)
       )
 
     case "PutPollVote":
@@ -2700,6 +2773,11 @@ public protocol Com_Octopuscommunity_OctoObjectServiceAsyncProvider: CallHandler
     context: GRPCAsyncServerCallContext
   ) async throws -> Com_Octopuscommunity_PutPostResponse
 
+  func createImageUploads(
+    request: Com_Octopuscommunity_CreateImageUploadsRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> Com_Octopuscommunity_CreateImageUploadsResponse
+
   func putPollVote(
     request: Com_Octopuscommunity_PutRequest,
     context: GRPCAsyncServerCallContext
@@ -2929,6 +3007,15 @@ extension Com_Octopuscommunity_OctoObjectServiceAsyncProvider {
         responseSerializer: ProtobufSerializer<Com_Octopuscommunity_PutPostResponse>(),
         interceptors: self.interceptors?.makePutPostInterceptors() ?? [],
         wrapping: { try await self.putPost(request: $0, context: $1) }
+      )
+
+    case "CreateImageUploads":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<Com_Octopuscommunity_CreateImageUploadsRequest>(),
+        responseSerializer: ProtobufSerializer<Com_Octopuscommunity_CreateImageUploadsResponse>(),
+        interceptors: self.interceptors?.makeCreateImageUploadsInterceptors() ?? [],
+        wrapping: { try await self.createImageUploads(request: $0, context: $1) }
       )
 
     case "PutPollVote":
@@ -3200,6 +3287,10 @@ public protocol Com_Octopuscommunity_OctoObjectServiceServerInterceptorFactoryPr
   ///   Defaults to calling `self.makeInterceptors()`.
   func makePutPostInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPostResponse>]
 
+  /// - Returns: Interceptors to use when handling 'createImageUploads'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeCreateImageUploadsInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_CreateImageUploadsRequest, Com_Octopuscommunity_CreateImageUploadsResponse>]
+
   /// - Returns: Interceptors to use when handling 'putPollVote'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makePutPollVoteInterceptors() -> [ServerInterceptor<Com_Octopuscommunity_PutRequest, Com_Octopuscommunity_PutPollVoteResponse>]
@@ -3315,6 +3406,7 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.deleteReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.moderateReply,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putPost,
+      Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.createImageUploads,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.putPollVote,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.getTopics,
       Com_Octopuscommunity_OctoObjectServiceServerMetadata.Methods.updatePost,
@@ -3395,6 +3487,12 @@ public enum Com_Octopuscommunity_OctoObjectServiceServerMetadata {
     public static let putPost = GRPCMethodDescriptor(
       name: "PutPost",
       path: "/com.octopuscommunity.OctoObjectService/PutPost",
+      type: GRPCCallType.unary
+    )
+
+    public static let createImageUploads = GRPCMethodDescriptor(
+      name: "CreateImageUploads",
+      path: "/com.octopuscommunity.OctoObjectService/CreateImageUploads",
       type: GRPCCallType.unary
     )
 

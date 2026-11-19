@@ -52,7 +52,8 @@ extension NSManagedObjectContext {
     ///   deliveries behind exactly such a lock. Hence a plain precomputed value, concatenated in front.
     ///
     /// Save-driven fetches still run inline on the thread that saved, and subscribers are still called
-    /// there, so nothing about when or where updates arrive changes.
+    /// there, so nothing about when or where updates arrive changes. The fetch after a late load of the
+    /// stores runs on the context's queue (`observeStoresLoading`).
     ///
     /// A fetch that throws is logged and skipped, never published as a failure: the subscription stays
     /// alive and the next save retries it. Failing would be worse than useless here — the failures that
@@ -84,6 +85,10 @@ extension NSManagedObjectContext {
                         }
                     }
                 }
+            // A store loaded after the subscription (it could not be read before the device's first unlock) was empty
+            // for the first fetch, and no save tells about it. Observed apart rather than merged with the saves, for
+            // the reason of the second bullet above.
+            let storesLoading = observeStoresLoading(publishingTo: saved, fetch: fetch)
 
             // A nil initial value publishes nothing rather than ending the stream: the observer above is
             // already registered, so the next save fetches again.
@@ -100,11 +105,37 @@ extension NSManagedObjectContext {
             return saved
                 .prepend(initialValue)
                 .compactMap { $0 }
-                .handleEvents(receiveCompletion: { _ in observation.cancel() },
-                              receiveCancel: { observation.cancel() })
+                .handleEvents(receiveCompletion: { _ in observation.cancel(); storesLoading.cancel() },
+                              receiveCancel: { observation.cancel(); storesLoading.cancel() })
                 .eraseToAnyPublisher()
         }
         .eraseToAnyPublisher()
+    }
+
+    /// Publishes `fetch` again once the stores of this context are loaded.
+    ///
+    /// Fetched on this context's queue, behind the blocks already queued there, rather than inline on the thread of the
+    /// load, the main one in the app: that one would wait for the queue once per publisher, and a save landing between
+    /// its fetch and its send would be published first, then overwritten by the older result.
+    private func observeStoresLoading<MappedEntity>(
+        publishingTo saved: CurrentValueSubject<[MappedEntity]?, Never>,
+        fetch: @escaping @Sendable () throws -> [MappedEntity])
+    -> AnyCancellable {
+        // Only used on this context's queue, as the save observer uses it.
+        let saved = UncheckedSendableBox(value: saved)
+        return NotificationCenter.default
+            .publisher(for: .persistentStoresDidLoad, object: persistentStoreCoordinator)
+            .sink { [weak self] _ in
+                self?.perform {
+                    do {
+                        saved.value.send(try fetch())
+                    } catch {
+                        if #available(iOS 14, *) {
+                            Logger.other.debug("Fetch after the stores loaded failed, skipping this update: \(error)")
+                        }
+                    }
+                }
+            }
     }
 
     /// Runs `block` on this context's queue where the API to do so synchronously exists.
@@ -115,6 +146,11 @@ extension NSManagedObjectContext {
             return try block()
         }
     }
+}
+
+/// Box for a value Swift cannot prove `Sendable`, handed to a context's queue that is the only one to use it.
+private struct UncheckedSendableBox<Value>: @unchecked Sendable {
+    let value: Value
 }
 
 /// Add CoreData conditional behavior to Notification

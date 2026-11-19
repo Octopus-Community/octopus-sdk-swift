@@ -9,14 +9,14 @@ extension PostDetailViewModel.Post {
     init(from post: Post,
          gamificationLevels: [GamificationLevel],
          thisUserProfileId: String?, topic: OctopusCore.Topic?,
-         dateFormatter: RelativeDateTimeFormatter) {
+         dateFormatter: ContentDateFormatter) {
         uuid = post.uuid
         text = post.text
         author = .init(
             profile: post.author,
             gamificationLevel: gamificationLevels.first { $0.level == post.author?.gamificationLevel }
         )
-        relativeDate = dateFormatter.localizedString(for: post.creationDate, relativeTo: Date())
+        relativeDate = dateFormatter.displayableDate(for: post.creationDate)
         self.topic = topic?.name
         self.groupId = post.parentId
         attachments = PostAttachmentsViewData(from: post)

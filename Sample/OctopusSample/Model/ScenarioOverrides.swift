@@ -26,6 +26,8 @@ final class ScenarioOverrides: ObservableObject {
     @Published private(set) var consentTexts: ConsentTexts?
     /// Force nickname choice applied, `nil` for the backend value.
     @Published private(set) var forceNicknameChoice: Bool?
+    /// Languages made informal, `nil` for the backend value.
+    @Published private(set) var informalLanguages: [String]?
     /// Last value `overrideCommunityAccess` accepted, shared by the community access and A/B scenarios as on
     /// Android. The call has no reset, so this stays set until a community switch.
     @Published var communityAccess: Bool?
@@ -64,12 +66,18 @@ final class ScenarioOverrides: ObservableObject {
         forceNicknameChoice = enabled
     }
 
+    func apply(informalLanguages languages: [String]?, octopus: OctopusSDK? = nil) {
+        (octopus ?? OctopusSDKProvider.instance.octopus).debugOverrideInformalLanguages(languages)
+        informalLanguages = languages
+    }
+
     func clear() {
         profileFieldsLock = nil
         contentOptions = nil
         termsAcceptance = nil
         consentTexts = nil
         forceNicknameChoice = nil
+        informalLanguages = nil
         communityAccess = nil
     }
 }
@@ -79,6 +87,11 @@ enum OverrideLabels {
     static let backendDefault = "none (backend default)"
 
     static func tick(_ enabled: Bool) -> String { enabled ? "✓ on" : "✗ off" }
+
+    /// The languages made informal, as the live config card and the scenario show them.
+    static func languagesLine(_ languages: [String]) -> String {
+        languages.isEmpty ? "none (formal everywhere)" : languages.joined(separator: ", ")
+    }
 
     static func lock(_ state: ProfileFieldLockState) -> String {
         switch state {
@@ -120,14 +133,25 @@ enum OverrideLabels {
             ("Post: text optional with an image",
              ContentOptions(post: .init(enablePictures: true, enablePolls: true, textRequired: false),
                             comment: all.comment, reply: all.reply)),
+            ("Post: image tap opens the post",
+             ContentOptions(post: .init(enablePictures: true, enablePolls: true, imageTapOpensPost: true),
+                            comment: all.comment, reply: all.reply)),
+            ("Post: group name opens the group",
+             ContentOptions(post: .init(enablePictures: true, enablePolls: true, groupNameTapOpensGroup: true),
+                            comment: all.comment, reply: all.reply)),
+            ("Post: image and group name taps",
+             ContentOptions(post: .init(enablePictures: true, enablePolls: true, imageTapOpensPost: true,
+                                        groupNameTapOpensGroup: true),
+                            comment: all.comment, reply: all.reply)),
         ]
     }()
 
     static func contentOptionsLabel(_ options: ContentOptions) -> String {
         if let preset = contentOptionsPresets.first(where: { $0.options == options }) { return preset.label }
         return "post pictures=\(options.post.enablePictures), polls=\(options.post.enablePolls), " +
-            "textRequired=\(options.post.textRequired), comment pictures=\(options.comment.enablePictures), " +
-            "reply pictures=\(options.reply.enablePictures)"
+            "textRequired=\(options.post.textRequired), imageTapOpensPost=\(options.post.imageTapOpensPost), " +
+            "groupNameTapOpensGroup=\(options.post.groupNameTapOpensGroup), " +
+            "comment pictures=\(options.comment.enablePictures), reply pictures=\(options.reply.enablePictures)"
     }
 
     static func termsLabel(_ mode: TermsAcceptanceMode) -> String {

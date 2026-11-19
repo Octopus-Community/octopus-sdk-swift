@@ -7,7 +7,6 @@ import Combine
 import KeychainAccess
 import OctopusDependencyInjection
 import os
-import UIKit
 
 extension Injected {
     static let userDataStorage = Injector.InjectedIdentifier<UserDataStorage>()
@@ -74,21 +73,10 @@ final class UserDataStorage: InjectableObject, @unchecked Sendable {
     /// can become readable on any thread.
     private var sessionReadSubscription: AnyCancellable?
 
-    /// The moments at which an unreadable session is worth reading again: the device being unlocked, and the
-    /// app coming back, which covers that notification being missed while the app was suspended.
-    static var defaultSessionReadTriggers: AnyPublisher<Void, Never> {
-        Publishers.MergeMany(
-            [UIApplication.protectedDataDidBecomeAvailableNotification,
-             UIApplication.willEnterForegroundNotification,
-             UIApplication.didBecomeActiveNotification]
-                .map { NotificationCenter.default.publisher(for: $0).map { _ in }.eraseToAnyPublisher() }
-        ).eraseToAnyPublisher()
-    }
-
     /// - Parameter sessionReadTriggers: when to read an unreadable session again. Replaced by the tests, which
     ///   must not post system notifications to every storage alive in the process.
     init(injector: Injector,
-         sessionReadTriggers: AnyPublisher<Void, Never> = UserDataStorage.defaultSessionReadTriggers) {
+         sessionReadTriggers: AnyPublisher<Void, Never> = ProtectedDataTriggers.default) {
         securedStorage = injector.getInjected(identifiedBy: Injected.securedStorage)
         // See `PublishedPublishers`: done before anything can write these values.
         PublishedPublishers.create($userData, $clientUserData, $sessionIsUnreadable)

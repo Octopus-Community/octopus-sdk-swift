@@ -11,7 +11,8 @@ import OctopusCore
 /// it into an Octopus Community user. This is done using `OctopusSDK.setClientUser(:)` function.
 public struct ClientUser: Sendable {
     /// Age information about your user
-    public enum AgeInformation: Sendable {
+    public enum AgeInformation: Sendable { // swiftlint:disable:this nonexhaustive_public_enum
+        // Closed by nature: a user has either reached the legal age or not.
         /// Your user has reached the minimum legal age (16 years old by default).
         case legalAgeReached
         /// Your user has not reached the minimum legal age.

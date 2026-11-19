@@ -157,7 +157,9 @@ class ConnectedActionChecker {
         case let .notConnected(userBannedMessage):
             if let banned = banBlock(userBannedMessage) { return banned }
             return clientUserConnected
-                ? .block(.error(.localizationKey("Connection.SSO.Error.Unknown")))
+                ? .block(.error(.tonedKey(
+                    formal: "Connection.SSO.Error.Unknown.Formal",
+                    informal: "Connection.SSO.Error.Unknown.Informal")))
                 : .requireSSOLogin
         case let .connected(communityConfigAvailable, forceLoginOnStrongActions, profileIsGuest,
                             profileHasConfirmedNickname, nicknameLock, isNicknameAppManaged, _,
@@ -172,7 +174,9 @@ class ConnectedActionChecker {
             if action.isStrong, let banned = banBlock(userBannedMessage) { return banned }
             if action.isStrong, profileIsGuest, forceLoginOnStrongActions {
                 return clientUserConnected
-                    ? .block(.error(.localizationKey("Connection.SSO.Error.Unknown")))
+                    ? .block(.error(.tonedKey(
+                        formal: "Connection.SSO.Error.Unknown.Formal",
+                        informal: "Connection.SSO.Error.Unknown.Informal")))
                     : .requireSSOLogin
             }
             if needsNicknameValidation(for: action,
@@ -238,7 +242,14 @@ class ConnectedActionChecker {
         case .proceed:
             return true
         case let .block(replacement):
-            actionWhenNotConnected.wrappedValue = replacement
+            if case let .banned(.localizedString(message)) = replacement {
+                // Without a message of the server, the sentence of the SDK, in the language of the member
+                actionWhenNotConnected.wrappedValue = .banned(CommunityAccessDeniedBanMessage.displayable(
+                    userBannedMessage: message, userConfig: octopus.core.configRepository.userConfig,
+                    locale: octopus.core.languageRepository.overridenLocale, tone: octopus.textTone))
+            } else {
+                actionWhenNotConnected.wrappedValue = replacement
+            }
             return false
         case .requireSSOLogin:
             // octopus_driven_login: this action is what triggered the host's login prompt.

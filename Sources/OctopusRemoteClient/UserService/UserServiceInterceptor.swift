@@ -20,99 +20,99 @@ final class UserServiceInterceptor: Com_Octopuscommunity_UserServiceClientInterc
     }
 
     func makeDeleteUserInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_DeleteUserRequest, Com_Octopuscommunity_DeleteUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeUpdateProfileInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_UpdateProfileRequest, Com_Octopuscommunity_UpdateProfileResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeGetPublicProfileInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetPublicProfileRequest, Com_Octopuscommunity_GetPublicProfileResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeGetPrivateProfileInterceptors() -> [ClientInterceptor<Com_Octopuscommunity_GetPrivateProfileRequest, Com_Octopuscommunity_GetPrivateProfileResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeBanUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_BanUserRequest, OctopusGrpcModels.Com_Octopuscommunity_BanUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeDeleteMyProfileInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_DeleteMyProfileRequest, OctopusGrpcModels.Com_Octopuscommunity_DeleteMyProfileResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeUnbanUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UnbanUserRequest, OctopusGrpcModels.Com_Octopuscommunity_UnbanUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeReportUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ReportUserRequest, OctopusGrpcModels.Com_Octopuscommunity_ReportUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeBlockUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_BlockUserRequest, OctopusGrpcModels.Com_Octopuscommunity_BlockUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeGetJwtFromClientSignedTokenInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenRequest, OctopusGrpcModels.Com_Octopuscommunity_GetJwtFromClientSignedTokenResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makecreateUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_CreateUserRequest, OctopusGrpcModels.Com_Octopuscommunity_CreateUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeCreateProfileInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_UpdateProfileRequest, OctopusGrpcModels.Com_Octopuscommunity_UpdateProfileResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeGetGuestJwtInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_GetGuestJwtRequest, OctopusGrpcModels.Com_Octopuscommunity_GetGuestJwtResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeCanAccessCommunityInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_CanAccessCommunityRequest, OctopusGrpcModels.Com_Octopuscommunity_CanAccessCommunityResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeByPassAbTestingInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ByPassAbTestingRequest, OctopusGrpcModels.Com_Octopuscommunity_ByPassAbTestingResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeShadowBanUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ShadowBanUserRequest, OctopusGrpcModels.Com_Octopuscommunity_ShadowBanUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeUnShadowBanUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_ShadowUnbanUserRequest, OctopusGrpcModels.Com_Octopuscommunity_UnShadowBanUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeSearchUserInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SearchUserRequest, OctopusGrpcModels.Com_Octopuscommunity_SearchUserResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeSetProfileTagInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SetProfileTagRequest, OctopusGrpcModels.Com_Octopuscommunity_SetProfileTagResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     // Back-office only: the SDK never calls it, but the generated factory protocol requires the method.
     func makeSetProfileBoDeclarationInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SetProfileBoDeclarationRequest, OctopusGrpcModels.Com_Octopuscommunity_SetProfileBoDeclarationResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeEnteringOctopusInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusRequest, OctopusGrpcModels.Com_Octopuscommunity_EnteringOctopusResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeFollowTopicInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicRequest, OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeUnfollowTopicInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicRequest, OctopusGrpcModels.Com_Octopuscommunity_FollowUnfollowTopicResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 
     func makeSyncFollowTopicsInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_SyncFollowTopicsRequest, OctopusGrpcModels.Com_Octopuscommunity_SyncFollowTopicsResponse>] {
-        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
+        [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor(), CommunityClosedInterceptor()]
     }
 }

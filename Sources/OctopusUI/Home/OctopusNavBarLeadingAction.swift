@@ -16,6 +16,9 @@ import Foundation
 ///
 /// The tap fires the closure you provide instead of dismissing a SwiftUI presentation — it is up to the
 /// host to pop its route / dismiss its container.
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusNavBarLeadingAction {
     /// A close button (the SDK's "close" icon), e.g. for a modally-presented host container.
     case close(onTap: () -> Void)

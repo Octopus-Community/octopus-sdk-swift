@@ -14,6 +14,7 @@ private struct TermsConsentSheetModifier: ViewModifier {
     let mode: TermsAcceptanceMode
     let consentTexts: ConsentTexts?
     let contribution: ConsentContribution
+    let nicknameChoiceFollows: Bool
     let termsUrl: URL
     let privacyUrl: URL
     let rulesUrl: URL
@@ -26,6 +27,7 @@ private struct TermsConsentSheetModifier: ViewModifier {
                     mode: mode,
                     consentTexts: consentTexts,
                     contribution: contribution,
+                    nicknameChoiceFollows: nicknameChoiceFollows,
                     termsUrl: termsUrl,
                     privacyUrl: privacyUrl,
                     rulesUrl: rulesUrl,
@@ -47,6 +49,7 @@ extension View {
         mode: TermsAcceptanceMode,
         consentTexts: ConsentTexts?,
         contribution: ConsentContribution,
+        nicknameChoiceFollows: Bool,
         termsUrl: URL,
         privacyUrl: URL,
         rulesUrl: URL,
@@ -57,6 +60,7 @@ extension View {
             mode: mode,
             consentTexts: consentTexts,
             contribution: contribution,
+            nicknameChoiceFollows: nicknameChoiceFollows,
             termsUrl: termsUrl,
             privacyUrl: privacyUrl,
             rulesUrl: rulesUrl,

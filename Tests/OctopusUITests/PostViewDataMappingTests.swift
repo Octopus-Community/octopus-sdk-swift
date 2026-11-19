@@ -66,6 +66,32 @@ struct PostViewDataMappingTests {
         #expect(content.cta == nil)
     }
 
+    // MARK: - Card tap opens the detail (drives the image tap option)
+
+    @Test func feedCardOpensTheDetailWhenTheMemberCanCommentOrThereAreComments() {
+        for canCreateChildren in [false, true] {
+            for childCount in [0, 2] {
+                let post = Self.makeDisplayable(contentKind: .imageOnly, canCreateChildren: canCreateChildren,
+                                                childCount: childCount)
+                let expected = canCreateChildren || childCount > 0
+                #expect(post.cardTapOpensDetail == expected)
+                #expect(PostViewData(from: post).cardTapOpensDetail == expected)
+            }
+        }
+    }
+
+    @Test func moderatedPostWithoutCommentPermissionOnlyExpands() {
+        let post = Self.makeDisplayable(contentKind: .moderated, canCreateChildren: false, childCount: 2)
+        #expect(!PostViewData(from: post).cardTapOpensDetail)
+    }
+
+    @Test func detailHasNoCardToOpenTheDetailFrom() {
+        let post = Self.makeDetailPost(
+            aggregatedInfo: .init(reactions: [], childCount: 3, viewCount: 0, pollResult: nil),
+            canCreateChildren: true)
+        #expect(!PostViewData(from: post).cardTapOpensDetail)
+    }
+
     // MARK: - Topic mapping
 
     @Test func topic_preserved() async throws {
@@ -329,14 +355,14 @@ struct PostViewDataMappingTests {
     }
 
     static let imageAndPoll = PostAttachmentsViewData(
-        media: .image(.init(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750))),
+        media: .images([.init(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750))]),
         poll: DisplayablePoll(options: [
             .init(id: "1", text: .init(originalText: "Red", originalLanguage: nil)),
             .init(id: "2", text: .init(originalText: "Blue", originalLanguage: nil))
         ]))
 
     static let imageAndTranslatedPoll = PostAttachmentsViewData(
-        media: .image(.init(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750))),
+        media: .images([.init(url: URL(string: "https://example.com/i.jpg")!, size: CGSize(width: 700, height: 750))]),
         poll: DisplayablePoll(options: [
             .init(id: "1", text: .init(originalText: "Rouge", originalLanguage: nil, translatedText: "Red")),
             .init(id: "2", text: .init(originalText: "Bleu", originalLanguage: nil, translatedText: "Blue"))
@@ -347,7 +373,8 @@ struct PostViewDataMappingTests {
         topic: String? = "Help",
         groupId: String? = "group-uuid",
         canBeBlockedByUser: Bool = false,
-        canCreateChildren: Bool = true
+        canCreateChildren: Bool = true,
+        childCount: Int = 0
     ) -> DisplayablePost {
         let author = Author(
             profile: MinimalProfile(
@@ -362,7 +389,7 @@ struct PostViewDataMappingTests {
 
         let emptyMeasures = CurrentValueSubject<LiveMeasures, Never>(
             LiveMeasures(
-                aggregatedInfo: .init(reactions: [], childCount: 0, viewCount: 0, pollResult: nil),
+                aggregatedInfo: .init(reactions: [], childCount: childCount, viewCount: 0, pollResult: nil),
                 userInteractions: .empty))
 
         let content: DisplayablePost.Content
@@ -380,8 +407,8 @@ struct PostViewDataMappingTests {
         case .bridgeWithCTA:
             content = .published(.init(
                 text: .init(originalText: "Un texte", originalLanguage: nil),
-                attachments: .image(.init(url: URL(string: "https://example.com/i.jpg")!,
-                                          size: CGSize(width: 700, height: 750))),
+                attachments: .images([.init(url: URL(string: "https://example.com/i.jpg")!,
+                                          size: CGSize(width: 700, height: 750))]),
                 bridgeInfo: .init(
                     objectId: "clientObjectId",
                     catchPhrase: .init(originalText: "Catch", originalLanguage: nil),
@@ -405,8 +432,8 @@ struct PostViewDataMappingTests {
         case .imageOnly:
             content = .published(.init(
                 text: .init(originalText: "", originalLanguage: nil),
-                attachments: .image(.init(url: URL(string: "https://example.com/i.jpg")!,
-                                          size: CGSize(width: 700, height: 750))),
+                attachments: .images([.init(url: URL(string: "https://example.com/i.jpg")!,
+                                          size: CGSize(width: 700, height: 750))]),
                 bridgeInfo: nil, customAction: nil, featuredComment: nil,
                 liveMeasuresPublisher: emptyMeasures))
         case .translatedText:

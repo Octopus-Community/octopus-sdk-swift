@@ -7,7 +7,7 @@ import XCTest
 
 final class FeatureEnvsDirectoryTests: XCTestCase {
 
-    /// Pinned so the expiry filter is tested against a fixed date: the fixture's live envs expire on
+    /// Pinned so the expiry rules are tested against a fixed date: the fixture's live envs expire on
     /// 2026-08-10 and 2026-08-14, and its deliberately-expired one on 2026-07-15.
     private let now = ISO8601DateFormatter().date(from: "2026-08-05T00:00:00Z")!
 
@@ -42,12 +42,19 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
         let names = try decodedFixture().map(\.name)
         XCTAssertFalse(names.contains("feat-no-endpoint"))
         XCTAssertFalse(names.contains("feat-no-community"))
-        XCTAssertEqual(names.count, 2)
+        XCTAssertEqual(names.count, 3)
     }
 
-    func testSortsActiveFirstThenSoonestExpiry() throws {
+    func testSortsLiveEnvsActiveFirstThenSoonestExpiryAndExpiredOnesLast() throws {
         let names = try decodedFixture().map(\.name)
-        XCTAssertEqual(names, ["feat-beta", "feat-alpha"])
+        XCTAssertEqual(names, ["feat-beta", "feat-alpha", "feat-expired"])
+    }
+
+    /// Among expired envs, the most recently expired comes first: the likeliest to still run.
+    func testSortsExpiredEnvsMostRecentlyExpiredFirst() throws {
+        let later = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-09-01T00:00:00Z"))
+        let names = try FeatureEnvsDirectory.decode(try fixture(), now: later).map(\.name)
+        XCTAssertEqual(names, ["feat-alpha", "feat-beta", "feat-expired"])
     }
 
     func testDisplayNameFallsBackToEnvNameWhenTicketIsNull() throws {
@@ -78,12 +85,19 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
 
     // MARK: What the picker is allowed to show
 
-    /// The directory does serve `status: "expired"` entries. One reaching the picker gets persisted on
-    /// tap, dropped at launch as expired, and the switch to the *default* community then succeeds — so
-    /// the developer sees no error and believes they are on the env.
-    func testDropsExpiredEnvs() throws {
-        let names = try decodedFixture().map(\.name)
-        XCTAssertFalse(names.contains("feat-expired"))
+    /// An expired env often keeps running for a while: it stays listed, flagged, and selectable.
+    func testKeepsExpiredEnvs() throws {
+        let expired = try XCTUnwrap(try decodedFixture().first { $0.name == "feat-expired" })
+        XCTAssertTrue(expired.isExpired(now: now))
+    }
+
+    func testExpiryLabelCountsDownThenUp() throws {
+        let envs = try decodedFixture()
+        let beta = try XCTUnwrap(envs.first { $0.name == "feat-beta" })
+        XCTAssertEqual(beta.expiryLabel(now: now), "expires in 5 d")
+        // 2026-07-15 -> 2026-08-05: 21 days.
+        let expired = try XCTUnwrap(envs.first { $0.name == "feat-expired" })
+        XCTAssertEqual(expired.expiryLabel(now: now), "expired since 21 d")
     }
 
     /// A host `ApiServer` refuses (here: one carrying a path) would be listed and selectable, then fail
@@ -105,7 +119,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
     func testAMalformedEnvDropsItselfRatherThanTheWholeList() throws {
         let names = try decodedFixture().map(\.name)
         XCTAssertFalse(names.contains("feat-broken-date"))
-        XCTAssertEqual(names, ["feat-beta", "feat-alpha"])
+        XCTAssertEqual(names, ["feat-beta", "feat-alpha", "feat-expired"])
     }
 
     /// `id` comes from the payload, so duplicates would make `ForEach` behaviour undefined.
@@ -186,7 +200,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
         XCTAssertFalse(FeatureEnvsError.badResponse(503).userMessage.isEmpty)
     }
 
-    // MARK: Selection, expiry guard and persistence
+    // MARK: Selection, expiry and persistence
 
     func testSelectionKeepsBareHostAndTicketFromEnv() throws {
         let env = try XCTUnwrap(try decodedFixture()
@@ -199,7 +213,7 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
         XCTAssertEqual(selection.expiresAt, env.expiresAt)
     }
 
-    func testExpiryGuardUsesThePersistedDate() {
+    func testSelectionExpiryUsesThePersistedDate() {
         let past = FeatureEnvSelection(envName: "e", ticket: nil, apiHost: "h",
                                        expiresAt: Date(timeIntervalSince1970: 1_000),
                                        communityId: "c", communityName: "n", apiKey: "k")
@@ -294,6 +308,13 @@ final class FeatureEnvsDirectoryTests: XCTestCase {
     }
 
     // MARK: A community listed once per API key
+
+    /// The directory lists the keys in no particular order (here: server keys before the client key).
+    func testCommunitiesAreSortedByNameThenKeyDescription() throws {
+        let gamma = try XCTUnwrap(try decodedPerKeyFixture().first { $0.name == "feat-gamma" })
+        XCTAssertEqual(gamma.usableCommunities.map(\.apiKey),
+                       ["key-client", "key-server", "key-server-nb", "key-pictures-off"])
+    }
 
     func testWithoutAHintTheClientKeyWinsOverTheKeysListedBeforeIt() throws {
         XCTAssertEqual(try resolvedPerKeyApiKey(ticket: "TICKET-2000", communityHint: nil), "key-client")

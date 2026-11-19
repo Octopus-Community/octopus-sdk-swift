@@ -2,8 +2,8 @@ name: Changed paths
 
 # Which PR-time jobs a pull request needs, from the paths it changes: a pull request that only touches
 # docs has nothing to build, one that touches no workflow has nothing for actionlint. Called by
-# build-sdk.yml and api-check.yml, so the path lists live in one place; each caller reads the outputs
-# of its own jobs.
+# build-sdk.yml, api-check.yml and build-pods.yml, so the path lists live in one place; each caller reads
+# the outputs of its own jobs.
 #
 # Rules every caller follows (.github/BRANCH_PROTECTION.md, "Skipping what a PR does not touch"):
 # - filter with a job-level `if:`, never with `paths:` on the trigger: the jobs behind these outputs
@@ -30,6 +30,9 @@ on:
       api:
         description: "'true' when `Public API check` is needed"
         value: ${{ jobs.classify.outputs.api }}
+      pods:
+        description: "'true' when `Build with CocoaPods` is needed"
+        value: ${{ jobs.classify.outputs.pods }}
 
 jobs:
   # No `name:`: the context stays `changes / classify`, both segments job ids, like the guards'.
@@ -46,6 +49,7 @@ jobs:
       lint: ${{ steps.classify.outputs.lint }}
       workflows: ${{ steps.classify.outputs.workflows }}
       api: ${{ steps.classify.outputs.api }}
+      pods: ${{ steps.classify.outputs.pods }}
     steps:
     # Through the REST API rather than a third-party action or a deep checkout. A rename lists its
     # old path too: moving a file out of Sources/ changes the package as much as editing it. The
@@ -58,8 +62,11 @@ jobs:
     #   it is never skipped.
     # - API check: Tests/ cannot change the public API; API/ and Scripts/ hold the baselines and the
     #   scripts the check tests, so they run it.
+    # - CocoaPods build: the podspecs compile Sources/ only, never Tests/ nor the package manifest, and
+    #   what does change the pods (the podspecs, SharedPodSpecConfig.rb, the validation app) is listed
+    #   before the skippable paths, as is the one script the job runs.
     # A change to this file runs everything: the lists it edits are not trusted to classify it.
-    # .gitattributes runs the build and the API check: an eol or filter attribute changes the files
+    # .gitattributes runs both builds and the API check: an eol or filter attribute changes the files
     # a checkout produces.
     - name: Classify the changed paths
       id: classify
@@ -90,13 +97,13 @@ jobs:
         echo "Changed paths:"
         cat "$files"
 
-        build=false lint=false workflows=false api=false
+        build=false lint=false workflows=false api=false pods=false
         if [ "$(wc -l < "$files")" -ge 3000 ]; then
-          build=true lint=true workflows=true api=true
+          build=true lint=true workflows=true api=true pods=true
         fi
         while IFS= read -r path; do
           if [ "$path" = .github/workflows/changed-paths.yml ]; then
-            build=true lint=true workflows=true api=true
+            build=true lint=true workflows=true api=true pods=true
           fi
           case "$path" in
             Sources/*|Tests/*|Package.swift|Package.resolved|.github/workflows/build-sdk.yml) build=true ;;
@@ -113,6 +120,14 @@ jobs:
             *) api=true ;;
           esac
           case "$path" in
+            Sources/*|*.podspec|SharedPodSpecConfig.rb|CocoaPodsValidationApp/*) pods=true ;;
+            Scripts/detect_invalid_grpc_imports.sh|.github/workflows/build-pods.yml) pods=true ;;
+            *.md|.claude/*|InternalDocs/*|changelog.d/*|API/*|Scripts/*|Sample/*|Tests/*) ;;
+            Package.swift|Package.resolved|LICENSES/*|.github/*|*.swiftlint.yml|.swiftlint-version) ;;
+            .gitignore|Brewfile|Gemfile|Gemfile.lock) ;;
+            *) pods=true ;;
+          esac
+          case "$path" in
             *.swift|.swiftlint.yml|*/.swiftlint.yml|.swiftlint-version|.github/workflows/build-sdk.yml) lint=true ;;
           esac
           case "$path" in
@@ -120,10 +135,11 @@ jobs:
           esac
         done < "$files"
 
-        echo "build=$build lint=$lint workflows=$workflows api=$api"
+        echo "build=$build lint=$lint workflows=$workflows api=$api pods=$pods"
         {
           echo "build=$build"
           echo "lint=$lint"
           echo "workflows=$workflows"
           echo "api=$api"
+          echo "pods=$pods"
         } >> "$GITHUB_OUTPUT"

@@ -147,7 +147,9 @@ class GroupListViewModel: ObservableObject {
     private func changeFollowStatus(groupId: String, follow: Bool) async {
         // if unfollow, we need to ensure that there will be at least one topic followed after this unfollow
         if !follow && topics.filter({ $0.isFollowed }).count <= 1 {
-            self.error = .localizationKey("Group.Action.Unfollow.Error.LastFollowedGroup")
+            self.error = .tonedKey(
+                formal: "Group.Action.Unfollow.Error.LastFollowedGroup.Formal",
+                informal: "Group.Action.Unfollow.Error.LastFollowedGroup.Informal")
             return
         }
         do {
@@ -165,7 +167,7 @@ class GroupListViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
        }
     }

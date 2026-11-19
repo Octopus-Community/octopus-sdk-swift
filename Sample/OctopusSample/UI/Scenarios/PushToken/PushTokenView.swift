@@ -29,7 +29,15 @@ struct PushTokenView: View {
                     } else {
                         Text("No device token yet. Grant the notification permission, then come back to this screen.")
                             .foregroundColor(SampleTokens.Colors.textSecondary)
-                        if notificationManager.authorizationStatus != .authorized {
+                        switch notificationManager.authorizationStatus {
+                        case .authorized:
+                            EmptyView()
+                        case .denied:
+                            // iOS never shows the prompt again once answered: only Settings bring it back.
+                            Button(action: { UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!) }) {
+                                Text("Notifications denied. Open Settings")
+                            }
+                        default:
                             Button(action: { notificationManager.requestForPushNotificationPermission() }) {
                                 Text("Ask for notification permission")
                             }

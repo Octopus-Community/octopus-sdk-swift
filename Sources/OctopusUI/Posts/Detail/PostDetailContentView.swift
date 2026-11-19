@@ -17,6 +17,8 @@ struct PostDetailContentView: View {
     let voteOnPoll: (String) async -> Bool
     let displayContentModeration: (ReportTarget) -> Void
     let displayClientObject: ((String) -> Void)?
+    /// Opens the post's group from its group name, when the community makes the group name open the group.
+    var openGroup: (String) -> Void = { _ in }
 
     var body: some View {
         PostView(
@@ -28,8 +30,9 @@ struct PostDetailContentView: View {
             voteOnPoll: voteOnPoll,
             displayProfile: displayProfile,
             // Detail renders its own nav-bar "…" menu (incl. "View group"); the in-header menu is
-            // suppressed in `.detail` context, so this closure is never invoked here.
-            openGroup: { _ in },
+            // suppressed in `.detail` context. This closure only serves the group name, when the community
+            // makes it open the group.
+            openGroup: openGroup,
             deletePost: deletePost,
             blockAuthor: blockAuthor,
             displayContentModeration: displayContentModeration,

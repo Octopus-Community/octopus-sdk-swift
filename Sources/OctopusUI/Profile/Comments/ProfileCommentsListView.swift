@@ -31,8 +31,7 @@ struct ProfileCommentsListView: View {
     /// scrolling to a specific reply (`replyToScrollTo`).
     let displayCommentDetail: (_ commentId: String, _ reply: Bool, _ replyToScrollTo: String?) -> Void
 
-    /// The hosting screen's zoom state: only the screen's `zoomableImageContainer` displays the tapped
-    /// image, so the tab writes to it rather than to a state of its own that nothing would read.
+    /// The photo request of the screen hosting the tab, whose `zoomableImageContainer` presents the viewer.
     @Binding private var zoomableImageInfo: ZoomableImageInfo?
 
     init(viewModel: ProfileCommentsListViewModel,
@@ -66,6 +65,7 @@ struct ProfileCommentsListView: View {
 }
 
 private struct ContentView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let comments: [DisplayableUserComment]?
@@ -94,7 +94,8 @@ private struct ContentView: View {
                 ScreenState(
                     image: theme.assets.icons.screenStates.emptyContent,
                     title: .localizationKey(isOwnProfile
-                        ? "Profile.Comments.EmptyState.Title.Self"
+                        ? textTone.key(formal: "Profile.Comments.EmptyState.Title.Self.Formal",
+                                       informal: "Profile.Comments.EmptyState.Title.Self.Informal")
                         : "Profile.Comments.EmptyState.Title.Other"),
                     verticalPadding: Self.verticalPadding)
             } else {
@@ -385,7 +386,7 @@ enum ProfileCommentsPreviewFixtures {
         DisplayablePost(
             uuid: "postUuid",
             author: author("PostAuthor"),
-            relativeDate: "3d ago",
+            relativeDate: "3d",
             topic: "Help",
             groupId: "groupUuid",
             canBeDeleted: false, canBeModerated: true, canBeBlockedByUser: true,
@@ -405,7 +406,7 @@ enum ProfileCommentsPreviewFixtures {
             kind: kind, uuid: uuid,
             text: .init(text: .init(originalText: text, originalLanguage: nil)),
             image: nil, author: author(uuid),
-            relativeDate: "1h. ago",
+            relativeDate: "1h",
             canBeDeleted: false, canBeModerated: true, canBeBlockedByUser: true, canCreateChildren: true,
             _liveMeasuresPublisher: liveMeasures(reactions: reactions, children: children),
             displayEvents: .init(onAppear: {}, onDisappear: {}))

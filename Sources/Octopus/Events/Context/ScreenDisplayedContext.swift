@@ -13,6 +13,9 @@ extension OctopusEvent {
     }
 
     /// A screen
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum Screen: Sendable {
         /// The posts feed (i.e. list of posts)
         @available(*, deprecated, message: "Split into mainFeed and groupDetail since 1.10.0")
@@ -54,6 +57,9 @@ extension OctopusEvent {
         case settingsAccount
         /// The report explanation screen
         case reportExplanation
+        /// The screen displayed in place of the community when the user cannot access it. The reason is given by
+        /// `OctopusSDK.communityAccessDeniedReason`.
+        case communityAccessDenied
         /// The delete account screen.
         @available(*, deprecated, message: "No longer emitted since 1.15.0: user accounts are managed by your app.")
         case deleteAccount
@@ -101,6 +107,9 @@ extension OctopusEvent.Screen {
     }
 
     /// The source from which a group detail screen was opened
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum GroupDetailSource: Sendable {
         /// Opened from the client app via the OctopusHomeScreen's initialScreen
         case clientApp
@@ -138,6 +147,7 @@ extension OctopusEvent.Screen {
         case .reportProfile: .reportProfile
         case .validateNickname: .validateNickname
         case .reportExplanation: .reportExplanation
+        case .communityAccessDenied: .communityAccessDenied
         }
     }
 }

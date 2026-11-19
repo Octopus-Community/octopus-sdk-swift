@@ -15,6 +15,9 @@ extension OctopusEvent {
     }
 
     /// An action that led to losing points
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum GamificationPointsRemovedAction: Sendable {
         case postDeleted
         case commentDeleted

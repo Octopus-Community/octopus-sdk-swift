@@ -243,11 +243,73 @@ public nonisolated struct Com_Octopuscommunity_ApiKeyConfig: @unchecked Sendable
   /// Clears the value of `consentTexts`. Subsequent reads from it will return its default value.
   public mutating func clearConsentTexts() {_uniqueStorage()._consentTexts = nil}
 
+  public var disabled: OneOf_Disabled? {
+    get {return _storage._disabled}
+    set {_uniqueStorage()._disabled = newValue}
+  }
+
+  public var closed: Com_Octopuscommunity_CommunityClosed {
+    get {
+      if case .closed(let v)? = _storage._disabled {return v}
+      return Com_Octopuscommunity_CommunityClosed()
+    }
+    set {_uniqueStorage()._disabled = .closed(newValue)}
+  }
+
+  public var temporarilyDisabled: Com_Octopuscommunity_CommunityTemporarilyDisabled {
+    get {
+      if case .temporarilyDisabled(let v)? = _storage._disabled {return v}
+      return Com_Octopuscommunity_CommunityTemporarilyDisabled()
+    }
+    set {_uniqueStorage()._disabled = .temporarilyDisabled(newValue)}
+  }
+
+  /// The community languages whose SDK texts address members informally ("tu"), same codes
+  /// as `languages`. Empty: formal everywhere.
+  public var informalLanguages: [String] {
+    get {_storage._informalLanguages}
+    set {_uniqueStorage()._informalLanguages = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_Disabled: Equatable, Sendable {
+    case closed(Com_Octopuscommunity_CommunityClosed)
+    case temporarilyDisabled(Com_Octopuscommunity_CommunityTemporarilyDisabled)
+
+  }
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+public nonisolated struct Com_Octopuscommunity_CommunityClosed: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var message: String = String()
+
+  public var nextCheckAt: UInt64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct Com_Octopuscommunity_CommunityTemporarilyDisabled: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var message: String = String()
+
+  public var nextCheckAt: UInt64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 /// Markdown, in the member's language. Empty => the SDK wording. Set to the active mode only.
@@ -403,6 +465,26 @@ public nonisolated struct Com_Octopuscommunity_ContentOptions: Sendable {
     /// Clears the value of `textRequired`. Subsequent reads from it will return its default value.
     public mutating func clearTextRequired() {self._textRequired = nil}
 
+    /// absent => false
+    public var imageTapOpensPost: Bool {
+      get {_imageTapOpensPost ?? false}
+      set {_imageTapOpensPost = newValue}
+    }
+    /// Returns true if `imageTapOpensPost` has been explicitly set.
+    public var hasImageTapOpensPost: Bool {self._imageTapOpensPost != nil}
+    /// Clears the value of `imageTapOpensPost`. Subsequent reads from it will return its default value.
+    public mutating func clearImageTapOpensPost() {self._imageTapOpensPost = nil}
+
+    /// absent => false
+    public var groupNameTapOpensGroup: Bool {
+      get {_groupNameTapOpensGroup ?? false}
+      set {_groupNameTapOpensGroup = newValue}
+    }
+    /// Returns true if `groupNameTapOpensGroup` has been explicitly set.
+    public var hasGroupNameTapOpensGroup: Bool {self._groupNameTapOpensGroup != nil}
+    /// Clears the value of `groupNameTapOpensGroup`. Subsequent reads from it will return its default value.
+    public mutating func clearGroupNameTapOpensGroup() {self._groupNameTapOpensGroup = nil}
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     public init() {}
@@ -410,6 +492,8 @@ public nonisolated struct Com_Octopuscommunity_ContentOptions: Sendable {
     fileprivate var _enablePictures: Bool? = nil
     fileprivate var _enablePolls: Bool? = nil
     fileprivate var _textRequired: Bool? = nil
+    fileprivate var _imageTapOpensPost: Bool? = nil
+    fileprivate var _groupNameTapOpensGroup: Bool? = nil
   }
 
   public nonisolated struct CommentConfig: Sendable {
@@ -795,7 +879,7 @@ nonisolated extension Com_Octopuscommunity_GetConfigResponse: SwiftProtobuf.Mess
 
 nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ApiKeyConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0\u{1}exposeClientUserId\0\u{1}termsAcceptanceMode\0\u{1}showCommentsOnOtherProfiles\0\u{1}forceNicknameChoice\0\u{1}consentTexts\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}clientLoginMandatory\0\u{1}gamificationConfig\0\u{1}displayAccountAge\0\u{1}languages\0\u{1}displayConfig\0\u{1}profileFieldsLock\0\u{1}contentOptions\0\u{1}exposeClientUserId\0\u{1}termsAcceptanceMode\0\u{1}showCommentsOnOtherProfiles\0\u{1}forceNicknameChoice\0\u{1}consentTexts\0\u{1}closed\0\u{1}temporarilyDisabled\0\u{1}informalLanguages\0")
 
   fileprivate class _StorageClass {
     var _clientLoginMandatory: Bool = false
@@ -810,6 +894,8 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
     var _showCommentsOnOtherProfiles: Bool = false
     var _forceNicknameChoice: Bool = false
     var _consentTexts: Com_Octopuscommunity_ConsentTexts? = nil
+    var _disabled: Com_Octopuscommunity_ApiKeyConfig.OneOf_Disabled?
+    var _informalLanguages: [String] = []
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -832,6 +918,8 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
       _showCommentsOnOtherProfiles = source._showCommentsOnOtherProfiles
       _forceNicknameChoice = source._forceNicknameChoice
       _consentTexts = source._consentTexts
+      _disabled = source._disabled
+      _informalLanguages = source._informalLanguages
     }
   }
 
@@ -862,6 +950,33 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
         case 10: try { try decoder.decodeSingularBoolField(value: &_storage._showCommentsOnOtherProfiles) }()
         case 11: try { try decoder.decodeSingularBoolField(value: &_storage._forceNicknameChoice) }()
         case 12: try { try decoder.decodeSingularMessageField(value: &_storage._consentTexts) }()
+        case 13: try {
+          var v: Com_Octopuscommunity_CommunityClosed?
+          var hadOneofValue = false
+          if let current = _storage._disabled {
+            hadOneofValue = true
+            if case .closed(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._disabled = .closed(v)
+          }
+        }()
+        case 14: try {
+          var v: Com_Octopuscommunity_CommunityTemporarilyDisabled?
+          var hadOneofValue = false
+          if let current = _storage._disabled {
+            hadOneofValue = true
+            if case .temporarilyDisabled(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._disabled = .temporarilyDisabled(v)
+          }
+        }()
+        case 15: try { try decoder.decodeRepeatedStringField(value: &_storage._informalLanguages) }()
         default: break
         }
       }
@@ -910,6 +1025,20 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
       try { if let v = _storage._consentTexts {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
       } }()
+      switch _storage._disabled {
+      case .closed?: try {
+        guard case .closed(let v)? = _storage._disabled else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+      }()
+      case .temporarilyDisabled?: try {
+        guard case .temporarilyDisabled(let v)? = _storage._disabled else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+      }()
+      case nil: break
+      }
+      if !_storage._informalLanguages.isEmpty {
+        try visitor.visitRepeatedStringField(value: _storage._informalLanguages, fieldNumber: 15)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -931,10 +1060,82 @@ nonisolated extension Com_Octopuscommunity_ApiKeyConfig: SwiftProtobuf.Message, 
         if _storage._showCommentsOnOtherProfiles != rhs_storage._showCommentsOnOtherProfiles {return false}
         if _storage._forceNicknameChoice != rhs_storage._forceNicknameChoice {return false}
         if _storage._consentTexts != rhs_storage._consentTexts {return false}
+        if _storage._disabled != rhs_storage._disabled {return false}
+        if _storage._informalLanguages != rhs_storage._informalLanguages {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CommunityClosed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CommunityClosed"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}nextCheckAt\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.nextCheckAt) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 1)
+    }
+    if self.nextCheckAt != 0 {
+      try visitor.visitSingularUInt64Field(value: self.nextCheckAt, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CommunityClosed, rhs: Com_Octopuscommunity_CommunityClosed) -> Bool {
+    if lhs.message != rhs.message {return false}
+    if lhs.nextCheckAt != rhs.nextCheckAt {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Com_Octopuscommunity_CommunityTemporarilyDisabled: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CommunityTemporarilyDisabled"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}nextCheckAt\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.nextCheckAt) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 1)
+    }
+    if self.nextCheckAt != 0 {
+      try visitor.visitSingularUInt64Field(value: self.nextCheckAt, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Com_Octopuscommunity_CommunityTemporarilyDisabled, rhs: Com_Octopuscommunity_CommunityTemporarilyDisabled) -> Bool {
+    if lhs.message != rhs.message {return false}
+    if lhs.nextCheckAt != rhs.nextCheckAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1175,7 +1376,7 @@ nonisolated extension Com_Octopuscommunity_ContentOptions: SwiftProtobuf.Message
 
 nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Com_Octopuscommunity_ContentOptions.protoMessageName + ".PostConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0\u{1}enablePolls\0\u{1}textRequired\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enablePictures\0\u{1}enablePolls\0\u{1}textRequired\0\u{1}imageTapOpensPost\0\u{1}groupNameTapOpensGroup\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1186,6 +1387,8 @@ nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProto
       case 1: try { try decoder.decodeSingularBoolField(value: &self._enablePictures) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self._enablePolls) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self._textRequired) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self._imageTapOpensPost) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self._groupNameTapOpensGroup) }()
       default: break
       }
     }
@@ -1205,6 +1408,12 @@ nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProto
     try { if let v = self._textRequired {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 3)
     } }()
+    try { if let v = self._imageTapOpensPost {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._groupNameTapOpensGroup {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1212,6 +1421,8 @@ nonisolated extension Com_Octopuscommunity_ContentOptions.PostConfig: SwiftProto
     if lhs._enablePictures != rhs._enablePictures {return false}
     if lhs._enablePolls != rhs._enablePolls {return false}
     if lhs._textRequired != rhs._textRequired {return false}
+    if lhs._imageTapOpensPost != rhs._imageTapOpensPost {return false}
+    if lhs._groupNameTapOpensGroup != rhs._groupNameTapOpensGroup {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

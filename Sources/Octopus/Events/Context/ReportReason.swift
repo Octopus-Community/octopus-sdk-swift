@@ -7,6 +7,9 @@ import OctopusCore
 
 extension OctopusEvent {
     /// A reason to report a content or a profile
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum ReportReason: Sendable {
         // Hate speech, discrimination, and harassment
         case hateSpeechOrDiscriminationOrHarassment
@@ -18,7 +21,8 @@ extension OctopusEvent {
         case spamAndScams
         // Suicide and self-harm
         case suicideAndSelfHarm
-        // Fake profiles and impersonation
+        /// Illegal activities or products. The name is kept from when this reason covered fake profiles and
+        /// impersonation, which now belong to `spamAndScams`.
         case fakeProfilesAndImpersonation
         // Child exploitation or abuse
         case childExploitationOrAbuse

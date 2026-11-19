@@ -7,6 +7,7 @@ import OctopusCore
 import UIKit
 
 struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, CommentsView: View>: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Environment(\.layoutDirection) private var layoutDirection
     let profile: DisplayableCurrentUserProfile
@@ -93,7 +94,8 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, C
                                         )
                                 }
                                 .buttonStyle(.plain)
-                                .accessibilityHintInBundle("Accessibility.Profile.Picture.Edit")
+                                .accessibilityHintInBundle(textTone.key(formal: "Accessibility.Profile.Picture.Edit.Formal",
+                                                                        informal: "Accessibility.Profile.Picture.Edit.Informal"))
                             } else {
                                 ZoomableAuthorAvatarView(avatar: avatar, zoomableImageInfo: $zoomableImageInfo)
                                     .frame(width: 71, height: 71)
@@ -218,7 +220,8 @@ struct CurrentUserProfileContentView<PostsView: View, NotificationsView: View, C
                                         Button(action: openEditionWithBioFocused) {
                                             HStack(spacing: 4) {
                                                 IconImage(theme.assets.icons.profile.addBio)
-                                                Text("Profile.Detail.EmptyBio.Button", bundle: .module)
+                                                Text(textTone.key(formal: "Profile.Detail.EmptyBio.Button.Formal",
+                                                                  informal: "Profile.Detail.EmptyBio.Button.Informal"), bundle: .module)
                                                     .fontWeight(.medium)
                                             }
                                             .font(theme.fonts.body2)

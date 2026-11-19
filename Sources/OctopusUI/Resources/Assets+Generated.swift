@@ -152,6 +152,9 @@ extension GenImageResource {
     static let info = GenImageResource(name: "info", bundle: resourceBundle)
     static let moderation = GenImageResource(name: "moderation", bundle: resourceBundle)
     static let more = GenImageResource(name: "more", bundle: resourceBundle)
+    static let noAccessIconFill = GenImageResource(name: "noAccessIconFill", bundle: resourceBundle)
+    static let noAccessIconOutline = GenImageResource(name: "noAccessIconOutline", bundle: resourceBundle)
+    static let noAccessIconPrimary = GenImageResource(name: "noAccessIconPrimary", bundle: resourceBundle)
     static let noCurrentUserPost = GenImageResource(name: "noCurrentUserPost", bundle: resourceBundle)
     static let noPosts = GenImageResource(name: "noPosts", bundle: resourceBundle)
     static let notConnected = GenImageResource(name: "notConnected", bundle: resourceBundle)
@@ -164,6 +167,7 @@ extension GenImageResource {
     static let search = GenImageResource(name: "search", bundle: resourceBundle)
     static let send = GenImageResource(name: "send", bundle: resourceBundle)
     static let toastNoNetwork = GenImageResource(name: "toastNoNetwork", bundle: resourceBundle)
+    static let translation = GenImageResource(name: "translation", bundle: resourceBundle)
     static let trash = GenImageResource(name: "trash", bundle: resourceBundle)
     static let viewGroup = GenImageResource(name: "viewGroup", bundle: resourceBundle)
     enum AggregatedInfo {
@@ -297,6 +301,9 @@ extension UIKit.UIImage {
         static var info: UIKit.UIImage { .init(res: .info) }
         static var moderation: UIKit.UIImage { .init(res: .moderation) }
         static var more: UIKit.UIImage { .init(res: .more) }
+        static var noAccessIconFill: UIKit.UIImage { .init(res: .noAccessIconFill) }
+        static var noAccessIconOutline: UIKit.UIImage { .init(res: .noAccessIconOutline) }
+        static var noAccessIconPrimary: UIKit.UIImage { .init(res: .noAccessIconPrimary) }
         static var noCurrentUserPost: UIKit.UIImage { .init(res: .noCurrentUserPost) }
         static var noPosts: UIKit.UIImage { .init(res: .noPosts) }
         static var notConnected: UIKit.UIImage { .init(res: .notConnected) }
@@ -309,6 +316,7 @@ extension UIKit.UIImage {
         static var search: UIKit.UIImage { .init(res: .search) }
         static var send: UIKit.UIImage { .init(res: .send) }
         static var toastNoNetwork: UIKit.UIImage { .init(res: .toastNoNetwork) }
+        static var translation: UIKit.UIImage { .init(res: .translation) }
         static var trash: UIKit.UIImage { .init(res: .trash) }
         static var viewGroup: UIKit.UIImage { .init(res: .viewGroup) }
         enum AggregatedInfo {

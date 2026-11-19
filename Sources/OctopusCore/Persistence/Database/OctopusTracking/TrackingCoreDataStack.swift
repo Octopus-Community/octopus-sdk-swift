@@ -30,33 +30,31 @@ class TrackingCoreDataStack: InjectableObject, @unchecked Sendable {
     private let stackManager: CoreDataStackManager
 
     init(forceReset: Bool = false, inRam: Bool = false) throws(CoreDataErrors) {
-        let latestVersion = UserDefaults.standard.integer(forKey: Self.latestVersionKey)
-        var resetDb = forceReset
-        if latestVersion != Self.currentVersion {
-            resetDb = resetDb || Migrator.shouldResetDb(latestVersion: latestVersion, targetVersion: Self.currentVersion)
-            if resetDb {
-                UserDefaults.standard.set(Self.currentVersion, forKey: Self.latestVersionKey)
-            }
-            stackManager = try CoreDataStackManager(
-                persistentContainerName: Self.persistentContainerName,
-                eraseExistingContainer: resetDb,
-                inRam: inRam)
+        stackManager = try CoreDataStackManager(persistentContainerName: Self.persistentContainerName, inRam: inRam) {
+            Self.prepareStore(forceReset: forceReset)
+        }
+    }
 
-            // no need to do the migration if the db has been reset
-            if !resetDb {
-                Task {
-                    let updatedVersion = await Migrator.migrateDb(
-                        latestVersion: latestVersion,
-                        targetVersion: Self.currentVersion,
-                        context: stackManager.saveContext)
-                    UserDefaults.standard.set(updatedVersion, forKey: Self.latestVersionKey)
-                }
+    /// Decides from the version the store was left at whether to reset it or migrate it. Called once the store can be
+    /// read, the version with it.
+    private static func prepareStore(forceReset: Bool) -> CoreDataStackManager.StorePreparation {
+        let latestVersion = UserDefaults.standard.integer(forKey: latestVersionKey)
+        guard latestVersion != currentVersion else { return .init(eraseExistingContainer: forceReset) }
+
+        guard !forceReset, !Migrator.shouldResetDb(latestVersion: latestVersion, targetVersion: currentVersion) else {
+            // Once loaded only: if the load fails, the next try must still see the old version and erase again.
+            return .init(eraseExistingContainer: true) { _ in
+                UserDefaults.standard.set(currentVersion, forKey: latestVersionKey)
             }
-        } else {
-            stackManager = try CoreDataStackManager(
-                persistentContainerName: Self.persistentContainerName,
-                eraseExistingContainer: resetDb,
-                inRam: inRam)
+        }
+        return .init(eraseExistingContainer: false) { context in
+            Task {
+                let updatedVersion = await Migrator.migrateDb(
+                    latestVersion: latestVersion,
+                    targetVersion: currentVersion,
+                    context: context)
+                UserDefaults.standard.set(updatedVersion, forKey: latestVersionKey)
+            }
         }
     }
 

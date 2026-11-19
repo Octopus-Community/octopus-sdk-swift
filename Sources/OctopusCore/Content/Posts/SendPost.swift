@@ -61,7 +61,8 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
              case .invalidCtaTarget:                .unknown // not supported for the moment
              case .none:                            .unknown
              }
-             let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail)
+             let formError = ValidationErrors.Error(localizedMessage: error.message, detail: detail,
+                                                    imageIndex: error.hasFileIndex ? Int(error.fileIndex) : nil)
 
              var errors = dictionary[display] ?? []
              errors.append(formError)
@@ -69,5 +70,22 @@ extension ValidationErrors where Field == SendPost.Field, ErrorDetail == SendPos
          }
 
          errors = dictionary
+     }
+
+     /// The server refused to create the upload URLs of the post's photos: every error is about the picture field,
+     /// and carries the index of the photo at fault when the server gives one.
+     init(from failure: Com_Octopuscommunity_CreateImageUploadsResponse.Fail) {
+         let formErrors = failure.errors.map { error -> ValidationErrors.Error in
+             let detail: ErrorDetail = switch error.details {
+             case .emptyFile:      .emptyFile
+             case .fileSizeTooBig: .fileSizeTooBig
+             // Only returned for an upload with a bridge, which a post sent by the user is not.
+             case .invalidClientToken, .expiredClientToken, .bridgePostUnavailable: .unknown
+             case .none:           .unknown
+             }
+             return ValidationErrors.Error(localizedMessage: error.message, detail: detail,
+                                           imageIndex: error.hasFileIndex ? Int(error.fileIndex) : nil)
+         }
+         errors = formErrors.isEmpty ? [:] : [.linkedToField(.picture): formErrors]
      }
  }

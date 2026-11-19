@@ -7,6 +7,9 @@ import OctopusCore
 
 extension OctopusEvent {
     /// A kind of content
+    #if hasAttribute(nonexhaustive)
+    @nonexhaustive(warn)
+    #endif
     public enum ContentKind {
         /// Content is a post
         case post

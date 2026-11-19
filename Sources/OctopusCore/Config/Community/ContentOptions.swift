@@ -5,11 +5,11 @@
 import Foundation
 import OctopusGrpcModels
 
-/// Per-content-type creation options for the current community, driven by the community
-/// configuration. Each flag governs whether members can use a creation affordance (picture / poll).
+/// Per-content-type creation and post navigation options for the current community, driven by the community
+/// configuration. Each creation flag governs whether members can use a creation affordance (picture / poll).
 ///
-/// Highest-priority invariant: every flag defaults to `true`. Absent config — or absent fields —
-/// map to `true`, so a community keeps today's behaviour until it is explicitly seeded with `false`.
+/// Highest-priority invariant: an absent config — or an absent field — keeps today's behaviour. Creation flags
+/// default to `true`; the post tap options default to `false`.
 public struct ContentOptions: Equatable, Sendable, Hashable {
     public struct PostOptions: Equatable, Sendable, Hashable {
         public let enablePictures: Bool
@@ -17,11 +17,22 @@ public struct ContentOptions: Equatable, Sendable, Hashable {
         /// Whether a post must carry text. When `false`, a post that carries an image (with or without a
         /// poll) may be published without text; as soon as it has text, the usual length rules apply.
         public let textRequired: Bool
+        /// Whether tapping an image of a post in a feed opens the post, like tapping the card does, instead of
+        /// showing the image fullscreen. Only when the card opens the post detail: otherwise, and in the post
+        /// detail, images still open fullscreen. Defaults to `false`.
+        public let imageTapOpensPost: Bool
+        /// Whether tapping the group name of a post, in a feed or in the post detail, opens that group. A member
+        /// without access to the group gets the same access-denied flow as from the groups list. Defaults to
+        /// `false`: the group name keeps the card action in feeds and does nothing in the post detail.
+        public let groupNameTapOpensGroup: Bool
 
-        public init(enablePictures: Bool, enablePolls: Bool, textRequired: Bool = true) {
+        public init(enablePictures: Bool, enablePolls: Bool, textRequired: Bool = true,
+                    imageTapOpensPost: Bool = false, groupNameTapOpensGroup: Bool = false) {
             self.enablePictures = enablePictures
             self.enablePolls = enablePolls
             self.textRequired = textRequired
+            self.imageTapOpensPost = imageTapOpensPost
+            self.groupNameTapOpensGroup = groupNameTapOpensGroup
         }
     }
 
@@ -51,10 +62,11 @@ public struct ContentOptions: Equatable, Sendable, Hashable {
         self.reply = reply
     }
 
-    /// Default when the community sets no content options: everything enabled and post text required
-    /// (today's behaviour).
+    /// Default when the community sets no content options: everything enabled, post text required and the
+    /// original post taps (today's behaviour).
     public static let allEnabled = ContentOptions(
-        post: .init(enablePictures: true, enablePolls: true, textRequired: true),
+        post: .init(enablePictures: true, enablePolls: true, textRequired: true,
+                    imageTapOpensPost: false, groupNameTapOpensGroup: false),
         comment: .init(enablePictures: true),
         reply: .init(enablePictures: true))
 }
@@ -63,10 +75,13 @@ extension ContentOptions {
     init(from proto: Com_Octopuscommunity_ContentOptions) {
         // proto3 bool defaults to false, but the product default is `true`: read the value only when
         // the field is explicitly present, otherwise fall back to `true`. Same for absent sub-messages.
+        // The tap options default to `false`, which is also the proto3 default: an absent field reads `false`.
         post = PostOptions(
             enablePictures: proto.hasPost ? (proto.post.hasEnablePictures ? proto.post.enablePictures : true) : true,
             enablePolls: proto.hasPost ? (proto.post.hasEnablePolls ? proto.post.enablePolls : true) : true,
-            textRequired: proto.hasPost ? (proto.post.hasTextRequired ? proto.post.textRequired : true) : true)
+            textRequired: proto.hasPost ? (proto.post.hasTextRequired ? proto.post.textRequired : true) : true,
+            imageTapOpensPost: proto.hasPost && proto.post.imageTapOpensPost,
+            groupNameTapOpensGroup: proto.hasPost && proto.post.groupNameTapOpensGroup)
         comment = CommentOptions(
             enablePictures: proto.hasComment
                 ? (proto.comment.hasEnablePictures ? proto.comment.enablePictures : true) : true)
@@ -78,7 +93,9 @@ extension ContentOptions {
     init(from entity: CommunityConfigEntity) {
         post = PostOptions(enablePictures: entity.postEnablePictures,
                            enablePolls: entity.postEnablePolls,
-                           textRequired: entity.postTextRequired)
+                           textRequired: entity.postTextRequired,
+                           imageTapOpensPost: entity.postImageTapOpensPost,
+                           groupNameTapOpensGroup: entity.postGroupNameTapOpensGroup)
         comment = CommentOptions(enablePictures: entity.commentEnablePictures)
         reply = ReplyOptions(enablePictures: entity.replyEnablePictures)
     }

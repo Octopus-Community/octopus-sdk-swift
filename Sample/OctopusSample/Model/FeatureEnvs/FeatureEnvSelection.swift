@@ -7,9 +7,10 @@ import Octopus
 
 /// The feature env + community the Sample currently targets. Persisted inside `SDKConfig`.
 ///
-/// `expiresAt` is stored so the launch-time guard needs no network call: an expired selection is
-/// dropped before the SDK is created.
-struct FeatureEnvSelection: Codable, Equatable {
+/// `expiresAt` is stored so the screens can flag an expired selection without a network call. An expired
+/// selection is still used: the env often keeps running past its expiry, and staying on it is the
+/// developer's call.
+struct FeatureEnvSelection: Codable, Equatable, FeatureEnvExpiring {
     let envName: String
     let ticket: String?
     /// Bare host, ready for `OctopusSDK.Configuration.ApiServer`.
@@ -20,23 +21,6 @@ struct FeatureEnvSelection: Codable, Equatable {
     let apiKey: String
 
     var displayName: String { ticket ?? envName }
-
-    func isExpired(now: Date = Date()) -> Bool { expiresAt <= now }
-}
-
-/// Why a feature env could not be applied. `LocalizedError` so the view model's
-/// `error.localizedDescription` carries the explanation instead of a type name.
-enum FeatureEnvApplyError: LocalizedError {
-    case expired(FeatureEnvSelection)
-
-    var errorDescription: String? {
-        switch self {
-        case let .expired(selection):
-            let expiry = DateFormatter.localizedString(from: selection.expiresAt,
-                                                       dateStyle: .short, timeStyle: .short)
-            return "\(selection.displayName) expired on \(expiry). Reload the list and pick a live env."
-        }
-    }
 }
 
 extension FeatureEnvSelection {

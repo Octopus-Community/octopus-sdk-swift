@@ -8,13 +8,17 @@ import Octopus
 import OctopusCore
 
 struct ReportExplanationView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
     @Environment(\.trackingApi) private var trackingApi
     @Compat.StateObject private var viewModel: LinksProviderViewModel
 
     var explanationString: String {
         String.localizedStringWithFormat(
-            Bundle.module.localizedString(forKey: "Settings.Report.Explanation_url:%@", value: nil, table: nil),
+            Bundle.module.localizedString(
+                forKey: textTone.stringKey(formal: "Settings.Report.Explanation.Formal_url:%@",
+                                           informal: "Settings.Report.Explanation.Informal_url:%@"),
+                value: nil, table: nil),
             viewModel.communityGuidelines.absoluteString
         )
     }
@@ -35,7 +39,8 @@ struct ReportExplanationView: View {
                         .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: 20) {
-                        Text("Settings.Report.MainText", bundle: .module)
+                        Text(textTone.key(formal: "Settings.Report.MainText.Formal",
+                                          informal: "Settings.Report.MainText.Informal"), bundle: .module)
                             .fontWeight(.medium)
                             .foregroundColor(theme.colors.gray900)
 

@@ -54,7 +54,8 @@ struct OctopusPresentationTests {
             displayConfigManager: .forPreviews(),
             reactionsListManager: .forPreviews(),
             videoManager: .forPreviews(),
-            languageManager: .forPreviews())
+            languageManager: .forPreviews(),
+            carouselPositions: CarouselPositions())
     }
 }
 
@@ -64,7 +65,7 @@ private final class Recorder {
     var receivedIds: [ObjectIdentifier] = []
 }
 
-/// Reads the six objects the way the SDK's screens do: as `@EnvironmentObject`, which traps when one is missing.
+/// Reads the seven objects the way the SDK's screens do: as `@EnvironmentObject`, which traps when one is missing.
 private struct EnvironmentObjectsProbe: View {
     @EnvironmentObject private var translationStore: ContentTranslationPreferenceStore
     @EnvironmentObject private var gamificationRulesViewManager: GamificationRulesViewManager
@@ -72,6 +73,8 @@ private struct EnvironmentObjectsProbe: View {
     @EnvironmentObject private var reactionsListManager: ReactionsListManager
     @EnvironmentObject private var videoManager: VideoManager
     @EnvironmentObject private var languageManager: LanguageManager
+    /// Not an environment object: the carousels read it without observing it.
+    @Environment(\.carouselPositions) private var carouselPositions
 
     let recorder: Recorder
 
@@ -84,6 +87,7 @@ private struct EnvironmentObjectsProbe: View {
             ObjectIdentifier(reactionsListManager),
             ObjectIdentifier(videoManager),
             ObjectIdentifier(languageManager),
+            ObjectIdentifier(carouselPositions),
         ]
         return Color.clear
     }
@@ -111,6 +115,7 @@ private extension SharedEnvironmentObjects {
             ObjectIdentifier(reactionsListManager),
             ObjectIdentifier(videoManager),
             ObjectIdentifier(languageManager),
+            ObjectIdentifier(carouselPositions),
         ]
     }
 }

@@ -38,53 +38,81 @@ struct DisplayableToast: Identifiable, Equatable {
         case .userAction: .success
         case .error: .error
         }
-        message = .localizationKey(toast.localizedKey)
+        message = toast.message
     }
 }
 
 extension Toast {
-    var localizedKey: LocalizedStringKey {
+    var message: DisplayableString {
         switch self {
-        case let .gamification(gamificationToast): gamificationToast.localizedKey
-        case let .userAction(userAction): userAction.localizedKey
-        case let .error(error): error.localizedKey
+        case let .gamification(gamificationToast): gamificationToast.message
+        case let .userAction(userAction): .localizationKey(userAction.localizedKey)
+        case let .error(error): error.message
         }
     }
 
-    func localizedString(locale: Locale?) -> String {
+    /// - Parameter tone: the member's tone, which picks the version of the texts that address the member.
+    func localizedString(locale: Locale?, tone: TextTone) -> String {
         switch self {
-        case let .gamification(gamificationToast): gamificationToast.localizedString(locale: locale)
+        case let .gamification(gamificationToast): gamificationToast.localizedString(locale: locale, tone: tone)
         case let .userAction(userAction): userAction.localizedString(locale: locale)
-        case let .error(error): error.localizedString(locale: locale)
+        case let .error(error): error.localizedString(locale: locale, tone: tone)
         }
     }
 }
 
 extension GamificationToast {
-    var localizedKey: LocalizedStringKey {
+    var message: DisplayableString {
         switch action {
-        case .reaction: "Gamification.Toast.Reaction_points:\(formattedPoints)"
-        case .vote: "Gamification.Toast.Vote_points:\(formattedPoints)"
-        case .post: "Gamification.Toast.Post_points:\(formattedPoints)"
-        case .comment: "Gamification.Toast.Comment_points:\(formattedPoints)"
-        case .reply: "Gamification.Toast.Comment_points:\(formattedPoints)"
-        case .postCommented: "Gamification.Toast.CommentedPost_points:\(formattedPoints)"
-        case .profileCompleted: "Gamification.Toast.ProfileCompleted_points:\(formattedPoints)"
-        case .dailySession: "Gamification.Toast.DailySession_points:\(formattedPoints)"
+        case .reaction:
+            .tonedKey(formal: "Gamification.Toast.Reaction.Formal_points:\(formattedPoints)",
+                      informal: "Gamification.Toast.Reaction.Informal_points:\(formattedPoints)")
+        case .vote:
+            .tonedKey(formal: "Gamification.Toast.Vote.Formal_points:\(formattedPoints)",
+                      informal: "Gamification.Toast.Vote.Informal_points:\(formattedPoints)")
+        case .post:
+            .tonedKey(formal: "Gamification.Toast.Post.Formal_points:\(formattedPoints)",
+                      informal: "Gamification.Toast.Post.Informal_points:\(formattedPoints)")
+        case .comment, .reply:
+            .tonedKey(formal: "Gamification.Toast.Comment.Formal_points:\(formattedPoints)",
+                      informal: "Gamification.Toast.Comment.Informal_points:\(formattedPoints)")
+        case .postCommented:
+            .tonedKey(formal: "Gamification.Toast.CommentedPost.Formal_points:\(formattedPoints)",
+                      informal: "Gamification.Toast.CommentedPost.Informal_points:\(formattedPoints)")
+        case .profileCompleted:
+            .tonedKey(formal: "Gamification.Toast.ProfileCompleted.Formal_points:\(formattedPoints)",
+                      informal: "Gamification.Toast.ProfileCompleted.Informal_points:\(formattedPoints)")
+        case .dailySession:
+            .tonedKey(formal: "Gamification.Toast.DailySession.Formal_points:\(formattedPoints)",
+                      informal: "Gamification.Toast.DailySession.Informal_points:\(formattedPoints)")
         }
     }
 
-    func localizedString(locale: Locale?) -> String {
-        switch action {
-        case .reaction: L10n("Gamification.Toast.Reaction_points:%@", locale: locale, formattedPoints)
-        case .vote: L10n("Gamification.Toast.Vote_points:%@", locale: locale, formattedPoints)
-        case .post: L10n("Gamification.Toast.Post_points:%@", locale: locale, formattedPoints)
-        case .comment: L10n("Gamification.Toast.Comment_points:%@", locale: locale, formattedPoints)
-        case .reply: L10n("Gamification.Toast.Comment_points:%@", locale: locale, formattedPoints)
-        case .postCommented: L10n("Gamification.Toast.CommentedPost_points:%@", locale: locale, formattedPoints)
-        case .profileCompleted: L10n("Gamification.Toast.ProfileCompleted_points:%@", locale: locale, formattedPoints)
-        case .dailySession: L10n("Gamification.Toast.DailySession_points:%@", locale: locale, formattedPoints)
+    func localizedString(locale: Locale?, tone: TextTone) -> String {
+        let key = switch action {
+        case .reaction:
+            tone.stringKey(formal: "Gamification.Toast.Reaction.Formal_points:%@",
+                           informal: "Gamification.Toast.Reaction.Informal_points:%@")
+        case .vote:
+            tone.stringKey(formal: "Gamification.Toast.Vote.Formal_points:%@",
+                           informal: "Gamification.Toast.Vote.Informal_points:%@")
+        case .post:
+            tone.stringKey(formal: "Gamification.Toast.Post.Formal_points:%@",
+                           informal: "Gamification.Toast.Post.Informal_points:%@")
+        case .comment, .reply:
+            tone.stringKey(formal: "Gamification.Toast.Comment.Formal_points:%@",
+                           informal: "Gamification.Toast.Comment.Informal_points:%@")
+        case .postCommented:
+            tone.stringKey(formal: "Gamification.Toast.CommentedPost.Formal_points:%@",
+                           informal: "Gamification.Toast.CommentedPost.Informal_points:%@")
+        case .profileCompleted:
+            tone.stringKey(formal: "Gamification.Toast.ProfileCompleted.Formal_points:%@",
+                           informal: "Gamification.Toast.ProfileCompleted.Informal_points:%@")
+        case .dailySession:
+            tone.stringKey(formal: "Gamification.Toast.DailySession.Formal_points:%@",
+                           informal: "Gamification.Toast.DailySession.Informal_points:%@")
         }
+        return L10n(key, locale: locale, formattedPoints)
     }
 }
 
@@ -103,17 +131,18 @@ extension UserActionToast {
 }
 
 extension ErrorToast {
-    var localizedKey: LocalizedStringKey {
+    var message: DisplayableString {
         switch self {
-        case .noNetwork: "Error.NoNetwork"
-        case .unknown: "Error.Unknown"
+        case .noNetwork: .noNetworkError
+        case .unknown: .unknownError
         }
     }
 
-    func localizedString(locale: Locale?) -> String {
-        switch self {
-        case .noNetwork: L10n("Error.NoNetwork", locale: locale)
-        case .unknown: L10n("Error.Unknown", locale: locale)
+    func localizedString(locale: Locale?, tone: TextTone) -> String {
+        let key = switch self {
+        case .noNetwork: tone.stringKey(formal: "Error.NoNetwork.Formal", informal: "Error.NoNetwork.Informal")
+        case .unknown: tone.stringKey(formal: "Error.Unknown.Formal", informal: "Error.Unknown.Informal")
         }
+        return L10n(key, locale: locale)
     }
 }

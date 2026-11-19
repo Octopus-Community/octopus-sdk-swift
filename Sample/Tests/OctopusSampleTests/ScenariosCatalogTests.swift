@@ -149,9 +149,14 @@ final class ScenariosCatalogTests: XCTestCase {
         XCTAssertEqual(OverrideLabels.lockLine(lock), "nickname read-only · avatar editable · bio hidden")
     }
 
+    func testInformalLanguagesLabels() {
+        XCTAssertEqual(OverrideLabels.languagesLine([]), "none (formal everywhere)")
+        XCTAssertEqual(OverrideLabels.languagesLine(["it", "fr"]), "it, fr")
+    }
+
     func testContentOptionsPresetsAreDistinctAndNamed() {
         let presets = OverrideLabels.contentOptionsPresets
-        XCTAssertEqual(presets.count, 7)
+        XCTAssertEqual(presets.count, 10)
         XCTAssertEqual(presets.first?.options, .allEnabled)
         for (index, preset) in presets.enumerated() {
             XCTAssertEqual(OverrideLabels.contentOptionsLabel(preset.options), preset.label)

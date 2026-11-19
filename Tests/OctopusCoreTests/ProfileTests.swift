@@ -80,15 +80,15 @@ class ProfileTests: XCTestCase {
 
         let userProfilePublishedExpectation = XCTestExpectation(description: "User published")
 
-        var profile: CurrentUserProfile?
+        let profile = Locked<CurrentUserProfile?>(nil)
         profileRepository.profilePublisher.sink {
-            profile = $0
-            guard profile?.id == "profileId" else { return }
+            profile.value = $0
+            guard $0?.id == "profileId" else { return }
             userProfilePublishedExpectation.fulfill()
         }.store(in: &storage)
 
         await fulfillment(of: [userProfilePublishedExpectation], timeout: 5)
-        XCTAssertEqual(profile?.nickname, "nickname")
+        XCTAssertEqual(profile.value?.nickname, "nickname")
     }
 
     func testFetchCurrentUserProfile() async throws {
@@ -97,14 +97,14 @@ class ProfileTests: XCTestCase {
 
         let userProfilePublishedExpectation = XCTestExpectation(description: "User published")
 
-        var profile: CurrentUserProfile?
+        let profile = Locked<CurrentUserProfile?>(nil)
         profileRepository.profilePublisher.sink {
-            profile = $0
-            guard profile?.id == "profileId" else { return }
+            profile.value = $0
+            guard $0?.id == "profileId" else { return }
             userProfilePublishedExpectation.fulfill()
         }.store(in: &storage)
 
-        try await assertWithTimeout(profile == nil)
+        try await assertWithTimeout(profile.value == nil)
 
         mockUserService.injectNextGetPrivateProfileResponse(.with {
             $0.profile = .with {
@@ -116,7 +116,7 @@ class ProfileTests: XCTestCase {
 
         try await profileRepository.fetchCurrentUserProfile()
         await fulfillment(of: [userProfilePublishedExpectation], timeout: 5)
-        XCTAssertEqual(profile?.nickname, "nickname")
+        XCTAssertEqual(profile.value?.nickname, "nickname")
     }
 
     func testProfileCreated() async throws {
@@ -227,15 +227,15 @@ class ProfileTests: XCTestCase {
     func testFetchProfile() async throws {
         let profilePublishedExpectation = XCTestExpectation(description: "Profile published")
 
-        var profile: Profile?
+        let profile = Locked<Profile?>(nil)
         profileRepository.getProfile(profileId: "authorProfileId")
             .sink {
-                profile = $0
-                guard profile?.id == "authorProfileId" else { return }
+                profile.value = $0
+                guard $0?.id == "authorProfileId" else { return }
                 profilePublishedExpectation.fulfill()
             }.store(in: &storage)
 
-        try await assertWithTimeout(profile == nil)
+        try await assertWithTimeout(profile.value == nil)
 
         mockUserService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {
@@ -246,7 +246,7 @@ class ProfileTests: XCTestCase {
 
         try await profileRepository.fetchProfile(profileId: "authorProfileId")
         await fulfillment(of: [profilePublishedExpectation], timeout: 5)
-        XCTAssertEqual(profile?.nickname, "nickname")
+        XCTAssertEqual(profile.value?.nickname, "nickname")
     }
 
     func testFetchProfileByProfileId_returnsAndPersistsProfile() async throws {
@@ -366,7 +366,8 @@ class ProfileTests: XCTestCase {
             contentOptions: .allEnabled,
             exposeClientUserId: false,
             termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+            informalLanguages: []))
 
         mockUserService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {
@@ -431,8 +432,9 @@ class ProfileTests: XCTestCase {
         try await publicProfileDatabase.upsert(profile: StorableProfile(
             id: "cachedId", nickname: "cached", bio: nil, pictureUrl: nil, defaultAvatar: nil, tags: [],
             totalMessages: nil, accountCreationDate: nil,
-            gamificationLevel: nil,
-            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil))
+            gamificationLevel: nil, gamificationScore: nil,
+            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil),
+            gamificationTicket: ProfileGamificationOrder.nextTicket())
 
         // Empty response (no member for that client user id).
         mockUserService.injectNextGetPublicProfileByClientUserIdResponse(
@@ -465,7 +467,8 @@ class ProfileTests: XCTestCase {
             contentOptions: .allEnabled,
             exposeClientUserId: true,
             termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+            informalLanguages: []))
 
         mockUserService.injectNextGetPublicProfileByClientUserIdResponse(.with {
             $0.profile = .with {
@@ -500,14 +503,14 @@ class ProfileTests: XCTestCase {
                                                                  jwtToken: "fake_token"))
 
         let published = XCTestExpectation(description: "Profile published with client user id")
-        var profile: CurrentUserProfile?
+        let profile = Locked<CurrentUserProfile?>(nil)
         profileRepository.profilePublisher.sink {
-            profile = $0
+            profile.value = $0
             if $0?.id == "profileId" { published.fulfill() }
         }.store(in: &storage)
 
         await fulfillment(of: [published], timeout: 5)
-        XCTAssertEqual(profile?.clientUserId, "host-7")
+        XCTAssertEqual(profile.value?.clientUserId, "host-7")
     }
 
     func testCurrentUserProfileClientUserIdNilForGuest() async throws {
@@ -528,14 +531,14 @@ class ProfileTests: XCTestCase {
                                                                  jwtToken: "fake_token"))
 
         let published = XCTestExpectation(description: "Guest profile published")
-        var profile: CurrentUserProfile?
+        let profile = Locked<CurrentUserProfile?>(nil)
         profileRepository.profilePublisher.sink {
-            profile = $0
+            profile.value = $0
             if $0?.id == "profileId" { published.fulfill() }
         }.store(in: &storage)
 
         await fulfillment(of: [published], timeout: 5)
-        XCTAssertNil(profile?.clientUserId)
+        XCTAssertNil(profile.value?.clientUserId)
     }
 
     func testPublicProfileDatabase_getProfile_returnsStoredProfile() async throws {
@@ -543,8 +546,9 @@ class ProfileTests: XCTestCase {
             id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil, defaultAvatar: nil,
             tags: .admin,
             totalMessages: nil, accountCreationDate: nil,
-            gamificationLevel: nil,
-            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil))
+            gamificationLevel: nil, gamificationScore: nil,
+            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil),
+            gamificationTicket: ProfileGamificationOrder.nextTicket())
 
         let fetched = try await publicProfileDatabase.getProfile(profileId: "adminProfileId")
         XCTAssertEqual(fetched?.id, "adminProfileId")
@@ -613,8 +617,9 @@ class ProfileTests: XCTestCase {
             id: "adminProfileId", nickname: "admin", bio: nil, pictureUrl: nil, defaultAvatar: nil,
             tags: .admin,
             totalMessages: nil, accountCreationDate: nil,
-            gamificationLevel: nil,
-            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil))
+            gamificationLevel: nil, gamificationScore: nil,
+            descPostFeedId: "", ascPostFeedId: "", descCommentFeedId: "", ascCommentFeedId: "", clientUserId: nil),
+            gamificationTicket: ProfileGamificationOrder.nextTicket())
 
         await waitForReadableCurrentUserProfile(id: "profileId")
 
@@ -894,6 +899,136 @@ class ProfileTests: XCTestCase {
         if let errorMessage = mockUserService.errorMessage {
             XCTFail(errorMessage)
         }
+    }
+
+    /// A logout leaves the last profile the fetch monitor got. Taken again when the community opens to the next
+    /// session, it would be stored, and migrated when it is still to migrate, for a user who is gone.
+    func testProfileFetchedForAPreviousSessionIsNotStoredWhenTheCommunityOpensAgain() async throws {
+        userDataStorage.store(userData: .init(id: "previousUserId", clientId: "clientUserId", jwtToken: "fake_token"))
+        let storedProfile = Locked<StorableCurrentUserProfile?>(nil)
+        userProfileDatabase.profilePublisher(userId: "previousUserId")
+            .sink { storedProfile.value = $0 }
+            .store(in: &storage)
+        mockUserProfileFetchMonitor.userProfileResponse = (.with {
+            $0.profile = .with {
+                $0.id = "previousProfileId"
+                $0.nickname = "previousNickname"
+                $0.hasConfirmedNickname_p = true
+            }
+        }, "previousUserId")
+        try? await TaskUtils.wait(for: storedProfile.value != nil, timeout: 2)
+        XCTAssertNotNil(storedProfile.value)
+
+        // the session changes, and the profile of the previous one is deleted, as a logout does
+        userDataStorage.store(userData: .init(id: "guestUserId", jwtToken: "guest_token"))
+        try await userProfileDatabase.delete(userId: "previousUserId")
+        try? await TaskUtils.wait(for: storedProfile.value == nil, timeout: 2)
+        try await mockConfigRepository.overrideCommunityAccess(false)
+        try await mockConfigRepository.overrideCommunityAccess(true)
+
+        // leave the profile repository the time to act
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertNil(storedProfile.value)
+    }
+
+    /// A profile fetched while the community is closed waits for it to open. When the session it was fetched for is
+    /// gone by then, it is neither stored nor migrated.
+    func testProfileFetchedWhileTheCommunityIsClosedIsDroppedWithItsSession() async throws {
+        try await mockConfigRepository.overrideCommunityAccess(false)
+        userDataStorage.store(userData: .init(id: "previousUserId", clientId: "clientUserId", jwtToken: "fake_token"))
+        let storedProfile = Locked<StorableCurrentUserProfile?>(nil)
+        userProfileDatabase.profilePublisher(userId: "previousUserId")
+            .sink { storedProfile.value = $0 }
+            .store(in: &storage)
+        // a profile still to migrate, without a nickname
+        mockUserProfileFetchMonitor.userProfileResponse = (.with {
+            $0.profile = .with { $0.id = "previousProfileId" }
+        }, "previousUserId")
+        // leave the profile repository the time to act
+        try await Task.sleep(nanoseconds: 300_000_000)
+
+        userDataStorage.store(userData: .init(id: "guestUserId", jwtToken: "guest_token"))
+        try await mockConfigRepository.overrideCommunityAccess(true)
+
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertNil(storedProfile.value)
+        XCTAssertEqual(mockUserService.updateProfileCallCount, 0)
+    }
+
+    /// A profile fetched while the community is closed is migrated once it opens. Opening again later must not
+    /// migrate the profile as it was fetched again: the migration of a profile without a nickname would reset what
+    /// its member has confirmed since.
+    func testProfileFetchedWhileTheCommunityIsClosedIsMigratedOnce() async throws {
+        try await mockConfigRepository.overrideCommunityAccess(false)
+        userDataStorage.store(userData: .init(id: "userId", clientId: "clientUserId", jwtToken: "fake_token"))
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(.with {
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "nickname"
+                    $0.hasSeenOnboarding_p = false
+                    $0.hasAcceptedCgu_p = false
+                    $0.hasConfirmedNickname_p = false
+                    $0.hasConfirmedBio_p = false
+                    $0.hasConfirmedPicture_p = false
+                }
+            })
+        })
+        // a profile still to migrate, without a nickname
+        mockUserProfileFetchMonitor.userProfileResponse = (.with {
+            $0.profile = .with { $0.id = "profileId" }
+        }, "userId")
+        // leave the profile repository the time to act
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(mockUserService.updateProfileCallCount, 0, "not migrated while the community is closed")
+
+        try await mockConfigRepository.overrideCommunityAccess(true)
+        try? await TaskUtils.wait(for: mockUserService.updateProfileCallCount == 1, timeout: 2)
+        XCTAssertEqual(mockUserService.updateProfileCallCount, 1)
+
+        try await mockConfigRepository.overrideCommunityAccess(false)
+        try await mockConfigRepository.overrideCommunityAccess(true)
+        // leave the profile repository the time to act
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(mockUserService.updateProfileCallCount, 1)
+    }
+
+    /// The access the SDK read on its previous launch can open the community before the server says it is closed.
+    /// The profile is not filled with the client user's while it is closed: the server refuses it, and each refusal
+    /// would use up one of the tries the merger allows the same update, leaving none for when it opens.
+    func testProfileIsFilledWithTheClientUserOnlyOnceTheCommunityOpens() async throws {
+        try await mockConfigRepository.overrideCommunityAccess(false)
+        try await userProfileDatabase.upsert(profile: .create(
+            id: "profileId", userId: "userId", nickname: "nickname",
+            hasConfirmedNickname: false, hasConfirmedBio: false))
+        userDataStorage.store(userData: .init(id: "userId", clientId: "clientUserId", jwtToken: "fake_token"))
+        userDataStorage.store(clientUserData: .init(id: "clientUserId"))
+        try await clientUserProfileDatabase.upsert(
+            profile: .init(nickname: "clientNickname", bio: nil, picture: nil),
+            clientUserId: "clientUserId")
+        // leave the profile repository the time to act
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(mockUserService.updateProfileCallCount, 0, "not filled while the community is closed")
+
+        let profileUpdatedExpectation = XCTestExpectation(description: "Profile filled with the client user")
+        profileRepository.profilePublisher.sink {
+            if $0?.nickname == "clientNickname" { profileUpdatedExpectation.fulfill() }
+        }.store(in: &storage)
+        mockUserService.injectNextUpdateProfileResponse(.with {
+            $0.result = .success(.with {
+                $0.profile = .with {
+                    $0.id = "profileId"
+                    $0.nickname = "clientNickname"
+                    $0.hasConfirmedNickname_p = false
+                    $0.hasConfirmedBio_p = false
+                    $0.hasConfirmedPicture_p = false
+                }
+            })
+        })
+        try await mockConfigRepository.overrideCommunityAccess(true)
+
+        await fulfillment(of: [profileUpdatedExpectation], timeout: 5)
+        XCTAssertEqual(mockUserService.updateProfileCallCount, 1)
     }
 
     /// Waits until the connected user's profile is not only *published* but *readable* from

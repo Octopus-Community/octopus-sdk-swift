@@ -19,6 +19,9 @@ struct StorableProfile: Sendable {
     let accountCreationDate: Date?
 
     let gamificationLevel: Int?
+    /// The member's total points. Nil when the server does not send it, or when the profile carries no
+    /// gamification at all (gamification disabled, or a profile tagged admin).
+    let gamificationScore: Int?
 
     let descPostFeedId: String
     let ascPostFeedId: String
@@ -40,6 +43,7 @@ extension StorableProfile {
         totalMessages = entity.totalMessages
         accountCreationDate = entity.accountCreationDate
         gamificationLevel = entity.gamificationLevel
+        gamificationScore = entity.gamificationScore
         descPostFeedId = entity.descPostFeedId
         ascPostFeedId = entity.ascPostFeedId
         descCommentFeedId = entity.descCommentFeedId
@@ -62,6 +66,9 @@ extension StorableProfile {
         accountCreationDate = profile.hasAccountCreatedAt ? Date(timestampMs: profile.accountCreatedAt) : nil
 
         gamificationLevel = profile.hasGamificationScore ? Int(profile.gamificationScore.level) : nil
+        // The score is optional inside the block: a level sent without it leaves the total unknown, not 0.
+        gamificationScore = profile.hasGamificationScore && profile.gamificationScore.hasScore
+            ? Int(profile.gamificationScore.score) : nil
 
         descPostFeedId = profile.descPostFeedID
         ascPostFeedId = profile.ascPostFeedID

@@ -26,6 +26,8 @@ extension OctopusConnectUserError {
             return "A server error occurred. Please try again later."
         case .other:
             return "An unexpected error occurred. Please try again."
+        @unknown default:
+            return "An unexpected error occurred. Please try again."
         }
     }
 }

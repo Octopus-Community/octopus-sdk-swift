@@ -8,6 +8,7 @@ import OctopusDependencyInjection
 import OctopusRemoteClient
 import OctopusGrpcModels
 import SwiftProtobuf
+import Combine
 @testable import Octopus
 @testable import OctopusCore
 
@@ -137,14 +138,18 @@ struct CommunityDataMappingTests {
             contentOptions: .allEnabled,
             exposeClientUserId: false,
             termsAcceptanceMode: .implicit,
-            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil))
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+            informalLanguages: []))
 
         mocks.userService.injectNextGetPublicProfileResponse(.with {
             $0.profile = .with {
                 $0.id = "octoProfileId"
                 $0.nickname = "nickname"
                 $0.totalMessages = 42
-                $0.gamificationScore = .with { $0.level = 3 }
+                $0.gamificationScore = .with {
+                    $0.level = 3
+                    $0.score = 1_250
+                }
             }
         })
 
@@ -154,8 +159,100 @@ struct CommunityDataMappingTests {
         #expect(communityData.profileId == "octoProfileId")
         #expect(communityData.messageCount == 42)
         #expect(communityData.gamification?.level == 3)
-        // Other members never carry a per-user score on the public profile — always nil (documented).
+        #expect(communityData.gamification?.score == 1_250)
+    }
+
+    // MARK: - Mapping: total points
+
+    @Test func mapping_scoreByClientUserId() async throws {
+        let mocks = Self.makeProfileRepositoryAndMocks()
+        mocks.configRepository.injectNextRefreshCommunityConfig(Self.gamifiedConfig(levels: [1]))
+        mocks.userService.injectNextGetPublicProfileByClientUserIdResponse(.with {
+            $0.profile = .with {
+                $0.id = "octoProfileId"
+                $0.gamificationScore = .with {
+                    $0.level = 1
+                    $0.score = 0
+                }
+            }
+        })
+
+        let profile = try await mocks.repository.fetchProfile(byClientUserId: "host-member")
+        let communityData = try #require(profile.map { OctopusCommunityData(from: $0) })
+
+        #expect(communityData.profileId == "octoProfileId")
+        // A total of zero is a total, not an unknown one.
+        #expect(communityData.gamification?.score == 0)
+    }
+
+    @Test func mapping_levelWithoutScore_leavesTheScoreUnknown() async throws {
+        let mocks = Self.makeProfileRepositoryAndMocks()
+        mocks.configRepository.injectNextRefreshCommunityConfig(Self.gamifiedConfig(levels: [2]))
+        mocks.userService.injectNextGetPublicProfileResponse(.with {
+            $0.profile = .with {
+                $0.id = "octoProfileId"
+                $0.gamificationScore = .with { $0.level = 2 }
+            }
+        })
+
+        let profile = try await mocks.repository.fetchProfile(byProfileId: "octoProfileId")
+        let communityData = try #require(profile.map { OctopusCommunityData(from: $0) })
+
+        #expect(communityData.gamification?.level == 2)
         #expect(communityData.gamification?.score == nil)
+    }
+
+    @Test func mapping_adminTaggedProfile_hasNoGamification() async throws {
+        let mocks = Self.makeProfileRepositoryAndMocks()
+        mocks.configRepository.injectNextRefreshCommunityConfig(Self.gamifiedConfig(levels: [2]))
+        mocks.userService.injectNextGetPublicProfileResponse(.with {
+            $0.profile = .with {
+                $0.id = "adminId"
+                $0.tags = [.admin]
+                $0.gamificationScore = .with {
+                    $0.level = 2
+                    $0.score = 50
+                }
+            }
+        })
+
+        let profile = try await mocks.repository.fetchProfile(byProfileId: "adminId")
+        let communityData = try #require(profile.map { OctopusCommunityData(from: $0) })
+
+        #expect(communityData.gamification == nil)
+    }
+
+    // A regression fails the test instead of leaving the continuation below waiting forever. The time limit needs
+    // iOS 16, newer than the package's deployment target.
+    @available(iOS 16, *)
+    @Test(.timeLimit(.minutes(1)))
+    func publisher_emitsTheCachedScore() async throws {
+        let mocks = Self.makeProfileRepositoryAndMocks()
+        mocks.configRepository.injectNextRefreshCommunityConfig(Self.gamifiedConfig(levels: [1]))
+        mocks.userService.injectNextGetPublicProfileResponse(.with {
+            $0.profile = .with {
+                $0.id = "octoProfileId"
+                $0.gamificationScore = .with {
+                    $0.level = 1
+                    $0.score = 320
+                }
+            }
+        })
+        _ = try await mocks.repository.fetchProfile(byProfileId: "octoProfileId")
+
+        // Mirrors OctopusSDK.communityDataPublisher(profileId:)'s mapping of the cached profile.
+        let subscription = SubscriptionBox()
+        let communityData = await withCheckedContinuation { continuation in
+            subscription.cancellable = mocks.repository.getProfile(profileId: "octoProfileId")
+                .compactMap { $0.map { OctopusCommunityData(from: $0) } }
+                .filter { $0.gamification != nil }
+                .first()
+                .sink { continuation.resume(returning: $0) }
+        }
+        subscription.cancellable = nil
+
+        #expect(communityData.gamification?.level == 1)
+        #expect(communityData.gamification?.score == 320)
     }
 
     // MARK: - Mapping: messageCount / gamification absent
@@ -176,5 +273,33 @@ struct CommunityDataMappingTests {
 
         #expect(communityData.messageCount == nil)
         #expect(communityData.gamification == nil)
+    }
+
+    // MARK: - Helpers
+
+    /// Keeps a subscription alive until its single value arrives (`first()` resumes the continuation once).
+    private final class SubscriptionBox: @unchecked Sendable {
+        var cancellable: AnyCancellable?
+    }
+
+    /// A community config whose gamification has the given levels, so the mapped profile resolves its level.
+    private static func gamifiedConfig(levels: [Int]) -> CommunityConfig {
+        CommunityConfig(
+            forceLoginOnStrongActions: false,
+            displayAccountAge: false,
+            gamificationConfig: GamificationConfig(
+                pointsName: "points", abbrevPointSingular: "pt", abbrevPointPlural: "pts",
+                pointsByAction: [:],
+                gamificationLevels: levels.map {
+                    GamificationLevel(level: $0, name: "Level \($0)", startAt: 0, nextLevelAt: nil,
+                                      badgeColor: nil, badgeTextColor: nil)
+                }),
+            displayConfig: nil,
+            profileFieldsLock: .allEditable,
+            contentOptions: .allEnabled,
+            exposeClientUserId: true,
+            termsAcceptanceMode: .implicit,
+            showCommentsOnOtherProfiles: false, forceNicknameChoice: false, consentTexts: nil,
+            informalLanguages: [])
     }
 }

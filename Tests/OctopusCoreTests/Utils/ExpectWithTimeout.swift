@@ -19,6 +19,19 @@ func expectWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throw
     }
 }
 
+func expectWithTimeout(timeout: TimeInterval = 5, _ block: @escaping () async throws -> Bool) async throws {
+    var elapsedTime: TimeInterval = 0
+    let steps = 0.005
+    while !(try await block()) {
+        guard elapsedTime < timeout else {
+            #expect(Bool(false), "Timed out")
+            return
+        }
+        try await Task.sleep(nanoseconds: .secondsToNano(steps))
+        elapsedTime += steps
+    }
+}
+
 func assertWithTimeout(timeout: TimeInterval = 5, _ block: @autoclosure () throws -> Bool,
                        file: StaticString = #filePath, line: UInt = #line) async throws {
     var elapsedTime: TimeInterval = 0

@@ -80,7 +80,7 @@ final class ToastContainerViewModel: ObservableObject {
         // Post an announcement to the toast content.
         if #available(iOS 17, *) {
             var highPriorityAnnouncement = AttributedString(toast.localizedString(
-                locale: octopus.core.languageRepository.overridenLocale))
+                locale: octopus.core.languageRepository.overridenLocale, tone: octopus.textTone))
             highPriorityAnnouncement.accessibilitySpeechAnnouncementPriority = .high
             AccessibilityNotification.Announcement(highPriorityAnnouncement).post()
         }

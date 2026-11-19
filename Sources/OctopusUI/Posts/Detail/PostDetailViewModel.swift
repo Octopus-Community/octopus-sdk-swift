@@ -26,7 +26,7 @@ class PostDetailViewModel: ObservableObject {
         let text: TranslatableText
         let attachments: PostAttachmentsViewData
         let author: Author
-        let relativeDate: String
+        let relativeDate: DisplayableDate
         let topic: String?
         /// Identifier of the post's group (its `parentId`). Backs the "View group" menu entry.
         let groupId: String?
@@ -67,6 +67,23 @@ class PostDetailViewModel: ObservableObject {
     @Published var commentTextFocused = false
     @Published private(set) var hasMoreData = false
     @Published private(set) var hideLoadMoreCommentsLoader = false
+    /// Whether the list shows the most recent end of the thread (see ``MostRecentWindow``): set when the screen opens
+    /// on its newest comments or once a comment is sent, so a long thread is never loaded whole.
+    @Published private(set) var listsMostRecentEnd = false
+    /// Whether the list is the window around the comment the screen opened on, newer comments than the ones listed
+    /// still to load below them.
+    @Published private(set) var hasNewerComments = false
+    /// The window of the thread the comments listed come from, `nil` when they are listed oldest first. Set with the
+    /// first comments of a window: until then, the ones of the previous list stay.
+    @Published private(set) var listedWindowId: String?
+    /// Whether the list is hidden while it lands on the most recent end: its first layout is at its top, and showing it
+    /// there would draw the oldest comments of the window for a frame before the jump to the newest one. Not when nothing
+    /// is stored to land on: the post then shows at once instead of waiting for the server.
+    @Published private(set) var hidesListUntilLanded = false
+    /// Whether the scrolls that land the list on its most recent end are not animated, until the one landing it on the
+    /// server's window ended: animating them would scroll through the window, or from a stale stored window.
+    @Published private(set) var landsWithoutAnimation = false
+    @Published var scrollRequest: Compat.ScrollRequest?
     @Published private var modelComments: [Comment]?
     private var autoFetchLatestCommentsTask: Task<Void, Swift.Error>?
     private var autoFetchLatestCommentsCancellable: AnyCancellable?
@@ -114,18 +131,43 @@ class PostDetailViewModel: ObservableObject {
     private var newestFirstCommentsFeed: Feed<Comment, Never>?
     /// The comment the screen opened on, until the screen has scrolled to it.
     private var scrollTarget: PendingScrollTarget
-    /// Whether the screen opens on a comment. Its list is then built whole from the start: a lazy list has
-    /// not built a row far below the fold yet, so a scroll to it would find nothing and be lost.
-    let opensOnComment: Bool
+    /// Whether the comments are listed from the first one down to the comment the screen opened on, when the thread
+    /// could not be opened on it. The list is then built whole: a lazy list has not built a row far below the fold
+    /// yet, so a scroll to it would find nothing and be lost. The window around the comment stays lazy instead, its
+    /// rows laid out at once (see `MostRecentWindow.laidOutEnd`).
+    @Published private(set) var listsDownToTargetComment = false
     private var scrollToMostRecentComment: Bool
-    private var shouldFocusComment: Bool
-    private var pendingScrollToBottom = false
+    private var composerFocus: ComposerFocusOnOpen
     private let origin: PostDetailNavigationOrigin
     private let hasFeaturedComment: Bool
 
     private var internalPost: OctopusCore.Post?
 
-    private var visibleCommentIds: Set<String> = []
+    /// Whether the screen is still loading the most recent end it opened on: every list published meanwhile is
+    /// scrolled to its bottom.
+    private var isLandingOnMostRecentEnd = false
+    /// Whether the screen has reached the most recent end. Older comments load only after: the top of the list is on
+    /// screen while it opens, and must not page in comments the member did not scroll to.
+    private var hasLandedOnMostRecentEnd = false
+    /// The pages of older comments loaded from the top of the most recent end, one at a time.
+    private var olderPages = OlderPagesPacing()
+    private var newerCommentsLoaderVisible = false
+    /// Whether a page of newer comments is loading below the window the screen opened on: one at a time.
+    private var isLoadingNewerComments = false
+    /// Whether the window listed had newer comments to page in below it when it was listed: its laid out part then
+    /// ends above them, and they stay lazy once they are all listed (see `MostRecentWindow.laidOutEnd`).
+    private var windowPagesNewerComments = false
+    /// Whether the screen asked the server for the window around the comment it opened on.
+    private var hasOpenedOnComment = false
+    private var newestListedCommentId: String?
+
+    /// Whether the newest comment of the most recent end is on screen. Its row is laid out at once with the rest of
+    /// the window: its `onAppear` fires as soon as the window is, even far below the screen.
+    private var newestCommentOnScreen = false
+    /// Whether the screen is displayed, between `onAppear()` and `onDisappear()`. The newest comments are polled only
+    /// then: on the most recent end the poll follows where the newest comment is in the scroll view, which does not
+    /// change when a pushed screen or another tab hides this one.
+    private var isDisplayed = false
     private var additionalDataToFetch: CurrentValueSubject<Set<String>, Never> = .init([])
 
     private var storage = [AnyCancellable]()
@@ -149,10 +191,11 @@ class PostDetailViewModel: ObservableObject {
         self.octopus = octopus
         self.postUuid = postUuid
         self.scrollTarget = PendingScrollTarget(id: commentToScrollTo)
-        self.opensOnComment = commentToScrollTo != nil
-        self.scrollToMostRecentComment = scrollToMostRecentComment
-        self.shouldFocusComment = comment
-        self.pendingScrollToBottom = scrollToMostRecentComment
+        // A comment to open on takes precedence over the most recent end, for good: a later emission of the post
+        // must not switch the screen to the most recent end once the comment is shown.
+        self.scrollToMostRecentComment = scrollToMostRecentComment && commentToScrollTo == nil
+        self.composerFocus = ComposerFocusOnOpen(requested: comment,
+                                                 opensOnMostRecentEnd: self.scrollToMostRecentComment)
         self.origin = origin
         self.hasFeaturedComment = hasFeaturedComment
         self.translationStore = translationStore
@@ -172,15 +215,14 @@ class PostDetailViewModel: ObservableObject {
             self.internalPost = post
             guard postDeletion == nil else { return }
             guard let post else {
-                // if post was not nil and is now nil, it means that it has been deleted
-                let postWontBeAvailable = self.post != nil
+                // if post was not nil and is now nil, it has been deleted, or the logout emptied the cache
+                let disappearedPost = self.post
                 self.post = nil
                 self.comments = nil
                 self.lockedState = .unlocked
 
-                if postWontBeAvailable {
-                    postNotAvailable = true
-                    postDisappeared = true
+                if let disappearedPost {
+                    confirmPostDisappearance(hasVideo: disappearedPost.hasVideo)
                 }
                 return
             }
@@ -216,9 +258,17 @@ class PostDetailViewModel: ObservableObject {
             self.post = Post(from: post,
                              gamificationLevels: gamificationLevels ?? [],
                              thisUserProfileId: profile?.id, topic: topic,
-                             dateFormatter: relativeDateFormatterProvider.formatter)
+                             dateFormatter: relativeDateFormatterProvider.contentDateFormatter)
             newestFirstCommentsFeed = post.newestFirstCommentsFeed
-            if let oldestFirstCommentsFeed = post.oldestFirstCommentsFeed {
+            // `self`: the initializer's parameter of the same name would be read instead.
+            if self.scrollToMostRecentComment, scrollTarget.id == nil, let newestFirstCommentsFeed {
+                self.scrollToMostRecentComment = false
+                openOnMostRecentEnd(feed: newestFirstCommentsFeed)
+            } else if !hasOpenedOnComment, let commentId = scrollTarget.id, let newestFirstCommentsFeed,
+                      let oldestFirstCommentsFeed = post.oldestFirstCommentsFeed {
+                hasOpenedOnComment = true
+                openOnComment(commentId, newestFirstFeed: newestFirstCommentsFeed, fallback: oldestFirstCommentsFeed)
+            } else if !listsMostRecentEnd, let oldestFirstCommentsFeed = post.oldestFirstCommentsFeed {
                 set(feed: oldestFirstCommentsFeed)
             }
 
@@ -241,27 +291,34 @@ class PostDetailViewModel: ObservableObject {
                 guard comment.canBeDisplayed else { return nil }
                 let onAppearAction: () -> Void
                 let onDisappearAction: () -> Void
-                if !hasMoreData && idx == commentsCount - 1 {
+                // The window of the most recent end always ends on the newest comment, older ones still to load or not
+                if (listsMostRecentEnd || !hasMoreData) && idx == commentsCount - 1 {
                     if #available(iOS 14, *) {
                         Logger.comments.trace("Setting autorefresh actions on \(String(describing: comment.text))")
                     }
+                    // The most recent end lays its newest comment out at once: its `onAppear` fires even far below the
+                    // screen and its `onDisappear` never does. The poll then follows `newestCommentOnScreenChanged`.
                     onAppearAction = { [weak self] in
-                        if #available(iOS 14, *) {
-                            Logger.comments.trace("Will start autorefresh comments list due to latest comment being displayed")
+                        guard let self else { return }
+                        if !listsMostRecentEnd {
+                            if #available(iOS 14, *) {
+                                Logger.comments.trace("Will start autorefresh comments list: latest comment displayed")
+                            }
+                            shouldFetchLatestComments.send(true)
                         }
-                        self?.shouldFetchLatestComments.send(true)
-                        self?.queueFetchAdditionalData(id: comment.uuid)
-                        self?.visibleCommentIds.insert(comment.uuid)
+                        queueFetchAdditionalData(id: comment.uuid)
                     }
                     onDisappearAction = { [weak self] in
-                        if #available(iOS 14, *) {
-                            Logger.comments.trace("Will stop autorefresh comments list due to latest comment being displayed")
+                        guard let self else { return }
+                        if !listsMostRecentEnd {
+                            if #available(iOS 14, *) {
+                                Logger.comments.trace("Will stop autorefresh comments list: latest comment hidden")
+                            }
+                            shouldFetchLatestComments.send(false)
                         }
-                        self?.shouldFetchLatestComments.send(false)
-                        self?.dequeueFetchAdditionalData(id: comment.uuid)
-                        self?.visibleCommentIds.remove(comment.uuid)
+                        dequeueFetchAdditionalData(id: comment.uuid)
                     }
-                } else if idx == max(commentsCount - 10, 0), hasMoreData {
+                } else if !listsMostRecentEnd, idx == max(commentsCount - 10, 0), hasMoreData {
                     if #available(iOS 14, *) {
                         Logger.comments.trace("Setting autorefresh actions on \(String(describing: comment.text))")
                     }
@@ -274,20 +331,16 @@ class PostDetailViewModel: ObservableObject {
                             loadPreviousComments()
                         }
                         queueFetchAdditionalData(id: comment.uuid)
-                        visibleCommentIds.insert(comment.uuid)
                     }
                     onDisappearAction = { [weak self] in
                         self?.dequeueFetchAdditionalData(id: comment.uuid)
-                        self?.visibleCommentIds.remove(comment.uuid)
                     }
                 } else {
                     onAppearAction = { [weak self] in
                         self?.queueFetchAdditionalData(id: comment.uuid)
-                        self?.visibleCommentIds.insert(comment.uuid)
                     }
                     onDisappearAction = { [weak self] in
                         self?.dequeueFetchAdditionalData(id: comment.uuid)
-                        self?.visibleCommentIds.remove(comment.uuid)
                     }
                 }
 
@@ -304,7 +357,7 @@ class PostDetailViewModel: ObservableObject {
                 return DisplayableFeedResponse(
                     from: comment, gamificationLevels: gamificationLevels ?? [],
                     liveMeasurePublisher: liveMeasurePublisher,
-                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatterProvider.formatter,
+                    thisUserProfileId: profile?.id, dateFormatter: relativeDateFormatterProvider.contentDateFormatter,
                     onAppearAction: onAppearAction, onDisappearAction: onDisappearAction)
             }
             if newComments.isEmpty {
@@ -315,6 +368,7 @@ class PostDetailViewModel: ObservableObject {
             if self.comments != newComments {
                 self.comments = newComments
                 scrollToTargetIfListed()
+                if listsMostRecentEnd { followMostRecentEnd(comments: newComments) }
                 if #available(iOS 14, *) { Logger.comments.trace("Comments list updated done") }
             }
         }.store(in: &storage)
@@ -328,15 +382,8 @@ class PostDetailViewModel: ObservableObject {
             .removeDuplicates()
             .filter { !$0 }
             .sink { [unowned self] _ in
-                pendingScrollToBottom = false
-                guard shouldFocusComment else { return }
-                shouldFocusComment = false
-                commentTextFocused = true
-                // Delay the second scroll to wait for the keyboard appearance animation, so the scroll
-                // targets the reduced visible area rather than the full pre-keyboard layout.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.66) {
-                    self.scrollToBottom = true
-                }
+                if hidesListUntilLanded || landsWithoutAnimation { revealLandedList() }
+                if composerFocus.scrollToBottomEnded() { focusComposer() }
             }.store(in: &storage)
 
         // When comments load but no scroll is pending, focus immediately
@@ -344,23 +391,20 @@ class PostDetailViewModel: ObservableObject {
             .removeDuplicates()
             .filter { $0 != nil }
             .sink { [unowned self] _ in
-                guard shouldFocusComment, !scrollToBottom, !pendingScrollToBottom else { return }
-                shouldFocusComment = false
-                commentTextFocused = true
-                // Delay the second scroll to wait for the keyboard appearance animation, so the scroll
-                // targets the reduced visible area rather than the full pre-keyboard layout.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.66) {
-                    self.scrollToBottom = true
-                }
+                if composerFocus.responsesListed(scrollRunning: scrollToBottom) { focusComposer() }
             }.store(in: &storage)
 
         octopus.core.commentsRepository.commentSentPublisher
             .sink { [unowned self] comment in
                 guard comment.parentId == postUuid else { return }
                 // refresh automatically when the comment is created
-                hideLoadMoreCommentsLoader = true
-                loadAllComments(scrollToBottom: true)
-                scrollToBottom = true
+                if let newestFirstCommentsFeed {
+                    showMostRecentEnd(afterSending: comment.uuid, feed: newestFirstCommentsFeed)
+                } else {
+                    hideLoadMoreCommentsLoader = true
+                    loadAllComments(scrollToBottom: true)
+                    scrollToBottom = true
+                }
             }.store(in: &storage)
 
         octopus.core.profileRepository.onCurrentUserProfileUpdated.sink { [unowned self] _ in
@@ -368,6 +412,16 @@ class PostDetailViewModel: ObservableObject {
             refreshFeed()
             fetchTopics()
         }.store(in: &storage)
+
+        // A post kept through a closure of the community: the closure blocked the check of its vanishing, which left
+        // the screen on its failure state. The reopening clears the displayed content: the screen asks again.
+        octopus.core.sdkEventsEmitter.internalEvents
+            .filter(\.clearedDisplayedContent)
+            .sink { [unowned self] _ in
+                guard VanishedContentCheck.asksAgainOnClearedContent(contentShown: post != nil,
+                                                                    loadFailure: contentLoadFailure) else { return }
+                retryFirstLoad()
+            }.store(in: &storage)
 
         mainFlowPath.$path
             .prepend([])
@@ -388,7 +442,7 @@ class PostDetailViewModel: ObservableObject {
             .sink { [unowned self] _ in
                 fetchPost(incrementViewCount: true)
                 fetchTopics()
-                if shouldFetchLatestComments.value {
+                if isDisplayed && shouldFetchLatestComments.value {
                     startAutoFetchLatestComments()
                 }
             }
@@ -405,7 +459,7 @@ class PostDetailViewModel: ObservableObject {
             .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
             .removeDuplicates()
             .sink { [unowned self] shouldFetchLatestComments in
-                if shouldFetchLatestComments && UIApplication.shared.applicationState != .background {
+                if shouldFetchLatestComments && isDisplayed && UIApplication.shared.applicationState != .background {
                     startAutoFetchLatestComments()
                 } else if !shouldFetchLatestComments {
                     stopAutoFetchLatestComments()
@@ -433,10 +487,12 @@ class PostDetailViewModel: ObservableObject {
     }
 
     func onDisappear() {
+        isDisplayed = false
         stopAutoFetchLatestComments()
     }
 
     func onAppear() {
+        isDisplayed = true
         if shouldFetchLatestComments.value {
             startAutoFetchLatestComments()
         }
@@ -455,7 +511,7 @@ class PostDetailViewModel: ObservableObject {
 
     func displayClientObject(clientObjectId: String) {
         guard let callback = octopus.displayClientObjectCallback else {
-            error = .localizationKey("Error.Unknown")
+            error = .unknownError
             return
         }
 
@@ -463,14 +519,25 @@ class PostDetailViewModel: ObservableObject {
             try callback(clientObjectId)
             octopus.core.trackingRepository.trackClientObjectOpenedFromBridge()
         } catch {
-            self.error = .localizationKey("Error.Unknown")
+            self.error = .unknownError
         }
     }
 
     /// Scrolls to the comment the screen opened on, once it is listed and its load has settled.
     private func scrollToTargetIfListed() {
         guard let id = scrollTarget.takeIfListed(comments?.map(\.uuid) ?? []) else { return }
-        scrollToId = ResponseKind.comment.scrollAnchorId(for: id)
+        let anchorId = ResponseKind.comment.scrollAnchorId(for: id)
+        guard listsMostRecentEnd else {
+            scrollToId = anchorId
+            return
+        }
+        // The window around the comment is a lazy stack's child, whose rows the stack does not reach until it has
+        // built it: the scroll goes through the window first, then to the comment once the window is built.
+        scrollRequest = Compat.ScrollRequest(id: anchorId, anchor: .bottom,
+                                             fallbackId: ResponseKind.comment.laidOutPartScrollAnchorId)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.scrollToId = anchorId
+        }
     }
 
     private func set(feed: Feed<Comment, Never>) {
@@ -482,10 +549,12 @@ class PostDetailViewModel: ObservableObject {
         self.feed = feed
         feedStorage = []
 
+        // Every value, duplicates included: the stored items and the server's first page can be the same, the end of the
+        // thread being known only with the second one (see `OldestFirstThread.listed`).
         feed.$items
-            .removeDuplicates()
-            .sink { [unowned self] in
-                modelComments = merge(oldestFirstCommentsFeedItems: $0 ?? [],
+            .sink { [unowned self, weak feed] in
+                guard let feed else { return }
+                modelComments = merge(oldestFirstCommentsFeedItems: $0, of: feed,
                                       newestFirstCommentsFeedItems: newestFirstCommentsFeed?.items ?? [])
             }.store(in: &feedStorage)
 
@@ -508,6 +577,7 @@ class PostDetailViewModel: ObservableObject {
             }
             return
         }
+        listsDownToTargetComment = true
         // The local first page replaces whatever the feed already holds, so the load until the comment runs after it.
         Task {
             await feed.populateWithLocalData(pageSize: 10)
@@ -517,6 +587,313 @@ class PostDetailViewModel: ObservableObject {
             scrollTarget.loadSettled()
             scrollToTargetIfListed()
         }
+    }
+
+    /// Opens the screen on the comment it targets with the window of the thread around it, listed like the most recent
+    /// end, instead of every comment down to it: a long thread is then never loaded nor laid out whole. Older comments
+    /// load from its top, newer ones from its bottom. The window is a feed of this screen's own, so no other screen nor
+    /// the stored newest comments ever list it. When the server cannot open the thread on the comment, the stored
+    /// comments are listed, then every comment down to it, oldest first.
+    private func openOnComment(_ commentId: String, newestFirstFeed: Feed<Comment, Never>,
+                               fallback: Feed<Comment, Never>) {
+        scrollTarget.loadStarted()
+        comments = nil
+        let feed = newestFirstFeed.makeWindow(anchoredOn: commentId)
+        listMostRecentEnd(of: feed)
+        Task {
+            let isAnchored: Bool
+            do {
+                isAnchored = try await feed.openWindow(pageSize: MostRecentWindow.initialSize)
+            } catch {
+                if #available(iOS 14, *) { Logger.comments.debug("Error while opening on the comment: \(error)") }
+                isAnchored = false
+            }
+            // A comment sent meanwhile listed the most recent end instead: the window is no longer on screen.
+            guard self.feed?.id == feed.id else { return }
+            guard isAnchored else {
+                stopAutoFetchLatestComments()
+                listsMostRecentEnd = false
+                listedWindowId = nil
+                hasNewerComments = false
+                set(feed: fallback)
+                return
+            }
+            hasLoadedComments = true
+            commentsLoadFailure = nil
+            // Let the window publish before scrolling to the comment.
+            DispatchQueue.main.async {
+                self.scrollTarget.loadSettled()
+                self.scrollToTargetIfListed()
+                self.mostRecentEndReached()
+            }
+        }
+    }
+
+    /// Opens the screen on the most recent end of the thread: the local window first, then the server's, each landed
+    /// on its newest comment. The whole thread is never loaded.
+    private func openOnMostRecentEnd(feed: Feed<Comment, Never>) {
+        comments = nil
+        isLandingOnMostRecentEnd = true
+        // iOS 13 has no scroll to the bottom whose end would show the list again
+        if #available(iOS 14, *) {
+            hidesListUntilLanded = true
+            landsWithoutAnimation = true
+        }
+        listMostRecentEnd(of: feed)
+        Task {
+            await feed.populateWithLocalData(pageSize: MostRecentWindow.initialSize)
+            if feed.items?.isEmpty ?? true { hidesListUntilLanded = false }
+            await refreshFeed()
+            // Let the refreshed items publish before the landing ends.
+            DispatchQueue.main.async {
+                self.isLandingOnMostRecentEnd = false
+                let landingEnd = self.composerFocus.landingEnded(hasListedResponses: !(self.comments?.isEmpty ?? true))
+                if landingEnd.scrollsToBottom {
+                    self.scrollToBottom = true
+                    // the end of that scroll shows the list; never leave it hidden if the scroll does not happen
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self.endLanding() }
+                } else {
+                    self.endLanding()
+                }
+                if landingEnd.focusesComposer { self.focusComposer() }
+                self.mostRecentEndReached()
+            }
+        }
+    }
+
+    /// Shows the most recent end of the thread once the member sent a comment, so the comment is listed without
+    /// loading the whole thread.
+    private func showMostRecentEnd(afterSending commentId: String, feed: Feed<Comment, Never>) {
+        olderPages.forgetKeptResponse()
+        // The window shrinks back and its top may cross the screen before it is scrolled to its bottom again: older
+        // ones load only once it is there.
+        hasLandedOnMostRecentEnd = false
+        if self.feed?.id != feed.id {
+            // The comments listed so far stay until the window is loaded, instead of flashing a loader. The screen
+            // scrolls once it is: the bottom of the comments listed so far may be lazy rows, and a lazy stack of rows
+            // of different heights, scrolled to its bottom while the keyboard goes down, can loop in its layout.
+            listMostRecentEnd(of: feed)
+        } else {
+            // The window is laid out down to its bottom: the screen goes there at once.
+            scrollToBottom = true
+        }
+        Task {
+            do {
+                // The window shrinks back to its first size: the member is at its bottom, writing.
+                try await feed.refreshWhenIdle(pageSize: MostRecentWindow.initialSize)
+                // More responses than the window holds may have been posted meanwhile: load down to the sent one, which
+                // its composer waits for. It is among the newest, so this loads nothing more in the usual case.
+                try await feed.fetchAll(until: commentId)
+            } catch {
+                if #available(iOS 14, *) { Logger.comments.debug("Error while refreshing after sending: \(error)") }
+            }
+            DispatchQueue.main.async {
+                self.scrollToBottom = true
+                self.mostRecentEndReached()
+            }
+        }
+    }
+
+    /// Lists the window of the newest comments, oldest at the top, in place of the comments listed so far.
+    private func listMostRecentEnd(of feed: Feed<Comment, Never>) {
+        stopAutoFetchLatestComments()
+        listsMostRecentEnd = true
+        hideLoadMoreCommentsLoader = false
+        hasLandedOnMostRecentEnd = false
+        newestListedCommentId = nil
+        windowPagesNewerComments = false
+        self.feed = feed
+        feedStorage = []
+
+        let windowId = feed.id
+        feed.$items
+            .removeDuplicates()
+            .sink { [unowned self] in
+                // Nil until the feed has loaded: whatever is listed stays until then.
+                guard let items = $0 else { return }
+                if listedWindowId != windowId { listedWindowId = windowId }
+                modelComments = MostRecentWindow.displayOrder(newestFirst: items)
+            }.store(in: &feedStorage)
+
+        feed.$hasMoreData
+            .removeDuplicates()
+            .sink { [unowned self] in
+                if #available(iOS 14, *) { Logger.comments.trace("Feed has more data: \($0)") }
+                hasMoreData = $0
+            }.store(in: &feedStorage)
+
+        feed.$hasNewerData
+            .removeDuplicates()
+            .sink { [unowned self] in
+                hasNewerComments = $0
+                if $0 { windowPagesNewerComments = true }
+            }
+            .store(in: &feedStorage)
+
+        if isDisplayed && shouldFetchLatestComments.value {
+            startAutoFetchLatestComments()
+        }
+    }
+
+    /// Keeps the screen on the most recent end as the window changes: on its bottom while it lands and whenever a newer
+    /// comment appears under the member's eyes, and on the same comment when older ones are inserted above.
+    private func followMostRecentEnd(comments: [DisplayableFeedResponse]) {
+        let previousNewestId = newestListedCommentId
+        newestListedCommentId = comments.last?.uuid
+        let step = MostRecentWindow.follow(
+            ids: comments.map(\.uuid), previousNewestId: previousNewestId,
+            previousNewestVisible: previousNewestId != nil && newestCommentOnScreen,
+            previousFirstId: olderPages.keptIdAwaitingListing, landing: isLandingOnMostRecentEnd,
+            pagesNewer: windowPagesNewerComments)
+        if let keptId = step.rowKeptInPlace {
+            perform(olderPages.pageListed(keepingInPlace: keptId))
+        }
+        if step.scrollsToBottom {
+            DispatchQueue.main.async {
+                self.scrollToBottom = true
+            }
+        }
+    }
+
+    /// Shows the list once the scroll that lands it on its bottom has been laid out. The next scrolls are animated
+    /// once it landed on the server's window.
+    private func revealLandedList() {
+        let landed = !isLandingOnMostRecentEnd
+        DispatchQueue.main.async {
+            self.hidesListUntilLanded = false
+            if landed { self.endLanding() }
+        }
+    }
+
+    private func endLanding() {
+        if hidesListUntilLanded { hidesListUntilLanded = false }
+        if landsWithoutAnimation { landsWithoutAnimation = false }
+    }
+
+    private func focusComposer() {
+        commentTextFocused = true
+        // Delay the second scroll to wait for the keyboard appearance animation, so the scroll
+        // targets the reduced visible area rather than the full pre-keyboard layout.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.66) {
+            self.scrollToBottom = true
+        }
+    }
+
+    /// Called once the screen scrolled to the most recent end: older comments may load from now on, at once if the
+    /// top of a short window is already on screen.
+    private func mostRecentEndReached() {
+        // Past the scroll animation, during which the rows it crosses appear.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.hasLandedOnMostRecentEnd = true
+            self.loadOlderCommentsIfLoaderVisible()
+            self.loadNewerCommentsIfLoaderVisible()
+        }
+    }
+
+    private func loadOlderCommentsIfLoaderVisible() {
+        perform(olderPages.nextPage(canLoad: canLoadOlderComments))
+    }
+
+    /// Called when the loader of older comments, at the top of the most recent end, leaves the screen.
+    func previousCommentsLoaderDisappeared() {
+        olderPages.loaderLeftScreen()
+    }
+
+    /// Whether a page of older comments may load: only once the screen reached the most recent end (see
+    /// `hasLandedOnMostRecentEnd`).
+    private var canLoadOlderComments: Bool {
+        listsMostRecentEnd && hasLandedOnMostRecentEnd && hasMoreData
+    }
+
+    private func perform(_ action: OlderPagesPacing.Action) {
+        switch action {
+        case .none:
+            break
+        case .loadPage:
+            loadOlderComments()
+        case let .keepInPlace(keptId):
+            DispatchQueue.main.async {
+                self.scrollRequest = Compat.ScrollRequest(
+                    id: ResponseKind.comment.scrollAnchorId(for: keptId), anchor: .top, animated: false,
+                    // Before older pages are inserted, the response at the top of the window is the first one of the
+                    // laid out part, out of the scroll view's reach (see `ScrollRequest.fallbackId`).
+                    fallbackId: ResponseKind.comment.laidOutPartScrollAnchorId)
+            }
+            let generation = olderPages.generation
+            DispatchQueue.main.asyncAfter(deadline: .now() + OlderPagesPacing.keepInPlaceTimeout) { [weak self] in
+                guard let self else { return }
+                perform(olderPages.timedOut(generation: generation, canLoad: canLoadOlderComments))
+            }
+        }
+    }
+
+    /// Loads the page of comments older than the most recent end's window, kept in place above the comment at its top.
+    private func loadOlderComments() {
+        guard let feed else { return }
+        olderPages.pageRequested(keptId: comments?.first?.uuid)
+        let generation = olderPages.generation
+        Task { [self] in
+            do {
+                try await feed.loadPreviousItems(pageSize: MostRecentWindow.olderPageSize)
+            } catch {
+                if #available(iOS 14, *) { Logger.comments.debug("Error while loading older comments: \(error)") }
+                if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
+                    self.error = error.displayableMessage
+                }
+                olderPages.pageFailed()
+                return
+            }
+            // The page lists nothing above the window when the feed ignored the call, or when its comments were all
+            // listed already: the next one may load then.
+            DispatchQueue.main.asyncAfter(deadline: .now() + OlderPagesPacing.listingTimeout) { [weak self] in
+                guard let self else { return }
+                perform(olderPages.timedOut(generation: generation, canLoad: canLoadOlderComments))
+            }
+        }
+    }
+
+    /// Called as the newest comment of the most recent end enters or leaves the screen: a newer one is followed only
+    /// when it was on screen, and the newest comments are polled only while it is.
+    func newestCommentOnScreenChanged(_ onScreen: Bool) {
+        newestCommentOnScreen = onScreen
+        if listsMostRecentEnd {
+            shouldFetchLatestComments.send(onScreen)
+        }
+    }
+
+    /// Called when the loader of newer comments, below the window the screen opened on, is on screen: loads them once
+    /// the screen has scrolled to the comment it opened on.
+    func loadNewerComments() {
+        newerCommentsLoaderVisible = true
+        guard let feed, hasNewerComments, hasLandedOnMostRecentEnd, !isLoadingNewerComments else { return }
+        isLoadingNewerComments = true
+        Task {
+            do {
+                try await feed.loadNewerItems()
+            } catch {
+                if #available(iOS 14, *) { Logger.comments.debug("Error while loading newer comments: \(error)") }
+                if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
+                    self.error = error.displayableMessage
+                }
+                isLoadingNewerComments = false
+                return
+            }
+            // Once the page is listed: a page too short to push the loader away loads the next one.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.isLoadingNewerComments = false
+                self.loadNewerCommentsIfLoaderVisible()
+            }
+        }
+    }
+
+    /// Called when the loader of newer comments, below the window the screen opened on, leaves the screen.
+    func newerCommentsLoaderDisappeared() {
+        newerCommentsLoaderVisible = false
+    }
+
+    private func loadNewerCommentsIfLoaderVisible() {
+        guard listsMostRecentEnd, newerCommentsLoaderVisible, hasNewerComments else { return }
+        loadNewerComments()
     }
 
     /// Called when the member closes the nickname choice screen without confirming their nickname: forwarded to
@@ -538,7 +915,8 @@ class PostDetailViewModel: ObservableObject {
     func refresh() async {
         let refreshPostTask = Task { await refreshPost() }
         let refreshTopicsTask = Task { try? await fetchTopics() }
-        let refreshCommentsTask = Task { await refreshFeed() }
+        // The window the screen opened on is not refreshed: it would drop the pages the member loaded around it.
+        let refreshCommentsTask = Task { if !hasNewerComments { await refreshFeed() } }
         await refreshPostTask.value
         await refreshTopicsTask.value
         await refreshCommentsTask.value
@@ -564,13 +942,41 @@ class PostDetailViewModel: ObservableObject {
             if #available(iOS 14, *) { Logger.comments.trace("startAutoFetchLatestComments called multiple times") }
             return
         }
+        if listsMostRecentEnd, let feed {
+            // The window is itself the newest comments: refreshing its newest page and keeping the older ones lists
+            // the new ones in one server call, without dropping those the member paged in.
+            autoFetchLatestCommentsTask = Task {
+                repeat {
+                    do {
+                        try await feed.refreshNewestItems(
+                            pageSize: MostRecentWindow.refreshSize(listedCount: feed.items?.count ?? 0))
+                    } catch {
+                        if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
+                            self.error = error.displayableMessage
+                        }
+                    }
+                    // A page of older comments asked for during the refresh was ignored.
+                    loadOlderCommentsIfLoaderVisible()
+                    try await Task.sleep(nanoseconds: 5 * 1_000_000_000)
+                } while (!Task.isCancelled)
+            }
+            return
+        }
         guard let newestFirstCommentsFeed else { return }
 
         listenToNewestCommentsFeed()
 
+        let oldestFirstFeed = feed
         autoFetchLatestCommentsTask = Task {
             repeat {
                 do {
+                    // The stored comments are listed alone while no page of the server lists the end of the thread,
+                    // its first refresh having failed or been ignored: the newest comments polled are not added to
+                    // them until then (see `OldestFirstThread.listed`). The thread is refreshed again first.
+                    if let oldestFirstFeed, oldestFirstFeed.endsOnStoredItems, !scrollTarget.isLoading {
+                        try await oldestFirstFeed.refresh(pageSize: 10)
+                        commentsLoadFailure = nil
+                    }
                     try await newestFirstCommentsFeed.refresh(pageSize: 10)
                 } catch {
                     if let error = error as? ServerCallError, case .serverError(.notAuthenticated) = error {
@@ -618,10 +1024,10 @@ class PostDetailViewModel: ObservableObject {
         guard let newestFirstCommentsFeed else { return }
         autoFetchLatestCommentsCancellable = newestFirstCommentsFeed.$items
             .sink { [unowned self] in
-                guard let newestComments = $0 else { return }
-                let newCommentList = merge(oldestFirstCommentsFeedItems: feed?.items ?? [],
+                guard let newestComments = $0, let feed else { return }
+                let newCommentList = merge(oldestFirstCommentsFeedItems: feed.items, of: feed,
                                            newestFirstCommentsFeedItems: newestComments)
-                if newCommentList != modelComments ?? [] {
+                if newCommentList != modelComments {
                     modelComments = newCommentList
                     DispatchQueue.main.async {
                         self.scrollToBottom = true
@@ -630,17 +1036,14 @@ class PostDetailViewModel: ObservableObject {
             }
     }
 
+    /// The comments listed from the start of the thread, then the newest ones once `feed` reached its end (see
+    /// `OldestFirstThread.listed`).
     private func merge(
-        oldestFirstCommentsFeedItems: [Comment],
+        oldestFirstCommentsFeedItems: [Comment]?, of feed: Feed<Comment, Never>,
         newestFirstCommentsFeedItems: [Comment])
-    -> [Comment] {
-        var mergedComments = oldestFirstCommentsFeedItems
-        for newComment in newestFirstCommentsFeedItems.reversed() {
-            if !mergedComments.contains(where: { $0.uuid == newComment.uuid }) {
-                mergedComments.append(newComment)
-            }
-        }
-        return mergedComments
+    -> [Comment]? {
+        OldestFirstThread.listed(oldestFirst: oldestFirstCommentsFeedItems, reachedEnd: feed.hasReachedServerEnd,
+                                 newestFirst: newestFirstCommentsFeedItems, id: \.uuid)
     }
 
     private func stopAutoFetchLatestComments() {
@@ -746,6 +1149,34 @@ class PostDetailViewModel: ObservableObject {
         try await octopus.core.topicsRepository.fetchTopics()
     }
 
+    /// Asks the server whether a post that vanished from the cache still exists: the logout purge also removes
+    /// the posts of the previous session, which the next one may still see.
+    private func confirmPostDisappearance(hasVideo: Bool) {
+        Task {
+            await confirmPostDisappearance(hasVideo: hasVideo)
+        }
+    }
+
+    private func confirmPostDisappearance(hasVideo: Bool) async {
+        let fetchError: ServerCallError?
+        do {
+            try await octopus.core.postsRepository.fetchPost(uuid: postUuid, hasVideo: hasVideo)
+            fetchError = nil
+        } catch {
+            fetchError = error
+        }
+        switch VanishedContentCheck(fetchError: fetchError) {
+        case .stillAvailable:
+            // The comments went with the post.
+            await refreshFeed()
+        case .gone:
+            postNotAvailable = true
+            postDisappeared = true
+        case let .unanswered(failure):
+            contentLoadFailure = failure
+        }
+    }
+
     private func refreshFeed(scrollToTop: Bool = false) {
         Task {
             await refreshFeed(scrollToTop: scrollToTop)
@@ -760,19 +1191,6 @@ class PostDetailViewModel: ObservableObject {
         refreshFeed()
     }
 
-    private func refreshNewestComments() {
-        guard let newestFirstCommentsFeed else { return }
-        Task {
-            do {
-                try await newestFirstCommentsFeed.refresh(pageSize: 10)
-            } catch {
-                if #available(iOS 14, *) {
-                    Logger.comments.debug("Error while refreshing the newest comments: \(error)")
-                }
-            }
-        }
-    }
-
     private func refreshPost() async {
         do {
             try await fetchPost(uuid: postUuid, incrementViewCount: false)
@@ -785,7 +1203,10 @@ class PostDetailViewModel: ObservableObject {
         guard let feed else { return }
         defer { hasLoadedComments = true }
         do {
-            try await feed.refresh(pageSize: 10)
+            let pageSize = listsMostRecentEnd
+                ? MostRecentWindow.refreshSize(listedCount: feed.items?.count ?? 0)
+                : 10
+            try await feed.refresh(pageSize: pageSize)
             commentsLoadFailure = nil
         } catch {
             if #available(iOS 14, *) { Logger.comments.debug("Error while refreshing posts feed: \(error)") }
@@ -836,8 +1257,14 @@ class PostDetailViewModel: ObservableObject {
         }
     }
 
+    /// Called when the loader at the end of the list is on screen. On the most recent end, the loader of older
+    /// comments at its top came to rest on screen.
     func loadPreviousComments() {
         guard let feed else { return }
+        if listsMostRecentEnd {
+            perform(olderPages.loaderRestedOnScreen(canLoad: canLoadOlderComments))
+            return
+        }
         Task {
             do {
                 try await feed.loadPreviousItems(pageSize: 50)
@@ -854,7 +1281,7 @@ class PostDetailViewModel: ObservableObject {
     func vote(pollAnswerId: String) async -> Bool {
         guard ensureConnected(action: .vote) else { return false }
         guard let post = internalPost else {
-            error = .localizationKey("Error.Unknown")
+            error = .unknownError
             return false
         }
         return await vote(pollAnswerId: pollAnswerId, post: post)
@@ -891,7 +1318,7 @@ class PostDetailViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
             return false
         }
@@ -907,8 +1334,9 @@ class PostDetailViewModel: ObservableObject {
 
     func setCommentReaction(_ reaction: ReactionKind?, commentId: String) {
         guard ensureConnected(action: .reaction) else { return }
-        guard let comment = feed?.items?.first(where: { $0.id == commentId }) else {
-            error = .localizationKey("Error.Unknown")
+        // The listed comments, not the feed's: newer comments merged from the newest-first feed are listed too.
+        guard let comment = modelComments?.first(where: { $0.id == commentId }) else {
+            error = .unknownError
             return
         }
         Task {
@@ -946,7 +1374,7 @@ class PostDetailViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
         }
     }
@@ -981,7 +1409,7 @@ class PostDetailViewModel: ObservableObject {
             case let .serverCall(serverError):
                 self.error = serverError.displayableMessage
             case .other:
-                self.error = .localizationKey("Error.Unknown")
+                self.error = .unknownError
             }
         }
     }

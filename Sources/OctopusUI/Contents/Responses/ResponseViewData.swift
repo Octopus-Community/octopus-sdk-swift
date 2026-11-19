@@ -12,7 +12,7 @@ struct ResponseViewData {
     let uuid: String
     let kind: ResponseKind
     let author: Author
-    let relativeDate: String
+    let relativeDate: DisplayableDate
     let text: EllipsizableTranslatedText?
     let image: ImageMedia?
     let canBeDeleted: Bool

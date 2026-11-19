@@ -44,11 +44,12 @@ enum SDKLanguages {
         SDKLanguage(code: "ja", name: "Japanese"),
         SDKLanguage(code: "zh-Hans", name: "Chinese (Simplified)"),
         SDKLanguage(code: "zh-Hant", name: "Chinese (Traditional)"),
+        SDKLanguage(code: "sk", name: "Slovak"),
     ]
 
     /// The languages Settings › Language offers, in the Android sample's list and order. Every one is shipped by
     /// the iOS SDK; the other shipped languages stay reachable through `summary(for:)` when set another way.
-    static let settingsCodes = ["en", "fr", "de", "it", "pl", "pt", "es", "sv", "tr"]
+    static let settingsCodes = ["en", "fr", "de", "it", "pl", "pt", "sk", "es", "sv", "tr"]
 
     static var settingsList: [SDKLanguage] {
         settingsCodes.compactMap { code in shipped.first { $0.code == code } }

@@ -19,6 +19,8 @@ final class ApiKeyServiceInterceptor: Com_Octopuscommunity_ApiKeyServiceClientIn
         self.updateTokenBlock = updateTokenBlock
     }
 
+    // Without `CommunityClosedInterceptor`: the config is the check a closure refusal asks for. Its own refusal
+    // reported that way would start another check, whose refusal would start another one, past the bounded retries.
     func makeGetConfigInterceptors() -> [ClientInterceptor<OctopusGrpcModels.Com_Octopuscommunity_Empty, OctopusGrpcModels.Com_Octopuscommunity_GetConfigResponse>] {
         [RefreshingTokenInterceptor(getUserId: getUserIdBlock, updateTokenBlock: updateTokenBlock), LoggingInterceptor()]
     }

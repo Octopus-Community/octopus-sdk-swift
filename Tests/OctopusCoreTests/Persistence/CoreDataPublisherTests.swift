@@ -316,27 +316,3 @@ private final class ValuesBox: @unchecked Sendable {
 private enum FetchError: Error {
     case failed
 }
-
-/// Thread-safe box, for the flags the fetch closures (called on whichever thread saved) and the test
-/// body share.
-private final class Locked<Value>: @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedValue: Value
-
-    var value: Value {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return storedValue
-        }
-        set {
-            lock.lock()
-            defer { lock.unlock() }
-            storedValue = newValue
-        }
-    }
-
-    init(_ value: Value) {
-        storedValue = value
-    }
-}

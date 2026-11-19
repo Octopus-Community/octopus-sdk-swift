@@ -24,7 +24,8 @@ final class ImageCache: @unchecked Sendable {
                                       ramCapacity: 50 * 1024 * 1024,     // 50Mb
                                       diskCapacity: 100 * 1024 * 1024)   // 100Mb
 
-    private let imageFolder: URL
+    /// Internal so that tests can remove the folder of the cache they created.
+    let imageFolder: URL
     private let fileManager: FileManager = FileManager.default
     private let ramCache: NSCache<NSString, UIImage> = NSCache()
 
@@ -41,7 +42,11 @@ final class ImageCache: @unchecked Sendable {
         }
     }
 
-    func getFile(url: URL, croppingRatio: Double?, completion: @escaping @Sendable (CachedImage?) -> Void) {
+    /// Gives the cached image of `url`, or nil when it is not cached, always on the main actor: synchronously when
+    /// the image is in memory, so that a view gets it before its first render, and after a disk read otherwise.
+    @MainActor
+    func getFile(url: URL, croppingRatio: Double?,
+                 completion: @escaping @MainActor @Sendable (CachedImage?) -> Void) {
         @Sendable func createCachedImage(_ fullSizeImage: UIImage) -> CachedImage {
             CachedImage(ratioImage: getCroppedImageIfNeeded(fullSizeImage, croppingRatio: croppingRatio, url: url),
                         fullSizeImage: fullSizeImage)
@@ -58,7 +63,9 @@ final class ImageCache: @unchecked Sendable {
         DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             guard let data = try? Data(contentsOf: fileUrl),
                   let image = UIImage(data: data) else {
-                completion(nil)
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
                 return
             }
             self?.ramCache.setObject(image, forKey: fileName as NSString, cost: data.count)

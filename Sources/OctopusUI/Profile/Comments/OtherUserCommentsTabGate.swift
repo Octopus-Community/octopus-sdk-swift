@@ -3,6 +3,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 /// Whether **another member's** Comments tab should be shown. Three conditions, all required:
 /// - `showCommentsOnOtherProfiles`: the per-community backend flag — the community opted in to
@@ -30,4 +31,13 @@ import Foundation
 func showsOtherUserCommentsTab(showCommentsOnOtherProfiles: Bool, hasCommentsFeed: Bool,
                                commentsForbidden: Bool) -> Bool {
     showCommentsOnOtherProfiles && hasCommentsFeed && !commentsForbidden
+}
+
+/// The tabs of a screen showing **another member**: Posts, then Comments when
+/// ``showsOtherUserCommentsTab(showCommentsOnOtherProfiles:hasCommentsFeed:commentsForbidden:)`` lets
+/// it through. Shared by ``ProfileSummaryView`` and ``ActivityView`` in other-user mode, so both list
+/// the same tabs in the same order — and, through ``ProfileTabsLayout/showsTabRow(tabCount:)``, show
+/// no tab row at all when Posts is left alone.
+func otherUserProfileTabs(showsCommentsTab: Bool) -> [LocalizedStringKey] {
+    showsCommentsTab ? ["Profile.Tabs.Posts", "Profile.Tabs.Comments"] : ["Profile.Tabs.Posts"]
 }

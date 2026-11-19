@@ -4,8 +4,10 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 struct ToastView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     let toast: DisplayableToast
@@ -28,7 +30,7 @@ struct ToastView: View {
                             .foregroundColor(foregroundColor)
                             .accessibilityHidden(true)
                     }
-                        toast.message.textView
+                        toast.message.textView(tone: textTone)
                         .font(theme.fonts.body2)
                         .foregroundColor(foregroundColor)
                         .multilineTextAlignment(.leading)

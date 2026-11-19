@@ -4,8 +4,10 @@
 
 import Foundation
 import SwiftUI
+import OctopusCore
 
 struct UnsupportedOSVersionView: View {
+    @Environment(\.textTone) private var textTone
     @Environment(\.octopusTheme) private var theme
 
     var body: some View {
@@ -20,7 +22,8 @@ struct UnsupportedOSVersionView: View {
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
 
-            Text("UnsupportedOS.Explanation", bundle: .module)
+            Text(textTone.key(formal: "UnsupportedOS.Explanation.Formal",
+                              informal: "UnsupportedOS.Explanation.Informal"), bundle: .module)
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)

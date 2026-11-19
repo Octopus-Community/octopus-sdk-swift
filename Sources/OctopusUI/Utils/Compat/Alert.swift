@@ -27,6 +27,29 @@ extension View {
             }
         }
 
+    /// An alert with a title and a single OK button that dismisses it, on every iOS version.
+    ///
+    /// - Parameters:
+    ///   - title: the localization key of the title, looked up in the SDK's bundle.
+    ///   - isPresented: whether the alert is shown. The OK button dismisses it.
+    @ViewBuilder
+    nonisolated func compatAlert(_ title: LocalizedStringKey, isPresented: Binding<Bool>) -> some View {
+        if #available(iOS 15.0, *) {
+            self.alert(
+                Text(title, bundle: .module),
+                isPresented: isPresented,
+                actions: {
+                    Button(action: {}) { Text("Common.Ok", bundle: .module) }
+                })
+        } else {
+            self.alert(isPresented: isPresented, content: {
+                Alert(
+                    title: Text(title, bundle: .module),
+                    dismissButton: .default(Text("Common.Ok", bundle: .module)))
+            })
+        }
+    }
+
     /// An alert offering two buttons, each with its own action, on every iOS version: below iOS 15, the
     /// `compatAlert` above drops its action buttons and only offers OK.
     ///

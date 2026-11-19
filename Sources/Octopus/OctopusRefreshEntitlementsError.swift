@@ -5,6 +5,9 @@
 import Foundation
 
 /// Errors that may be thrown by ``OctopusSDK/refreshEntitlements()``.
+#if hasAttribute(nonexhaustive)
+@nonexhaustive(warn)
+#endif
 public enum OctopusRefreshEntitlementsError: Error, Sendable, CustomDebugStringConvertible {
     /// No `tokenProvider` has been registered yet: call `connectUser(_:tokenProvider:)` first, the
     /// refresh exchanges a fresh token obtained from it.

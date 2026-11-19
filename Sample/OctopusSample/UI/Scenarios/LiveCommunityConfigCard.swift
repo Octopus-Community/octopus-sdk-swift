@@ -54,7 +54,9 @@ struct LiveCommunityConfigCard: View {
             ("Post", options.map {
                 "pictures \(OverrideLabels.tick($0.post.enablePictures)) · " +
                     "polls \(OverrideLabels.tick($0.post.enablePolls)) · " +
-                    "text required \(OverrideLabels.tick($0.post.textRequired))"
+                    "text required \(OverrideLabels.tick($0.post.textRequired)) · " +
+                    "image opens post \(OverrideLabels.tick($0.post.imageTapOpensPost)) · " +
+                    "group name opens group \(OverrideLabels.tick($0.post.groupNameTapOpensGroup))"
             } ?? Self.backendValue),
             ("Comment", options.map { "pictures \(OverrideLabels.tick($0.comment.enablePictures))" }
                 ?? Self.backendValue),
@@ -64,6 +66,7 @@ struct LiveCommunityConfigCard: View {
              unifiedProfile.state.exposeClientUserIdOverride.map(OverrideLabels.tick) ?? Self.backendValue),
             ("Terms acceptance", overrides.termsAcceptance.map(OverrideLabels.termsLine) ?? Self.backendValue),
             ("Force nickname choice", overrides.forceNicknameChoice.map(OverrideLabels.tick) ?? Self.backendValue),
+            ("Informal languages", overrides.informalLanguages.map(OverrideLabels.languagesLine) ?? Self.backendValue),
             ("Consent texts", overrides.consentTexts.map { ConsentTextsPresets.describe($0) } ?? Self.backendValue),
             ("Gamification", Self.notExposed),
             ("Force login (strong actions)", OverrideLabels.tick(toggles.forceLoginEnabled)),
